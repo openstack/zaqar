@@ -1,0 +1,17 @@
+*.pyc
+*.dat
+TAGS
+*.egg-info
+build
+.coverage
+.tox
+cover
+venv
+.venv
+*.sublime-workspace
+*.sqlite
+var/*
+etc/*.conf
+etc/*.ini
+AUTHORS
+ChangeLog
