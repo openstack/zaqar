@@ -17,14 +17,8 @@
 from setuptools import setup, find_packages
 from marconi.openstack.common import setup as common_setup
 
-install_requires = common_setup.parse_requirements(['tools/pip-requires'])
-tests_require = common_setup.parse_requirements(['tools/test-requires'])
-setup_require = common_setup.parse_requirements(['tools/setup-requires'])
-dependency_links = common_setup.parse_dependency_links([
-    'tools/pip-requires',
-    'tools/test-requires',
-    'tools/setup-requires'
-])
+requires = common_setup.parse_requirements()
+dependency_links = common_setup.parse_dependency_links()
 
 setup(
     name='marconi',
@@ -36,10 +30,7 @@ setup(
     packages=find_packages(exclude=['bin']),
     include_package_data=True,
     test_suite='nose.collector',
-    setup_requires=setup_require,
-    install_requires=install_requires,
-    tests_require=tests_require,
-    extras_require={'test': tests_require},
+    install_requires=requires,
     dependency_links=dependency_links,
     cmdclass=common_setup.get_cmdclass(),
 )
