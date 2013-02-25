@@ -24,6 +24,7 @@ setup(
     name='marconi',
     version=common_setup.get_post_version('marconi'),
     description='Message Bus for OpenStack',
+    license="Apache License (2.0)",
     author='Kurt Griffiths',
     author_email='kurt.griffiths@rackspace.com',
     url='https://launchpad.net/marconi',
