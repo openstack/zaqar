@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
 # Copyright 2012 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,12 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import fixtures
-import testtools
+import marconi.tests.util as util
+import marconi.common
 
 
-class TestSimple(testtools.TestCase):
+class TestSimple(util.TestSuite):
 
     def test_simple(self):
         """Doesn't really test much"""
+        conf_file = self.conf_path('wsgi_reference.conf')
+        kernel = marconi.common.Kernel(conf_file)
+        transport = kernel.transport
+        wsgi_app = transport.app
         self.assertTrue(True)
