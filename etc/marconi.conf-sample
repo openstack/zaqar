@@ -1,0 +1,13 @@
+[drivers]
+;transport = wsgi, zmq
+transport = wsgi
+storage = mongodb
+
+[drivers:transport:wsgi]
+port = 8888
+
+;[drivers:transport:zmq]
+;port = 9999
+
+[drivers:storage:mongodb]
+uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
