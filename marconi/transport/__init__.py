@@ -1,3 +1,3 @@
 """Marconi Transport Drivers"""
 
-from .driver_base import DriverBase  # NOQA
+from marconi.transport.driver_base import DriverBase  # NOQA

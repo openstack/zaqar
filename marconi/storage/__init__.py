@@ -1,3 +1,3 @@
 """Marconi Storage Drivers"""
 
-from .driver_base import DriverBase  # NOQA
+from marconi.storage.driver_base import DriverBase  # NOQA

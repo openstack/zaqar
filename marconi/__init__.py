@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.kernel import Kernel
+from marconi.kernel import Kernel  # NOQA
 import marconi.version
 
 __version__ = marconi.version.version_info.deferred_version_string()

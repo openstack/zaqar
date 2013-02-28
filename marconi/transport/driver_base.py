@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABCMeta, abstractmethod
+import abc
 
 
 class DriverBase:
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
-    @abstractmethod
+    @abc.abstractmethod
     def listen():
-        #TODO(kgriffs): If this is all there is to DriverBase, do we need it?
+        #TODO(kgriffs): If this is all there is to DriverBase, do we
+        # even need it?
         pass
