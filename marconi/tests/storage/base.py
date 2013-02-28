@@ -44,6 +44,20 @@ class QueueControllerTest(ControllerBaseTest):
     """
     controller_base_class = storage.QueueBase
 
+    def test_list(self):
+        num = 4
+        for queue in xrange(num):
+            self.controller.upsert(queue, {}, tenant=self.tenant)
+
+        queues = self.controller.list(tenant=self.tenant)
+
+        counter = 0
+        for queue in queues:
+            self.assertIn("name", queue)
+            self.assertIn("metadata", queue)
+            counter += 1
+        self.assertEqual(counter, num)
+
     def test_queue_lifecycle(self):
         # Test Queue Creation
         created = self.controller.upsert("test", tenant=self.tenant,
@@ -53,7 +67,7 @@ class QueueControllerTest(ControllerBaseTest):
 
         # Test Queue retrieval
         queue = self.controller.get("test", tenant=self.tenant)
-        self.assertEqual(queue["name"], "test")
+        self.assertIsNotNone(queue)
 
         # Test Queue Update
         created = self.controller.upsert("test", tenant=self.tenant,
@@ -61,14 +75,15 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertFalse(created)
 
         queue = self.controller.get("test", tenant=self.tenant)
-        self.assertEqual(queue["metadata"]["meta"], "test_meta")
+        self.assertEqual(queue["meta"], "test_meta")
 
         # Test Queue Deletion
         self.controller.delete("test", tenant=self.tenant)
 
         # Test DoesNotExist Exception
         self.assertRaises(storage.exceptions.DoesNotExist,
-                          self.controller.get, "test", tenant=self.tenant)
+                          self.controller.get, "test",
+                          tenant=self.tenant)
 
 
 class MessageControllerTest(ControllerBaseTest):

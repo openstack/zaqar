@@ -17,6 +17,12 @@ import os
 import testtools
 
 
+from marconi.common import config
+
+
+cfg = config.project()
+
+
 class TestSuite(testtools.TestCase):
     """
     Child class of testtools.TestCase for testing Marconi
@@ -45,6 +51,18 @@ class TestSuite(testtools.TestCase):
 
         parent = os.path.dirname(self._my_dir())
         return os.path.join(parent, 'etc', filename)
+
+    def load_conf(self, filename):
+        """
+        Loads `filename` configuration file.
+
+        :param filename: Name of the conf file to find (e.g.,
+                         "wsgi_memory.conf")
+
+        :returns: Project's config object.
+        """
+        cfg.load(self.conf_path(filename))
+        return cfg
 
     def _my_dir(self):
         return os.path.abspath(os.path.dirname(__file__))
