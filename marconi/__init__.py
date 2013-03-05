@@ -13,7 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.kernel import Kernel  # NOQA
+# Import guard.  No module level import during the setup procedure.
+try:
+    __MARCONI_SETUP__
+except NameError:
+    from marconi.kernel import Kernel  # NOQA
+else:
+    import sys as _sys
+    _sys.stderr.write('Running from marconi source directory.\n')
+    del _sys
+
 import marconi.version
 
 __version__ = marconi.version.version_info.deferred_version_string()

@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from marconi.common import config
 from marconi import transport
+
+
+cfg = config.namespace('drivers:transport:wsgi').from_options(port=8888)
 
 
 class Driver(transport.DriverBase):
 
-    def __init__(self, cfg, queue_controller, message_controller,
+    def __init__(self, queue_controller, message_controller,
                  claim_controller):
-
-        self._cfg = cfg
 
         # E.g.:
         #

@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ConfigParser
-
+from marconi.common import config
 from marconi.storage import reference as storage
 from marconi.transport.wsgi import driver as wsgi
+
+
+cfg = config.project('marconi').from_options()
 
 
 class Kernel(object):
@@ -27,14 +29,13 @@ class Kernel(object):
     lifetimes.
     """
 
-    def __init__(self, config_file):
+    def __init__(self, config_file=None):
         #TODO(kgriffs): Error handling
-        cfg = ConfigParser.SafeConfigParser()
-        cfg.read(config_file)
+        cfg.load(config_file)
 
         #TODO(kgriffs): Determine driver types from cfg
-        self.storage = storage.Driver(cfg)
-        self.transport = wsgi.Driver(cfg, self.storage.queue_controller,
+        self.storage = storage.Driver()
+        self.transport = wsgi.Driver(self.storage.queue_controller,
                                      self.storage.message_controller,
                                      self.storage.claim_controller)
 
