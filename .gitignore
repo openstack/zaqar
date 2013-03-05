@@ -1,3 +1,4 @@
+*~
 *.pyc
 *.dat
 TAGS
@@ -10,6 +11,7 @@ venv
 .venv
 *.sublime-workspace
 *.sqlite
+.*.swp
 .DS_Store
 .testrepository
 versioninfo
