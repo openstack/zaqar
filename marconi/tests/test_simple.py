@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import marconi.tests.util as util
-import marconi.common
+import marconi
+from marconi.tests import util
 
 
 class TestSimple(util.TestSuite):
@@ -21,7 +21,7 @@ class TestSimple(util.TestSuite):
     def test_simple(self):
         """Doesn't really test much"""
         conf_file = self.conf_path('wsgi_reference.conf')
-        kernel = marconi.common.Kernel(conf_file)
+        kernel = marconi.Kernel(conf_file)
         transport = kernel.transport
         wsgi_app = transport.app
         self.assertTrue(True)

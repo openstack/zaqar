@@ -28,7 +28,8 @@ kernel with the WSGI transport and export the WSGI app callable, e.g.:
 """
 
 import logging.config
-from marconi.common import Kernel
+
+import marconi
 
 
 if __name__ == '__main__':
@@ -37,5 +38,5 @@ if __name__ == '__main__':
     config_file = '/etc/marconi/marconi.conf'
 
     logging.config.fileConfig(logging_config_file)
-    kernel = Kernel(config_file)
+    kernel = marconi.Kernel(config_file)
     kernel.run()
