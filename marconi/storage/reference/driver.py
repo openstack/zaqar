@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import marconi.storage as storage
+from marconi import storage
 
 
 class Driver(storage.DriverBase):
