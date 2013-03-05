@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements the DriverBase abstract class for Marconi transport drivers."""
-
 from abc import ABCMeta, abstractmethod
 
 
@@ -25,6 +21,5 @@ class DriverBase:
 
     @abstractmethod
     def listen():
-        # TODO(kgriffs): If this is all there is to DriverBase, do we
-        #     even need it?
+        #TODO(kgriffs): If this is all there is to DriverBase, do we need it?
         pass

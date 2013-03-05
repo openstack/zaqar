@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Implements the DriverBase abstract class for Marconi storage drivers."""
 
 from abc import ABCMeta, abstractproperty
 

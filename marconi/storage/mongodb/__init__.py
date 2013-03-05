@@ -1,1 +1,1 @@
-""" MongoDB Storage Driver for Marconi """
+"""MongoDB Storage Driver for Marconi"""

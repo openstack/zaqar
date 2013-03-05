@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines the Marconi Kernel
-
-The Kernel loads up drivers per a given configuration, and manages their
-lifetimes.
-
-"""
-
 from ConfigParser import SafeConfigParser
 
 import marconi.transport.wsgi as wsgi
@@ -29,6 +20,12 @@ import marconi.storage.reference as reference
 
 
 class Kernel(object):
+    """
+    Defines the Marconi Kernel
+
+    The Kernel loads up drivers per a given configuration, and manages their
+    lifetimes.
+    """
 
     def __init__(self, config_file):
         # TODO(kgriffs) Error handling
