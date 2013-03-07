@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import testtools
-import os.path
 
 
 class TestSuite(testtools.TestCase):
@@ -27,7 +27,7 @@ class TestSuite(testtools.TestCase):
     """
 
     def setUp(self):
-        """Initializer, unittest-style"""
+        """Initializer, unittest-style."""
 
         super(TestSuite, self).setUp()
 

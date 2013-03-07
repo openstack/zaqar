@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABCMeta, abstractproperty
+import abc
 
 
 class DriverBase:
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
-    @abstractproperty
+    @abc.abstractproperty
     def queue_controller(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def message_controller(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def claim_controller(self):
         pass

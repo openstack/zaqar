@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import marconi.transport as transport
+from marconi import transport
 
 
 class Driver(transport.DriverBase):
@@ -38,5 +38,5 @@ class Driver(transport.DriverBase):
         pass
 
     def app(self, env, start_response, exc_info=None):
-        """This will be replace by falcon.API()"""
+        """This will be replace by falcon.API()."""
         pass

@@ -1,3 +1,3 @@
 """WSGI Transport Driver"""
 
-from .driver import Driver  # NOQA
+from marconi.transport.wsgi.driver import Driver  # NOQA

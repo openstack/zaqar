@@ -14,13 +14,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from setuptools import setup, find_packages
+import setuptools
+
 from marconi.openstack.common import setup as common_setup
 
 requires = common_setup.parse_requirements()
 dependency_links = common_setup.parse_dependency_links()
 
-setup(
+setuptools.setup(
     name='marconi',
     version=common_setup.get_post_version('marconi'),
     description='Message Bus for OpenStack',
@@ -28,7 +29,7 @@ setup(
     author='Kurt Griffiths',
     author_email='kurt.griffiths@rackspace.com',
     url='https://launchpad.net/marconi',
-    packages=find_packages(exclude=['bin']),
+    packages=setuptools.find_packages(exclude=['bin']),
     include_package_data=True,
     test_suite='nose.collector',
     install_requires=requires,
