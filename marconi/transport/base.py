@@ -17,10 +17,14 @@ import abc
 
 
 class DriverBase:
+    """Base class for Transport Drivers to document the expected interface."""
+
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def listen():
-        #TODO(kgriffs): If this is all there is to DriverBase, do we
-        # even need it?
+        """
+        Called to start listening for client requests when Marconi is
+        ran in self-hosting mode.
+        """
         pass
