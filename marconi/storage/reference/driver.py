@@ -18,9 +18,6 @@ from marconi import storage
 
 class Driver(storage.DriverBase):
 
-    def __init__(self, cfg):
-        self._cfg = cfg
-
     @property
     def queue_controller(self):
         # TODO(kgriffs): Create base classes for controllers in common/
