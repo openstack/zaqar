@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 
-
-class DriverBase:
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractproperty
-    def queue_controller(self):
-        pass
-
-    @abc.abstractproperty
-    def message_controller(self):
-        pass
-
-    @abc.abstractproperty
-    def claim_controller(self):
-        pass
+class DoesNotExist(Exception):
+    pass
