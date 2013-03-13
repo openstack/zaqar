@@ -29,7 +29,7 @@ class ControllerBaseTest(suite.TestSuite):
         if not self.driver_class:
             self.skipTest("No driver class specified")
 
-        if not isinstance(self.controller_class, self.controller_base_class):
+        if not issubclass(self.controller_class, self.controller_base_class):
             self.skipTest("%s is not an instance of %s. Tests not supported" %
                           (self.controller_class, self.controller_base_class))
 
