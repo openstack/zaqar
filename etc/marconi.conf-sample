@@ -1,7 +1,8 @@
 [drivers]
-;transport = wsgi, zmq
-transport = wsgi
-storage = mongodb
+;transport = marconi.transport.wsgi, marconi.transport.zmq
+transport = marconi.transport.wsgi
+;storage = marconi.storage.mongodb, marconi.storage.sqlite
+storage = marconi.storage.mongodb
 
 [drivers:transport:wsgi]
 port = 8888

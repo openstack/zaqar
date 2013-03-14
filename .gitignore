@@ -16,7 +16,5 @@ venv
 .testrepository
 versioninfo
 var/*
-etc/*.conf
-etc/*.ini
 ChangeLog
 AUTHORS

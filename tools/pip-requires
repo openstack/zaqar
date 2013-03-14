@@ -1,4 +1,7 @@
 cliff
 falcon
 oslo.config>=1.1.0
+PasteDeploy
 pymongo
+python-keystoneclient
+WebOb
