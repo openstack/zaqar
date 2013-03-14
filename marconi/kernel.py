@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from marconi.common import config
-from marconi.storage import reference as storage
+from marconi.storage import sqlite as storage
 from marconi.transport.wsgi import driver as wsgi
 
 
