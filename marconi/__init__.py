@@ -17,6 +17,8 @@
 try:
     __MARCONI_SETUP__
 except NameError:
+    import gettext
+    gettext.install("marconi", unicode=1)
     from marconi.kernel import Kernel  # NOQA
 else:
     import sys as _sys
