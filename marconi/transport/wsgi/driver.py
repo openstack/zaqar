@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import falcon
+
 from marconi.common import config
 from marconi import transport
 
@@ -25,20 +27,10 @@ class Driver(transport.DriverBase):
     def __init__(self, queue_controller, message_controller,
                  claim_controller):
 
-        # E.g.:
-        #
-        # self._queue_controller.create(tenant_id, queue_name)
-        # self._queue_controller.set_metadata(tenant_id, queue_name, metadata)
-        #
-        self._queue_controller = queue_controller
-        self._message_controller = message_controller
-        self._claim_controller = claim_controller
+        queues = transport.wsgi.QueuesResource(queue_controller)
 
-        # self.app = api = falcon.API()
+        self.app = api = falcon.API()
+        api.add_route('/v1/{tenant_id}/queues/{queue_name}', queues)
 
     def listen(self):
-        pass
-
-    def app(self, env, start_response, exc_info=None):
-        """This will be replace by falcon.API()."""
         pass
