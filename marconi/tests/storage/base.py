@@ -46,26 +46,29 @@ class QueueControllerTest(ControllerBaseTest):
 
     def test_queue_lifecycle(self):
         # Test Queue Creation
-        self.controller.create("test", tenant=self.tenant,
-                               ttl=60, topic="test_queue")
+        created = self.controller.upsert("test", tenant=self.tenant,
+                                         metadata=dict(topic="test_queue"))
+
+        self.assertTrue(created)
 
         # Test Queue retrieval
         queue = self.controller.get("test", tenant=self.tenant)
         self.assertEqual(queue["name"], "test")
-        self.assertEqual(queue["ttl"], 60)
 
         # Test Queue Update
-        self.controller.update("tests", name="test1", tenant=self.tenant)
-        queue = self.controller.get("test1", tenant=self.tenant)
-        self.assertEqual(queue["ttl"], 60)
+        created = self.controller.upsert("test", tenant=self.tenant,
+                                         metadata=dict(meta="test_meta"))
+        self.assertFalse(created)
+
+        queue = self.controller.get("test", tenant=self.tenant)
+        self.assertEqual(queue["metadata"]["meta"], "test_meta")
 
         # Test Queue Deletion
-        self.controller.delete("test1", tenant=self.tenant)
+        self.controller.delete("test", tenant=self.tenant)
 
         # Test DoesNotExist Exception
         self.assertRaises(storage.exceptions.DoesNotExist,
-                          self.controller.get, "test1",
-                          tenant=self.tenant)
+                          self.controller.get, "test", tenant=self.tenant)
 
 
 class MessageControllerTest(ControllerBaseTest):

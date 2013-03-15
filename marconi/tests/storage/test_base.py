@@ -41,12 +41,9 @@ class QueueController(storage.QueueBase):
     def get(self, name, tenant=None):
         super(QueueController, self).get(name, tenant=tenant)
 
-    def create(self, name, tenant=None, ttl=None, **metadata):
-        super(QueueController, self).create(name, tenant=tenant,
-                                            ttl=ttl, **metadata)
-
-    def update(self, name, tenant=None, **metadata):
-        super(QueueController, self).update(name, tenant=tenant, **metadata)
+    def upsert(self, name, tenant=None, metadata=None):
+        super(QueueController, self).upsert(name, tenant=tenant,
+                                            metadata=metadata)
 
     def delete(self, name, tenant=None):
         super(QueueController, self).delete(name, tenant=tenant)
@@ -66,13 +63,8 @@ class TestQueueBase(suite.TestSuite):
         self.driver = Driver()
         self.controller = self.driver.queue_controller
 
-    def test_create(self):
-        self.assertRaises(AssertionError, self.controller.create,
-                          "test", ttl=30)
+    def test_upsert(self):
+        self.assertRaises(AssertionError, self.controller.upsert,
+                          "test", metadata=[])
 
-        self.assertRaises(AssertionError, self.controller.create,
-                          "test", ttl=1209601)
-
-        self.assertIsNone(self.controller.create("test", ttl=60))
-        self.assertIsNone(self.controller.create("test", ttl=120))
-        self.assertIsNone(self.controller.create("test", ttl=1209600))
+        self.assertIsNone(self.controller.upsert("test", metadata={}))

@@ -99,32 +99,19 @@ class QueueBase(ControllerBase):
         pass
 
     @abc.abstractmethod
-    def create(self, name, tenant=None, ttl=MIN_TTL, **metadata):
+    def upsert(self, name, tenant=None, metadata=None):
         """
-        Base method for queue creation.
+        This methods handles both creates and updates
+        operations for queues.
 
         :param name: The queue name
         :param tenant: Tenant id
-        :param ttl: Number of seconds the server
-            will keep messages for this queue.
         :param metadata: Arbitrary metadata
+        :returns: True if a queue was created and False
+            if it was updated.
         """
-
-        m = (_("TTL must be an integer between %(min)s and %(max)s") %
-             dict(min=MIN_TTL, max=MAX_TTL))
-        assert (ttl >= MIN_TTL and ttl <= MAX_TTL), m
-
-    @abc.abstractmethod
-    def update(self, name, tenant=None, **metadata):
-        """
-        Base method for queue update.
-
-        :param name: The queue name
-        :param tenant: Tenant id
-        :param metadata: Extra parameters defining
-            the new metadata for this queue.
-        """
-        pass
+        msg = _("Metadata should be an instance of dict")
+        assert isinstance(metadata, dict), msg
 
     @abc.abstractmethod
     def delete(self, name, tenant=None):
