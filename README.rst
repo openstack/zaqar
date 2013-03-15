@@ -1,1 +1,1 @@
-Marconi - Message Bus for OpenStack
+Marconi - Queue and Notification service for OpenStack
