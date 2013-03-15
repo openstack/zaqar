@@ -19,6 +19,7 @@ from marconi.tests.util import suite
 
 
 class ControllerBaseTest(suite.TestSuite):
+    tenant = "tenant"
     driver_class = None
     controller_class = None
     controller_base_class = None
@@ -45,25 +46,26 @@ class QueueControllerTest(ControllerBaseTest):
 
     def test_queue_lifecycle(self):
         # Test Queue Creation
-        self.controller.create("test", ttl=10,
-                               topic="test_queue")
+        self.controller.create("test", tenant=self.tenant,
+                               ttl=60, topic="test_queue")
 
         # Test Queue retrieval
-        queue = self.controller.get("test")
+        queue = self.controller.get("test", tenant=self.tenant)
         self.assertEqual(queue["name"], "test")
-        self.assertEqual(queue["ttl"], 10)
+        self.assertEqual(queue["ttl"], 60)
 
         # Test Queue Update
-        self.controller.update("tests", name="test1")
-        queue = self.controller.get("test1")
-        self.assertEqual(queue["ttl"], 10)
+        self.controller.update("tests", name="test1", tenant=self.tenant)
+        queue = self.controller.get("test1", tenant=self.tenant)
+        self.assertEqual(queue["ttl"], 60)
 
         # Test Queue Deletion
-        self.controller.delete("test1")
+        self.controller.delete("test1", tenant=self.tenant)
 
         # Test DoesNotExist Exception
         self.assertRaises(storage.exceptions.DoesNotExist,
-                          self.controller.get, "test1")
+                          self.controller.get, "test1",
+                          tenant=self.tenant)
 
 
 class MessageControllerTest(ControllerBaseTest):
@@ -101,16 +103,18 @@ class MessageControllerTest(ControllerBaseTest):
         ]
 
         # Test Message Creation
-        created = self.controller.post(queue_name, messages)
+        created = self.controller.post(queue_name, messages,
+                                       tenant=self.tenant)
         self.assertEqual(len(created), 1)
 
         # Test Message Get
-        self.controller.get(queue_name, message_id=created[0])
+        self.controller.get(queue_name, tenant=self.tenant,
+                            message_id=created[0])
 
         # Test Message Deletion
-        self.controller.delete(queue_name, created[0])
+        self.controller.delete(queue_name, created[0], tenant=self.tenant)
 
         # Test DoesNotExist
         self.assertRaises(storage.exceptions.DoesNotExist,
                           self.controller.get,
-                          queue_name, created[0])
+                          queue_name, created[0], tenant=self.tenant)
