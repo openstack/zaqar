@@ -109,7 +109,10 @@ class QueueBase(ControllerBase):
             will keep messages for this queue.
         :param metadata: Arbitrary metadata
         """
-        pass
+
+        m = (_("TTL must be an integer between %(min)s and %(max)s") %
+             dict(min=MIN_TTL, max=MAX_TTL))
+        assert (ttl >= MIN_TTL and ttl <= MAX_TTL), m
 
     @abc.abstractmethod
     def update(self, name, tenant=None, **metadata):
