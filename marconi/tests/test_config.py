@@ -19,7 +19,8 @@ from marconi.common import config
 from marconi.tests.util import suite
 
 
-cfg = config.project().from_options(
+cfg_handle = config.project()
+cfg = cfg_handle.from_options(
         without_help=3,
         with_help=(None, "nonsense"))
 
@@ -28,11 +29,11 @@ class TestConfig(suite.TestSuite):
 
     def test_cli(self):
         args = ['--with_help', 'sense']
-        cfg.set_cli(args)
-        cfg.load(self.conf_path('wsgi_reference.conf'))
+        cfg_handle.set_cli(args)
+        cfg_handle.load(self.conf_path('wsgi_reference.conf'))
         self.assertEquals(cfg.with_help, 'sense')
-        cfg.set_cli([])
-        cfg.load()
+        cfg_handle.set_cli([])
+        cfg_handle.load()
         self.assertEquals(cfg.with_help, None)
 
     def test_wrong_type(self):
