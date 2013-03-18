@@ -41,7 +41,7 @@ class QueueController(storage.QueueBase):
     def get(self, name, tenant=None):
         super(QueueController, self).get(name, tenant=tenant)
 
-    def upsert(self, name, tenant=None, metadata=None):
+    def upsert(self, name, metadata, tenant=None):
         super(QueueController, self).upsert(name, tenant=tenant,
                                             metadata=metadata)
 

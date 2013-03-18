@@ -99,14 +99,14 @@ class QueueBase(ControllerBase):
         pass
 
     @abc.abstractmethod
-    def upsert(self, name, tenant=None, metadata=None):
+    def upsert(self, name, metadata, tenant=None):
         """
         This methods handles both creates and updates
         operations for queues.
 
         :param name: The queue name
-        :param tenant: Tenant id
         :param metadata: Arbitrary metadata
+        :param tenant: Tenant id
         :returns: True if a queue was created and False
             if it was updated.
         """
