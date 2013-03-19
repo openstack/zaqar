@@ -32,15 +32,6 @@ class TestSuite(testtools.TestCase):
     test method.
     """
 
-    def setUp(self):
-        """Initializer, unittest-style."""
-
-        super(TestSuite, self).setUp()
-
-        prepare = getattr(self, 'prepare', None)
-        if hasattr(prepare, '__call__'):
-            prepare()
-
     def conf_path(self, filename):
         """
         Returns the full path to the specified Marconi conf file
