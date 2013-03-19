@@ -13,22 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import sqlite3
+
+from marconi.common import config
 from marconi import storage
+from marconi.storage.sqlite import controllers
+
+
+cfg = config.namespace('drivers:storage:sqlite').from_options(
+        database=':memory:')
 
 
 class Driver(storage.DriverBase):
+    def __init__(self):
+        self.__path = cfg.database
+        self.__conn = sqlite3.connect(self.__path)
+        self.__db = self.__conn.cursor()
+        self._run('''PRAGMA foreign_keys = ON''')
+
+    def _run(self, sql, *args):
+        return self.__db.execute(sql, args)
+
+    def _get(self, sql, *args):
+        return self._run(sql, *args).fetchone()
+
+    def __enter__(self):
+        self._run('begin immediate')
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.__conn.commit()
 
     @property
     def queue_controller(self):
-        # TODO(kgriffs): Create base classes for controllers in common/
-        return None
+        return controllers.Queue(self)
 
     @property
     def message_controller(self):
-        # TODO(kgriffs): Create base classes for controllers in common/
-        return None
+        return controllers.Message(self)
 
     @property
     def claim_controller(self):
-        # TODO(kgriffs): Create base classes for controllers in common/
         return None
