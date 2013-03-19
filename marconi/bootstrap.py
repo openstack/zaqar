@@ -21,11 +21,11 @@ from marconi.transport.wsgi import driver as wsgi
 cfg_handle = config.project('marconi')
 
 
-class Kernel(object):
+class Bootstrap(object):
     """
-    Defines the Marconi Kernel
+    Defines the Marconi Bootstrap
 
-    The Kernel loads up drivers per a given configuration, and manages their
+    The bootstrap loads up drivers per a given configuration, and manages their
     lifetimes.
     """
 

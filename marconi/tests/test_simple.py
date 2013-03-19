@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from marconi import kernel
+import marconi
 from marconi.tests.util import suite
 
 
@@ -21,7 +21,7 @@ class TestSimple(suite.TestSuite):
     def test_simple(self):
         """Doesn't really test much."""
         conf_file = self.conf_path('wsgi_reference.conf')
-        k = kernel.Kernel(conf_file)
-        transport = k.transport
+        boot = marconi.Bootstrap(conf_file)
+        transport = boot.transport
         wsgi_app = transport.app
         self.assertTrue(True)

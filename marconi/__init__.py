@@ -19,7 +19,7 @@ try:
 except NameError:
     import gettext
     gettext.install("marconi", unicode=1)
-    from marconi.kernel import Kernel  # NOQA
+    from marconi.bootstrap import Bootstrap  # NOQA
 else:
     import sys as _sys
     _sys.stderr.write('Running from marconi source directory.\n')
