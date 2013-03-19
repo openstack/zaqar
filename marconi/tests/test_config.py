@@ -30,7 +30,7 @@ class TestConfig(testing.TestBase):
     def test_cli(self):
         args = ['--with_help', 'sense']
         cfg_handle.set_cli(args)
-        cfg_handle.load(self.conf_path('wsgi_reference.conf'))
+        cfg_handle.load(self.conf_path('wsgi_sqlite.conf'))
         self.assertEquals(cfg.with_help, 'sense')
         cfg_handle.set_cli([])
         cfg_handle.load()

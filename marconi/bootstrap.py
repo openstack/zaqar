@@ -14,11 +14,14 @@
 # limitations under the License.
 
 from marconi.common import config
-from marconi.storage import sqlite as storage
-from marconi.transport.wsgi import driver as wsgi
+from marconi.common import exceptions
+from marconi.openstack.common import importutils
 
 
 cfg_handle = config.project('marconi')
+cfg = config.namespace('drivers').from_options(
+    transport='marconi.transport.wsgi',
+    storage='marconi.storage.sqlite')
 
 
 class Bootstrap(object):
@@ -30,14 +33,24 @@ class Bootstrap(object):
     """
 
     def __init__(self, config_file=None):
-        #TODO(kgriffs): Error handling
         cfg_handle.load(config_file)
 
-        #TODO(kgriffs): Determine driver types from cfg
-        self.storage = storage.Driver()
-        self.transport = wsgi.Driver(self.storage.queue_controller,
-                                     self.storage.message_controller,
-                                     self.storage.claim_controller)
+        self.storage_module = import_driver(cfg.storage)
+        self.transport_module = import_driver(cfg.transport)
+
+        self.storage = self.storage_module.Driver()
+        self.transport = self.transport_module.Driver(
+            self.storage.queue_controller,
+            self.storage.message_controller,
+            self.storage.claim_controller)
 
     def run(self):
         self.transport.listen()
+
+
+def import_driver(module_name):
+    try:
+        return importutils.import_module(module_name)
+    except ImportError:
+        raise exceptions.InvalidDriver(
+            'No module named %s' % module_name)

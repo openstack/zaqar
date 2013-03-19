@@ -26,7 +26,7 @@ dependency_links = common_setup.parse_dependency_links()
 
 setuptools.setup(
     name='marconi',
-    version=common_setup.get_post_version('marconi'),
+    version=common_setup.get_version('marconi'),
     description='Message Bus for OpenStack',
     license="Apache License (2.0)",
     author='Kurt Griffiths',
