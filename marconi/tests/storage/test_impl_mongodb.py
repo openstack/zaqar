@@ -19,13 +19,13 @@ from marconi.common import config
 from marconi.storage import mongodb
 from marconi.storage.mongodb import controllers
 from marconi.tests.storage import base
-from marconi.tests.util import suite
+from marconi.tests import util as testing
 
 
 cfg = config.namespace("drivers:storage:mongodb").from_options()
 
 
-class MongodbDriverTest(suite.TestSuite):
+class MongodbDriverTest(testing.TestBase):
 
     def setUp(self):
         if not os.environ.get("MONGODB_TEST_LIVE"):

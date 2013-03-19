@@ -13,15 +13,15 @@
 # under the License.
 
 import marconi
-from marconi.tests.util import suite
+from marconi.tests import util as testing
 
 
-class TestSimple(suite.TestSuite):
+class TestSimple(testing.TestBase):
 
     def test_simple(self):
         """Doesn't really test much."""
         conf_file = self.conf_path('wsgi_reference.conf')
         boot = marconi.Bootstrap(conf_file)
         transport = boot.transport
-        wsgi_app = transport.app
+        wsgi_app = transport.app  # NOQA
         self.assertTrue(True)

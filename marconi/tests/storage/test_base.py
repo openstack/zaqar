@@ -15,7 +15,7 @@
 
 
 from marconi import storage
-from marconi.tests.util import suite
+from marconi.tests import util as testing
 
 
 class Driver(storage.DriverBase):
@@ -56,7 +56,7 @@ class QueueController(storage.QueueBase):
                                              marker=marker, limit=limit)
 
 
-class TestQueueBase(suite.TestSuite):
+class TestQueueBase(testing.TestBase):
 
     def setUp(self):
         super(TestQueueBase, self).setUp()

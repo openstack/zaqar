@@ -16,14 +16,13 @@
 import os
 import testtools
 
-
 from marconi.common import config
 
 
 cfg = config.project()
 
 
-class TestSuite(testtools.TestCase):
+class TestBase(testtools.TestCase):
     """
     Child class of testtools.TestCase for testing Marconi
 

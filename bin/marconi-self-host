@@ -18,12 +18,12 @@
 """Bootstrap for self-hosting a Marconi node
 
 Alternatively, to host a WSGI app with an external server, configure
-kernel with the WSGI transport and export the WSGI app callable, e.g.:
+bootstrap with the WSGI transport and export the WSGI app callable, e.g.:
 
     logging.config.fileConfig(logging_conf_file)
-    kernel = Kernel(conf_file)
+    boot = Bootstrap(conf_file)
 
-    app = kernel.transport.app
+    app = boot.transport.app
 
 """
 

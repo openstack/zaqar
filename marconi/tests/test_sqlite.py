@@ -17,10 +17,10 @@ import testtools
 
 from marconi.storage import exceptions
 from marconi.storage import sqlite
-from marconi.tests.util import suite
+from marconi.tests import util as testing
 
 
-class TestSqlite(suite.TestSuite):
+class TestSqlite(testing.TestBase):
 
     def test_sqlite(self):
         storage = sqlite.Driver()

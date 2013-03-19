@@ -16,7 +16,7 @@
 import testtools
 
 from marconi.common import config
-from marconi.tests.util import suite
+from marconi.tests import util as testing
 
 
 cfg_handle = config.project()
@@ -25,7 +25,7 @@ cfg = cfg_handle.from_options(
         with_help=(None, "nonsense"))
 
 
-class TestConfig(suite.TestSuite):
+class TestConfig(testing.TestBase):
 
     def test_cli(self):
         args = ['--with_help', 'sense']

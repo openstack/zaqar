@@ -15,7 +15,7 @@
 
 # Import guard.  No module level import during the setup procedure.
 try:
-    __MARCONI_SETUP__
+    __MARCONI_SETUP__  # NOQA
 except NameError:
     import gettext
     gettext.install("marconi", unicode=1)
