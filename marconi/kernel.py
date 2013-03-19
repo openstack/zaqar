@@ -18,7 +18,7 @@ from marconi.storage import sqlite as storage
 from marconi.transport.wsgi import driver as wsgi
 
 
-cfg = config.project('marconi').from_options()
+cfg_handle = config.project('marconi')
 
 
 class Kernel(object):
@@ -31,7 +31,7 @@ class Kernel(object):
 
     def __init__(self, config_file=None):
         #TODO(kgriffs): Error handling
-        cfg.load(config_file)
+        cfg_handle.load(config_file)
 
         #TODO(kgriffs): Determine driver types from cfg
         self.storage = storage.Driver()

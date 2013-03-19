@@ -100,46 +100,42 @@ def _init():
             for k, v in opts.items():
                 conf.register_cli_opt(_make_opt(k, v))
 
-            @staticmethod
-            def set_cli(args):
-                """
-                Save the CLI arguments.
-
-                :param args: a list of CLI arguments in strings
-                """
-
-                my.args = []
-                my.args.extend(args)
-
-            @staticmethod
-            def load(config_file=None):
-                """Load the configurations from a config file.
-
-                If the file name is not supplied, look for
-
-                    /etc/%project/%project.conf
-
-                    and
-
-                    ~/.%project/%project.conf
-
-                :param config_file: the name of an alternative config file
-                """
-
-                if config_file is None:
-                    conf(args=my.args, project=name, prog=name)
-                else:
-                    conf(args=my.args, default_config_files=[config_file])
-
             def from_class(cls):
                 grant_access_to_class(conf, cls)
-                cls.set_cli = set_cli
-                cls.load = load
                 return cls
 
             return from_class(opaque_type_of(ConfigProxy, name))()
 
-        return Obj(from_options=from_options)
+        def set_cli(args):
+            """
+            Save the CLI arguments.
+
+            :param args: a list of CLI arguments in strings
+            """
+
+            my.args = []
+            my.args.extend(args)
+
+        def load(config_file=None):
+            """Load the configurations from a config file.
+
+            If the file name is not supplied, look for
+
+                /etc/%project/%project.conf
+
+                and
+
+                ~/.%project/%project.conf
+
+            :param config_file: the name of an alternative config file
+            """
+
+            if config_file is None:
+                conf(args=my.args, project=name, prog=name)
+            else:
+                conf(args=my.args, default_config_files=[config_file])
+
+        return Obj(from_options=from_options, set_cli=set_cli, load=load)
 
     def opaque_type_of(base, postfix):
         return type('%s of %s' % (base.__name__, postfix), (base,), {})
