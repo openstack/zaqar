@@ -5,9 +5,10 @@ set -e
 python tools/hacking.py --doctest
 
 # Until all these issues get fixed, ignore.
-PEP8='python tools/hacking.py --ignore=E12,E711,E721,E712,N303,N403,N404'
+PEP8='python tools/hacking.py --ignore=N404'
 
 EXCLUDE='--exclude=.venv,.git,.tox,dist,doc,*openstack/common*,*lib/python*'
+EXCLUDE+=',./tools'
 EXCLUDE+=',*egg,build'
 ${PEP8} ${EXCLUDE} .
 

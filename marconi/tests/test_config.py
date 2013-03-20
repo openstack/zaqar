@@ -21,8 +21,8 @@ from marconi.tests import util as testing
 
 cfg_handle = config.project()
 cfg = cfg_handle.from_options(
-        without_help=3,
-        with_help=(None, "nonsense"))
+    without_help=3,
+    with_help=(None, "nonsense"))
 
 
 class TestConfig(testing.TestBase):

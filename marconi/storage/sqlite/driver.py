@@ -22,7 +22,7 @@ from marconi.storage.sqlite import controllers
 
 
 cfg = config.namespace('drivers:storage:sqlite').from_options(
-        database=':memory:')
+    database=':memory:')
 
 
 class Driver(storage.DriverBase):

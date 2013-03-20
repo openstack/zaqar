@@ -168,12 +168,12 @@ def _make_opt(name, default):
     """
 
     deduction = {
-          str: cfg.StrOpt,
-         bool: cfg.BoolOpt,
-          int: cfg.IntOpt,
-         long: cfg.IntOpt,
+        str: cfg.StrOpt,
+        bool: cfg.BoolOpt,
+        int: cfg.IntOpt,
+        long: cfg.IntOpt,
         float: cfg.FloatOpt,
-         list: cfg.ListOpt,
+        list: cfg.ListOpt,
     }
 
     if type(default) is tuple:
