@@ -20,26 +20,13 @@ from marconi.storage import sqlite
 from marconi.tests import util as testing
 
 
+#TODO(zyuan): let tests/storage/base.py handle these
 class TestSqlite(testing.TestBase):
 
-    def test_sqlite(self):
+    def test_some_messages(self):
         storage = sqlite.Driver()
         q = storage.queue_controller
-        self.assertEquals(q.upsert('fizbit', {'_message_ttl': 40}, '480924'),
-                True)
-        q.upsert('boomerang', {}, '480924')
-        q.upsert('boomerang', {}, '01314')
-        q.upsert('unrelated', {}, '01314')
-        self.assertEquals(set(q.list('480924')), set(['fizbit', 'boomerang']))
-        with testtools.ExpectedException(exceptions.DoesNotExist):
-            q.get('Fizbit', '480924')
-        self.assertEquals(q.upsert('fizbit', {'_message_ttl': 20}, '480924'),
-                False)
-        self.assertEquals(q.get('fizbit', '480924'), {'_message_ttl': 20})
-        q.delete('boomerang', '480924')
-        with testtools.ExpectedException(exceptions.DoesNotExist):
-            q.get('boomerang', '480924')
-
+        q.upsert('fizbit', {'_message_ttl': 40}, '480924')
         m = storage.message_controller
         d = [
                 {"body": {

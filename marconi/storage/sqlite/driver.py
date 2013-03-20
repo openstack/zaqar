@@ -35,6 +35,9 @@ class Driver(storage.DriverBase):
     def _run(self, sql, *args):
         return self.__db.execute(sql, args)
 
+    def _run_multiple(self, sql, it):
+        self.__db.executemany(sql, it)
+
     def _get(self, sql, *args):
         return self._run(sql, *args).fetchone()
 

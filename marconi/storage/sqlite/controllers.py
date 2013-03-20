@@ -36,11 +36,10 @@ class Queue(base.QueueBase):
         )''')
 
     def list(self, tenant):
-        ans = []
-        for rec in self.driver._run('''select name from Queues where
-                tenant = ?''', tenant):
-            ans.append(rec[0])
-        return ans
+        records = self.driver._run('''select name, metadata from Queues where
+                tenant = ?''', tenant)
+        for k, v in records:
+            yield {'name': k, 'metadata': v}
 
     def get(self, name, tenant):
         try:
@@ -48,7 +47,9 @@ class Queue(base.QueueBase):
                 self.driver._get('''select metadata from Queues where
                     tenant = ? and name = ?''', tenant, name)[0])
         except TypeError:
-            raise exceptions.DoesNotExist('/'.join([tenant, 'queues', name]))
+            msg = (_("Queue %(name)s does not exist for tenant %(tenant)s")
+                    % dict(name=name, tenant=tenant))
+            raise exceptions.DoesNotExist(msg)
 
     def upsert(self, name, metadata, tenant):
         with self.driver:
@@ -56,7 +57,7 @@ class Queue(base.QueueBase):
                     tenant = ? and name = ?''', tenant, name) is None
             self.driver._run('''replace into Queues values
                     (null, ?, ?, ?)''', tenant, name,
-                    json.dumps(metadata))
+                    json.dumps(metadata, ensure_ascii=False))
             return rc
 
     def delete(self, name, tenant):
@@ -97,19 +98,27 @@ class Message(base.MessageBase):
                 qid, = self.driver._get('''select id from Queues where
                         tenant = ? and name = ?''', tenant, queue)
             except TypeError:
-                raise exceptions.DoesNotExist(
-                        '/'.join([tenant, 'queues', queue]))
+                msg = (_("Queue %(name)s does not exist for tenant %(tenant)s")
+                        % dict(name=queue, tenant=tenant))
+                raise exceptions.DoesNotExist(msg)
+
+            # executemany() sets lastrowid to None, so no matter we manually
+            # generate the IDs or not, we still need to query for it.
             try:
-                newid = self.driver._get('''select id + 1 from Messages
-                        where id = (select max(id) from Messages)''')[0]
+                unused, = self.driver._get('''select id + 1 from Messages
+                        where id = (select max(id) from Messages)''')
             except TypeError:
-                newid = 1001
-            for m in messages:
-                self.driver._run('''insert into Messages values
-                        (?, ?, ?, ?, datetime())''',
-                        newid, qid, m['ttl'], json.dumps(m))
-                newid += 1
-        return [str(x) for x in range(newid - len(messages), newid)]
+                unused, = 1001,
+
+            def it(newid):
+                for m in messages:
+                    yield (newid, qid, m['ttl'],
+                            json.dumps(m, ensure_ascii=False))
+                    newid += 1
+
+            self.driver._run_multiple('''insert into Messages values
+                    (?, ?, ?, ?, datetime())''', it(unused))
+        return [str(x) for x in range(unused, unused + len(messages))]
 
     def delete(self, queue, message_id, tenant=None, claim=None):
         pass
