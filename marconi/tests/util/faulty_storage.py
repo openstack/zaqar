@@ -62,6 +62,10 @@ class MessageController(storage.MessageBase):
             marker=None, echo=False, client_uuid=None):
         raise NotImplementedError()
 
+    def list(self, queue, tenant=None, marker=None,
+             limit=10, echo=False, client_uuid=None):
+        raise NotImplementedError()
+
     def post(self, queue, messages, tenant=None):
         raise NotImplementedError()
 

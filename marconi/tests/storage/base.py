@@ -126,8 +126,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.assertEqual(len(created), 1)
 
         # Test Message Get
-        self.controller.get(queue_name, tenant=self.tenant,
-                            message_id=created[0])
+        self.controller.get(queue_name, created[0], tenant=self.tenant)
 
         # Test Message Deletion
         self.controller.delete(queue_name, created[0], tenant=self.tenant)

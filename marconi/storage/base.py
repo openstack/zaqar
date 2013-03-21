@@ -158,33 +158,42 @@ class MessageBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def get(self, queue, tenant=None, message_id=None,
-            marker=None, echo=False, client_uuid=None):
+    def list(self, queue, tenant=None, marker=None,
+             limit=10, echo=False, client_uuid=None):
         """
-        Base message get method
-
-        This method is responsible for querying messages
-        and should be capable of retrieving a single
-        message based on message_id or multiple messages
-        based on the other parameters being passed.
+        Base message list method
 
         :param queue: Name of the queue to get the
             message from.
         :param tenant: Tenant id
-        :param message: Message ID
         :param marker: Tail identifier
+        :param limit: (Default 10) specifies up to 100
+            messages to return.
         :param echo: (Default False) Boolean expressing whether
             or not this client should receive its own messages.
         :param client_uuid: Client's unique identifier. This param
             is required when echo=False.
 
-        :returns: List of messages
+        :returns: Iterator of messages
+        """
+        raise NotImplementedError
+
+    def get(self, queue, message_id, tenant=None):
+        """
+        Base message get method
+
+        :param queue: Name of the queue to get the
+            message from.
+        :param tenant: Tenant id
+        :param message_id: Message ID
+
+        :returns: Dictionary containing message data
         :raises: DoesNotExist
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def post(self, queue, messages, tenant=None):
+    def post(self, queue, messages, tenant=None, client_uuid=None):
         """
         Base message post method
 
@@ -196,6 +205,7 @@ class MessageBase(ControllerBase):
         :param messages: Messages to post to queue,
             it can be a list of 1 or more elements.
         :param tenant: Tenant id
+        :param client_uuid: Client's unique identifier.
 
         :returns: List of message ids
         """
