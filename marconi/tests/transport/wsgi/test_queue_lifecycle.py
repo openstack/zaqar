@@ -29,7 +29,7 @@ class TestCreateQueue(util.TestBase):
     def setUp(self):
         super(TestCreateQueue, self).setUp()
 
-        conf_file = self.conf_path('wsgi_reference.conf')
+        conf_file = self.conf_path('wsgi_sqlite.conf')
         boot = marconi.Bootstrap(conf_file)
 
         self.app = boot.transport.app

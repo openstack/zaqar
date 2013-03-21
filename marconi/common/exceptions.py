@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Import guard.  No module level import during the setup procedure.
-try:
-    __MARCONI_SETUP__  # NOQA
-except NameError:
-    import gettext
-    gettext.install("marconi", unicode=1)
-    from marconi.bootstrap import Bootstrap  # NOQA
-else:
-    import sys as _sys
-    _sys.stderr.write('Running from marconi source directory.\n')
-    del _sys
 
-import marconi.version
-
-__version__ = marconi.version.version_info.cached_version_string()
+class InvalidDriver(Exception):
+    pass
