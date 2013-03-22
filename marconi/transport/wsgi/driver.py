@@ -28,9 +28,16 @@ class Driver(transport.DriverBase):
                  claim_controller):
 
         queues = transport.wsgi.QueuesResource(queue_controller)
+        msg_collection = transport.wsgi.messages.CollectionResource(
+            message_controller)
+        msg_item = transport.wsgi.messages.ItemResource(message_controller)
 
         self.app = api = falcon.API()
         api.add_route('/v1/{tenant_id}/queues/{queue_name}', queues)
+        api.add_route('/v1/{tenant_id}/queues/{queue_name}'
+                      '/messages', msg_collection)
+        api.add_route('/v1/{tenant_id}/queues/{queue_name}'
+                      '/messages/{message_id}', msg_item)
 
     def listen(self):
         raise NotImplementedError

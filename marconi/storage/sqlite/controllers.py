@@ -182,18 +182,19 @@ class Message(base.MessageBase):
 
             unused = self.driver.get('''
                 select max(id) + 1 from Messages''')[0] or 1001
+            my = dict(newid=unused)
 
-            def it(newid):
+            def it():
                 for m in messages:
-                    yield (newid, qid, m['ttl'],
+                    yield (my['newid'], qid, m['ttl'],
                            self.driver.pack(m['body']), client_uuid)
-                    newid += 1
+                    my['newid'] += 1
 
             self.driver.run_multiple('''
                 insert into Messages
-                values (?, ?, ?, ?, ?, julianday() * 86400.0)''', it(unused))
+                values (?, ?, ?, ?, ?, julianday() * 86400.0)''', it())
 
-        return map(_msgid_encode, range(unused, unused + len(messages)))
+        return map(_msgid_encode, range(unused, my['newid']))
 
     def delete(self, queue, message_id, tenant, claim=None):
         try:
