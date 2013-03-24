@@ -84,6 +84,22 @@ class Driver(storage.DriverBase):
         except StopIteration:
             raise controllers._NoResult
 
+    @property
+    def affected(self):
+        """
+        Check whether a row is affected in
+        the last operation.
+        """
+        assert self.__db.rowcount in (0, 1)
+        return self.__db.rowcount == 1
+
+    @property
+    def lastrowid(self):
+        """
+        Get last inserted row id.
+        """
+        return self.__db.lastrowid
+
     @contextlib.contextmanager
     def __call__(self, isolation):
         self.run('begin ' + isolation)
@@ -104,4 +120,4 @@ class Driver(storage.DriverBase):
 
     @property
     def claim_controller(self):
-        return None
+        return controllers.Claim(self)

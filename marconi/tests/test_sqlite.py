@@ -30,6 +30,7 @@ class TestSqlite(testing.TestBase):
         self.queue_ctrl = storage.queue_controller
         self.queue_ctrl.upsert('fizbit', {'_message_ttl': 40}, '480924')
         self.msg_ctrl = storage.message_controller
+        self.claim_ctrl = storage.claim_controller
 
     def test_some_messages(self):
         doc = [
@@ -83,13 +84,44 @@ class TestSqlite(testing.TestBase):
 
         self.assertEquals(cnt, 4)
 
-        self.assertIn(
-            'body', self.msg_ctrl.get('fizbit', msgid, '480924'))
+        # can not delete a message with a wrong claim
+        meta, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
 
-        self.msg_ctrl.delete('fizbit', msgid, '480924')
+        with testtools.ExpectedException(exceptions.NotPermitted):
+            self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
+
+        self.msg_ctrl.get('fizbit', msgid, '480924')
+
+        # create a claim
+        meta, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
+
+        self.assertEquals(meta['ttl'], 10)
+        self.assertEquals(len(list(msgs)), 1)
+
+        # delete a message under a claim
+        self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
 
         with testtools.ExpectedException(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
+
+        meta, msgs = self.claim_ctrl.get('fizbit', meta['id'], '480924')
+
+        self.assertEquals(len(list(msgs)), 0)
+
+        # it's just fine to delete a non-existing message
+        self.msg_ctrl.delete('fizbit', msgid, '480924')
+
+        # claim expires
+        self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 0}, '480924')
+
+        with testtools.ExpectedException(exceptions.DoesNotExist):
+            self.claim_ctrl.get('fizbit', meta['id'], '480924')
+
+        # delete the claim
+        self.claim_ctrl.delete('fizbit', meta['id'], '480924')
+
+        with testtools.ExpectedException(exceptions.DoesNotExist):
+            self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 40}, '480924')
 
     def test_expired_messages(self):
         doc = [
@@ -123,7 +155,11 @@ class TestSqlite(testing.TestBase):
         with testtools.ExpectedException(exceptions.DoesNotExist):
             self.msg_ctrl.get('nonexistent', 'illformed', '480924')
 
-        self.msg_ctrl.delete('nonexistent', 'illformed', '480924')
+        self.claim_ctrl.delete('nonexistent', 'illformed', '480924')
+
+        with testtools.ExpectedException(exceptions.DoesNotExist):
+            self.claim_ctrl.update('nonexistent', 'illformed',
+                                   {'ttl': 40}, '480924')
 
     def tearDown(self):
         self.queue_ctrl.delete('fizbit', '480924')

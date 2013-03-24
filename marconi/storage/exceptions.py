@@ -16,3 +16,7 @@
 
 class DoesNotExist(Exception):
     pass
+
+
+class NotPermitted(Exception):
+    pass

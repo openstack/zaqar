@@ -152,9 +152,9 @@ class Message(base.MessageBase):
                      limit ?'''
                 args += [limit]
 
-                iter = self.driver.run(sql, *args)
+                records = self.driver.run(sql, *args)
 
-                for id, content, ttl, age in iter:
+                for id, content, ttl, age in records:
                     yield {
                         'id': _msgid_encode(id),
                         'ttl': ttl,
@@ -198,15 +198,167 @@ class Message(base.MessageBase):
 
     def delete(self, queue, message_id, tenant, claim=None):
         try:
-            self.driver.run('''
+            sql = '''
                 delete from Messages
                  where id = ?
                    and qid = (select id from Queues
+                               where tenant = ? and name = ?)'''
+            args = [_msgid_decode(message_id), tenant, queue]
+
+            if claim:
+                sql += '''
+                   and id in (select msgid
+                                from Claims join Locked
+                                  on id = cid
+                               where ttl > julianday() * 86400.0 - created
+                                 and id = ?)'''
+                args += [_cid_decode(claim)]
+
+            self.driver.run(sql, *args)
+
+            if not self.driver.affected:
+                raise _BadID
+
+        except _BadID:
+            #TODO(zyuan): use exception itself to format this
+            if claim:
+                msg = (_("Attempt to delete message %(id)s "
+                         "with a wrong claim")
+                       % dict(id=message_id))
+
+                raise exceptions.NotPermitted(msg)
+
+
+class Claim(base.ClaimBase):
+    def __init__(self, driver):
+        self.driver = driver
+        self.driver.run('''
+            create table
+            if not exists
+            Claims (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                qid INTEGER,
+                ttl INTEGER,
+                created DATETIME,  -- seconds since the Julian day
+                FOREIGN KEY(qid) references Queues(id) on delete cascade
+            )
+        ''')
+        self.driver.run('''
+            create table
+            if not exists
+            Locked (
+                cid INTEGER,
+                msgid INTEGER,
+                FOREIGN KEY(cid) references Claims(id) on delete cascade,
+                FOREIGN KEY(msgid) references Messages(id) on delete cascade
+            )
+        ''')
+
+    def get(self, queue, claim_id, tenant):
+        with self.driver('deferred'):
+            try:
+                id, ttl, age = self.driver.get('''
+                    select C.id, C.ttl, julianday() * 86400.0 - C.created
+                      from Queues as Q join Claims as C
+                        on Q.id = C.qid
+                     where C.ttl > julianday() * 86400.0 - C.created
+                       and C.id = ? and tenant = ? and name = ?
+                ''', _cid_decode(claim_id), tenant, queue)
+
+                return (
+                    {
+                        'id': claim_id,
+                        'ttl': ttl,
+                        'age': int(age),
+                    },
+                    self.__get(id)
+                )
+
+            except (_NoResult, _BadID):
+                _claim_doesnotexist(claim_id)
+
+    def create(self, queue, metadata, tenant, limit=10):
+        with self.driver('immediate'):
+            qid = _get_qid(self.driver, queue, tenant)
+
+            # cleanup all expired claims in this queue
+
+            self.driver.run('''
+                delete from Claims
+                 where ttl <= julianday() * 86400.0 - created
+                   and qid = ?''', qid)
+
+            self.driver.run('''
+                insert into Claims
+                values (null, ?, ?, julianday() * 86400.0)
+            ''', qid, metadata['ttl'])
+
+            id = self.driver.lastrowid
+
+            self.driver.run('''
+                insert into Locked
+                select last_insert_rowid(), id
+                  from Messages left join Locked
+                    on id = msgid
+                 where msgid is null
+                   and qid = ?
+                 limit ?''', qid, limit)
+
+            return (
+                {
+                    'id': _cid_encode(id),
+                    'ttl': metadata['ttl'],
+                    'age': 0,
+                },
+                self.__get(id)
+            )
+
+    def __get(self, cid):
+        records = self.driver.run('''
+            select id, content, ttl, julianday() * 86400.0 - created
+              from Messages join Locked
+                on msgid = id
+             where ttl > julianday() * 86400.0 - created
+               and cid = ?''', cid)
+
+        for id, content, ttl, age in records:
+            yield {
+                'id': _msgid_encode(id),
+                'ttl': ttl,
+                'age': int(age),
+                'body': content,
+            }
+
+    def update(self, queue, claim_id, metadata, tenant):
+        try:
+            self.driver.run('''
+                update Claims
+                   set ttl = ?
+                 where id = ?
+                   and qid = (select id from Queues
                                where tenant = ? and name = ?)
-            ''', _msgid_decode(message_id), tenant, queue)
+            ''', metadata['ttl'], _cid_decode(claim_id), tenant, queue)
+
+            if not self.driver.affected:
+                _claim_doesnotexist(claim_id)
+
+        except _BadID:
+            _claim_doesnotexist(claim_id)
+
+    def delete(self, queue, claim_id, tenant):
+        try:
+            self.driver.run('''
+                delete from Claims
+                 where id = ?
+                   and qid = (select id from Queues
+                               where tenant = ? and name = ?)
+            ''', _cid_decode(claim_id), tenant, queue)
 
         except _BadID:
             pass
+
+    def stats(self, queue, claim_id, tenant=None):
+        raise NotImplementedError
 
 
 class _NoResult(Exception):
@@ -226,6 +378,13 @@ def _queue_doesnotexist(name, tenant):
 
 def _msg_doesnotexist(id):
     msg = (_("Message %(id)s does not exist")
+           % dict(id=id))
+
+    raise exceptions.DoesNotExist(msg)
+
+
+def _claim_doesnotexist(id):
+    msg = (_("Claim %(id)s does not exist")
            % dict(id=id))
 
     raise exceptions.DoesNotExist(msg)
@@ -268,6 +427,18 @@ def _marker_encode(id):
 def _marker_decode(id):
     try:
         return int(id, 8) ^ 0x3c96a355
+
+    except ValueError:
+        raise _BadID
+
+
+def _cid_encode(id):
+    return hex(id ^ 0x63c9a59c)[2:]
+
+
+def _cid_decode(id):
+    try:
+        return int(id, 16) ^ 0x63c9a59c
 
     except ValueError:
         raise _BadID
