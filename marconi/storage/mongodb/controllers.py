@@ -82,7 +82,7 @@ class QueueController(storage.QueueBase):
         self._col.remove({"t": tenant, "n": name})
 
     def stats(self, name, tenant=None):
-        pass
+        raise NotImplementedError
 
     def actions(self, name, tenant=None, marker=None, limit=10):
-        pass
+        raise NotImplementedError

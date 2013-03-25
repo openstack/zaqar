@@ -52,6 +52,12 @@ class TestSqlite(testing.TestBase):
             self.queue_ctrl.stats('fizbit', '480924')['messages'], 11)
 
         msgs = list(self.msg_ctrl.list('fizbit', '480924',
+                                       echo=True,
+                                       limit=20))
+
+        self.assertEquals(len(msgs), 11)
+
+        msgs = list(self.msg_ctrl.list('fizbit', '480924',
                                        client_uuid='30387f00'))
 
         self.assertEquals(len(msgs), 1)

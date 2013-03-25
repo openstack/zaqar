@@ -1,6 +1,8 @@
 [run]
 branch = True
-omit = /usr*,setup.py,*egg*,.venv/*,.tox/*,marconi/tests/*
+omit = *marconi/openstack*
 
 [report]
-ignore-errors = True
+exclude_lines =
+    if __MARCONI_SETUP__:
+    raise NotImplementedError

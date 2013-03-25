@@ -18,7 +18,7 @@
 import setuptools
 
 import __builtin__
-__builtin__.__MARCONI_SETUP__ = None
+__builtin__.__MARCONI_SETUP__ = True
 from marconi.openstack.common import setup as common_setup
 
 requires = common_setup.parse_requirements()

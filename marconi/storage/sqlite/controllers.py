@@ -86,7 +86,7 @@ class Queue(base.QueueBase):
         }
 
     def actions(self, name, tenant, marker=None, limit=10):
-        pass
+        raise NotImplementedError
 
 
 class Message(base.MessageBase):

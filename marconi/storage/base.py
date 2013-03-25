@@ -32,21 +32,21 @@ class DriverBase:
         """
         Returns storage's queues controller
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractproperty
     def message_controller(self):
         """
         Returns storage's messages controller
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractproperty
     def claim_controller(self):
         """
         Returns storage's claims controller
         """
-        pass
+        raise NotImplementedError
 
 
 class ControllerBase(object):
@@ -83,7 +83,7 @@ class QueueBase(ControllerBase):
 
         :returns: List of queues
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get(self, name, tenant=None):
@@ -96,7 +96,7 @@ class QueueBase(ControllerBase):
         :returns: Dictionary containing queue metadata
         :raises: DoesNotExist
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def upsert(self, name, metadata, tenant=None):
@@ -121,7 +121,7 @@ class QueueBase(ControllerBase):
         :param name: The queue name
         :param tenant: Tenant id
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def stats(self, name, tenant=None):
@@ -133,7 +133,7 @@ class QueueBase(ControllerBase):
         :returns: Dictionary with the
             queue stats
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def actions(self, name, tenant=None, marker=None, limit=10):
@@ -146,7 +146,7 @@ class QueueBase(ControllerBase):
         :param limit: (Default 10) Max number
             of messages to retrieve.
         """
-        pass
+        raise NotImplementedError
 
 
 class MessageBase(ControllerBase):
@@ -181,7 +181,7 @@ class MessageBase(ControllerBase):
         :returns: List of messages
         :raises: DoesNotExist
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def post(self, queue, messages, tenant=None):
@@ -199,7 +199,7 @@ class MessageBase(ControllerBase):
 
         :returns: List of message ids
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, queue, message_id, tenant=None, claim=None):
@@ -215,7 +215,7 @@ class MessageBase(ControllerBase):
             be valid and message_id must belong to
             it.
         """
-        pass
+        raise NotImplementedError
 
 
 class ClaimBase(ControllerBase):
@@ -236,7 +236,7 @@ class ClaimBase(ControllerBase):
             metadata and claimed messages.
         :raises: DoesNotExist
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def create(self, queue, tenant=None, ttl=MIN_TTL, limit=10):
@@ -254,7 +254,7 @@ class ClaimBase(ControllerBase):
         :returns: Dictionary containing claim's
             metadata and claimed messages.
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def update(self, queue, claim_id, tenant=None, **metadata):
@@ -268,7 +268,7 @@ class ClaimBase(ControllerBase):
         :param metadata: Claim's parameters
             to be updated.
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, queue, claim_id, tenant=None):
@@ -280,7 +280,7 @@ class ClaimBase(ControllerBase):
         :param claim_id: Claim to be deleted
         :param tenant: Tenant id
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def stats(self, queue, claim_id, tenant=None):
@@ -294,4 +294,4 @@ class ClaimBase(ControllerBase):
         :returns: Dictionary with the
             queue stats
         """
-        pass
+        raise NotImplementedError

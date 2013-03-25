@@ -15,15 +15,14 @@
 
 # Import guard.  No module level import during the setup procedure.
 try:
-    __MARCONI_SETUP__  # NOQA
+    if __MARCONI_SETUP__:
+        import sys as _sys
+        _sys.stderr.write('Running from marconi source directory.\n')
+        del _sys
 except NameError:
     import gettext
     gettext.install("marconi", unicode=1)
     from marconi.bootstrap import Bootstrap  # NOQA
-else:
-    import sys as _sys
-    _sys.stderr.write('Running from marconi source directory.\n')
-    del _sys
 
 import marconi.version
 

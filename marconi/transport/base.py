@@ -27,4 +27,4 @@ class DriverBase:
         Called to start listening for client requests when Marconi is
         ran in self-hosting mode.
         """
-        pass
+        raise NotImplementedError

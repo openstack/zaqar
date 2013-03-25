@@ -33,4 +33,4 @@ class Driver(transport.DriverBase):
         api.add_route('/v1/{tenant_id}/queues/{queue_name}', queues)
 
     def listen(self):
-        pass
+        raise NotImplementedError
