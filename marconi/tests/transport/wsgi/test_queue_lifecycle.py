@@ -10,30 +10,23 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied.
+#
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
 import json
+import os
 
 import falcon
 from falcon import testing
-from testtools import matchers
 
-import marconi
-from marconi.tests import util
+from marconi.tests.transport.wsgi import base
 from marconi import transport
 
 
-class TestCreateQueue(util.TestBase):
+class QueueLifecycleBaseTest(base.TestBase):
 
-    def setUp(self):
-        super(TestCreateQueue, self).setUp()
-
-        conf_file = self.conf_path('wsgi_sqlite.conf')
-        boot = marconi.Bootstrap(conf_file)
-
-        self.app = boot.transport.app
-        self.srmock = testing.StartResponseMock()
+    config_filename = None
 
     def test_simple(self):
         doc = '{"messages": {"ttl": 600}}'
@@ -44,7 +37,7 @@ class TestCreateQueue(util.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         location = ('Location', '/v1/480924/queues/gumshoe')
-        self.assertThat(self.srmock.headers, matchers.Contains(location))
+        self.assertIn(location, self.srmock.headers)
 
         env = testing.create_environ('/v1/480924/queues/gumshoe')
         result = self.app(env, self.srmock)
@@ -116,3 +109,45 @@ class TestCreateQueue(util.TestBase):
         result = self.app(env, self.srmock)
         result_doc = json.loads(result[0])
         self.assertEquals(result_doc, json.loads(doc2))
+
+
+class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
+
+    config_filename = 'wsgi_mongodb.conf'
+
+    def setUp(self):
+        if not os.environ.get("MONGODB_TEST_LIVE"):
+            self.skipTest("No MongoDB instance running")
+
+        super(QueueLifecycleMongoDBTests, self).setUp()
+
+
+class QueueLifecycleSQLiteTests(QueueLifecycleBaseTest):
+
+    config_filename = 'wsgi_sqlite.conf'
+
+
+class QueueFaultyDriverTests(base.TestBase):
+
+    config_filename = 'wsgi_faulty.conf'
+
+    def test_simple(self):
+        doc = '{"messages": {"ttl": 600}}'
+        env = testing.create_environ('/v1/480924/queues/gumshoe',
+                                     method="PUT", body=doc)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        location = ('Location', '/v1/480924/queues/gumshoe')
+        self.assertNotIn(location, self.srmock.headers)
+
+        env = testing.create_environ('/v1/480924/queues/gumshoe')
+        result = self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertNotEquals(result, [doc])
+
+    def test_bad_document(self):
+        env = testing.create_environ('/v1/480924/queues/bad-doc')
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)

@@ -14,10 +14,14 @@
 # limitations under the License.
 
 import json
+import logging
 
 import falcon
 
 from marconi import transport
+
+
+LOG = logging.getLogger(__name__)
 
 
 class QueuesResource(object):
@@ -39,12 +43,33 @@ class QueuesResource(object):
         #TODO(kgriffs): check for malformed JSON, must be a hash at top level
         meta = json.load(req.stream)
 
-        #TODO(kgriffs): catch other kinds of exceptions
-        created = self.queue_ctrl.upsert(queue_name, meta, tenant=tenant_id)
+        try:
+            created = self.queue_ctrl.upsert(queue_name, meta,
+                                             tenant=tenant_id)
+        except Exception as ex:
+            LOG.error(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
     def on_get(self, req, resp, tenant_id, queue_name):
-        doc = self.queue_ctrl.get(queue_name, tenant=tenant_id)
-        resp.body = json.dumps(doc)
+        try:
+            doc = self.queue_ctrl.get(queue_name, tenant=tenant_id)
+        except Exception as ex:
+            LOG.error(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+
+        try:
+            resp.body = json.dumps(doc)
+        except TypeError as ex:
+            LOG.error(ex)
+
+            #TODO(kgriffs): Improve these messages
+            title = _('Invalid queue metatada')
+            msg = _('The queue metadata could not be read.')
+            raise falcon.HTTPInternalServerError(title, msg)
