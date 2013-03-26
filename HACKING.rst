@@ -8,11 +8,50 @@ Marconi Style Commandments
 
 General
 -------
-- Put two newlines between top-level code (funcs, classes, etc)
-- Put one newline between methods in classes and anywhere else
-- Do not write "except:", use "except Exception:" at the very least
-- Include your name with TODOs as in "#TODO(termie)"
-- Do not name anything the same name as a built-in or reserved word
+- Optimize for readability; whitespace is your friend.
+- Put two newlines between top-level code (funcs, classes, etc.)
+- Put one newline between methods in classes and anywhere else.
+- Use blank lines to group related logic.
+- Do not write "except:", use "except Exception:" at the very least.
+- Include your name with TODOs as in "#TODO(termie)".
+- All classes must inherit from "object" (explicitly).
+
+Identifiers
+-----------
+- Do not give anything the same name as a built-in or reserved word.
+- Don't use single characters in identifiers except in trivial loop variables and mathematical algorithms.
+- Avoid abbreviations, especially if they are ambiguous or their meaning would not be immediately clear to the casual reader or newcomer.
+
+Wrapping
+--------
+Wrap long lines by using Python's implied line continuation inside
+parentheses, brackets and braces. Make sure to indent the continued
+line appropriately. The preferred place to break around a binary
+operator is after the operator, not before it.
+
+Example::
+
+  class Rectangle(Blob):
+
+      def __init__(self, width, height,
+                   color='black', emphasis=None, highlight=0):
+
+          # More indentation included to distinguish this from the rest.
+          if (width == 0 and height == 0 and
+                  color == 'red' and emphasis == 'strong' or
+                  highlight > 100):
+              raise ValueError('sorry, you lose')
+
+          if width == 0 and height == 0 and (color == 'red' or
+                                             emphasis is None):
+              raise ValueError("I don't think so -- values are %s, %s" %
+                               (width, height))
+
+          msg = ('this is a very long string that goes on and on and on and'
+                 'on and on and on...')
+
+          super(Rectangle, self).__init__(width, height,
+                                          color, emphasis, highlight)
 
 
 Imports
@@ -54,11 +93,11 @@ More Import Examples
 
 **INCORRECT** ::
 
-    import marconi.transport.wsgi as wsgi
+  import marconi.transport.wsgi as wsgi
 
 **CORRECT** ::
 
-    from marconi.transport import wsgi
+  from marconi.transport import wsgi
 
 Docstrings
 ----------
