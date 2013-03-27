@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 import falcon
 
 from marconi.storage import exceptions
+from marconi.transport import helpers
 
 
 class CollectionResource(object):
@@ -37,17 +36,17 @@ class CollectionResource(object):
         def filtered(ls):
             try:
                 if len(ls) < 1:
-                    raise _MalformedJSON
+                    raise helpers.MalformedJSON
 
                 for m in ls:
                     #TODO(zyuan): verify the TTL values
                     yield {'ttl': m['ttl'], 'body': m['body']}
 
             except Exception:
-                raise _MalformedJSON
+                raise helpers.MalformedJSON
 
         try:
-            ls = filtered(_read_json(req.stream))
+            ls = filtered(helpers.read_json(req.stream))
             ns = self.msg_ctrl.post(queue_name,
                                     messages=ls,
                                     tenant=tenant_id,
@@ -57,7 +56,7 @@ class CollectionResource(object):
                 [n.encode('utf-8') for n in ns])
             resp.status = falcon.HTTP_201
 
-        except _MalformedJSON:
+        except helpers.MalformedJSON:
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Malformed messages.'))
 
@@ -97,12 +96,12 @@ class CollectionResource(object):
             resp_dict['links'] = [
                 {
                     'rel': 'next',
-                    'href': req.path + '?' + _join_params(kwargs)
+                    'href': req.path + '?' + helpers.join_params(kwargs)
                 }
             ]
 
             resp.content_location = req.path + '?' + req.query_string
-            resp.body = json.dumps(resp_dict, ensure_ascii=False)
+            resp.body = helpers.to_json(resp_dict)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_204
@@ -122,32 +121,20 @@ class ItemResource(object):
                                     tenant=tenant_id)
 
             resp.content_location = req.path
-            resp.body = json.dumps(msg, ensure_ascii=False)
+            resp.body = helpers.to_json(msg)
             resp.status = falcon.HTTP_200
 
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
     def on_delete(self, req, resp, tenant_id, queue_name, message_id):
-        #TODO(zyuan): claim support
-        self.msg_ctrl.delete(queue_name,
-                             message_id=message_id,
-                             tenant=tenant_id)
+        try:
+            self.msg_ctrl.delete(queue_name,
+                                 message_id=message_id,
+                                 tenant=tenant_id,
+                                 claim=req.get_param('claim_id'))
 
-        resp.status = falcon.HTTP_204
+            resp.status = falcon.HTTP_204
 
-
-class _MalformedJSON(Exception):
-    pass
-
-
-def _read_json(stream):
-    try:
-        return json.load(stream)
-
-    except Exception:
-        raise _MalformedJSON
-
-
-def _join_params(d):
-    return '&'.join([k + '=' + str(v).lower() for k, v in d.items()])
+        except exceptions.NotPermitted:
+            resp.status = falcon.HTTP_403
