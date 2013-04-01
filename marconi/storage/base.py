@@ -249,15 +249,15 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, queue, tenant=None, ttl=MIN_TTL, limit=10):
+    def create(self, queue, metadata, tenant=None, limit=10):
         """
         Base claim create method
 
         :param queue: Name of the queue this
             claim belongs to.
+        :param metadata: Claim's parameters
+            to be stored.
         :param tenant: Tenant id
-        :param ttl: Number of seconds the server
-            will keep this claim in this queue.
         :param limit: (Default 10) Max number
             of messages to claim.
 
@@ -267,16 +267,16 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, queue, claim_id, tenant=None, **metadata):
+    def update(self, queue, claim_id, metadata, tenant=None):
         """
         Base claim update method
 
         :param queue: Name of the queue this
             claim belongs to.
         :param claim_id: Claim to be updated
-        :param tenant: Tenant id
         :param metadata: Claim's parameters
             to be updated.
+        :param tenant: Tenant id
         """
         raise NotImplementedError
 
