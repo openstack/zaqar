@@ -22,17 +22,40 @@ A config variable `foo` is a read-only property accessible through
 
 , where `cfg` is either a global configuration accessible through
 
-    cfg = config.project('marconi').from_options(foo=("bar", "usage"), ...)
+    cfg = config.project('marconi').from_options(
+        foo=("bar", "usage"),
+        ...)
 
 , or a local configuration associated with a namespace
 
-    cfg = config.namespace('drivers:transport:wsgi').from_options(port=80, ...)
+    cfg = config.namespace('drivers:transport:wsgi').from_options(
+        port=80,
+        ...)
 
 The `from_options` call accepts a list of option definition, where each
 option is represented as a keyword argument, in the form of either
 `name=default` or `name=(default, description)`, where `name` is the
 name of the option in a valid Python identifier, and `default` is the
 default value of that option.
+
+Configurations can be read from an INI file, where the global options
+are under the `[DEFAULT]` section, and the local options are under the
+sections named by their associated namespaces.
+
+To load the configurations from a file:
+
+    cfg_handle = config.project('marconi')
+    cfg_handle.load("/path/to/example.conf")
+
+A call to `.load` without an argument looks up for the default ones:
+
+    ~/.marconi/marconi.conf
+    /etc/marconi/marconi.conf
+
+The global config variables, if any, can also be read from the command
+line arguments by saving them before a `.load` call:
+
+    cfg_handle.set_cli(sys.argv[1:])
 """
 
 from oslo.config import cfg
@@ -121,11 +144,11 @@ def _init():
 
             If the file name is not supplied, look for
 
-                /etc/%project/%project.conf
+                ~/.%project/%project.conf
 
                 and
 
-                ~/.%project/%project.conf
+                /etc/%project/%project.conf
 
             :param config_file: the name of an alternative config file
             """
@@ -156,11 +179,10 @@ namespace, project = _init()
 
 def _make_opt(name, default):
     """
-    Create an oslo-config option with the type deduce from the %default
+    Create an oslo.config option with the type deduce from the %default
     value of an option %name.
 
-    A default value of None is deduced to StrOpt; MultiStrOpt is not
-    supported.
+    A default value of None is deduced to Opt.  MultiStrOpt is not supported.
 
     :param name: the name of the option in a valid Python identifier
     :param default: the default value of the option, or (default, description)
@@ -182,7 +204,7 @@ def _make_opt(name, default):
         help = None
 
     if default is None:
-        return cfg.StrOpt(name, help=help)
+        return cfg.Opt(name, help=help)
 
     try:
         return deduction[type(default)](name, help=help, default=default)
