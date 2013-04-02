@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 
 import falcon
 
 from marconi import transport
+from marconi.transport import helpers
 
 
 LOG = logging.getLogger(__name__)
@@ -40,12 +40,15 @@ class ItemResource(object):
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Missing queue metadata.'))
 
-        #TODO(kgriffs): check for malformed JSON, must be a hash at top level
-        meta = json.load(req.stream)
-
         try:
-            created = self.queue_ctrl.upsert(queue_name, meta,
+            metadata = _filtered(helpers.read_json(req.stream))
+            created = self.queue_ctrl.upsert(queue_name,
+                                             metadata=metadata,
                                              tenant=tenant_id)
+        except helpers.MalformedJSON:
+            raise falcon.HTTPBadRequest(_('Bad request'),
+                                        _('Malformed queue metadata.'))
+
         except Exception as ex:
             LOG.error(ex)
             title = _('Service temporarily unavailable')
@@ -57,7 +60,8 @@ class ItemResource(object):
 
     def on_get(self, req, resp, tenant_id, queue_name):
         try:
-            doc = self.queue_ctrl.get(queue_name, tenant=tenant_id)
+            doc = self.queue_ctrl.get(queue_name,
+                                      tenant=tenant_id)
         except Exception as ex:
             LOG.error(ex)
             title = _('Service temporarily unavailable')
@@ -65,7 +69,8 @@ class ItemResource(object):
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
         try:
-            resp.body = json.dumps(doc)
+            resp.content_location = req.path
+            resp.body = helpers.to_json(doc)
         except TypeError as ex:
             LOG.error(ex)
 
@@ -73,3 +78,11 @@ class ItemResource(object):
             title = _('Invalid queue metatada')
             msg = _('The queue metadata could not be read.')
             raise falcon.HTTPInternalServerError(title, msg)
+
+
+def _filtered(obj):
+    #TODO(zyuan): remove this check once we have a reserved field
+    if type(obj) is not dict:
+        raise helpers.MalformedJSON
+
+    return obj

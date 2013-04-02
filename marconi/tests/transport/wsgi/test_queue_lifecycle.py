@@ -52,6 +52,21 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+    def test_bad_metadata(self):
+        env = testing.create_environ('/v1/480924/queues/fizbat',
+                                     body="{",
+                                     method="PUT")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        env = testing.create_environ('/v1/480924/queues/fizbat',
+                                     body="[]",
+                                     method="PUT")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_too_much_metadata(self):
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2) + 1
@@ -110,7 +125,10 @@ class QueueLifecycleBaseTest(base.TestBase):
         env = testing.create_environ('/v1/480924/queues/xyz')
         result = self.app(env, self.srmock)
         result_doc = json.loads(result[0])
+
         self.assertEquals(result_doc, json.loads(doc2))
+        self.assertEquals(self.srmock.headers_dict['Content-Location'],
+                          env['PATH_INFO'])
 
 
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
