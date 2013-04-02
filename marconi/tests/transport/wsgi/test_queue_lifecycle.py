@@ -145,6 +145,41 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           env['PATH_INFO'])
 
+    def test_list(self):
+        # List empty
+        env = testing.create_environ('/v1/480924/queues')
+
+        result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
+        self.assertEquals(result_doc['queues'], [])
+
+        # Create some
+        env = testing.create_environ('/v1/480924/queues/q1',
+                                     method="PUT",
+                                     body='{ "_ttl": 30 }')
+        self.app(env, self.srmock)
+
+        env = testing.create_environ('/v1/480924/queues/q2',
+                                     method="PUT",
+                                     body='{}')
+        self.app(env, self.srmock)
+
+        # List
+        env = testing.create_environ('/v1/480924/queues')
+
+        result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(self.srmock.headers_dict['Content-Location'],
+                          env['PATH_INFO'])
+
+        for queue in result_doc['queues']:
+            env = testing.create_environ('/v1/480924/queues/' + queue['name'])
+            result = self.app(env, self.srmock)
+            result_doc = json.loads(result[0])
+            self.assertEquals(result_doc, queue['metadata'])
+
 
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
 

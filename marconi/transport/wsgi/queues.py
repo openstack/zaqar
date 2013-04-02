@@ -90,6 +90,24 @@ class ItemResource(object):
         resp.status = falcon.HTTP_204
 
 
+class CollectionResource(object):
+
+    __slots__ = ('queue_ctrl')
+
+    def __init__(self, queue_controller):
+        self.queue_ctrl = queue_controller
+
+    def on_get(self, req, resp, tenant_id):
+        resp_dict = {}
+        queues = self.queue_ctrl.list(tenant_id)
+
+        resp_dict['queues'] = list(queues)
+
+        resp.content_location = req.path
+        resp.body = helpers.to_json(resp_dict)
+        resp.status = falcon.HTTP_200
+
+
 def _filtered(obj):
     #TODO(zyuan): remove this check once we have a reserved field
     if type(obj) is not dict:
