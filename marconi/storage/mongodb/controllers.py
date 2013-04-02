@@ -90,7 +90,6 @@ class QueueController(storage.QueueBase):
         return not rst["updatedExisting"]
 
     def delete(self, name, tenant=None):
-        super(QueueController, self).delete(name, tenant)
         self._col.remove({"t": tenant, "n": name})
 
     def stats(self, name, tenant=None):
