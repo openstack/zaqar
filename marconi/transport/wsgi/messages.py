@@ -101,7 +101,7 @@ class CollectionResource(object):
                 }
             ]
 
-            resp.location = req.path + '?' + req.query_string
+            resp.content_location = req.path + '?' + req.query_string
             resp.body = json.dumps(resp_dict, ensure_ascii=False)
             resp.status = falcon.HTTP_200
         else:
@@ -121,7 +121,7 @@ class ItemResource(object):
                                     message_id=message_id,
                                     tenant=tenant_id)
 
-            resp.location = req.path + '/' + msg['id']
+            resp.content_location = req.path
             resp.body = json.dumps(msg, ensure_ascii=False)
             resp.status = falcon.HTTP_200
 

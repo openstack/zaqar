@@ -71,6 +71,8 @@ class TestMessages(util.TestBase):
 
             body = self.app(env, self.srmock)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertEquals(self.srmock.headers_dict['Content-Location'],
+                              env['PATH_INFO'])
 
             msg = json.loads(body[0])
             self.assertEquals(msg['body'], lookup[msg['ttl']])
@@ -132,6 +134,8 @@ class TestMessages(util.TestBase):
                                      headers=self.headers)
 
         body = self.app(env, self.srmock)
+        self.assertEquals(self.srmock.headers_dict['Content-Location'],
+                          env['PATH_INFO'] + '?' + env['QUERY_STRING'])
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
