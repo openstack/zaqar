@@ -17,6 +17,7 @@ import logging
 
 import falcon
 
+from marconi.storage import exceptions
 from marconi import transport
 from marconi.transport import helpers
 
@@ -62,6 +63,9 @@ class ItemResource(object):
         try:
             doc = self.queue_ctrl.get(queue_name,
                                       tenant=tenant_id)
+        except exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound
+
         except Exception as ex:
             LOG.error(ex)
             title = _('Service temporarily unavailable')
@@ -78,6 +82,12 @@ class ItemResource(object):
             title = _('Invalid queue metatada')
             msg = _('The queue metadata could not be read.')
             raise falcon.HTTPInternalServerError(title, msg)
+
+    def on_delete(self, req, resp, tenant_id, queue_name):
+        self.queue_ctrl.delete(queue_name,
+                               tenant=tenant_id)
+
+        resp.status = falcon.HTTP_204
 
 
 def _filtered(obj):

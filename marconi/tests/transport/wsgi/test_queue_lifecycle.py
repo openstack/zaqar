@@ -32,6 +32,8 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     def test_simple(self):
         doc = '{"messages": {"ttl": 600}}'
+
+        # Create
         env = testing.create_environ('/v1/480924/queues/gumshoe',
                                      method="PUT", body=doc)
 
@@ -45,6 +47,19 @@ class QueueLifecycleBaseTest(base.TestBase):
         result = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(result, [doc])
+
+        # Delete
+        env = testing.create_environ('/v1/480924/queues/gumshoe',
+                                     method="DELETE")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Get non-existing
+        env = testing.create_environ('/v1/480924/queues/gumshoe')
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_no_metadata(self):
         env = testing.create_environ('/v1/480924/queues/fizbat', method="PUT")
