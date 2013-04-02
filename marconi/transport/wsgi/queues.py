@@ -24,7 +24,7 @@ from marconi import transport
 LOG = logging.getLogger(__name__)
 
 
-class QueuesResource(object):
+class ItemResource(object):
 
     __slots__ = ('queue_ctrl')
 
