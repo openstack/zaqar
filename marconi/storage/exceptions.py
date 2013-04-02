@@ -20,3 +20,20 @@ class DoesNotExist(Exception):
 
 class NotPermitted(Exception):
     pass
+
+
+class QueueDoesNotExist(DoesNotExist):
+
+    def __init__(self, name, tenant):
+        msg = (_("Queue %(name)s does not exist for tenant %(tenant)s") %
+               dict(name=name, tenant=tenant))
+        super(QueueDoesNotExist, self).__init__(msg)
+
+
+class MessageDoesNotExist(DoesNotExist):
+
+    def __init__(self, mid, queue, tenant):
+        msg = (_("Message %(mid)s does not exist in "
+                 "queue %(queue)s of tenant %(tenant)s") %
+               dict(mid=mid, queue=queue, tenant=tenant))
+        super(MessageDoesNotExist, self).__init__(msg)

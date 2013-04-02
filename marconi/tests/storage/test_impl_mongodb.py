@@ -60,3 +60,26 @@ class MongodbQueueTests(base.QueueControllerTest):
         col = self.controller._col
         indexes = col.index_information()
         self.assertIn("t_1_n_1", indexes)
+
+
+class MongodbMessageTests(base.MessageControllerTest):
+
+    driver_class = mongodb.Driver
+    controller_class = controllers.MessageController
+
+    def setUp(self):
+        if not os.environ.get("MONGODB_TEST_LIVE"):
+            self.skipTest("No MongoDB instance running")
+
+        super(MongodbMessageTests, self).setUp()
+        self.load_conf("wsgi_mongodb.conf")
+
+    def tearDown(self):
+        self.controller._col.drop()
+        super(MongodbMessageTests, self).tearDown()
+
+    def test_indexes(self):
+        col = self.controller._col
+        indexes = col.index_information()
+        self.assertIn("q_1", indexes)
+        self.assertIn("e_-1", indexes)

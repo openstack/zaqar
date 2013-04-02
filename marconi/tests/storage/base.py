@@ -53,6 +53,7 @@ class QueueControllerTest(ControllerBaseTest):
 
         counter = 0
         for queue in queues:
+            self.assertEqual(len(queue), 2)
             self.assertIn("name", queue)
             self.assertIn("metadata", queue)
             counter += 1
@@ -101,18 +102,32 @@ class MessageControllerTest(ControllerBaseTest):
         super(MessageControllerTest, self).setUp()
 
         # Lets create a queue
-        self.queue_controller = self.driver.queue_controller()
-        self.queue_controller.create(self.queue_name)
+        self.queue_controller = self.driver.queue_controller
+        self.queue_controller.upsert(self.queue_name, {},
+                                     tenant=self.tenant)
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name)
         super(MessageControllerTest, self).tearDown()
+
+    def insert_fixtures(self, client_uuid=None, num=4):
+
+        def messages():
+            for n in xrange(num):
+                yield {
+                    "ttl": 60,
+                    "body": {
+                        "event": "Event number %s" % n
+                    }}
+        self.controller.post(self.queue_name, messages(),
+                             tenant=self.tenant, client_uuid=client_uuid)
 
     def test_message_lifecycle(self):
         queue_name = self.queue_name
 
         messages = [
             {
+                "ttl": 60,
                 "body": {
                     "event": "BackupStarted",
                     "backupId": "c378813c-3f0b-11e2-ad92-7823d2b0f3ce"
@@ -121,8 +136,8 @@ class MessageControllerTest(ControllerBaseTest):
         ]
 
         # Test Message Creation
-        created = self.controller.post(queue_name, messages,
-                                       tenant=self.tenant)
+        created = list(self.controller.post(queue_name, messages,
+                                            tenant=self.tenant))
         self.assertEqual(len(created), 1)
 
         # Test Message Get
@@ -134,4 +149,35 @@ class MessageControllerTest(ControllerBaseTest):
         # Test DoesNotExist
         self.assertRaises(storage.exceptions.DoesNotExist,
                           self.controller.get,
-                          queue_name, created[0], tenant=self.tenant)
+                          queue_name, message_id=created[0],
+                          tenant=self.tenant)
+
+    def test_qet_multi(self):
+        self.insert_fixtures(client_uuid="my_uuid", num=20)
+
+        def load_messages(expected, *args, **kwargs):
+            msgs = list(self.controller.list(*args, **kwargs))
+            self.assertEqual(len(msgs), expected)
+            return msgs
+
+        # Test all messages, echo False and no uuid
+        load_messages(10, self.queue_name, tenant=self.tenant)
+
+        # Test all messages, echo False and uuid
+        load_messages(0, self.queue_name, tenant=self.tenant,
+                      client_uuid="my_uuid")
+
+        # Test all messages and limit
+        load_messages(20, self.queue_name, tenant=self.tenant, limit=20)
+
+        # Test all messages, echo True, and uuid
+        msgs = load_messages(10, self.queue_name, echo=True,
+                             tenant=self.tenant, client_uuid="my_uuid")
+
+        # Test all messages, echo False, no uuid and marker
+        msgs = load_messages(10, self.queue_name, tenant=self.tenant,
+                             marker=msgs[4]["marker"])
+
+        # Test all messages, echo True, uuid and marker
+        load_messages(5, self.queue_name, echo=True, tenant=self.tenant,
+                      marker=msgs[9]["marker"], client_uuid="my_uuid")
