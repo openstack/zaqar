@@ -19,7 +19,9 @@ import os
 
 import falcon
 from falcon import testing
+import pymongo
 
+from marconi.common import config
 from marconi.tests.transport.wsgi import base
 from marconi import transport
 
@@ -118,8 +120,14 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
     def setUp(self):
         if not os.environ.get("MONGODB_TEST_LIVE"):
             self.skipTest("No MongoDB instance running")
-
         super(QueueLifecycleMongoDBTests, self).setUp()
+
+        self.cfg = config.namespace("drivers:storage:mongodb").from_options()
+
+    def tearDown(self):
+        conn = pymongo.MongoClient(self.cfg.uri)
+        conn.drop_database(self.cfg.database)
+        super(QueueLifecycleMongoDBTests, self).tearDown()
 
 
 class QueueLifecycleSQLiteTests(QueueLifecycleBaseTest):
