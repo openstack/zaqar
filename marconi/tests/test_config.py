@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testtools
-
 from marconi.common import config
 from marconi.tests import util as testing
 
@@ -38,5 +36,5 @@ class TestConfig(testing.TestBase):
 
     def test_wrong_type(self):
         ns = config.namespace('local')
-        with testtools.ExpectedException(config.cfg.Error):
+        with testing.expected(config.cfg.Error):
             ns.from_options(opt={})

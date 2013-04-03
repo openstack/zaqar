@@ -37,3 +37,12 @@ class MessageDoesNotExist(DoesNotExist):
                  "queue %(queue)s of tenant %(tenant)s") %
                dict(mid=mid, queue=queue, tenant=tenant))
         super(MessageDoesNotExist, self).__init__(msg)
+
+
+class ClaimDoesNotExist(DoesNotExist):
+
+    def __init__(self, cid, queue, tenant):
+        msg = (_("Claim %(cid)s does not exist in "
+                 "queue %(queue)s of tenant %(tenant)s") %
+               dict(cid=cid, queue=queue, tenant=tenant))
+        super(ClaimDoesNotExist, self).__init__(msg)

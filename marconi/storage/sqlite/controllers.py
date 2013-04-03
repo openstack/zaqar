@@ -49,7 +49,7 @@ class Queue(base.QueueBase):
                  where tenant = ? and name = ?''', tenant, name)[0]
 
         except _NoResult:
-            _queue_doesnotexist(name, tenant)
+            raise exceptions.QueueDoesNotExist(name, tenant)
 
     def upsert(self, name, metadata, tenant):
         with self.driver('immediate'):
@@ -78,7 +78,7 @@ class Queue(base.QueueBase):
              where tenant = ? and name = ?''', tenant, name)
 
         if qid is None:
-            _queue_doesnotexist(name, tenant)
+            raise exceptions.QueueDoesNotExist(name, tenant)
 
         return {
             'messages': messages,
@@ -125,7 +125,7 @@ class Message(base.MessageBase):
             }
 
         except (_NoResult, _BadID):
-            _msg_doesnotexist(message_id)
+            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
 
     def list(self, queue, tenant, marker=None,
              limit=10, echo=False, client_uuid=None):
@@ -275,7 +275,7 @@ class Claim(base.ClaimBase):
                 )
 
             except (_NoResult, _BadID):
-                _claim_doesnotexist(claim_id)
+                raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
 
     def create(self, queue, metadata, tenant, limit=10):
         with self.driver('immediate'):
@@ -340,10 +340,10 @@ class Claim(base.ClaimBase):
             ''', metadata['ttl'], _cid_decode(claim_id), tenant, queue)
 
             if not self.driver.affected:
-                _claim_doesnotexist(claim_id)
+                raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
 
         except _BadID:
-            _claim_doesnotexist(claim_id)
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
 
     def delete(self, queue, claim_id, tenant):
         try:
@@ -369,27 +369,6 @@ class _BadID(Exception):
     pass
 
 
-def _queue_doesnotexist(name, tenant):
-    msg = (_("Queue %(name)s does not exist for tenant %(tenant)s")
-           % dict(name=name, tenant=tenant))
-
-    raise exceptions.DoesNotExist(msg)
-
-
-def _msg_doesnotexist(id):
-    msg = (_("Message %(id)s does not exist")
-           % dict(id=id))
-
-    raise exceptions.DoesNotExist(msg)
-
-
-def _claim_doesnotexist(id):
-    msg = (_("Claim %(id)s does not exist")
-           % dict(id=id))
-
-    raise exceptions.DoesNotExist(msg)
-
-
 def _get_qid(driver, queue, tenant):
     try:
         return driver.get('''
@@ -397,7 +376,7 @@ def _get_qid(driver, queue, tenant):
              where tenant = ? and name = ?''', tenant, queue)[0]
 
     except _NoResult:
-        _queue_doesnotexist(queue, tenant)
+        raise exceptions.QueueDoesNotExist(queue, tenant)
 
 
 # The utilities below make the database IDs opaque to the users

@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testtools
-
 from marconi.storage import exceptions
 from marconi.storage import sqlite
 from marconi.tests import util as testing
@@ -87,7 +85,7 @@ class TestSqlite(testing.TestBase):
         # can not delete a message with a wrong claim
         meta, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
 
-        with testtools.ExpectedException(exceptions.NotPermitted):
+        with testing.expected(exceptions.NotPermitted):
             self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
 
         self.msg_ctrl.get('fizbit', msgid, '480924')
@@ -101,7 +99,7 @@ class TestSqlite(testing.TestBase):
         # delete a message under a claim
         self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
 
         meta, msgs = self.claim_ctrl.get('fizbit', meta['id'], '480924')
@@ -114,13 +112,13 @@ class TestSqlite(testing.TestBase):
         # claim expires
         self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 0}, '480924')
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.claim_ctrl.get('fizbit', meta['id'], '480924')
 
         # delete the claim
         self.claim_ctrl.delete('fizbit', meta['id'], '480924')
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 40}, '480924')
 
     def test_expired_messages(self):
@@ -131,19 +129,19 @@ class TestSqlite(testing.TestBase):
         msgid = self.msg_ctrl.post('fizbit', doc, '480924',
                                    client_uuid='unused')[0]
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
 
     def test_nonexsitent(self):
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.post('nonexistent', [], '480924',
                                client_uuid='30387f00')
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             for _ in self.msg_ctrl.list('nonexistent', '480924'):
                 pass
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.queue_ctrl.stats('nonexistent', '480924')
 
     #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
@@ -152,12 +150,12 @@ class TestSqlite(testing.TestBase):
         # SQlite-specific tests.  Since all IDs exposed in APIs are opaque,
         # any ill-formed IDs should be regarded as non-existing ones.
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('nonexistent', 'illformed', '480924')
 
         self.claim_ctrl.delete('nonexistent', 'illformed', '480924')
 
-        with testtools.ExpectedException(exceptions.DoesNotExist):
+        with testing.expected(exceptions.DoesNotExist):
             self.claim_ctrl.update('nonexistent', 'illformed',
                                    {'ttl': 40}, '480924')
 
