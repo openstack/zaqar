@@ -71,19 +71,17 @@ class Queue(base.QueueBase):
              where tenant = ? and name = ?''', tenant, name)
 
     def stats(self, name, tenant):
-        qid, messages = self.driver.get('''
-            select Q.id, count(M.id)
-              from Queues as Q join Messages as M
-                on qid = Q.id
-             where tenant = ? and name = ?''', tenant, name)
+        with self.driver('deferred'):
+            messages, = self.driver.get('''
+                select count(id)
+                  from Messages
+                 where ttl > julianday() * 86400.0 - created
+                   and qid = ?''', _get_qid(self.driver, name, tenant))
 
-        if qid is None:
-            raise exceptions.QueueDoesNotExist(name, tenant)
-
-        return {
-            'messages': messages,
-            'actions': 0,
-        }
+            return {
+                'messages': messages,
+                'actions': 0,
+            }
 
     def actions(self, name, tenant, marker=None, limit=10):
         raise NotImplementedError

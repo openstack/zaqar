@@ -47,8 +47,8 @@ class TestSqlite(testing.TestBase):
         msgid = self.msg_ctrl.post('fizbit', doc, '480924',
                                    client_uuid='79ed56f8')[0]
 
-        self.assertEquals(
-            self.queue_ctrl.stats('fizbit', '480924')['messages'], 11)
+        nmsgs = self.queue_ctrl.stats('fizbit', '480924')['messages']
+        self.assertEquals(nmsgs, 11)
 
         msgs = list(self.msg_ctrl.list('fizbit', '480924',
                                        echo=True,
@@ -130,6 +130,9 @@ class TestSqlite(testing.TestBase):
 
         with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
+
+        nmsgs = self.queue_ctrl.stats('fizbit', '480924')['messages']
+        self.assertEquals(nmsgs, 0)
 
     def test_nonexsitent(self):
         with testing.expected(exceptions.DoesNotExist):
