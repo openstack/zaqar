@@ -181,3 +181,86 @@ class MessageControllerTest(ControllerBaseTest):
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, tenant=self.tenant,
                       marker=msgs[9]["marker"], client_uuid="my_uuid")
+
+
+class ClaimControllerTest(ControllerBaseTest):
+    """
+    Claim Controller base tests
+
+    NOTE(flaper87): Implementations of this class should
+    override the tearDown method in order
+    to clean up storage's state.
+    """
+    queue_name = "test_queue"
+    controller_base_class = storage.ClaimBase
+
+    def setUp(self):
+        super(ClaimControllerTest, self).setUp()
+
+        # Lets create a queue
+        self.queue_controller = self.driver.queue_controller
+        self.message_controller = self.driver.message_controller
+        self.queue_controller.upsert(self.queue_name, {},
+                                     tenant=self.tenant)
+
+    def tearDown(self):
+        self.queue_controller.delete(self.queue_name)
+        super(ClaimControllerTest, self).tearDown()
+
+    def insert_fixtures(self, client_uuid=None, num=4):
+
+        def messages():
+            for n in xrange(num):
+                yield {
+                    "ttl": 60 + num,
+                    "body": {
+                        "event": "Event number %s" % n
+                    }}
+        self.message_controller.post(self.queue_name, messages(),
+                                     tenant=self.tenant,
+                                     client_uuid=client_uuid)
+
+    def test_claim_lifecycle(self):
+        self.insert_fixtures(client_uuid="my_uuid", num=20)
+
+        meta = {"ttl": 70}
+
+        # Make sure create works
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    tenant=self.tenant,
+                                                    limit=15)
+
+        messages = list(messages)
+        self.assertEquals(len(messages), 15)
+
+        # Make sure get works
+        claim, messages2 = self.controller.get(self.queue_name, claim_id,
+                                               tenant=self.tenant)
+
+        messages2 = list(messages2)
+        self.assertEquals(len(messages2), 15)
+        self.assertEquals(messages, messages2)
+        self.assertEquals(claim["ttl"], 70)
+        self.assertEquals(claim["id"], claim_id)
+
+        new_meta = {"ttl": 100}
+        self.controller.update(self.queue_name, claim_id,
+                               new_meta, tenant=self.tenant)
+
+        # Make sure update works
+        claim, messages2 = self.controller.get(self.queue_name, claim_id,
+                                               tenant=self.tenant)
+
+        messages2 = list(messages2)
+        self.assertEquals(len(messages2), 15)
+        self.assertEquals(messages, messages2)
+        self.assertEquals(claim["ttl"], 100)
+        self.assertEquals(claim["id"], claim_id)
+
+        # Make sure delete works
+        self.controller.delete(self.queue_name, claim_id,
+                               tenant=self.tenant)
+
+        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+                          self.controller.get, self.queue_name,
+                          claim_id, tenant=self.tenant)
