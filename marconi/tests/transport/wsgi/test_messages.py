@@ -150,6 +150,17 @@ class TestMessages(util.TestBase):
         self.assertEquals(cnt, 4)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
+        # Stats
+        env = testing.create_environ('/v1/480924/queues/fizbit/stats')
+
+        body = self.app(env, self.srmock)
+        countof = json.loads(body[0])
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(self.srmock.headers_dict['Content-Location'],
+                          env['PATH_INFO'])
+        self.assertEquals(countof['messages'], 10)
+
         env = testing.create_environ('/v1/480924/queues/nonexistent/messages',
                                      headers=self.headers)
 

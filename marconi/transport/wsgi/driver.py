@@ -31,6 +31,8 @@ class Driver(transport.DriverBase):
             queue_controller)
         queue_item = transport.wsgi.queues.ItemResource(queue_controller)
 
+        stats_endpoint = transport.wsgi.stats.Resource(queue_controller)
+
         msg_collection = transport.wsgi.messages.CollectionResource(
             message_controller)
         msg_item = transport.wsgi.messages.ItemResource(message_controller)
@@ -42,6 +44,8 @@ class Driver(transport.DriverBase):
         self.app = api = falcon.API()
         api.add_route('/v1/{tenant_id}/queues', queue_collection)
         api.add_route('/v1/{tenant_id}/queues/{queue_name}', queue_item)
+        api.add_route('/v1/{tenant_id}/queues/{queue_name}'
+                      '/stats', stats_endpoint)
         api.add_route('/v1/{tenant_id}/queues/{queue_name}'
                       '/messages', msg_collection)
         api.add_route('/v1/{tenant_id}/queues/{queue_name}'
