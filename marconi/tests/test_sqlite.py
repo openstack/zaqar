@@ -83,26 +83,25 @@ class TestSqlite(testing.TestBase):
         self.assertEquals(cnt, 4)
 
         # can not delete a message with a wrong claim
-        meta, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
+        cid, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
 
         with testing.expected(exceptions.NotPermitted):
-            self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
+            self.msg_ctrl.delete('fizbit', msgid, '480924', cid)
 
         self.msg_ctrl.get('fizbit', msgid, '480924')
 
         # create a claim
-        meta, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
+        cid, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
 
-        self.assertEquals(meta['ttl'], 10)
         self.assertEquals(len(list(msgs)), 1)
 
         # delete a message under a claim
-        self.msg_ctrl.delete('fizbit', msgid, '480924', meta['id'])
+        self.msg_ctrl.delete('fizbit', msgid, '480924', cid)
 
         with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
 
-        meta, msgs = self.claim_ctrl.get('fizbit', meta['id'], '480924')
+        meta, msgs = self.claim_ctrl.get('fizbit', cid, '480924')
 
         self.assertEquals(len(list(msgs)), 0)
 

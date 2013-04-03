@@ -304,14 +304,7 @@ class Claim(base.ClaimBase):
                    and qid = ?
                  limit ?''', qid, limit)
 
-            return (
-                {
-                    'id': _cid_encode(id),
-                    'ttl': metadata['ttl'],
-                    'age': 0,
-                },
-                self.__get(id)
-            )
+            return (_cid_encode(id), self.__get(id))
 
     def __get(self, cid):
         records = self.driver.run('''
