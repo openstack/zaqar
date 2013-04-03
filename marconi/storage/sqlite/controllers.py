@@ -322,10 +322,12 @@ class Claim(base.ClaimBase):
 
     def update(self, queue, claim_id, metadata, tenant):
         try:
+            # still delay the cleanup here
             self.driver.run('''
                 update Claims
                    set ttl = ?
-                 where id = ?
+                 where ttl > julianday() * 86400.0 - created
+                   and id = ?
                    and qid = (select id from Queues
                                where tenant = ? and name = ?)
             ''', metadata['ttl'], _cid_decode(claim_id), tenant, queue)

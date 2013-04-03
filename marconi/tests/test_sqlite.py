@@ -83,14 +83,15 @@ class TestSqlite(testing.TestBase):
         self.assertEquals(cnt, 4)
 
         # can not delete a message with a wrong claim
-        cid, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
+        cid_another, _ = self.claim_ctrl.create(
+            'fizbit', {'ttl': 10}, '480924')
 
         with testing.expected(exceptions.NotPermitted):
-            self.msg_ctrl.delete('fizbit', msgid, '480924', cid)
+            self.msg_ctrl.delete('fizbit', msgid, '480924', cid_another)
 
         self.msg_ctrl.get('fizbit', msgid, '480924')
 
-        # create a claim
+        # claim a message
         cid, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
 
         self.assertEquals(len(list(msgs)), 1)
@@ -114,11 +115,14 @@ class TestSqlite(testing.TestBase):
         with testing.expected(exceptions.DoesNotExist):
             self.claim_ctrl.get('fizbit', meta['id'], '480924')
 
-        # delete the claim
-        self.claim_ctrl.delete('fizbit', meta['id'], '480924')
-
         with testing.expected(exceptions.DoesNotExist):
             self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 40}, '480924')
+
+        # delete a claim
+        self.claim_ctrl.delete('fizbit', cid_another, '480924')
+
+        with testing.expected(exceptions.DoesNotExist):
+            self.claim_ctrl.get('fizbit', cid_another, '480924')
 
     def test_expired_messages(self):
         doc = [
