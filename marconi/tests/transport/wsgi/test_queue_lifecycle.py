@@ -175,7 +175,7 @@ class QueueLifecycleBaseTest(base.TestBase):
                           env['PATH_INFO'])
 
         for queue in result_doc['queues']:
-            env = testing.create_environ('/v1/480924/queues/' + queue['name'])
+            env = testing.create_environ(queue['href'])
             result = self.app(env, self.srmock)
             result_doc = json.loads(result[0])
             self.assertEquals(result_doc, queue['metadata'])

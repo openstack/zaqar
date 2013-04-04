@@ -102,6 +102,8 @@ class CollectionResource(object):
         queues = self.queue_ctrl.list(tenant_id)
 
         resp_dict['queues'] = list(queues)
+        for queue in resp_dict['queues']:
+            queue['href'] = req.path + '/' + queue['name']
 
         resp.content_location = req.relative_uri
         resp.body = helpers.to_json(resp_dict)
