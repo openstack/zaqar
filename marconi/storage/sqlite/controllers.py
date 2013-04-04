@@ -350,9 +350,6 @@ class Claim(base.ClaimBase):
         except _BadID:
             pass
 
-    def stats(self, queue, claim_id, tenant=None):
-        raise NotImplementedError
-
 
 class _NoResult(Exception):
     pass

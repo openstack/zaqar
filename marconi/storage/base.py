@@ -17,12 +17,6 @@
 
 import abc
 
-# Seconds
-MIN_TTL = 60
-
-# Seconds (14 days)
-MAX_TTL = 1209600
-
 
 class DriverBase:
     __metaclass__ = abc.ABCMeta
@@ -289,19 +283,5 @@ class ClaimBase(ControllerBase):
             claim belongs to.
         :param claim_id: Claim to be deleted
         :param tenant: Tenant id
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def stats(self, queue, claim_id, tenant=None):
-        """
-        Base method for claim stats.
-
-        :param queue: Name of the queue this
-            claim belongs to.
-        :param claim_id: Claim to be deleted
-        :param tenant: Tenant id
-        :returns: Dictionary with the
-            queue stats
         """
         raise NotImplementedError

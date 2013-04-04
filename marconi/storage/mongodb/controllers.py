@@ -443,6 +443,3 @@ class ClaimController(storage.ClaimBase):
     def delete(self, queue, claim_id, tenant=None):
         msg_ctrl = self.driver.message_controller
         msg_ctrl.unclaim(claim_id)
-
-    def stats(self, queue, claim_id, tenant=None):
-        raise NotImplementedError
