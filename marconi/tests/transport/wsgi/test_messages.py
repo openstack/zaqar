@@ -75,6 +75,7 @@ class TestMessages(util.TestBase):
                               env['PATH_INFO'])
 
             msg = json.loads(body[0])
+            self.assertEquals(msg['href'], env['PATH_INFO'])
             self.assertEquals(msg['body'], lookup[msg['ttl']])
 
         self._post_messages('/v1/480924/queues/nonexistent/messages')
@@ -139,8 +140,14 @@ class TestMessages(util.TestBase):
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
-            [target, params] = json.loads(
-                body[0])['links'][0]['href'].split('?')
+            contents = json.loads(body[0])
+            [target, params] = contents['links'][0]['href'].split('?')
+
+            for msg in contents['messages']:
+                env = testing.create_environ(msg['href'])
+                self.app(env, self.srmock)
+                self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
             env = testing.create_environ(target,
                                          query_string=params,
                                          headers=self.headers)

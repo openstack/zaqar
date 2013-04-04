@@ -89,8 +89,10 @@ class CollectionResource(object):
 
         if len(resp_dict['messages']) != 0:
             kwargs['marker'] = resp_dict['messages'][-1]['marker']
-            for m in resp_dict['messages']:
-                m.pop('marker')
+            for msg in resp_dict['messages']:
+                msg['href'] = req.path + '/' + msg['id']
+                del msg['id']
+                del msg['marker']
 
             resp_dict['links'] = [
                 {
@@ -118,6 +120,9 @@ class ItemResource(object):
             msg = self.msg_ctrl.get(queue_name,
                                     message_id=message_id,
                                     tenant=tenant_id)
+
+            msg['href'] = req.path
+            del msg['id']
 
             resp.content_location = req.relative_uri
             resp.body = helpers.to_json(msg)
