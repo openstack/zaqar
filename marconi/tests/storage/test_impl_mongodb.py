@@ -14,8 +14,10 @@
 # limitations under the License.
 
 import os
+import time
 
 from marconi.common import config
+from marconi import storage
 from marconi.storage import mongodb
 from marconi.storage.mongodb import controllers
 from marconi.tests.storage import base
@@ -82,4 +84,43 @@ class MongodbMessageTests(base.MessageControllerTest):
         col = self.controller._col
         indexes = col.index_information()
         self.assertIn("q_1", indexes)
+        self.assertIn("u_1", indexes)
         self.assertIn("e_-1", indexes)
+        self.assertIn("c.id_1_c.e_-1", indexes)
+
+
+class MongodbClaimTests(base.ClaimControllerTest):
+    driver_class = mongodb.Driver
+    controller_class = controllers.ClaimController
+
+    def setUp(self):
+        if not os.environ.get("MONGODB_TEST_LIVE"):
+            self.skipTest("No MongoDB instance running")
+
+        super(MongodbClaimTests, self).setUp()
+        self.load_conf("wsgi_mongodb.conf")
+
+    def test_claim_doesnt_exist(self):
+        """
+        Tests that methods raise an exception when
+        the claim doesn't exists and / or
+        has expired.
+        """
+        epoch = '000000000000000000000000'
+        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+                          self.controller.get, self.queue_name,
+                          epoch, tenant=self.tenant)
+
+        claim_id, messages = self.controller.create(self.queue_name,
+                                                    {"ttl": 1},
+                                                    tenant=self.tenant)
+
+        # Lets let it expire
+        time.sleep(1)
+        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+                          self.controller.update, self.queue_name,
+                          claim_id, {}, tenant=self.tenant)
+
+        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+                          self.controller.update, self.queue_name,
+                          claim_id, {}, tenant=self.tenant)

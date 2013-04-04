@@ -108,6 +108,7 @@ class MessageController(storage.MessageBase):
         expires ->   e
         ttl     ->   t
         uuid    ->   u
+        claim    ->   c
     """
 
     def __init__(self, *args, **kwargs):
@@ -115,18 +116,33 @@ class MessageController(storage.MessageBase):
         # Make sure indexes exist before,
         # doing anything.
         self._col = self.driver.db["messages"]
-        self._col.ensure_index("q", 1)
-        self._col.ensure_index("u", 1)
+        self._col.ensure_index("q")
+        self._col.ensure_index("u")
         self._col.ensure_index([("e", -1)])
+
+        # Indexes used for claims
+        self._col.ensure_index([("c.id", 1), ("c.e", -1)])
 
     def _get_queue_id(self, queue, tenant):
         queue_controller = self.driver.queue_controller
         return queue_controller.get_id(queue, tenant)
 
-    def list(self, queue, tenant=None, marker=None,
-             limit=10, echo=False, client_uuid=None):
+    def active(self, queue, tenant=None, marker=None,
+               limit=10, echo=False, client_uuid=None,
+               fields=None):
 
-        query = {"e": {"$gt": timeutils.utcnow_ts()}}
+        now = timeutils.utcnow_ts()
+        query = {"$or": [
+            # Get all messages that
+            # haven't expired.
+            {"e": {"$gt": now}},
+
+            # Get all claimed messages which claim
+            # has expired
+            {"c.id": {"$ne": None}, "c.e": {"$lte": now}}
+        ]}
+
+        # Messages must belong to this queue
         query["q"] = self._get_queue_id(queue, tenant)
 
         if not echo and client_uuid:
@@ -138,8 +154,51 @@ class MessageController(storage.MessageBase):
             except ValueError:
                 raise StopIteration
 
-        messages = self._col.find(query, limit=limit,
-                                  sort=[("_id", 1)])
+        if fields and not isinstance(fields, (dict, list)):
+            raise TypeError(_("Fields must be an instance of list / dict"))
+
+        return self._col.find(query, limit=limit,
+                              sort=[("_id", 1)],
+                              fields=fields)
+
+    def claimed(self, claim_id=None, expires=None, limit=None):
+
+        query = {"c.id": claim_id}
+        if not claim_id:
+            # lookup over c.id to use the index
+            query["c.id"] = {"$ne": None}
+        if expires:
+            query["c.e"] = {"$gt": expires}
+
+        msgs = self._col.find(query, sort=[("_id", 1)])
+
+        if limit:
+            msgs = msgs.limit(limit)
+
+        now = timeutils.utcnow_ts()
+        for msg in msgs:
+            oid = msg.get("_id")
+            age = now - utils.oid_ts(oid)
+
+            yield {
+                "id": str(oid),
+                "age": age,
+                "ttl": msg["t"],
+                "body": msg["b"],
+                "claim": msg["c"]
+            }
+
+    def unclaim(self, claim_id):
+        cid = utils.to_oid(claim_id)
+        self._col.update({"c.id": cid},
+                         {"$unset": {"c": True}},
+                         upsert=False, multi=True)
+
+    def list(self, queue, tenant=None, marker=None,
+             limit=10, echo=False, client_uuid=None):
+
+        messages = self.active(queue, tenant, marker,
+                               limit, echo, client_uuid)
 
         now = timeutils.utcnow_ts()
         for msg in messages:
@@ -215,3 +274,167 @@ class MessageController(storage.MessageBase):
         self._get_queue_id(queue, tenant)
         mid = utils.to_oid(message_id)
         self._col.remove(mid)
+
+
+class ClaimController(storage.ClaimBase):
+    """
+    No dedicated collection is being used
+    for claims.
+
+    Claims are created in the messages
+    collection and live within messages, that is,
+    in the c field.
+
+    This implementation certainly uses more space
+    on disk but reduces the number of queries to
+    be executed and the time needed to retrieve
+    claims and claimed messages.
+
+    As for the memory usage, this implementation
+    requires less memory since a single index is
+    required. The index is a compound index between
+    the claim id and it's expiration timestamp.
+    """
+
+    def _get_queue_id(self, queue, tenant):
+        queue_controller = self.driver.queue_controller
+        return queue_controller.get_id(queue, tenant)
+
+    def get(self, queue, claim_id, tenant=None):
+        msg_ctrl = self.driver.message_controller
+
+        # Check whether the queue exists or not
+        self._get_queue_id(queue, tenant)
+
+        # Base query, always check expire time
+        now = timeutils.utcnow_ts()
+        cid = utils.to_oid(claim_id)
+        age = now - utils.oid_ts(cid)
+
+        def messages(msg_iter):
+            msg = msg_iter.next()
+            yield msg.pop("claim")
+            yield msg
+
+            # Smoke it!
+            for msg in msg_iter:
+                del msg["claim"]
+                yield msg
+
+        try:
+            # Lets get claim's data
+            # from the first message
+            # in the iterator
+            messages = messages(msg_ctrl.claimed(cid, now))
+            claim = messages.next()
+            claim = {
+                "age": age,
+                "ttl": claim.pop("t"),
+                "id": str(claim.pop("id")),
+            }
+        except StopIteration:
+            raise exceptions.ClaimDoesNotExist(cid, queue, tenant)
+
+        return (claim, messages)
+
+    def create(self, queue, metadata, tenant=None, limit=10):
+        """
+        This implementation was done in a best-effort fashion.
+        In order to create a claim we need to get a list
+        of messages that can be claimed. Once we have that
+        list we execute a query filtering by the ids returned
+        by the previous query.
+
+        Since there's a lot of space for race conditions here,
+        we'll check if the number of updated records is equal to
+        the max number of messages to claim. If the number of updated
+        messages is lower than limit we'll try to claim the remaining
+        number of messages.
+
+        This 2 queries are required because there's no way, as for the
+        time being, to executed an update on a limited number of records
+        """
+        msg_ctrl = self.driver.message_controller
+
+        # We don't need the qid here but
+        # we need to verify it exists.
+        self._get_queue_id(queue, tenant)
+
+        ttl = int(metadata.get("ttl", 60))
+        oid = objectid.ObjectId()
+
+        # Lets remove the timezone,
+        # we want it to be plain utc
+        expires = utils.oid_ts(oid) + ttl
+
+        meta = {
+            "id": oid,
+            "t": ttl,
+            "e": expires,
+        }
+
+        # Get a list of active, not claimed nor expired
+        # messages that could be claimed.
+        msgs = msg_ctrl.active(queue, tenant=tenant,
+                               limit=limit, fields={"_id": 1})
+
+        messages = iter([])
+        if msgs.count() == 0:
+            return (str(oid), messages)
+
+        ids = [msg["_id"] for msg in msgs]
+        now = timeutils.utcnow_ts()
+
+        # Set claim field for messages in ids
+        updated = msg_ctrl._col.update({"_id": {"$in": ids},
+                                        "$or": [
+                                            {"c.id": None},
+                                            {
+                                                "c.id": {"$ne": None},
+                                                "c.e": {"$lte": now}
+                                            }
+                                        ]},
+                                       {"$set": {"c": meta}}, upsert=False,
+                                       multi=True)["n"]
+
+        if updated != 0:
+            claim, messages = self.get(queue, oid, tenant=tenant)
+        return (str(oid), messages)
+
+    def update(self, queue, claim_id, metadata, tenant=None):
+        cid = utils.to_oid(claim_id)
+        now = timeutils.utcnow_ts()
+        ttl = int(metadata.get("ttl", 60))
+
+        # Lets remove the timezone,
+        # we want it to be plain utc
+        expires = utils.oid_ts(cid) + ttl
+
+        if now > expires:
+            msg = _("New ttl will make the claim expires")
+            raise ValueError(msg)
+
+        msg_ctrl = self.driver.message_controller
+        claimed = msg_ctrl.claimed(cid, expires=now, limit=1)
+
+        try:
+            claimed.next()
+        except StopIteration:
+            raise exceptions.ClaimDoesNotExist(cid, queue, tenant)
+
+        meta = {
+            "id": cid,
+            "t": ttl,
+            "e": expires,
+        }
+
+        msg_ctrl._col.update({"c.id": cid},
+                             {"$set": {"c": meta}},
+                             upsert=False, multi=True)
+
+    def delete(self, queue, claim_id, tenant=None):
+        msg_ctrl = self.driver.message_controller
+        msg_ctrl.unclaim(claim_id)
+
+    def stats(self, queue, claim_id, tenant=None):
+        raise NotImplementedError
