@@ -45,8 +45,14 @@ class CollectionResource(object):
                 tenant=tenant_id,
                 **kwargs)
 
+            resp_msgs = list(msgs)
+            for msg in resp_msgs:
+                msg['href'] = _msg_uri_from_claim(
+                    req.path.rpartition('/')[0], msg['id'], cid)
+                del msg['id']
+
             resp.location = req.path + '/' + cid
-            resp.body = helpers.to_json(list(msgs))
+            resp.body = helpers.to_json(resp_msgs)
             resp.status = falcon.HTTP_200
 
         except helpers.MalformedJSON:
@@ -72,6 +78,14 @@ class ItemResource(object):
                 tenant=tenant_id)
 
             meta['messages'] = list(msgs)
+            for msg in meta['messages']:
+                msg['href'] = _msg_uri_from_claim(
+                    req.path.rsplit('/', 2)[0], msg['id'], meta['id'])
+                del msg['id']
+
+            meta['href'] = req.path
+            del meta['id']
+
             resp.content_location = req.relative_uri
             resp.body = helpers.to_json(meta)
             resp.status = falcon.HTTP_200
@@ -115,3 +129,9 @@ def _filtered(obj):
 
     except Exception:
         raise helpers.MalformedJSON
+
+
+def _msg_uri_from_claim(base_path, msg_id, claim_id):
+    return '/'.join(
+        [base_path, 'messages', msg_id]
+    ) + falcon.to_query_str({'claim_id': claim_id})

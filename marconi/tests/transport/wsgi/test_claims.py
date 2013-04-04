@@ -94,8 +94,7 @@ class TestClaims(util.TestBase):
 
         st = json.loads(body[0])
         target = self.srmock.headers_dict['Location']
-        claim_id = target.rsplit('/', 1)[-1]
-        msgid = st[0]['id']
+        msg_target = st[0]['href']
 
         # check its metadata
 
@@ -112,14 +111,12 @@ class TestClaims(util.TestBase):
 
         # delete a message with its associated claim
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msgid,
-                                     method="DELETE",
-                                     query_string='claim_id=' + claim_id)
-        self.app(env, self.srmock)
+        env = testing.create_environ(msg_target, method="DELETE")
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msgid)
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        env = testing.create_environ(msg_target)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
@@ -139,44 +136,38 @@ class TestClaims(util.TestBase):
 
         body = self.app(env, self.srmock)
         st = json.loads(body[0])
+        [msg_target, params] = st['messages'][0]['href'].split('?')
 
         self.assertEquals(st['ttl'], 60)
 
         # delete the claim
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims/'
-                                     + st['id'], method="DELETE")
+        env = testing.create_environ(st['href'], method="DELETE")
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # can not delete a message with a non-existing claim
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + st['messages'][0]['id'],
-                                     method="DELETE",
-                                     query_string='claim_id=' + st['id'])
+        env = testing.create_environ(msg_target, query_string=params,
+                                     method="DELETE")
+
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_403)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + st['messages'][0]['id'])
+        env = testing.create_environ(msg_target, query_string=params)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
         # get & update a non existing claim
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims/'
-                                     + st['id'], method="GET")
+        env = testing.create_environ(st['href'], method="GET")
 
         body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims/'
-                                     + st['id'],
-                                     body=doc,
-                                     method="PATCH")
+        env = testing.create_environ(st['href'], method="PATCH", body=doc)
 
         body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
