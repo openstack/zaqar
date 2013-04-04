@@ -30,7 +30,3 @@ def read_json(stream):
 
 def to_json(o):
     return json.dumps(o, ensure_ascii=False)
-
-
-def join_params(d):
-    return '&'.join([k + '=' + str(v).lower() for k, v in d.items()])

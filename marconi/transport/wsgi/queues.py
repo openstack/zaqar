@@ -73,7 +73,7 @@ class ItemResource(object):
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
         try:
-            resp.content_location = req.path
+            resp.content_location = req.relative_uri
             resp.body = helpers.to_json(doc)
         except TypeError as ex:
             LOG.error(ex)
@@ -103,7 +103,7 @@ class CollectionResource(object):
 
         resp_dict['queues'] = list(queues)
 
-        resp.content_location = req.path
+        resp.content_location = req.relative_uri
         resp.body = helpers.to_json(resp_dict)
         resp.status = falcon.HTTP_200
 

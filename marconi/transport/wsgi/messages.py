@@ -66,12 +66,11 @@ class CollectionResource(object):
     def on_get(self, req, resp, tenant_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
-        #TODO(zyuan): use falcon's new api to check these
+        #TODO(zyuan): where do we define the limits?
         kwargs = {
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
-            'echo': {'true': True,
-                     'false': False}.get(req.get_param('echo'))
+            'echo': req.get_param_as_bool('echo'),
         }
         kwargs = dict([(k, v) for k, v in kwargs.items()
                        if v is not None])
@@ -96,11 +95,11 @@ class CollectionResource(object):
             resp_dict['links'] = [
                 {
                     'rel': 'next',
-                    'href': req.path + '?' + helpers.join_params(kwargs)
+                    'href': req.path + falcon.to_query_str(kwargs)
                 }
             ]
 
-            resp.content_location = req.path + '?' + req.query_string
+            resp.content_location = req.relative_uri
             resp.body = helpers.to_json(resp_dict)
             resp.status = falcon.HTTP_200
         else:
@@ -120,7 +119,7 @@ class ItemResource(object):
                                     message_id=message_id,
                                     tenant=tenant_id)
 
-            resp.content_location = req.path
+            resp.content_location = req.relative_uri
             resp.body = helpers.to_json(msg)
             resp.status = falcon.HTTP_200
 

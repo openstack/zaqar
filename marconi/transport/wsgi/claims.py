@@ -31,7 +31,7 @@ class CollectionResource(object):
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Missing claim metadata.'))
 
-        #TODO(zyuan): use falcon's new api to check these
+        #TODO(zyuan): where do we define the limits?
         kwargs = {
             'limit': req.get_param_as_int('limit'),
         }
@@ -72,7 +72,7 @@ class ItemResource(object):
                 tenant=tenant_id)
 
             meta['messages'] = list(msgs)
-            resp.content_location = req.path
+            resp.content_location = req.relative_uri
             resp.body = helpers.to_json(meta)
             resp.status = falcon.HTTP_200
 
