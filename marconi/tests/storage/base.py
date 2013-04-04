@@ -44,6 +44,10 @@ class QueueControllerTest(ControllerBaseTest):
     """
     controller_base_class = storage.QueueBase
 
+    def setUp(self):
+        super(QueueControllerTest, self).setUp()
+        self.message_controller = self.driver.message_controller
+
     def test_list(self):
         num = 4
         for queue in xrange(num):
@@ -78,6 +82,13 @@ class QueueControllerTest(ControllerBaseTest):
         queue = self.controller.get("test", tenant=self.tenant)
         self.assertEqual(queue["meta"], "test_meta")
 
+        # Test Queue Statistic
+        _insert_fixtures(self.message_controller, "test",
+                         tenant=self.tenant, client_uuid="my_uuid", num=12)
+
+        stats = self.controller.stats("test", tenant=self.tenant)
+        self.assertEqual(stats['messages'], 12)
+
         # Test Queue Deletion
         self.controller.delete("test", tenant=self.tenant)
 
@@ -110,18 +121,6 @@ class MessageControllerTest(ControllerBaseTest):
         self.queue_controller.delete(self.queue_name)
         super(MessageControllerTest, self).tearDown()
 
-    def insert_fixtures(self, client_uuid=None, num=4):
-
-        def messages():
-            for n in xrange(num):
-                yield {
-                    "ttl": 60,
-                    "body": {
-                        "event": "Event number %s" % n
-                    }}
-        self.controller.post(self.queue_name, messages(),
-                             tenant=self.tenant, client_uuid=client_uuid)
-
     def test_message_lifecycle(self):
         queue_name = self.queue_name
 
@@ -153,7 +152,8 @@ class MessageControllerTest(ControllerBaseTest):
                           tenant=self.tenant)
 
     def test_qet_multi(self):
-        self.insert_fixtures(client_uuid="my_uuid", num=20)
+        _insert_fixtures(self.controller, self.queue_name,
+                         tenant=self.tenant, client_uuid="my_uuid", num=20)
 
         def load_messages(expected, *args, **kwargs):
             msgs = list(self.controller.list(*args, **kwargs))
@@ -207,21 +207,9 @@ class ClaimControllerTest(ControllerBaseTest):
         self.queue_controller.delete(self.queue_name)
         super(ClaimControllerTest, self).tearDown()
 
-    def insert_fixtures(self, client_uuid=None, num=4):
-
-        def messages():
-            for n in xrange(num):
-                yield {
-                    "ttl": 60 + num,
-                    "body": {
-                        "event": "Event number %s" % n
-                    }}
-        self.message_controller.post(self.queue_name, messages(),
-                                     tenant=self.tenant,
-                                     client_uuid=client_uuid)
-
     def test_claim_lifecycle(self):
-        self.insert_fixtures(client_uuid="my_uuid", num=20)
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         tenant=self.tenant, client_uuid="my_uuid", num=20)
 
         meta = {"ttl": 70}
 
@@ -264,3 +252,17 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           claim_id, tenant=self.tenant)
+
+
+def _insert_fixtures(controller, queue_name, tenant=None,
+                     client_uuid=None, num=4):
+
+    def messages():
+        for n in xrange(num):
+            yield {
+                "ttl": 60,
+                "body": {
+                    "event": "Event number %s" % n
+                }}
+    controller.post(queue_name, messages(),
+                    tenant=tenant, client_uuid=client_uuid)

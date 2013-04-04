@@ -93,7 +93,15 @@ class QueueController(storage.QueueBase):
         self._col.remove({"t": tenant, "n": name})
 
     def stats(self, name, tenant=None):
-        raise NotImplementedError
+        msg_ctrl = self.driver.message_controller
+        # NOTE(flaper87): Should we split this into
+        # total, active and expired ?
+        msgs = msg_ctrl.active(name, tenant=tenant).count()
+
+        return {
+            "actions": 0,
+            "messages": msgs
+        }
 
     def actions(self, name, tenant=None, marker=None, limit=10):
         raise NotImplementedError
@@ -128,8 +136,7 @@ class MessageController(storage.MessageBase):
         return queue_controller.get_id(queue, tenant)
 
     def active(self, queue, tenant=None, marker=None,
-               limit=10, echo=False, client_uuid=None,
-               fields=None):
+               echo=False, client_uuid=None, fields=None):
 
         now = timeutils.utcnow_ts()
         query = {"$or": [
@@ -157,9 +164,7 @@ class MessageController(storage.MessageBase):
         if fields and not isinstance(fields, (dict, list)):
             raise TypeError(_("Fields must be an instance of list / dict"))
 
-        return self._col.find(query, limit=limit,
-                              sort=[("_id", 1)],
-                              fields=fields)
+        return self._col.find(query, fields=fields)
 
     def claimed(self, claim_id=None, expires=None, limit=None):
 
@@ -197,8 +202,8 @@ class MessageController(storage.MessageBase):
     def list(self, queue, tenant=None, marker=None,
              limit=10, echo=False, client_uuid=None):
 
-        messages = self.active(queue, tenant, marker,
-                               limit, echo, client_uuid)
+        messages = self.active(queue, tenant, marker, echo, client_uuid)
+        messages = messages.limit(limit).sort("_id")
 
         now = timeutils.utcnow_ts()
         for msg in messages:
@@ -375,11 +380,14 @@ class ClaimController(storage.ClaimBase):
 
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
-        msgs = msg_ctrl.active(queue, tenant=tenant,
-                               limit=limit, fields={"_id": 1})
+        msgs = msg_ctrl.active(queue, tenant=tenant, fields={"_id": 1})
+        msgs = msgs.limit(limit).sort("_id")
 
         messages = iter([])
-        if msgs.count() == 0:
+
+        # Lets respect the limit
+        # during the count
+        if msgs.count(True) == 0:
             return (str(oid), messages)
 
         ids = [msg["_id"] for msg in msgs]
