@@ -12,6 +12,4 @@ EXCLUDE+=',./tools'
 EXCLUDE+=',*egg,build'
 ${PEP8} ${EXCLUDE} .
 
-${PEP8} --filename=marconi* bin
-
 ! pyflakes marconi/ | grep "imported but unused\|redefinition of function" | grep -v "__init__.py"
