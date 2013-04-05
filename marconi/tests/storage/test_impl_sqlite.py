@@ -21,3 +21,8 @@ from marconi.tests.storage import base
 class SQliteQueueTests(base.QueueControllerTest):
     driver_class = sqlite.Driver
     controller_class = controllers.Queue
+
+
+class SQliteMessageTests(base.MessageControllerTest):
+    driver_class = sqlite.Driver
+    controller_class = controllers.Message

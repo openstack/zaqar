@@ -155,30 +155,24 @@ class MessageControllerTest(ControllerBaseTest):
 
     def test_qet_multi(self):
         _insert_fixtures(self.controller, self.queue_name,
-                         tenant=self.tenant, client_uuid="my_uuid", num=20)
+                         tenant=self.tenant, client_uuid="my_uuid", num=15)
 
         def load_messages(expected, *args, **kwargs):
             msgs = list(self.controller.list(*args, **kwargs))
             self.assertEqual(len(msgs), expected)
             return msgs
 
-        # Test all messages, echo False and no uuid
-        load_messages(10, self.queue_name, tenant=self.tenant)
-
         # Test all messages, echo False and uuid
         load_messages(0, self.queue_name, tenant=self.tenant,
                       client_uuid="my_uuid")
 
         # Test all messages and limit
-        load_messages(20, self.queue_name, tenant=self.tenant, limit=20)
+        load_messages(15, self.queue_name, tenant=self.tenant, limit=20,
+                      echo=True)
 
         # Test all messages, echo True, and uuid
         msgs = load_messages(10, self.queue_name, echo=True,
                              tenant=self.tenant, client_uuid="my_uuid")
-
-        # Test all messages, echo False, no uuid and marker
-        msgs = load_messages(10, self.queue_name, tenant=self.tenant,
-                             marker=msgs[4]["marker"])
 
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, tenant=self.tenant,

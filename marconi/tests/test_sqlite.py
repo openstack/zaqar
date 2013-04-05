@@ -49,40 +49,11 @@ class TestSqlite(testing.TestBase):
                                    tenant='480924',
                                    client_uuid='79ed56f8')[0]
 
-        countof = self.queue_ctrl.stats('fizbit', '480924')
-        self.assertEquals(countof['messages']['total'], 11)
-
-        msgs = list(self.msg_ctrl.list('fizbit', '480924',
-                                       echo=True,
-                                       limit=20))
-
-        self.assertEquals(len(msgs), 11)
-
-        msgs = list(self.msg_ctrl.list('fizbit', '480924',
-                                       client_uuid='30387f00'))
-
-        self.assertEquals(len(msgs), 1)
-
         #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
         msgs = list(self.msg_ctrl.list('fizbit', '480924',
                                        marker='illformed'))
 
         self.assertEquals(len(msgs), 0)
-
-        cnt = 0
-        marker = None
-        while True:
-            nomsg = True
-            for msg in self.msg_ctrl.list('fizbit', '480924',
-                                          limit=3, marker=marker,
-                                          client_uuid='79ed56f8'):
-                nomsg = False
-            if nomsg:
-                break
-            marker = msg['marker']
-            cnt += 1
-
-        self.assertEquals(cnt, 4)
 
         # can not delete a message with a wrong claim
         cid_another, _ = self.claim_ctrl.create(
@@ -143,19 +114,6 @@ class TestSqlite(testing.TestBase):
 
         countof = self.queue_ctrl.stats('fizbit', '480924')
         self.assertEquals(countof['messages']['expired'], 1)
-
-    def test_nonexsitent(self):
-        with testing.expected(exceptions.DoesNotExist):
-            self.msg_ctrl.post('nonexistent', [],
-                               tenant='480924',
-                               client_uuid='30387f00')
-
-        with testing.expected(exceptions.DoesNotExist):
-            for _ in self.msg_ctrl.list('nonexistent', '480924'):
-                pass
-
-        with testing.expected(exceptions.DoesNotExist):
-            self.queue_ctrl.stats('nonexistent', '480924')
 
     #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
     def test_illformed_id(self):
