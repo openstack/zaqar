@@ -47,6 +47,7 @@ class QueueControllerTest(ControllerBaseTest):
     def setUp(self):
         super(QueueControllerTest, self).setUp()
         self.message_controller = self.driver.message_controller
+        self.claim_controller = self.driver.claim_controller
 
     def test_list(self):
         num = 4
@@ -86,8 +87,8 @@ class QueueControllerTest(ControllerBaseTest):
         _insert_fixtures(self.message_controller, "test",
                          tenant=self.tenant, client_uuid="my_uuid", num=12)
 
-        stats = self.controller.stats("test", tenant=self.tenant)
-        self.assertEqual(stats['messages'], 12)
+        countof = self.controller.stats("test", tenant=self.tenant)
+        self.assertEqual(countof['messages']['total'], 12)
 
         # Test Queue Deletion
         self.controller.delete("test", tenant=self.tenant)

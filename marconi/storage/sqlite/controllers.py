@@ -72,14 +72,29 @@ class Queue(base.QueueBase):
 
     def stats(self, name, tenant):
         with self.driver('deferred'):
-            messages, = self.driver.get('''
-                select count(id)
-                  from Messages
-                 where ttl > julianday() * 86400.0 - created
-                   and qid = ?''', _get_qid(self.driver, name, tenant))
+            qid = _get_qid(self.driver, name, tenant)
+            total, expired, claimed = self.driver.get('''
+                select * from
+                   (select count(id)
+                      from Messages
+                     where qid = ?),
+                   (select count(id)
+                      from Messages
+                     where ttl <= julianday() * 86400.0 - created
+                       and qid = ?),
+                   (select count(msgid)
+                      from Claims join Locked
+                        on id = cid
+                     where ttl > julianday() * 86400.0 - created
+                       and qid = ?)
+            ''', qid, qid, qid)
 
             return {
-                'messages': messages,
+                'messages': {
+                    'claimed': claimed,
+                    'expired': expired,
+                    'total': total,
+                },
                 'actions': 0,
             }
 

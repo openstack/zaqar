@@ -47,8 +47,8 @@ class TestSqlite(testing.TestBase):
         msgid = self.msg_ctrl.post('fizbit', doc, '480924',
                                    client_uuid='79ed56f8')[0]
 
-        nmsgs = self.queue_ctrl.stats('fizbit', '480924')['messages']
-        self.assertEquals(nmsgs, 11)
+        countof = self.queue_ctrl.stats('fizbit', '480924')
+        self.assertEquals(countof['messages']['total'], 11)
 
         msgs = list(self.msg_ctrl.list('fizbit', '480924',
                                        echo=True,
@@ -89,7 +89,10 @@ class TestSqlite(testing.TestBase):
         with testing.expected(exceptions.NotPermitted):
             self.msg_ctrl.delete('fizbit', msgid, '480924', cid_another)
 
-        self.msg_ctrl.get('fizbit', msgid, '480924')
+        # ensure the message counts
+        countof = self.queue_ctrl.stats('fizbit', '480924')
+        self.assertEquals(countof['messages']['total'], 11)
+        self.assertEquals(countof['messages']['claimed'], 10)
 
         # claim a message
         cid, msgs = self.claim_ctrl.create('fizbit', {'ttl': 10}, '480924')
@@ -135,8 +138,8 @@ class TestSqlite(testing.TestBase):
         with testing.expected(exceptions.DoesNotExist):
             self.msg_ctrl.get('fizbit', msgid, '480924')
 
-        nmsgs = self.queue_ctrl.stats('fizbit', '480924')['messages']
-        self.assertEquals(nmsgs, 0)
+        countof = self.queue_ctrl.stats('fizbit', '480924')
+        self.assertEquals(countof['messages']['expired'], 1)
 
     def test_nonexsitent(self):
         with testing.expected(exceptions.DoesNotExist):
