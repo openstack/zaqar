@@ -5,7 +5,17 @@ transport = marconi.transport.wsgi
 storage = marconi.storage.mongodb
 
 [drivers:transport:wsgi]
-port = 8888
+bind = 0.0.0.0:8888
+; workers = 4
+workers = 1
+; worker_class = sync, gevent, eventlet
+worker_class = sync
+; user = 1000
+; group = 1000
+; proc_name = marconi
+; certfile = cert.crt
+; keyfile = cert.key
+
 
 ;[drivers:transport:zmq]
 ;port = 9999

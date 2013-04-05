@@ -6,4 +6,5 @@ PasteDeploy
 pymongo
 python-keystoneclient
 WebOb
+gunicorn
 iso8601>=0.1.4

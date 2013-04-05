@@ -15,11 +15,8 @@
 
 import falcon
 
-from marconi.common import config
 from marconi import transport
-
-
-cfg = config.namespace('drivers:transport:wsgi').from_options(port=8888)
+from marconi.transport.wsgi import app
 
 
 class Driver(transport.DriverBase):
@@ -56,4 +53,4 @@ class Driver(transport.DriverBase):
                       '/claims/{claim_id}', claim_item)
 
     def listen(self):
-        raise NotImplementedError
+        return app.Application(self.app).run()
