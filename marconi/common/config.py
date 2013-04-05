@@ -45,21 +45,18 @@ sections named by their associated namespaces.
 To load the configurations from a file:
 
     cfg_handle = config.project('marconi')
-    cfg_handle.load("/path/to/example.conf")
+    cfg_handle.load(filename="/path/to/example.conf")
 
-A call to `.load` without an argument looks up for the default ones:
+A call to `.load` without a filename looks up for the default ones:
 
     ~/.marconi/marconi.conf
     /etc/marconi/marconi.conf
 
-Global config variables, if any, will be read from the command line using
-sys.argv[:1]. If needed, this can be overwritten by calling `set_cli`
-before calling `.load`
+Global config variables, if any, can also be read from the command line
+arguments:
 
-    cfg_handle.set_cli([])
+    cfg_handle.load(filename="example.conf", args=sys.argv[1:])
 """
-
-import sys
 
 from oslo.config import cfg
 
@@ -76,7 +73,6 @@ def _init():
         __setattr__ = dict.__setitem__
 
     conf = cfg.ConfigOpts()
-    my = Obj(args=sys.argv[1:])
 
     def namespace(name, title=None):
         """
@@ -132,17 +128,7 @@ def _init():
 
             return from_class(opaque_type_of(ConfigProxy, name))()
 
-        def set_cli(args):
-            """
-            Save the CLI arguments.
-
-            :param args: a list of CLI arguments in strings
-            """
-
-            my.args = []
-            my.args.extend(args)
-
-        def load(config_file=None):
+        def load(filename=None, args=None):
             """Load the configurations from a config file.
 
             If the file name is not supplied, look for
@@ -153,15 +139,18 @@ def _init():
 
                 /etc/%project/%project.conf
 
-            :param config_file: the name of an alternative config file
+            :param filename: the name of an alternative config file
+            :param args: command line arguments
             """
 
-            if config_file is None:
-                conf(args=my.args, project=name, prog=name)
-            else:
-                conf(args=my.args, default_config_files=[config_file])
+            args = [] if args is None else args
 
-        return Obj(from_options=from_options, set_cli=set_cli, load=load)
+            if filename is None:
+                conf(args=args, project=name, prog=name)
+            else:
+                conf(args=args, default_config_files=[filename])
+
+        return Obj(from_options=from_options, load=load)
 
     def opaque_type_of(base, postfix):
         return type('%s of %s' % (base.__name__, postfix), (base,), {})

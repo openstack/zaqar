@@ -25,7 +25,7 @@ def fail(returncode, e):
 
 def run():
     try:
-        server = bootstrap.Bootstrap()
+        server = bootstrap.Bootstrap(cli_args=sys.argv[1:])
         server.run()
     except KeyboardInterrupt:
         fail(1, '... terminating marconi')

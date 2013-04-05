@@ -32,8 +32,8 @@ class Bootstrap(object):
     lifetimes.
     """
 
-    def __init__(self, config_file=None):
-        cfg_handle.load(config_file)
+    def __init__(self, config_file=None, cli_args=None):
+        cfg_handle.load(filename=config_file, args=cli_args)
 
         self.storage_module = import_driver(cfg.storage)
         self.transport_module = import_driver(cfg.transport)

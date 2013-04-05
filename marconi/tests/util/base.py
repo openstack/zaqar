@@ -51,9 +51,7 @@ class TestBase(testtools.TestCase):
 
         :returns: Project's config object.
         """
-        # Reset CLI
-        cfg.set_cli([])
-        cfg.load(self.conf_path(filename))
+        cfg.load(filename=self.conf_path(filename))
         return cfg
 
     def _my_dir(self):
