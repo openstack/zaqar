@@ -38,4 +38,8 @@ setuptools.setup(
     install_requires=requires,
     dependency_links=dependency_links,
     cmdclass=common_setup.get_cmdclass(),
+    entry_points={
+        'console_scripts':
+            ['marconi-server = marconi.bin.server:run']
+    }
 )

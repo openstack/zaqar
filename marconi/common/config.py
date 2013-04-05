@@ -52,11 +52,14 @@ A call to `.load` without an argument looks up for the default ones:
     ~/.marconi/marconi.conf
     /etc/marconi/marconi.conf
 
-The global config variables, if any, can also be read from the command
-line arguments by saving them before a `.load` call:
+Global config variables, if any, will be read from the command line using
+sys.argv[:1]. If needed, this can be overwritten by calling `set_cli`
+before calling `.load`
 
-    cfg_handle.set_cli(sys.argv[1:])
+    cfg_handle.set_cli([])
 """
+
+import sys
 
 from oslo.config import cfg
 
@@ -73,7 +76,7 @@ def _init():
         __setattr__ = dict.__setitem__
 
     conf = cfg.ConfigOpts()
-    my = Obj(args=[])
+    my = Obj(args=sys.argv[1:])
 
     def namespace(name, title=None):
         """

@@ -12,3 +12,4 @@ port = 8888
 
 [drivers:storage:mongodb]
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
+database = marconi
