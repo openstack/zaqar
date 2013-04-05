@@ -42,9 +42,11 @@ class TestSqlite(testing.TestBase):
         ]
 
         for _ in range(10):
-            self.msg_ctrl.post('fizbit', doc, '480924',
+            self.msg_ctrl.post('fizbit', doc,
+                               tenant='480924',
                                client_uuid='30387f00')
-        msgid = self.msg_ctrl.post('fizbit', doc, '480924',
+        msgid = self.msg_ctrl.post('fizbit', doc,
+                                   tenant='480924',
                                    client_uuid='79ed56f8')[0]
 
         countof = self.queue_ctrl.stats('fizbit', '480924')
@@ -132,7 +134,8 @@ class TestSqlite(testing.TestBase):
             {'body': {}, 'ttl': 0},
         ]
 
-        msgid = self.msg_ctrl.post('fizbit', doc, '480924',
+        msgid = self.msg_ctrl.post('fizbit', doc,
+                                   tenant='480924',
                                    client_uuid='unused')[0]
 
         with testing.expected(exceptions.DoesNotExist):
@@ -143,7 +146,8 @@ class TestSqlite(testing.TestBase):
 
     def test_nonexsitent(self):
         with testing.expected(exceptions.DoesNotExist):
-            self.msg_ctrl.post('nonexistent', [], '480924',
+            self.msg_ctrl.post('nonexistent', [],
+                               tenant='480924',
                                client_uuid='30387f00')
 
         with testing.expected(exceptions.DoesNotExist):

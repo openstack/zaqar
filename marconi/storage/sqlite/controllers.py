@@ -179,7 +179,7 @@ class Message(base.MessageBase):
             except _BadID:
                 return
 
-    def post(self, queue, messages, tenant, client_uuid):
+    def post(self, queue, messages, client_uuid, tenant):
         with self.driver('immediate'):
             qid = _get_qid(self.driver, queue, tenant)
 

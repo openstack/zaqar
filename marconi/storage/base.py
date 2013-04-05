@@ -187,7 +187,7 @@ class MessageBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def post(self, queue, messages, tenant=None, client_uuid=None):
+    def post(self, queue, messages, client_uuid, tenant=None):
         """
         Base message post method
 
@@ -198,8 +198,8 @@ class MessageBase(ControllerBase):
         :param queue: Name of the queue to post message to.
         :param messages: Messages to post to queue,
             it can be a list of 1 or more elements.
-        :param tenant: Tenant id
         :param client_uuid: Client's unique identifier.
+        :param tenant: Tenant id
 
         :returns: List of message ids
         """

@@ -261,7 +261,7 @@ class MessageController(storage.MessageBase):
             "body": message["b"],
         }
 
-    def post(self, queue, messages, tenant=None, client_uuid=None):
+    def post(self, queue, messages, client_uuid, tenant=None):
         qid = self._get_queue_id(queue, tenant)
 
         ids = []

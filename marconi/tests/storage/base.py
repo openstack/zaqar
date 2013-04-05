@@ -119,7 +119,7 @@ class MessageControllerTest(ControllerBaseTest):
                                      tenant=self.tenant)
 
     def tearDown(self):
-        self.queue_controller.delete(self.queue_name)
+        self.queue_controller.delete(self.queue_name, tenant=self.tenant)
         super(MessageControllerTest, self).tearDown()
 
     def test_message_lifecycle(self):
@@ -137,7 +137,8 @@ class MessageControllerTest(ControllerBaseTest):
 
         # Test Message Creation
         created = list(self.controller.post(queue_name, messages,
-                                            tenant=self.tenant))
+                                            tenant=self.tenant,
+                                            client_uuid="unused"))
         self.assertEqual(len(created), 1)
 
         # Test Message Get
