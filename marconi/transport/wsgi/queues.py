@@ -51,7 +51,7 @@ class ItemResource(object):
                                         _('Malformed queue metadata.'))
 
         except Exception as ex:
-            LOG.error(ex)
+            LOG.exception(ex)
             title = _('Service temporarily unavailable')
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
@@ -63,25 +63,18 @@ class ItemResource(object):
         try:
             doc = self.queue_ctrl.get(queue_name,
                                       tenant=tenant_id)
+
+            resp.content_location = req.relative_uri
+            resp.body = helpers.to_json(doc)
+
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
         except Exception as ex:
-            LOG.error(ex)
+            LOG.exception(ex)
             title = _('Service temporarily unavailable')
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
-
-        try:
-            resp.content_location = req.relative_uri
-            resp.body = helpers.to_json(doc)
-        except TypeError as ex:
-            LOG.error(ex)
-
-            #TODO(kgriffs): Improve these messages
-            title = _('Invalid queue metatada')
-            msg = _('The queue metadata could not be read.')
-            raise falcon.HTTPInternalServerError(title, msg)
 
     def on_delete(self, req, resp, tenant_id, queue_name):
         self.queue_ctrl.delete(queue_name,
