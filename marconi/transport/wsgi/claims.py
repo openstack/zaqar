@@ -13,10 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import falcon
 
 from marconi.storage import exceptions
 from marconi.transport import helpers
+
+
+LOG = logging.getLogger(__name__)
 
 
 class CollectionResource(object):
@@ -65,6 +70,12 @@ class CollectionResource(object):
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+
 
 class ItemResource(object):
 
@@ -96,6 +107,12 @@ class ItemResource(object):
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+
     def on_patch(self, req, resp, tenant_id, queue_name, claim_id):
         if req.content_length is None or req.content_length == 0:
             raise falcon.HTTPBadRequest(_('Bad request'),
@@ -117,12 +134,25 @@ class ItemResource(object):
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
-    def on_delete(self, req, resp, tenant_id, queue_name, claim_id):
-        self.claim_ctrl.delete(queue_name,
-                               claim_id=claim_id,
-                               tenant=tenant_id)
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-        resp.status = falcon.HTTP_204
+    def on_delete(self, req, resp, tenant_id, queue_name, claim_id):
+        try:
+            self.claim_ctrl.delete(queue_name,
+                                   claim_id=claim_id,
+                                   tenant=tenant_id)
+
+            resp.status = falcon.HTTP_204
+
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
 
 def _filtered(obj):

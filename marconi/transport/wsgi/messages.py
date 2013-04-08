@@ -13,10 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import falcon
 
 from marconi.storage import exceptions
 from marconi.transport import helpers
+
+
+LOG = logging.getLogger(__name__)
 
 
 class CollectionResource(object):
@@ -63,6 +68,12 @@ class CollectionResource(object):
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+
     def on_get(self, req, resp, tenant_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
@@ -84,28 +95,34 @@ class CollectionResource(object):
                                       **kwargs)
             resp_dict['messages'] = list(msgs)
 
+            if len(resp_dict['messages']) != 0:
+                kwargs['marker'] = resp_dict['messages'][-1]['marker']
+                for msg in resp_dict['messages']:
+                    msg['href'] = req.path + '/' + msg['id']
+                    del msg['id']
+                    del msg['marker']
+
+                resp_dict['links'] = [
+                    {
+                        'rel': 'next',
+                        'href': req.path + falcon.to_query_str(kwargs)
+                    }
+                ]
+
+                resp.content_location = req.relative_uri
+                resp.body = helpers.to_json(resp_dict)
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_204
+
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
-        if len(resp_dict['messages']) != 0:
-            kwargs['marker'] = resp_dict['messages'][-1]['marker']
-            for msg in resp_dict['messages']:
-                msg['href'] = req.path + '/' + msg['id']
-                del msg['id']
-                del msg['marker']
-
-            resp_dict['links'] = [
-                {
-                    'rel': 'next',
-                    'href': req.path + falcon.to_query_str(kwargs)
-                }
-            ]
-
-            resp.content_location = req.relative_uri
-            resp.body = helpers.to_json(resp_dict)
-            resp.status = falcon.HTTP_200
-        else:
-            resp.status = falcon.HTTP_204
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
 
 class ItemResource(object):
@@ -131,6 +148,12 @@ class ItemResource(object):
         except exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
 
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+
     def on_delete(self, req, resp, tenant_id, queue_name, message_id):
         try:
             self.msg_ctrl.delete(queue_name,
@@ -142,3 +165,9 @@ class ItemResource(object):
 
         except exceptions.NotPermitted:
             resp.status = falcon.HTTP_403
+
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)

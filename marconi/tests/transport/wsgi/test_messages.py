@@ -18,20 +18,13 @@ import json
 import falcon
 from falcon import testing
 
-import marconi
-from marconi.tests import util
+from marconi.tests.transport.wsgi import base
 
 
-class TestMessages(util.TestBase):
+class MessagesBaseTest(base.TestBase):
 
     def setUp(self):
-        super(TestMessages, self).setUp()
-
-        conf_file = self.conf_path('wsgi_sqlite.conf')
-        boot = marconi.Bootstrap(conf_file)
-
-        self.app = boot.transport.app
-        self.srmock = testing.StartResponseMock()
+        super(MessagesBaseTest, self).setUp()
 
         doc = '{ "_ttl": 60 }'
         env = testing.create_environ('/v1/480924/queues/fizbit',
@@ -193,7 +186,7 @@ class TestMessages(util.TestBase):
                                      method="DELETE")
         self.app(env, self.srmock)
 
-        super(TestMessages, self).tearDown()
+        super(MessagesBaseTest, self).tearDown()
 
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{"body": 239, "ttl": 30}] * repeat)
@@ -206,3 +199,48 @@ class TestMessages(util.TestBase):
 
     def _get_msg_ids(self, headers_dict):
         return headers_dict['Location'].rsplit('/', 1)[-1].split(',')
+
+
+class MessagesSQLiteTests(MessagesBaseTest):
+
+    config_filename = 'wsgi_sqlite.conf'
+
+
+class MessagesFaultyDriverTests(base.TestBase):
+
+    config_filename = 'wsgi_faulty.conf'
+
+    def test_simple(self):
+        doc = '[{"body": 239, "ttl": 10}]'
+        headers = {
+            'Client-ID': '30387f00',
+        }
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
+                                     method="POST",
+                                     body=doc,
+                                     headers=headers)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
+                                     method="GET",
+                                     headers=headers)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages'
+                                     '/nonexistent',
+                                     method="GET")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages'
+                                     '/nonexistent',
+                                     method="DELETE")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
