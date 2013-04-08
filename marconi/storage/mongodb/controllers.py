@@ -94,13 +94,17 @@ class QueueController(storage.QueueBase):
 
     def stats(self, name, tenant=None):
         msg_ctrl = self.driver.message_controller
-        # NOTE(flaper87): Should we split this into
-        # total, active and expired ?
-        msgs = msg_ctrl.active(name, tenant=tenant).count()
+        total = msg_ctrl.all().count()
+        active = msg_ctrl.active(name, tenant=tenant).count()
+        claimed = msg_ctrl.claimed(name)
 
         return {
             "actions": 0,
-            "messages": msgs
+            "messages": {
+                "total": total,
+                "expired": total - active,
+                "claimed": claimed.count(),
+            }
         }
 
     def actions(self, name, tenant=None, marker=None, limit=10):
@@ -134,6 +138,9 @@ class MessageController(storage.MessageBase):
     def _get_queue_id(self, queue, tenant):
         queue_controller = self.driver.queue_controller
         return queue_controller.get_id(queue, tenant)
+
+    def all(self):
+        return self._col.find()
 
     def active(self, queue, tenant=None, marker=None,
                echo=False, client_uuid=None, fields=None):
@@ -181,17 +188,20 @@ class MessageController(storage.MessageBase):
             msgs = msgs.limit(limit)
 
         now = timeutils.utcnow_ts()
-        for msg in msgs:
+
+        def denormalizer(msg):
             oid = msg.get("_id")
             age = now - utils.oid_ts(oid)
 
-            yield {
+            return {
                 "id": str(oid),
                 "age": age,
                 "ttl": msg["t"],
                 "body": msg["b"],
                 "claim": msg["c"]
             }
+
+        return utils.HookedCursor(msgs, denormalizer)
 
     def unclaim(self, claim_id):
         cid = utils.to_oid(claim_id)
@@ -206,17 +216,20 @@ class MessageController(storage.MessageBase):
         messages = messages.limit(limit).sort("_id")
 
         now = timeutils.utcnow_ts()
-        for msg in messages:
+
+        def denormalizer(msg):
             oid = msg.get("_id")
             age = now - utils.oid_ts(oid)
 
-            yield {
+            return {
                 "id": str(oid),
                 "age": age,
                 "ttl": msg["t"],
                 "body": msg["b"],
                 "marker": str(oid),
             }
+
+        return utils.HookedCursor(messages, denormalizer)
 
     def get(self, queue, message_id, tenant=None):
 

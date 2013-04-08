@@ -48,3 +48,23 @@ def oid_ts(oid):
         return calendar.timegm(norm_time.timetuple())
     except AttributeError:
         raise TypeError(_("Expected ObjectId and got %s") % type(oid))
+
+
+class HookedCursor(object):
+
+    def __init__(self, cursor, denormalizer):
+        self.cursor = cursor
+        self.denormalizer = denormalizer
+
+    def __getattr__(self, attr):
+        return getattr(self.cursor, attr)
+
+    def __iter__(self):
+        return self
+
+    def __len__(self):
+        return self.cursor.count(True)
+
+    def next(self):
+        item = self.cursor.next()
+        return self.denormalizer(item)
