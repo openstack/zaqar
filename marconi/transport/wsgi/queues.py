@@ -77,8 +77,15 @@ class ItemResource(object):
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
     def on_delete(self, req, resp, tenant_id, queue_name):
-        self.queue_ctrl.delete(queue_name,
-                               tenant=tenant_id)
+        try:
+            self.queue_ctrl.delete(queue_name,
+                                   tenant=tenant_id)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
         resp.status = falcon.HTTP_204
 
@@ -92,11 +99,18 @@ class CollectionResource(object):
 
     def on_get(self, req, resp, tenant_id):
         resp_dict = {}
-        queues = self.queue_ctrl.list(tenant_id)
+        try:
+            queues = self.queue_ctrl.list(tenant_id)
 
-        resp_dict['queues'] = list(queues)
-        for queue in resp_dict['queues']:
-            queue['href'] = req.path + '/' + queue['name']
+            resp_dict['queues'] = list(queues)
+            for queue in resp_dict['queues']:
+                queue['href'] = req.path + '/' + queue['name']
+
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
         resp.content_location = req.relative_uri
         resp.body = helpers.to_json(resp_dict)
