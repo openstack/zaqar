@@ -44,16 +44,19 @@ class CollectionResource(object):
                 metadata=metadata,
                 tenant=tenant_id,
                 **kwargs)
-
             resp_msgs = list(msgs)
-            for msg in resp_msgs:
-                msg['href'] = _msg_uri_from_claim(
-                    req.path.rpartition('/')[0], msg['id'], cid)
-                del msg['id']
 
-            resp.location = req.path + '/' + cid
-            resp.body = helpers.to_json(resp_msgs)
-            resp.status = falcon.HTTP_200
+            if len(resp_msgs) != 0:
+                for msg in resp_msgs:
+                    msg['href'] = _msg_uri_from_claim(
+                        req.path.rpartition('/')[0], msg['id'], cid)
+                    del msg['id']
+
+                resp.location = req.path + '/' + cid
+                resp.body = helpers.to_json(resp_msgs)
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_204
 
         except helpers.MalformedJSON:
             raise falcon.HTTPBadRequest(_('Bad request'),

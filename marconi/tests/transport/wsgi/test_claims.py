@@ -84,10 +84,12 @@ class TestClaims(util.TestBase):
 
     def test_lifecycle(self):
         doc = '{ "ttl": 10 }'
+
+        # claim some messages
+
         env = testing.create_environ('/v1/480924/queues/fizbit/claims',
                                      method="POST",
-                                     body=doc,
-                                     query_string='limit=3')
+                                     body=doc)
 
         body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
@@ -95,6 +97,16 @@ class TestClaims(util.TestBase):
         st = json.loads(body[0])
         target = self.srmock.headers_dict['Location']
         msg_target = st[0]['href']
+
+        # no more messages to claim
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
+                                     method="POST",
+                                     body=doc,
+                                     query_string='limit=3')
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # check its metadata
 
