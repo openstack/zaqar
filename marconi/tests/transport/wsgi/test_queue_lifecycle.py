@@ -45,8 +45,9 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         env = testing.create_environ('/v1/480924/queues/gumshoe')
         result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(result, [doc])
+        self.assertEquals(result_doc, json.loads(doc))
 
         # Delete
         env = testing.create_environ('/v1/480924/queues/gumshoe',
@@ -220,8 +221,9 @@ class QueueFaultyDriverTests(base.TestBase):
 
         env = testing.create_environ('/v1/480924/queues/gumshoe')
         result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
-        self.assertNotEquals(result, [doc])
+        self.assertNotEquals(result_doc, json.loads(doc))
 
     def test_bad_document(self):
         env = testing.create_environ('/v1/480924/queues/bad-doc')

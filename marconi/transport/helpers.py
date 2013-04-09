@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 
 class MalformedJSON(Exception):
@@ -21,6 +24,11 @@ class MalformedJSON(Exception):
 
 
 def read_json(stream):
+    """
+    Like json.load, but raises an exception upon failure.
+
+    :param stream: a file-like object
+    """
     try:
         return json.load(stream)
 
@@ -28,5 +36,10 @@ def read_json(stream):
         raise MalformedJSON
 
 
-def to_json(o):
-    return json.dumps(o, ensure_ascii=False)
+def to_json(obj):
+    """
+    Like json.dumps, but outputs a UTF-8 encoded string.
+
+    :param obj: a JSON-serializable object
+    """
+    return json.dumps(obj, ensure_ascii=False)
