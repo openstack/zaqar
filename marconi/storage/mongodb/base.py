@@ -44,7 +44,11 @@ class Driver(storage.DriverBase):
         mongodb's database.
         """
         if not self._database:
-            conn = pymongo.MongoClient(cfg.uri)
+            if cfg.uri and 'replicaSet' in cfg.uri:
+                conn = pymongo.MongoReplicaSetClient(cfg.uri)
+            else:
+                conn = pymongo.MongoClient(cfg.uri)
+
             self._database = conn[cfg.database]
 
         return self._database
