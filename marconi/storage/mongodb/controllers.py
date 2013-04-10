@@ -90,6 +90,7 @@ class QueueController(storage.QueueBase):
         return not rst["updatedExisting"]
 
     def delete(self, name, tenant=None):
+        self.driver.message_controller.purge_queue(name, tenant)
         self._col.remove({"t": tenant, "n": name})
 
     def stats(self, name, tenant=None):
@@ -291,7 +292,14 @@ class MessageController(storage.MessageBase):
     def delete(self, queue, message_id, tenant=None, claim=None):
         self._get_queue_id(queue, tenant)
         mid = utils.to_oid(message_id)
-        self._col.remove(mid)
+        self._col.remove(mid, w=0)
+
+    def purge_queue(self, queue, tenant=None):
+        try:
+            qid = self._get_queue_id(queue, tenant)
+            self._col.remove({"q": qid}, w=0)
+        except exceptions.QueueDoesNotExist:
+            pass
 
 
 class ClaimController(storage.ClaimBase):
