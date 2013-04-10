@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import calendar
+import itertools
 
 from bson import errors as berrors
 from bson import objectid
@@ -48,6 +49,36 @@ def oid_ts(oid):
         return calendar.timegm(norm_time.timetuple())
     except AttributeError:
         raise TypeError(_("Expected ObjectId and got %s") % type(oid))
+
+
+class MultiCursor(object):
+
+    def __init__(self, *cursors):
+        self.cursors = cursors
+
+    def __getattr__(self, attr):
+        def propagate(*args, **kwargs):
+            results = []
+            for cursor in self.cursors:
+                result = getattr(cursor, attr)
+                if callable(result):
+                    result = result(*args, **kwargs)
+
+                if result != cursor:
+                    results.append(result)
+            return results or self
+
+        val = getattr(self.cursors[0], attr)
+        return callable(val) and propagate or propagate()
+
+    def __iter__(self):
+        return itertools.chain(*self.cursors)
+
+    def __len__(self):
+        l = 0
+        for cursor in self.cursors:
+            l += cursor.count(True)
+        return l
 
 
 class HookedCursor(object):

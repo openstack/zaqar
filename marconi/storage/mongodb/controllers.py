@@ -93,10 +93,11 @@ class QueueController(storage.QueueBase):
         self._col.remove({"t": tenant, "n": name})
 
     def stats(self, name, tenant=None):
+        qid = self.get_id(name, tenant)
         msg_ctrl = self.driver.message_controller
         total = msg_ctrl.all().count()
-        active = msg_ctrl.active(name, tenant=tenant).count()
-        claimed = msg_ctrl.claimed(name)
+        active = msg_ctrl.active(qid).count()
+        claimed = msg_ctrl.claimed(qid)
 
         return {
             "actions": 0,
@@ -128,12 +129,32 @@ class MessageController(storage.MessageBase):
         # Make sure indexes exist before,
         # doing anything.
         self._col = self.driver.db["messages"]
-        self._col.ensure_index("q")
-        self._col.ensure_index("u")
-        self._col.ensure_index([("e", -1)])
+
+        # NOTE(flaper87): Let's make sure we clean up
+        # expired messages. Notice that TTL indexes run
+        # a clean up thread every minute, this means that
+        # every message would have an implicit 1min grace
+        # if we don't filter them out in the active method.
+        # self._col.ensure_index("e", background=True,
+        #                       expireAfterSeconds=1209600)
+
+        # NOTE(flaper87): This index is used mostly in the
+        # active method but some parts of it are used in
+        # other places.
+        #   * q: Mostly everywhere. It must stay at the
+        #       beginning of the index.
+        #   * e: Together with q is used for getting a
+        #       specific message. (see `get`)
+        self._col.ensure_index([("q", 1),
+                                ("e", 1),
+                                ("c.e", 1),
+                                ("_id", -1)], background=True)
 
         # Indexes used for claims
-        self._col.ensure_index([("c.id", 1), ("c.e", -1)])
+        self._col.ensure_index([("q", 1),
+                                ("c.id", 1),
+                                ("c.e", 1),
+                                ("_id", -1)], background=True)
 
     def _get_queue_id(self, queue, tenant):
         queue_controller = self.driver.queue_controller
@@ -142,40 +163,35 @@ class MessageController(storage.MessageBase):
     def all(self):
         return self._col.find()
 
-    def active(self, queue, tenant=None, marker=None,
-               echo=False, client_uuid=None, fields=None):
+    def active(self, queue, marker=None, echo=False,
+               client_uuid=None, fields=None):
 
         now = timeutils.utcnow_ts()
-        query = {"$or": [
-            # Get all messages that
-            # haven't expired.
-            {"e": {"$gt": now}},
 
-            # Get all claimed messages which claim
-            # has expired
-            {"c.id": {"$ne": None}, "c.e": {"$lte": now}}
-        ]}
+        query = {
+            # Messages must belong to this queue
+            "q": utils.to_oid(queue),
+            "c.e": {"$lte": now},
+            "e": {"$gt": now}
+        }
 
-        # Messages must belong to this queue
-        query["q"] = self._get_queue_id(queue, tenant)
+        if fields and not isinstance(fields, (dict, list)):
+            raise TypeError(_("Fields must be an instance of list / dict"))
 
         if not echo and client_uuid:
             query["u"] = {"$ne": client_uuid}
 
         if marker:
-            try:
-                query["_id"] = {"$gt": utils.to_oid(marker)}
-            except ValueError:
-                raise StopIteration
-
-        if fields and not isinstance(fields, (dict, list)):
-            raise TypeError(_("Fields must be an instance of list / dict"))
+            query["_id"] = {"$gt": utils.to_oid(marker)}
 
         return self._col.find(query, fields=fields)
 
-    def claimed(self, claim_id=None, expires=None, limit=None):
+    def claimed(self, queue, claim_id=None, expires=None, limit=None):
 
-        query = {"c.id": claim_id}
+        query = {
+            "c.id": claim_id,
+            "q": utils.to_oid(queue),
+        }
         if not claim_id:
             # lookup over c.id to use the index
             query["c.id"] = {"$ne": None}
@@ -212,7 +228,8 @@ class MessageController(storage.MessageBase):
     def list(self, queue, tenant=None, marker=None,
              limit=10, echo=False, client_uuid=None):
 
-        messages = self.active(queue, tenant, marker, echo, client_uuid)
+        qid = self._get_queue_id(queue, tenant)
+        messages = self.active(qid, marker, echo, client_uuid)
         messages = messages.limit(limit).sort("_id")
 
         now = timeutils.utcnow_ts()
@@ -233,19 +250,14 @@ class MessageController(storage.MessageBase):
 
     def get(self, queue, message_id, tenant=None):
 
-        # Check whether the queue exists or not
-        self._get_queue_id(queue, tenant)
-
         # Base query, always check expire time
-        query = {"e": {"$gt": timeutils.utcnow_ts()}}
-
         mid = utils.to_oid(message_id)
-        #NOTE(flaper87): Not adding the queue filter
-        # since we already verified that it exists.
-        # Since mid is unique, it doesn't make
-        # sense to add an extra filter. This also
-        # reduces index hits and query time.
-        query["_id"] = mid
+        query = {
+            "q": self._get_queue_id(queue, tenant),
+            "e": {"$gt": timeutils.utcnow_ts()},
+            "_id": mid
+        }
+
         message = self._col.find_one(query)
 
         if message is None:
@@ -282,6 +294,7 @@ class MessageController(storage.MessageBase):
                     "q": qid,
                     "e": expires,
                     "u": client_uuid,
+                    "c": {"id": None, "e": 0},
                     "b": msg['body'] if 'body' in msg else {}
                 }
 
@@ -322,7 +335,7 @@ class ClaimController(storage.ClaimBase):
         msg_ctrl = self.driver.message_controller
 
         # Check whether the queue exists or not
-        self._get_queue_id(queue, tenant)
+        qid = self._get_queue_id(queue, tenant)
 
         # Base query, always check expire time
         now = timeutils.utcnow_ts()
@@ -343,7 +356,7 @@ class ClaimController(storage.ClaimBase):
             # Lets get claim's data
             # from the first message
             # in the iterator
-            messages = messages(msg_ctrl.claimed(cid, now))
+            messages = messages(msg_ctrl.claimed(qid, cid, now))
             claim = messages.next()
             claim = {
                 "age": age,
@@ -376,7 +389,7 @@ class ClaimController(storage.ClaimBase):
 
         # We don't need the qid here but
         # we need to verify it exists.
-        self._get_queue_id(queue, tenant)
+        qid = self._get_queue_id(queue, tenant)
 
         ttl = int(metadata.get("ttl", 60))
         oid = objectid.ObjectId()
@@ -393,7 +406,7 @@ class ClaimController(storage.ClaimBase):
 
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
-        msgs = msg_ctrl.active(queue, tenant=tenant, fields={"_id": 1})
+        msgs = msg_ctrl.active(qid, fields={"_id": 1})
         msgs = msgs.limit(limit).sort("_id")
 
         messages = iter([])
@@ -418,6 +431,16 @@ class ClaimController(storage.ClaimBase):
                                        {"$set": {"c": meta}}, upsert=False,
                                        multi=True)["n"]
 
+        # NOTE(flaper87): Dirty hack!
+        # This sets the expiration time to
+        # `expires` on messages that would
+        # expire before claim.
+        msg_ctrl._col.update({"q": queue,
+                              "e": {"$lte": expires},
+                              "c.id": oid},
+                             {"$set": {"e": expires}},
+                             upsert=False, multi=True)
+
         if updated != 0:
             claim, messages = self.get(queue, oid, tenant=tenant)
         return (str(oid), messages)
@@ -435,8 +458,9 @@ class ClaimController(storage.ClaimBase):
             msg = _("New ttl will make the claim expires")
             raise ValueError(msg)
 
+        qid = self._get_queue_id(queue, tenant)
         msg_ctrl = self.driver.message_controller
-        claimed = msg_ctrl.claimed(cid, expires=now, limit=1)
+        claimed = msg_ctrl.claimed(qid, cid, expires=now, limit=1)
 
         try:
             claimed.next()
@@ -449,8 +473,18 @@ class ClaimController(storage.ClaimBase):
             "e": expires,
         }
 
-        msg_ctrl._col.update({"c.id": cid},
+        msg_ctrl._col.update({"q": qid, "c.id": cid},
                              {"$set": {"c": meta}},
+                             upsert=False, multi=True)
+
+        # NOTE(flaper87): Dirty hack!
+        # This sets the expiration time to
+        # `expires` on messages that would
+        # expire before claim.
+        msg_ctrl._col.update({"q": qid,
+                              "e": {"$lte": expires},
+                              "c.id": cid},
+                             {"$set": {"e": expires}},
                              upsert=False, multi=True)
 
     def delete(self, queue, claim_id, tenant=None):
