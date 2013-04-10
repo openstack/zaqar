@@ -83,10 +83,9 @@ class MongodbMessageTests(base.MessageControllerTest):
     def test_indexes(self):
         col = self.controller._col
         indexes = col.index_information()
-        self.assertIn("q_1", indexes)
-        self.assertIn("u_1", indexes)
-        self.assertIn("e_-1", indexes)
-        self.assertIn("c.id_1_c.e_-1", indexes)
+        #self.assertIn("e_1", indexes)
+        self.assertIn("q_1_e_1_c.e_1__id_-1", indexes)
+        self.assertIn("q_1_c.id_1_c.e_1__id_-1", indexes)
 
 
 class MongodbClaimTests(base.ClaimControllerTest):
