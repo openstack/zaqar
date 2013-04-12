@@ -314,6 +314,7 @@ class Claim(base.ClaimBase):
                   from Messages left join Locked
                     on id = msgid
                  where msgid is null
+                   and ttl > julianday() * 86400.0 - created
                    and qid = ?
                  limit ?''', qid, limit)
 
