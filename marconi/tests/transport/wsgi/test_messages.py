@@ -166,7 +166,7 @@ class TestMessages(util.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           env['PATH_INFO'])
-        self.assertEquals(countof['messages']['total'], 10)
+        self.assertEquals(countof['messages']['free'], 10)
 
         env = testing.create_environ('/v1/480924/queues/nonexistent/messages',
                                      headers=self.headers)

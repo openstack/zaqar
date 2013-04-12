@@ -96,16 +96,14 @@ class QueueController(storage.QueueBase):
     def stats(self, name, tenant=None):
         qid = self.get_id(name, tenant)
         msg_ctrl = self.driver.message_controller
-        total = msg_ctrl.all().count()
-        active = msg_ctrl.active(qid).count()
+        active = msg_ctrl.active(qid)
         claimed = msg_ctrl.claimed(qid)
 
         return {
             "actions": 0,
             "messages": {
-                "total": total,
-                "expired": total - active,
                 "claimed": claimed.count(),
+                "free": active.count(),
             }
         }
 

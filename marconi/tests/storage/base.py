@@ -88,7 +88,7 @@ class QueueControllerTest(ControllerBaseTest):
                          tenant=self.tenant, client_uuid="my_uuid", num=12)
 
         countof = self.controller.stats("test", tenant=self.tenant)
-        self.assertEqual(countof['messages']['total'], 12)
+        self.assertEqual(countof['messages']['free'], 12)
 
         # Test Queue Deletion
         self.controller.delete("test", tenant=self.tenant)
@@ -216,6 +216,12 @@ class ClaimControllerTest(ControllerBaseTest):
 
         messages = list(messages)
         self.assertEquals(len(messages), 15)
+
+        # Ensure Queue stats
+        countof = self.queue_controller.stats(self.queue_name,
+                                              tenant=self.tenant)
+        self.assertEqual(countof['messages']['claimed'], 15)
+        self.assertEqual(countof['messages']['free'], 5)
 
         # Make sure get works
         claim, messages2 = self.controller.get(self.queue_name, claim_id,

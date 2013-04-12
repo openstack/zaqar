@@ -64,7 +64,7 @@ class TestSqlite(testing.TestBase):
 
         # ensure the message counts
         countof = self.queue_ctrl.stats('fizbit', '480924')
-        self.assertEquals(countof['messages']['total'], 11)
+        self.assertEquals(countof['messages']['free'], 1)
         self.assertEquals(countof['messages']['claimed'], 10)
 
         # claim a message
@@ -113,7 +113,7 @@ class TestSqlite(testing.TestBase):
             self.msg_ctrl.get('fizbit', msgid, '480924')
 
         countof = self.queue_ctrl.stats('fizbit', '480924')
-        self.assertEquals(countof['messages']['expired'], 1)
+        self.assertEquals(countof['messages']['free'], 0)
 
     #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
     def test_illformed_id(self):
