@@ -63,6 +63,17 @@ class MongodbQueueTests(base.QueueControllerTest):
         indexes = col.index_information()
         self.assertIn("t_1_n_1", indexes)
 
+    def test_messages_purged(self):
+        queue_name = "test"
+        self.controller.upsert(queue_name, {})
+        qid = self.controller.get_id(queue_name)
+        self.message_controller.post(queue_name,
+                                     [{"ttl": 60}],
+                                     1234)
+        self.controller.delete(queue_name)
+        col = self.message_controller._col
+        self.assertEqual(col.find({"q": qid}).count(), 0)
+
 
 class MongodbMessageTests(base.MessageControllerTest):
 
