@@ -46,3 +46,11 @@ class ClaimDoesNotExist(DoesNotExist):
                  "queue %(queue)s of tenant %(tenant)s") %
                dict(cid=cid, queue=queue, tenant=tenant))
         super(ClaimDoesNotExist, self).__init__(msg)
+
+
+class ClaimNotPermitted(NotPermitted):
+
+    def __init__(self, mid, cid):
+        msg = (_("Message %(mid)s is not claimed by %(cid)s") %
+               dict(cid=cid, mid=mid))
+        super(ClaimNotPermitted, self).__init__(msg)
