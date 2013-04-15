@@ -26,3 +26,8 @@ class SQliteQueueTests(base.QueueControllerTest):
 class SQliteMessageTests(base.MessageControllerTest):
     driver_class = sqlite.Driver
     controller_class = controllers.Message
+
+
+class SQliteClaimTests(base.ClaimControllerTest):
+    driver_class = sqlite.Driver
+    controller_class = controllers.Claim

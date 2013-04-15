@@ -200,7 +200,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                      tenant=self.tenant)
 
     def tearDown(self):
-        self.queue_controller.delete(self.queue_name)
+        self.queue_controller.delete(self.queue_name, tenant=self.tenant)
         super(ClaimControllerTest, self).tearDown()
 
     def test_claim_lifecycle(self):
