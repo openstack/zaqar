@@ -78,6 +78,7 @@ class TestSqlite(testing.TestBase):
 
         # it's just fine to delete a non-existing message
         self.msg_ctrl.delete('fizbit', msgid, '480924')
+        self.msg_ctrl.delete('fizbit', msgid, '480924', cid)
 
         # claim expires
         self.claim_ctrl.update('fizbit', meta['id'], {'ttl': 0}, '480924')

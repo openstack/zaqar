@@ -209,35 +209,57 @@ class Message(base.MessageBase):
 
     def delete(self, queue, message_id, tenant, claim=None):
         try:
-            sql = '''
+            id = _msgid_decode(message_id)
+
+            if not claim:
+                self.driver.run('''
+                    delete from Messages
+                     where id = ?
+                       and qid = (select id from Queues
+                                   where tenant = ? and name = ?)
+                ''', id, tenant, queue)
+                return
+
+            with self.driver('immediate'):
+                message_exists, = self.driver.get('''
+                    select count(M.id)
+                      from Queues as Q join Messages as M
+                        on qid = Q.id
+                     where ttl > julianday() * 86400.0 - created
+                       and M.id = ? and tenant = ? and name = ?
+                ''', id, tenant, queue)
+
+                if not message_exists:
+                    return
+
+                self.__delete_claimed(id, claim)
+
+        except _BadID:
+            pass
+
+    def __delete_claimed(self, id, claim):
+        # Precondition: id exists in a specific queue
+        try:
+            self.driver.run('''
                 delete from Messages
                  where id = ?
-                   and qid = (select id from Queues
-                               where tenant = ? and name = ?)'''
-            args = [_msgid_decode(message_id), tenant, queue]
-
-            if claim:
-                sql += '''
                    and id in (select msgid
                                 from Claims join Locked
                                   on id = cid
                                where ttl > julianday() * 86400.0 - created
-                                 and id = ?)'''
-                args += [_cid_decode(claim)]
-
-            self.driver.run(sql, *args)
+                                 and id = ?)
+            ''', id, _cid_decode(claim))
 
             if not self.driver.affected:
                 raise _BadID
 
         except _BadID:
             #TODO(zyuan): use exception itself to format this
-            if claim:
-                msg = (_("Attempt to delete message %(id)s "
-                         "with a wrong claim")
-                       % dict(id=message_id))
+            msg = (_("Attempt to delete message %(id)s "
+                     "with a wrong claim")
+                   % dict(id=_msgid_encode(id)))
 
-                raise exceptions.NotPermitted(msg)
+            raise exceptions.NotPermitted(msg)
 
 
 class Claim(base.ClaimBase):
