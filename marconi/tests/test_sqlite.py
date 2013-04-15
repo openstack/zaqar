@@ -49,12 +49,6 @@ class TestSqlite(testing.TestBase):
                                    tenant='480924',
                                    client_uuid='79ed56f8')[0]
 
-        #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
-        msgs = list(self.msg_ctrl.list('fizbit', '480924',
-                                       marker='illformed'))
-
-        self.assertEquals(len(msgs), 0)
-
         # can not delete a message with a wrong claim
         cid_another, _ = self.claim_ctrl.create(
             'fizbit', {'ttl': 10}, '480924')
@@ -114,21 +108,6 @@ class TestSqlite(testing.TestBase):
 
         countof = self.queue_ctrl.stats('fizbit', '480924')
         self.assertEquals(countof['messages']['free'], 0)
-
-    #TODO(zyuan): move this to tests/storage/test_impl_sqlite.py
-    def test_illformed_id(self):
-
-        # SQlite-specific tests.  Since all IDs exposed in APIs are opaque,
-        # any ill-formed IDs should be regarded as non-existing ones.
-
-        with testing.expected(exceptions.DoesNotExist):
-            self.msg_ctrl.get('nonexistent', 'illformed', '480924')
-
-        self.claim_ctrl.delete('nonexistent', 'illformed', '480924')
-
-        with testing.expected(exceptions.DoesNotExist):
-            self.claim_ctrl.update('nonexistent', 'illformed',
-                                   {'ttl': 40}, '480924')
 
     def tearDown(self):
         self.queue_ctrl.delete('fizbit', '480924')
