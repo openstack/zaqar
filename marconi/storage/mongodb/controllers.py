@@ -300,9 +300,31 @@ class MessageController(storage.MessageBase):
         return ids
 
     def delete(self, queue, message_id, tenant=None, claim=None):
-        self._get_queue_id(queue, tenant)
-        mid = utils.to_oid(message_id)
-        self._col.remove(mid, w=0)
+        try:
+            query = {
+                "q": self._get_queue_id(queue, tenant),
+                "_id": utils.to_oid(message_id)
+            }
+
+            if claim:
+                now = timeutils.utcnow_ts()
+                query["e"] = {"$gt": now}
+                message = self._col.find_one(query)
+
+                if message is None:
+                    return
+
+                cid = utils.to_oid(claim)
+                if not ("c" in message and
+                        message["c"]["id"] == cid and
+                        message["c"]["e"] > now):
+                    raise exceptions.ClaimNotPermitted(message_id, claim)
+
+                self._col.remove(query["_id"], w=0)
+            else:
+                self._col.remove(query, w=0)
+        except exceptions.QueueDoesNotExist:
+            pass
 
     def purge_queue(self, queue, tenant=None):
         try:
