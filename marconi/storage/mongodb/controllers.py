@@ -189,13 +189,12 @@ class MessageController(storage.MessageBase):
 
         query = {
             "c.id": claim_id,
+            "c.e": {"$gt": expires or timeutils.utcnow_ts()},
             "q": utils.to_oid(queue),
         }
         if not claim_id:
             # lookup over c.id to use the index
             query["c.id"] = {"$ne": None}
-        if expires:
-            query["c.e"] = {"$gt": expires}
 
         msgs = self._col.find(query, sort=[("_id", 1)])
 
