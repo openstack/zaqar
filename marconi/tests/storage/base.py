@@ -220,6 +220,21 @@ class MessageControllerTest(ControllerBaseTest):
                                    tenant=self.tenant,
                                    claim=cid)
 
+    def test_expired_message(self):
+        messages = [{'body': 3.14, 'ttl': 0}]
+
+        [msgid] = self.controller.post(self.queue_name, messages,
+                                       tenant=self.tenant,
+                                       client_uuid='my_uuid')
+
+        with testing.expected(storage.exceptions.DoesNotExist):
+            self.controller.get(self.queue_name, msgid,
+                                tenant=self.tenant)
+
+        countof = self.queue_controller.stats(self.queue_name,
+                                              tenant=self.tenant)
+        self.assertEquals(countof['messages']['free'], 0)
+
 
 class ClaimControllerTest(ControllerBaseTest):
     """
@@ -296,6 +311,20 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           claim_id, tenant=self.tenant)
+
+    def test_expired_claim(self):
+        meta = {"ttl": 0}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    tenant=self.tenant)
+
+        with testing.expected(storage.exceptions.DoesNotExist):
+            self.controller.get(self.queue_name, claim_id,
+                                tenant=self.tenant)
+
+        with testing.expected(storage.exceptions.DoesNotExist):
+            self.controller.update(self.queue_name, claim_id,
+                                   meta, tenant=self.tenant)
 
 
 def _insert_fixtures(controller, queue_name, tenant=None,
