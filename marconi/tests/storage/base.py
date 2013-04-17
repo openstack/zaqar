@@ -300,7 +300,9 @@ class ClaimControllerTest(ControllerBaseTest):
 
         messages2 = list(messages2)
         self.assertEquals(len(messages2), 15)
-        self.assertEquals(messages, messages2)
+        #TODO(zyuan): Add some tests to ensure the ttl is extended/not-extended
+        for msg1, msg2 in zip(messages, messages2):
+            self.assertEquals(msg1['body'], msg2['body'])
         self.assertEquals(claim["ttl"], 100)
         self.assertEquals(claim["id"], claim_id)
 

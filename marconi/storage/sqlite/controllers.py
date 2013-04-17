@@ -333,6 +333,8 @@ class Claim(base.ClaimBase):
                    and qid = ?
                  limit ?''', qid, limit)
 
+            self.__update_claimed(id, metadata['ttl'])
+
             return (_cid_encode(id), self.__get(id))
 
     def __get(self, cid):
@@ -353,21 +355,39 @@ class Claim(base.ClaimBase):
 
     def update(self, queue, claim_id, metadata, tenant):
         try:
-            # still delay the cleanup here
-            self.driver.run('''
-                update Claims
-                   set ttl = ?
-                 where ttl > julianday() * 86400.0 - created
-                   and id = ?
-                   and qid = (select id from Queues
-                               where tenant = ? and name = ?)
-            ''', metadata['ttl'], _cid_decode(claim_id), tenant, queue)
+            id = _cid_decode(claim_id)
 
-            if not self.driver.affected:
-                raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+            with self.driver('deferred'):
+
+                # still delay the cleanup here
+                self.driver.run('''
+                    update Claims
+                       set created = julianday() * 86400.0,
+                           ttl = ?
+                     where ttl > julianday() * 86400.0 - created
+                       and id = ?
+                       and qid = (select id from Queues
+                                   where tenant = ? and name = ?)
+                ''', metadata['ttl'], id, tenant, queue)
+
+                if not self.driver.affected:
+                    raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+
+                self.__update_claimed(id, metadata['ttl'])
 
         except _BadID:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+
+    def __update_claimed(self, cid, ttl):
+        # Precondition: cid is not expired
+        self.driver.run('''
+            update Messages
+               set created = julianday() * 86400.0,
+                   ttl = ?
+             where ttl < ?
+               and id in (select msgid from Locked
+                           where cid = ?)
+        ''', ttl, ttl, cid)
 
     def delete(self, queue, claim_id, tenant):
         try:
