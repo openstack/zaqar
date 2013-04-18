@@ -69,13 +69,18 @@ class QueueBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def list(self, tenant=None):
+    def list(self, tenant=None, marker=None,
+             limit=10, detailed=False):
         """
         Base method for listing queues.
 
         :param tenant: Tenant id
+        :param marker: The last queue name
+        :param limit: (Default 10) Max number
+        :param detailed: Whether metadata is included
 
-        :returns: List of queues
+        :returns: An iterator giving a sequence of queues
+            and the marker of the next page.
         """
         raise NotImplementedError
 
@@ -168,7 +173,8 @@ class MessageBase(ControllerBase):
         :param client_uuid: Client's unique identifier. This param
             is required when echo=False.
 
-        :returns: Iterator of messages
+        :returns: An iterator giving a sequence of messages and
+            the marker of the next page.
         """
         raise NotImplementedError
 
@@ -236,8 +242,7 @@ class ClaimBase(ControllerBase):
         :param claim_id: The claim id
         :param tenant: Tenant id
 
-        :returns: Dictionary containing claim's
-            metadata and claimed messages.
+        :returns: (Claim's metadata, claimed messages)
         :raises: DoesNotExist
         """
         raise NotImplementedError
@@ -255,8 +260,7 @@ class ClaimBase(ControllerBase):
         :param limit: (Default 10) Max number
             of messages to claim.
 
-        :returns: Dictionary containing claim's
-            metadata and claimed messages.
+        :returns: (Claim ID, claimed messages)
         """
         raise NotImplementedError
 
