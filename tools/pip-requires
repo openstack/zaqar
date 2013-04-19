@@ -1,5 +1,6 @@
 cliff
 falcon>=0.1.4
+simplejson
 msgpack-python
 oslo.config>=1.1.0
 PasteDeploy
