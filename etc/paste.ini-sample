@@ -12,4 +12,3 @@ admin_password = %SERVICE_PASSWORD%
 
 [app:marconi]
 paste.app_factory = lib.marconi_paste:WSGI.app_factory
-config_file = marconi.conf-sample

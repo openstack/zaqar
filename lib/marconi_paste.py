@@ -19,7 +19,6 @@ import marconi
 class WSGI(object):
     @staticmethod
     def app_factory(global_config, **local_config):
-        bootstrap = marconi.Bootstrap(global_config['here'] + '/' +
-                                      local_config['config_file'])
+        bootstrap = marconi.Bootstrap()
 
         return bootstrap.transport.app
