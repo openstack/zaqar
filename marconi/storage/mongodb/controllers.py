@@ -232,22 +232,24 @@ class MessageController(storage.MessageBase):
         qid = self._get_queue_id(queue, tenant)
         messages = self.active(qid, marker, echo, client_uuid)
         messages = messages.limit(limit).sort("_id")
+        marker_id = {}
 
         now = timeutils.utcnow()
 
         def denormalizer(msg):
             oid = msg["_id"]
             age = now - utils.oid_utc(oid)
+            marker_id['next'] = oid
 
             return {
                 "id": str(oid),
                 "age": age.seconds,
                 "ttl": msg["t"],
                 "body": msg["b"],
-                "marker": str(oid),
             }
 
-        return utils.HookedCursor(messages, denormalizer)
+        yield utils.HookedCursor(messages, denormalizer)
+        yield str(marker_id['next'])
 
     def get(self, queue, message_id, tenant=None):
 

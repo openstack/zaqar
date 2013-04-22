@@ -164,15 +164,20 @@ class Message(base.MessageBase):
                 args += [limit]
 
                 records = self.driver.run(sql, *args)
+                marker_id = {}
 
-                for id, content, ttl, age in records:
-                    yield {
-                        'id': _msgid_encode(id),
-                        'ttl': ttl,
-                        'age': int(age),
-                        'marker': _marker_encode(id),
-                        'body': content,
-                    }
+                def it():
+                    for id, content, ttl, age in records:
+                        marker_id['next'] = id
+                        yield {
+                            'id': _msgid_encode(id),
+                            'ttl': ttl,
+                            'age': int(age),
+                            'body': content,
+                        }
+
+                yield it()
+                yield _marker_encode(marker_id['next'])
 
             except _BadID:
                 return

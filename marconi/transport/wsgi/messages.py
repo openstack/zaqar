@@ -86,21 +86,20 @@ class CollectionResource(object):
         kwargs = dict([(k, v) for k, v in kwargs.items()
                        if v is not None])
 
-        resp_dict = {}
-
         try:
-            msgs = self.msg_ctrl.list(queue_name,
-                                      tenant=tenant_id,
-                                      client_uuid=uuid,
-                                      **kwargs)
-            resp_dict['messages'] = list(msgs)
+            interaction = self.msg_ctrl.list(queue_name,
+                                             tenant=tenant_id,
+                                             client_uuid=uuid,
+                                             **kwargs)
+            resp_dict = {
+                'messages': list(interaction.next())
+            }
 
             if len(resp_dict['messages']) != 0:
-                kwargs['marker'] = resp_dict['messages'][-1]['marker']
+                kwargs['marker'] = interaction.next()
                 for msg in resp_dict['messages']:
                     msg['href'] = req.path + '/' + msg['id']
                     del msg['id']
-                    del msg['marker']
 
                 resp_dict['links'] = [
                     {

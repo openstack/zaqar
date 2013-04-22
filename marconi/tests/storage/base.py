@@ -159,9 +159,10 @@ class MessageControllerTest(ControllerBaseTest):
                          tenant=self.tenant, client_uuid="my_uuid", num=15)
 
         def load_messages(expected, *args, **kwargs):
-            msgs = list(self.controller.list(*args, **kwargs))
+            interaction = self.controller.list(*args, **kwargs)
+            msgs = list(interaction.next())
             self.assertEqual(len(msgs), expected)
-            return msgs
+            return interaction
 
         # Test all messages, echo False and uuid
         load_messages(0, self.queue_name, tenant=self.tenant,
@@ -172,12 +173,12 @@ class MessageControllerTest(ControllerBaseTest):
                       echo=True)
 
         # Test all messages, echo True, and uuid
-        msgs = load_messages(10, self.queue_name, echo=True,
-                             tenant=self.tenant, client_uuid="my_uuid")
+        interaction = load_messages(10, self.queue_name, echo=True,
+                                    tenant=self.tenant, client_uuid="my_uuid")
 
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, tenant=self.tenant,
-                      marker=msgs[9]["marker"], client_uuid="my_uuid")
+                      marker=interaction.next(), client_uuid="my_uuid")
 
     def test_claim_effects(self):
         _insert_fixtures(self.controller, self.queue_name,
