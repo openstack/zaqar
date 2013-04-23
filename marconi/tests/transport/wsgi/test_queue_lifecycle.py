@@ -150,9 +150,8 @@ class QueueLifecycleBaseTest(base.TestBase):
         # List empty
         env = testing.create_environ('/v1/480924/queues')
 
-        result = self.app(env, self.srmock)
-        result_doc = json.loads(result[0])
-        self.assertEquals(result_doc['queues'], [])
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Create some
         env = testing.create_environ('/v1/480924/queues/q1',
@@ -165,21 +164,48 @@ class QueueLifecycleBaseTest(base.TestBase):
                                      body='{}')
         self.app(env, self.srmock)
 
+        env = testing.create_environ('/v1/480924/queues/q3',
+                                     method="PUT",
+                                     body='{ "_ttl": 30 }')
+        self.app(env, self.srmock)
+
         # List
-        env = testing.create_environ('/v1/480924/queues')
+        env = testing.create_environ('/v1/480924/queues',
+                                     query_string='limit=2')
 
         result = self.app(env, self.srmock)
         result_doc = json.loads(result[0])
+        [target, params] = result_doc['links'][0]['href'].split('?')
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'])
+                          env['PATH_INFO'] + '?' + env['QUERY_STRING'])
 
         for queue in result_doc['queues']:
             env = testing.create_environ(queue['href'])
-            result = self.app(env, self.srmock)
-            result_doc = json.loads(result[0])
-            self.assertEquals(result_doc, queue['metadata'])
+            self.app(env, self.srmock)
+            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertNotIn('metadata', queue)
+
+        # List with metadata
+        env = testing.create_environ(target,
+                                     query_string=params + '&detailed=true')
+
+        result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
+        [target, params] = result_doc['links'][0]['href'].split('?')
+
+        [queue] = result_doc['queues']
+        env = testing.create_environ(queue['href'])
+        result = self.app(env, self.srmock)
+        result_doc = json.loads(result[0])
+        self.assertEquals(result_doc, queue['metadata'])
+
+        # List tail
+        env = testing.create_environ(target, query_string=params)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
 
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):

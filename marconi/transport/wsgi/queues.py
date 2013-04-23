@@ -98,23 +98,45 @@ class CollectionResource(object):
         self.queue_ctrl = queue_controller
 
     def on_get(self, req, resp, tenant_id):
-        resp_dict = {}
-        try:
-            interaction = self.queue_ctrl.list(tenant_id, detailed=True)
+        #TODO(zyuan): where do we define the limits?
+        kwargs = {
+            'marker': req.get_param('marker'),
+            'limit': req.get_param_as_int('limit'),
+            'detailed': req.get_param_as_bool('detailed'),
+        }
+        kwargs = dict([(k, v) for k, v in kwargs.items()
+                       if v is not None])
 
-            resp_dict['queues'] = list(interaction.next())
-            for queue in resp_dict['queues']:
-                queue['href'] = req.path + '/' + queue['name']
+        try:
+            interaction = self.queue_ctrl.list(tenant=tenant_id, **kwargs)
+
+            resp_dict = {
+                'queues': list(interaction.next())
+            }
+
+            if len(resp_dict['queues']) != 0:
+                kwargs['marker'] = interaction.next()
+                for queue in resp_dict['queues']:
+                    queue['href'] = req.path + '/' + queue['name']
+
+                resp_dict['links'] = [
+                    {
+                        'rel': 'next',
+                        'href': req.path + falcon.to_query_str(kwargs)
+                    }
+                ]
+
+                resp.content_location = req.relative_uri
+                resp.body = helpers.to_json(resp_dict)
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_204
 
         except Exception as ex:
             LOG.exception(ex)
             title = _('Service temporarily unavailable')
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
-
-        resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(resp_dict)
-        resp.status = falcon.HTTP_200
 
 
 def _filtered(obj):
