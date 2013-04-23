@@ -40,3 +40,13 @@ def to_json(obj):
     :param obj: a JSON-serializable object
     """
     return json.dumps(obj, ensure_ascii=False)
+
+
+def purge(d):
+    """
+    Remove entries with a value of None from a dict by
+    returning a purged copy.
+
+    :param d: a dictionary object
+    """
+    return dict([(k, v) for k, v in d.items() if v is not None])

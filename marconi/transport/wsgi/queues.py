@@ -99,13 +99,11 @@ class CollectionResource(object):
 
     def on_get(self, req, resp, tenant_id):
         #TODO(zyuan): where do we define the limits?
-        kwargs = {
+        kwargs = helpers.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
             'detailed': req.get_param_as_bool('detailed'),
-        }
-        kwargs = dict([(k, v) for k, v in kwargs.items()
-                       if v is not None])
+        })
 
         try:
             interaction = self.queue_ctrl.list(tenant=tenant_id, **kwargs)

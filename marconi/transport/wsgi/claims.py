@@ -37,10 +37,9 @@ class CollectionResource(object):
                                         _('Missing claim metadata.'))
 
         #TODO(zyuan): where do we define the limits?
-        kwargs = {
+        kwargs = helpers.purge({
             'limit': req.get_param_as_int('limit'),
-        }
-        kwargs = dict([(k, v) for k, v in kwargs.items() if v is not None])
+        })
 
         try:
             metadata = _filtered(helpers.read_json(req.stream))

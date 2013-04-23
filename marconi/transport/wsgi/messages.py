@@ -78,13 +78,11 @@ class CollectionResource(object):
         uuid = req.get_header('Client-ID', required=True)
 
         #TODO(zyuan): where do we define the limits?
-        kwargs = {
+        kwargs = helpers.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
             'echo': req.get_param_as_bool('echo'),
-        }
-        kwargs = dict([(k, v) for k, v in kwargs.items()
-                       if v is not None])
+        })
 
         try:
             interaction = self.msg_ctrl.list(queue_name,
