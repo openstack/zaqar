@@ -50,19 +50,27 @@ class QueueControllerTest(ControllerBaseTest):
         self.claim_controller = self.driver.claim_controller
 
     def test_list(self):
-        num = 4
+        num = 15
         for queue in xrange(num):
             self.controller.upsert(queue, {}, tenant=self.tenant)
 
-        queues = self.controller.list(tenant=self.tenant)
+        interaction = self.controller.list(tenant=self.tenant,
+                                           detailed=True)
+        queues = list(interaction.next())
 
-        counter = 0
-        for queue in queues:
-            self.assertEqual(len(queue), 2)
-            self.assertIn("name", queue)
-            self.assertIn("metadata", queue)
-            counter += 1
-        self.assertEqual(counter, num)
+        self.assertEquals(all(map(lambda queue:
+                                  'name' in queue and
+                                  'metadata' in queue, queues)), True)
+        self.assertEquals(len(queues), 10)
+
+        interaction = self.controller.list(tenant=self.tenant,
+                                           marker=interaction.next())
+        queues = list(interaction.next())
+
+        self.assertEquals(all(map(lambda queue:
+                                  'name' in queue and
+                                  'metadata' not in queue, queues)), True)
+        self.assertEquals(len(queues), 5)
 
     def test_queue_lifecycle(self):
         # Test Queue Creation

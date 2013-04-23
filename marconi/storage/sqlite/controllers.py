@@ -34,13 +34,38 @@ class Queue(base.QueueBase):
             )
         ''')
 
-    def list(self, tenant):
-        records = self.driver.run('''
-            select name, metadata from Queues
-             where tenant = ?''', tenant)
+    def list(self, tenant, marker=None,
+             limit=10, detailed=False):
+        sql = (('''
+            select name from Queues''' if not detailed
+                else '''
+            select name, metadata from Queues''') +
+               '''
+             where tenant = ?''')
+        args = [tenant]
 
-        for k, v in records:
-            yield {'name': k, 'metadata': v}
+        if marker:
+            sql += '''
+               and name > ?'''
+            args += [marker]
+
+        sql += '''
+             order by name
+             limit ?'''
+        args += [limit]
+
+        records = self.driver.run(sql, *args)
+        marker_name = {}
+
+        def it():
+            for rec in records:
+                marker_name['next'] = rec[0]
+                yield ({'name': rec[0]} if not detailed
+                       else
+                       {'name': rec[0], 'metadata': rec[1]})
+
+        yield it()
+        yield marker_name['next']
 
     def get(self, name, tenant):
         try:

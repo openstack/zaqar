@@ -55,12 +55,30 @@ class QueueController(storage.QueueBase):
         # as specific tenant, for example. Order Matters!
         self._col.ensure_index([("t", 1), ("n", 1)], unique=True)
 
-    def list(self, tenant=None):
-        cursor = self._col.find({"t": tenant}, fields=dict(n=1, m=1, _id=0))
-        for queue in cursor:
-            queue["name"] = queue.pop("n")
-            queue["metadata"] = queue.pop("m", {})
-            yield queue
+    def list(self, tenant=None, marker=None,
+             limit=10, detailed=False):
+        query = {"t": tenant}
+        if marker:
+            query["n"] = {"$gt": marker}
+
+        fields = {"n": 1, "_id": 0}
+        if detailed:
+            fields["m"] = 1
+
+        cursor = self._col.find(query, fields=fields)
+        cursor = cursor.limit(limit).sort("n")
+        marker_name = {}
+
+        def normalizer(records):
+            for rec in records:
+                queue = {"name": rec["n"]}
+                marker_name["next"] = queue["name"]
+                if detailed:
+                    queue["metadata"] = rec["m"]
+                yield queue
+
+        yield normalizer(cursor)
+        yield marker_name["next"]
 
     def _get(self, name, tenant=None, fields={"m": 1, "_id": 0}):
         queue = self._col.find_one({"t": tenant, "n": name}, fields=fields)

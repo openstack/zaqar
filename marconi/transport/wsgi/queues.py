@@ -100,9 +100,9 @@ class CollectionResource(object):
     def on_get(self, req, resp, tenant_id):
         resp_dict = {}
         try:
-            queues = self.queue_ctrl.list(tenant_id)
+            interaction = self.queue_ctrl.list(tenant_id, detailed=True)
 
-            resp_dict['queues'] = list(queues)
+            resp_dict['queues'] = list(interaction.next())
             for queue in resp_dict['queues']:
                 queue['href'] = req.path + '/' + queue['name']
 
