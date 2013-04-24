@@ -178,7 +178,7 @@ class MessagesBaseTest(base.TestBase):
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
                                      method="GET")
 
-        body = self.app(env, self.srmock)
+        self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def tearDown(self):

@@ -1,11 +1,10 @@
 distribute>=0.6.24
-
 coverage
 discover
 fixtures
 mox
 pep8==1.3.3
-pyflakes
+flake8
 python-subunit
 testrepository
 testtools

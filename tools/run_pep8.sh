@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 # This is used by run_tests.sh and tox.ini
@@ -12,4 +12,4 @@ EXCLUDE+=',./tools'
 EXCLUDE+=',*egg,build'
 ${PEP8} ${EXCLUDE} .
 
-! pyflakes marconi/ | grep "imported but unused\|redefinition of function" | grep -v "__init__.py"
+! flake8 marconi --builtins=_,__MARCONI_SETUP__
