@@ -18,20 +18,13 @@ import json
 import falcon
 from falcon import testing
 
-import marconi
-from marconi.tests import util
+from marconi.tests.transport.wsgi import base
 
 
-class TestClaims(util.TestBase):
+class ClaimsBaseTest(base.TestBase):
 
     def setUp(self):
-        super(TestClaims, self).setUp()
-
-        conf_file = self.conf_path('wsgi_sqlite.conf')
-        boot = marconi.Bootstrap(conf_file)
-
-        self.app = boot.transport.app
-        self.srmock = testing.StartResponseMock()
+        super(ClaimsBaseTest, self).setUp()
 
         doc = '{ "_ttl": 60 }'
         env = testing.create_environ('/v1/480924/queues/fizbit',
@@ -197,4 +190,45 @@ class TestClaims(util.TestBase):
                                      method="DELETE")
         self.app(env, self.srmock)
 
-        super(TestClaims, self).tearDown()
+        super(ClaimsBaseTest, self).tearDown()
+
+
+class ClaimsSQLiteTests(ClaimsBaseTest):
+
+    config_filename = 'wsgi_sqlite.conf'
+
+
+class ClaimsFaultyDriverTests(base.TestBase):
+
+    config_filename = 'wsgi_faulty.conf'
+
+    def test_simple(self):
+        doc = '{ "ttl": 100 }'
+        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
+                                     method="POST",
+                                     body=doc)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
+                                     '/nonexistent',
+                                     method="GET")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
+                                     '/nonexistent',
+                                     method="PATCH",
+                                     body=doc)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
+        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
+                                     '/nonexistent',
+                                     method="DELETE")
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)

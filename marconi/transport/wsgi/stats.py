@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import falcon
 
 from marconi.transport import helpers
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Resource(object):
@@ -26,9 +31,16 @@ class Resource(object):
         self.queue_ctrl = queue_controller
 
     def on_get(self, req, resp, tenant_id, queue_name):
-        resp_dict = self.queue_ctrl.stats(queue_name,
-                                          tenant=tenant_id)
+        try:
+            resp_dict = self.queue_ctrl.stats(queue_name,
+                                              tenant=tenant_id)
 
-        resp.content_location = req.path
-        resp.body = helpers.to_json(resp_dict)
-        resp.status = falcon.HTTP_200
+            resp.content_location = req.path
+            resp.body = helpers.to_json(resp_dict)
+            resp.status = falcon.HTTP_200
+
+        except Exception as ex:
+            LOG.exception(ex)
+            title = _('Service temporarily unavailable')
+            msg = _('Please try again in a few seconds.')
+            raise falcon.HTTPServiceUnavailable(title, msg, 30)

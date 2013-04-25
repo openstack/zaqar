@@ -225,6 +225,10 @@ class QueueFaultyDriverTests(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
         self.assertNotEquals(result_doc, json.loads(doc))
 
+        env = testing.create_environ('/v1/480924/queues/gumshoe/stats')
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+
         env = testing.create_environ('/v1/480924/queues')
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
