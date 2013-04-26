@@ -89,7 +89,7 @@ class ClaimsBaseTest(base.TestBase):
 
         st = json.loads(body[0])
         target = self.srmock.headers_dict['Location']
-        msg_target = st[0]['href']
+        [msg_target, params] = st[0]['href'].split('?')
 
         # no more messages to claim
 
@@ -116,12 +116,13 @@ class ClaimsBaseTest(base.TestBase):
 
         # delete a message with its associated claim
 
-        env = testing.create_environ(msg_target, method="DELETE")
+        env = testing.create_environ(msg_target, query_string=params,
+                                     method="DELETE")
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        env = testing.create_environ(msg_target)
+        env = testing.create_environ(msg_target, query_string=params)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
