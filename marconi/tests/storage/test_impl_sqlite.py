@@ -50,6 +50,17 @@ class SQliteMessageTests(base.MessageControllerTest):
         with testing.expected(exceptions.DoesNotExist):
             self.controller.get('unused', 'illformed', '480924')
 
+    def test_illformed_claim(self):
+        [msgid] = self.controller.post('unused',
+                                       [{'body': {}, 'ttl': 10}],
+                                       tenant='480924',
+                                       client_uuid='unused')
+
+        with testing.expected(exceptions.NotPermitted):
+            self.controller.delete('unused', msgid,
+                                   tenant='480924',
+                                   claim='illformed')
+
 
 class SQliteClaimTests(base.ClaimControllerTest):
     driver_class = sqlite.Driver
