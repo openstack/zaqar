@@ -251,15 +251,10 @@ class Message(base.MessageBase):
             ''', id, _cid_decode(claim))
 
             if not self.driver.affected:
-                raise _BadID
+                raise exceptions.ClaimNotPermitted(_msgid_encode(id), claim)
 
         except _BadID:
-            #TODO(zyuan): use exception itself to format this
-            msg = (_("Attempt to delete message %(id)s "
-                     "with a wrong claim")
-                   % dict(id=_msgid_encode(id)))
-
-            raise exceptions.NotPermitted(msg)
+            raise exceptions.ClaimNotPermitted(_msgid_encode(id), claim)
 
 
 class Claim(base.ClaimBase):
