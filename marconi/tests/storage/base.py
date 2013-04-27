@@ -115,6 +115,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         # Lets create a queue
         self.queue_controller = self.driver.queue_controller
+        self.claim_controller = self.driver.claim_controller
         self.queue_controller.upsert(self.queue_name, {},
                                      tenant=self.tenant)
 
@@ -153,7 +154,7 @@ class MessageControllerTest(ControllerBaseTest):
                           queue_name, message_id=created[0],
                           tenant=self.tenant)
 
-    def test_qet_multi(self):
+    def test_get_multi(self):
         _insert_fixtures(self.controller, self.queue_name,
                          tenant=self.tenant, client_uuid="my_uuid", num=15)
 
@@ -177,6 +178,47 @@ class MessageControllerTest(ControllerBaseTest):
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, tenant=self.tenant,
                       marker=msgs[9]["marker"], client_uuid="my_uuid")
+
+    def test_claim_effects(self):
+        _insert_fixtures(self.controller, self.queue_name,
+                         tenant=self.tenant, client_uuid="my_uuid", num=12)
+
+        meta = {"ttl": 70}
+
+        another_cid, _ = self.claim_controller.create(self.queue_name, meta,
+                                                      tenant=self.tenant)
+        cid, msgs = self.claim_controller.create(self.queue_name, meta,
+                                                 tenant=self.tenant)
+        [msg1, msg2] = msgs
+
+        # A wrong claim does not ensure the message deletion
+        with testing.expected(storage.exceptions.NotPermitted):
+            self.controller.delete(self.queue_name, msg1["id"],
+                                   tenant=self.tenant,
+                                   claim=another_cid)
+
+        # Make sure a message can be deleted with a claim
+        self.controller.delete(self.queue_name, msg1["id"],
+                               tenant=self.tenant,
+                               claim=cid)
+
+        with testing.expected(storage.exceptions.DoesNotExist):
+            self.controller.get(self.queue_name, msg1["id"],
+                                tenant=self.tenant)
+
+        # Make sure such a deletion is idempotent
+        self.controller.delete(self.queue_name, msg1["id"],
+                               tenant=self.tenant,
+                               claim=cid)
+
+        # A non-existing claim does not ensure the message deletion
+        self.claim_controller.delete(self.queue_name, cid,
+                                     tenant=self.tenant)
+
+        with testing.expected(storage.exceptions.NotPermitted):
+            self.controller.delete(self.queue_name, msg2["id"],
+                                   tenant=self.tenant,
+                                   claim=cid)
 
 
 class ClaimControllerTest(ControllerBaseTest):
