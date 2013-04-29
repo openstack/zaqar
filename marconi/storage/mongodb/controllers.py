@@ -22,6 +22,9 @@ Fields Mapping:
     letter of their long name. Fields mapping will be
     updated and documented in each class.
 """
+
+import datetime
+
 from bson import objectid
 
 from marconi.openstack.common import timeutils
@@ -134,8 +137,8 @@ class MessageController(storage.MessageBase):
         # a clean up thread every minute, this means that
         # every message would have an implicit 1min grace
         # if we don't filter them out in the active method.
-        # self._col.ensure_index("e", background=True,
-        #                       expireAfterSeconds=1209600)
+        self._col.ensure_index("e", background=True,
+                               expireAfterSeconds=0)
 
         # NOTE(flaper87): This index is used mostly in the
         # active method but some parts of it are used in
@@ -165,13 +168,13 @@ class MessageController(storage.MessageBase):
     def active(self, queue, marker=None, echo=False,
                client_uuid=None, fields=None):
 
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
 
         query = {
             # Messages must belong to this queue
             "q": utils.to_oid(queue),
+            "e": {"$gt": now},
             "c.e": {"$lte": now},
-            "e": {"$gt": now}
         }
 
         if fields and not isinstance(fields, (dict, list)):
@@ -189,7 +192,7 @@ class MessageController(storage.MessageBase):
 
         query = {
             "c.id": claim_id,
-            "c.e": {"$gt": expires or timeutils.utcnow_ts()},
+            "c.e": {"$gt": expires or timeutils.utcnow()},
             "q": utils.to_oid(queue),
         }
         if not claim_id:
@@ -201,15 +204,15 @@ class MessageController(storage.MessageBase):
         if limit:
             msgs = msgs.limit(limit)
 
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
 
         def denormalizer(msg):
-            oid = msg.get("_id")
-            age = now - utils.oid_ts(oid)
+            oid = msg["_id"]
+            age = now - utils.oid_utc(oid)
 
             return {
                 "id": str(oid),
-                "age": age,
+                "age": age.seconds,
                 "ttl": msg["t"],
                 "body": msg["b"],
                 "claim": msg["c"]
@@ -220,7 +223,7 @@ class MessageController(storage.MessageBase):
     def unclaim(self, claim_id):
         cid = utils.to_oid(claim_id)
         self._col.update({"c.id": cid},
-                         {"$unset": {"c": True}},
+                         {"$set": {"c": {"id": None, "e": 0}}},
                          upsert=False, multi=True)
 
     def list(self, queue, tenant=None, marker=None,
@@ -230,15 +233,15 @@ class MessageController(storage.MessageBase):
         messages = self.active(qid, marker, echo, client_uuid)
         messages = messages.limit(limit).sort("_id")
 
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
 
         def denormalizer(msg):
-            oid = msg.get("_id")
-            age = now - utils.oid_ts(oid)
+            oid = msg["_id"]
+            age = now - utils.oid_utc(oid)
 
             return {
                 "id": str(oid),
-                "age": age,
+                "age": age.seconds,
                 "ttl": msg["t"],
                 "body": msg["b"],
                 "marker": str(oid),
@@ -252,7 +255,7 @@ class MessageController(storage.MessageBase):
         mid = utils.to_oid(message_id)
         query = {
             "q": self._get_queue_id(queue, tenant),
-            "e": {"$gt": timeutils.utcnow_ts()},
+            #"e": {"$gt": timeutils.utcnow()},
             "_id": mid
         }
 
@@ -261,12 +264,12 @@ class MessageController(storage.MessageBase):
         if message is None:
             raise exceptions.MessageDoesNotExist(mid, queue, tenant)
 
-        oid = message.get("_id")
-        age = timeutils.utcnow_ts() - utils.oid_ts(oid)
+        oid = message["_id"]
+        age = timeutils.utcnow() - utils.oid_utc(oid)
 
         return {
-            "id": oid,
-            "age": age,
+            "id": str(oid),
+            "age": age.seconds,
             "ttl": message["t"],
             "body": message["b"],
         }
@@ -274,30 +277,24 @@ class MessageController(storage.MessageBase):
     def post(self, queue, messages, client_uuid, tenant=None):
         qid = self._get_queue_id(queue, tenant)
 
-        ids = []
+        now = timeutils.utcnow()
 
         def denormalizer(messages):
             for msg in messages:
                 ttl = int(msg["ttl"])
+                expires = now + datetime.timedelta(seconds=ttl)
 
-                oid = objectid.ObjectId()
-                ids.append(str(oid))
-
-                # Lets remove the timezone, we want it to be plain
-                # utc
-                expires = utils.oid_ts(oid) + ttl
                 yield {
-                    "_id": oid,
                     "t": ttl,
                     "q": qid,
                     "e": expires,
                     "u": client_uuid,
-                    "c": {"id": None, "e": 0},
+                    "c": {"id": None, "e": now},
                     "b": msg['body'] if 'body' in msg else {}
                 }
 
-        self._col.insert(denormalizer(messages), manipulate=False)
-        return ids
+        ids = self._col.insert(denormalizer(messages))
+        return map(str, ids)
 
     def delete(self, queue, message_id, tenant=None, claim=None):
         try:
@@ -365,9 +362,9 @@ class ClaimController(storage.ClaimBase):
         qid = self._get_queue_id(queue, tenant)
 
         # Base query, always check expire time
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
         cid = utils.to_oid(claim_id)
-        age = now - utils.oid_ts(cid)
+        age = now - utils.oid_utc(cid)
 
         def messages(msg_iter):
             msg = msg_iter.next()
@@ -386,9 +383,9 @@ class ClaimController(storage.ClaimBase):
             messages = messages(msg_ctrl.claimed(qid, cid, now))
             claim = messages.next()
             claim = {
-                "age": age,
+                "age": age.seconds,
                 "ttl": claim.pop("t"),
-                "id": str(claim.pop("id")),
+                "id": str(claim["id"]),
             }
         except StopIteration:
             raise exceptions.ClaimDoesNotExist(cid, queue, tenant)
@@ -421,9 +418,9 @@ class ClaimController(storage.ClaimBase):
         ttl = int(metadata.get("ttl", 60))
         oid = objectid.ObjectId()
 
-        # Lets remove the timezone,
-        # we want it to be plain utc
-        expires = utils.oid_ts(oid) + ttl
+        now = timeutils.utcnow()
+        ttl_delta = datetime.timedelta(seconds=ttl)
+        expires = now + ttl_delta
 
         meta = {
             "id": oid,
@@ -444,7 +441,7 @@ class ClaimController(storage.ClaimBase):
             return (str(oid), messages)
 
         ids = [msg["_id"] for msg in msgs]
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
 
         # Set claim field for messages in ids
         updated = msg_ctrl._col.update({"_id": {"$in": ids},
@@ -463,7 +460,7 @@ class ClaimController(storage.ClaimBase):
         # `expires` on messages that would
         # expire before claim.
         msg_ctrl._col.update({"q": queue,
-                              "e": {"$lte": expires},
+                              "e": {"$lt": expires},
                               "c.id": oid},
                              {"$set": {"e": expires}},
                              upsert=False, multi=True)
@@ -474,12 +471,11 @@ class ClaimController(storage.ClaimBase):
 
     def update(self, queue, claim_id, metadata, tenant=None):
         cid = utils.to_oid(claim_id)
-        now = timeutils.utcnow_ts()
+        now = timeutils.utcnow()
         ttl = int(metadata.get("ttl", 60))
+        ttl_delta = datetime.timedelta(seconds=ttl)
 
-        # Lets remove the timezone,
-        # we want it to be plain utc
-        expires = utils.oid_ts(cid) + ttl
+        expires = now + ttl_delta
 
         if now > expires:
             msg = _("New ttl will make the claim expires")
@@ -509,7 +505,7 @@ class ClaimController(storage.ClaimBase):
         # `expires` on messages that would
         # expire before claim.
         msg_ctrl._col.update({"q": qid,
-                              "e": {"$lte": expires},
+                              "e": {"$lt": expires},
                               "c.id": cid},
                              {"$set": {"e": expires}},
                              upsert=False, multi=True)
