@@ -273,9 +273,11 @@ class MessageController(storage.MessageBase):
 
         # Base query, always check expire time
         mid = utils.to_oid(message_id)
+        now = timeutils.utcnow()
+
         query = {
             "q": self._get_queue_id(queue, tenant),
-            #"e": {"$gt": timeutils.utcnow()},
+            "e": {"$gt": now},
             "_id": mid
         }
 
@@ -285,7 +287,7 @@ class MessageController(storage.MessageBase):
             raise exceptions.MessageDoesNotExist(mid, queue, tenant)
 
         oid = message["_id"]
-        age = timeutils.utcnow() - utils.oid_utc(oid)
+        age = now - utils.oid_utc(oid)
 
         return {
             "id": str(oid),
@@ -324,7 +326,7 @@ class MessageController(storage.MessageBase):
             }
 
             if claim:
-                now = timeutils.utcnow_ts()
+                now = timeutils.utcnow()
                 query["e"] = {"$gt": now}
                 message = self._col.find_one(query)
 
