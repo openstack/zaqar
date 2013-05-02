@@ -484,7 +484,7 @@ class ClaimController(storage.ClaimBase):
         msg_ctrl._col.update({"q": queue,
                               "e": {"$lt": expires},
                               "c.id": oid},
-                             {"$set": {"e": expires}},
+                             {"$set": {"e": expires, "t": ttl}},
                              upsert=False, multi=True)
 
         if updated != 0:
@@ -529,7 +529,7 @@ class ClaimController(storage.ClaimBase):
         msg_ctrl._col.update({"q": qid,
                               "e": {"$lt": expires},
                               "c.id": cid},
-                             {"$set": {"e": expires}},
+                             {"$set": {"e": expires, "t": ttl}},
                              upsert=False, multi=True)
 
     def delete(self, queue, claim_id, tenant=None):
