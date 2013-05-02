@@ -1,0 +1,15 @@
+[auth]
+auth_on = true
+#auth endpoint - url to get the auth token 
+url = https://identity.xxx.xxxx.com/v2.0/tokens
+username = user
+password = secret
+
+[marconi_env]
+marconi_url = http://166.78.143.130:80
+marconi_version = v1
+tenant_id = 1
+
+[header_values]
+host = marconi.test.com
+useragent = systemtests

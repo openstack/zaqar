@@ -1,0 +1,66 @@
+| *Setting*      | *Value* 			    		|
+| Documentation  | Marconi - Queue Test Suite	|
+| Library        | ../common/http.py            |
+| Library        | ../common/functionlib.py     |
+| Library        | ../messages/msgfnlib.py      |
+| Library        | Collections                  |
+| Library        | claimfnlib.py                |
+| Variables      | getdata.py                   |
+| Force Tags     | CLAIM                        |
+| Suite Setup    | executetests                 | ${API_TEST_DATA[6]} | # Test Suite Setup - Creates a Queue
+| Suite Teardown | executetests                 | ${API_TEST_DATA[8]} | # Test Suite Teardown - Deletes the queue created by setup
+
+
+| *Test Case*        | *Action*            | *Argument*          | *Argument*         | *Argument*    | # Comment
+| 0:SUITE SETUP      | [DOCUMENTATION]     |                     | Post 500 messages  |               | #SUITE SETUP - POST MULTIPLE MESSAGES
+|                    | [Tags]			   | INSERT_MESSAGE      |                    |               | #(Robot allows only one keyword in setup)
+|                    | ${reqparam}=        | Create Dictionary   | messagecount       | ${50}         | # Specify count of messages to be posted
+|                    |                     | ...                 | ttl                | ${300}        | # Specify count of messages to be posted
+|                    | ${msgbody}=         | dummygetmessagebody | ${reqparam}        |               | # Gets the message body to post
+|                    | Set To Dictionary   | ${API_TEST_DATA[7]} | body               | ${msgbody}    | # Set the POST body
+|                    | :FOR                | ${index}            | IN RANGE           | 10            | # Loop to post 50 messages * 10 times
+|                    |                     | executetests       | ${API_TEST_DATA[7]} |               | # postresponse = [httpheaders,httpresponsebod]
+| 1:CLAIM 2 MESSAGES | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 1 - CLAIM 2 MESSAGES
+|                    | ...                 | with limit = 2  |                        |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[0]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
+|                    | verifyclaimmsg      | ${2}            | @{postresponse}        |
+| 2:CLAIM 5 MESSAGES | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 2 - CLAIM 5 MESSAGES
+|                    | ...                 | with limit = 5  |                        |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[1]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
+|                    | verifyclaimmsg      | ${5}            | @{postresponse}        |
+| 3:CLAIM   MESSAGES | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 3 - CLAIM DEFAULT # OF MESSAGES
+|                    | ...                 | with no params  |                        |                (currently 10) 
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[2]}    | # postresponse = [httpheaders, httpresponsebody]
+|                    | verifyclaimmsg      | ${10}           | @{postresponse}        |
+| 4:CLAIM 15 MESSAGE | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 4 - CLAIM 15 MESSAGES
+|                    | ...                 | with limit = 15 |                        |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[3]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
+|                    | verifyclaimmsg      | ${15}           | @{postresponse}        |
+| 5:CLAIM 55 MESSAGE | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 5 - CLAIM 55 MESSAGES
+|                    | ...                 | with limit = 55 |                        |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[4]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
+|                    | verifyclaimmsg      | ${50}           | @{postresponse}        | # MAXIMUM MESSAGES RETURNED IS CURRENTLY 50
+| 6: PATCH CLAIM     | [DOCUMENTATION]     | Patch a claim   |                        | # TEST CASE 6 - UPDATE  CLAIM
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[5]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
+|                    | patchclaim          | @{postresponse} |                        | # Patch the above claim
+| 7: DELETE MESSAGE  | [DOCUMENTATION]     | Delete message  |                        | # TEST CASE 7 - DELETE A CLAIMED MESSAGE
+|                    | ...                 | with claim id   |                        |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[5]}    | # Post a claim
+|                    | deleteclaimedmsgs   | @{postresponse} |                        | # Delete messages returned in the above claim
+| 8: PATCH EXPIRED CLAIM | [DOCUMENTATION] | Patch expired claim  |                   | # TEST CASE 8 - UPDATE EXPIRED CLAIM
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[9]}    | # Post a claim with TTL= 1 sec
+|                    | Sleep               | 3s              |                        |
+|                    | patchclaim          | @{postresponse} |                        | # Patch the above claim
+| 9: DELETE MESSAGE ON EXPIRED CLAIM  | [DOCUMENTATION]      | Delete message         | # TEST CASE 9 - DELETE MESSAGE ON AN EXPIRED CLAIM 
+|                    | ...                                   | on expired claim       |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[10]}   | # Post a claim with TTL= 1 sec
+|                    | Sleep               | 3s              |                        |
+|                    | deleteclaimedmsgs   | @{postresponse} |                        | # Delete message returned in the above claim
+| 10: RELEASE CLAIM  | [DOCUMENTATION]     | Release claim   |                        | # TEST CASE 10 - RELEASE CLAIM
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[11]}   | # Post a claim with TTL= 1 sec
+|                    | releaseclaim        | @{postresponse} |                        | # Patch the above claim
+| 11: GET MESSAGE FROM EXPIRED CLAIM  | [DOCUMENTATION]      | Get message            | # TEST CASE 11 - GET MESSAGE FROM EXPIRED CLAIM 
+|                    | ...                                   | from expired claim     |
+|                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[12]}   | # Post a claim with TTL= 1 sec
+|                    | Sleep               | 3s              |                        |
+|                    | getclaimedmsgs      | @{postresponse} |                        | # Delete message returned in the above claim
