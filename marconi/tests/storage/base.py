@@ -15,6 +15,7 @@
 
 
 from marconi import storage
+from marconi.storage import exceptions
 from marconi.tests import util as testing
 
 
@@ -244,6 +245,32 @@ class MessageControllerTest(ControllerBaseTest):
                                               tenant=self.tenant)
         self.assertEquals(countof['messages']['free'], 0)
 
+    def test_illformed_id(self):
+        # any ill-formed IDs should be regarded as non-existing ones.
+
+        self.queue_controller.upsert('unused', {}, '480924')
+        self.controller.delete('unused', 'illformed', '480924')
+
+        msgs = list(self.controller.list('unused', '480924',
+                                         marker='illformed'))
+
+        self.assertEquals(len(msgs), 0)
+
+        with testing.expected(exceptions.DoesNotExist):
+            self.controller.get('unused', 'illformed', '480924')
+
+    def test_illformed_claim(self):
+        self.queue_controller.upsert('unused', {}, '480924')
+        [msgid] = self.controller.post('unused',
+                                       [{'body': {}, 'ttl': 10}],
+                                       tenant='480924',
+                                       client_uuid='unused')
+
+        with testing.expected(exceptions.NotPermitted):
+            self.controller.delete('unused', msgid,
+                                   tenant='480924',
+                                   claim='illformed')
+
 
 class ClaimControllerTest(ControllerBaseTest):
     """
@@ -336,6 +363,16 @@ class ClaimControllerTest(ControllerBaseTest):
         with testing.expected(storage.exceptions.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, tenant=self.tenant)
+
+    def test_illformed_id(self):
+        # any ill-formed IDs should be regarded as non-existing ones.
+
+        self.queue_controller.upsert('unused', {}, '480924')
+        self.controller.delete('unused', 'illformed', '480924')
+
+        with testing.expected(exceptions.DoesNotExist):
+            self.controller.update('unused', 'illformed',
+                                   {'ttl': 40}, '480924')
 
 
 def _insert_fixtures(controller, queue_name, tenant=None,

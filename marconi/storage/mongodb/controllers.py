@@ -239,7 +239,10 @@ class MessageController(storage.MessageBase):
         return utils.HookedCursor(msgs, denormalizer)
 
     def unclaim(self, claim_id):
-        cid = utils.to_oid(claim_id)
+        try:
+            cid = utils.to_oid(claim_id)
+        except ValueError:
+            return
         self._col.update({"c.id": cid},
                          {"$set": {"c": {"id": None, "e": 0}}},
                          upsert=False, multi=True)
@@ -247,8 +250,12 @@ class MessageController(storage.MessageBase):
     def list(self, queue, tenant=None, marker=None,
              limit=10, echo=False, client_uuid=None):
 
-        qid = self._get_queue_id(queue, tenant)
-        messages = self.active(qid, marker, echo, client_uuid)
+        try:
+            qid = self._get_queue_id(queue, tenant)
+            messages = self.active(qid, marker, echo, client_uuid)
+        except ValueError:
+            return
+
         messages = messages.limit(limit).sort("_id")
         marker_id = {}
 
@@ -272,7 +279,11 @@ class MessageController(storage.MessageBase):
     def get(self, queue, message_id, tenant=None):
 
         # Base query, always check expire time
-        mid = utils.to_oid(message_id)
+        try:
+            mid = utils.to_oid(message_id)
+        except ValueError:
+            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
+
         now = timeutils.utcnow()
 
         query = {
@@ -284,7 +295,7 @@ class MessageController(storage.MessageBase):
         message = self._col.find_one(query)
 
         if message is None:
-            raise exceptions.MessageDoesNotExist(mid, queue, tenant)
+            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
 
         oid = message["_id"]
         age = now - utils.oid_utc(oid)
@@ -320,9 +331,14 @@ class MessageController(storage.MessageBase):
 
     def delete(self, queue, message_id, tenant=None, claim=None):
         try:
+            try:
+                mid = utils.to_oid(message_id)
+            except ValueError:
+                return
+
             query = {
                 "q": self._get_queue_id(queue, tenant),
-                "_id": utils.to_oid(message_id)
+                "_id": mid
             }
 
             if claim:
@@ -333,7 +349,11 @@ class MessageController(storage.MessageBase):
                 if message is None:
                     return
 
-                cid = utils.to_oid(claim)
+                try:
+                    cid = utils.to_oid(claim)
+                except ValueError:
+                    raise exceptions.ClaimNotPermitted(message_id, claim)
+
                 if not ("c" in message and
                         message["c"]["id"] == cid and
                         message["c"]["e"] > now):
@@ -385,7 +405,12 @@ class ClaimController(storage.ClaimBase):
 
         # Base query, always check expire time
         now = timeutils.utcnow()
-        cid = utils.to_oid(claim_id)
+
+        try:
+            cid = utils.to_oid(claim_id)
+        except ValueError:
+            raise exceptions.ClaimDoesNotExist()
+
         age = now - utils.oid_utc(cid)
 
         def messages(msg_iter):
@@ -492,7 +517,11 @@ class ClaimController(storage.ClaimBase):
         return (str(oid), messages)
 
     def update(self, queue, claim_id, metadata, tenant=None):
-        cid = utils.to_oid(claim_id)
+        try:
+            cid = utils.to_oid(claim_id)
+        except ValueError:
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+
         now = timeutils.utcnow()
         ttl = int(metadata.get("ttl", 60))
         ttl_delta = datetime.timedelta(seconds=ttl)
@@ -510,7 +539,7 @@ class ClaimController(storage.ClaimBase):
         try:
             claimed.next()
         except StopIteration:
-            raise exceptions.ClaimDoesNotExist(cid, queue, tenant)
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
 
         meta = {
             "id": cid,
