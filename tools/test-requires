@@ -1,11 +1,20 @@
+# Packaging
 distribute>=0.6.24
-coverage
+
+# Unit testing
 discover
 fixtures
 mox
 python-subunit
 testrepository
 testtools
+
+# Test runner
 nose
 nose-exclude
 openstack.nose_plugin
+
+# Metrics and style
+coverage
+flake8
+hacking
