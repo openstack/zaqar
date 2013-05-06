@@ -22,7 +22,8 @@ try:
 except NameError:
     import gettext
     gettext.install("marconi", unicode=1)
-    from marconi.bootstrap import Bootstrap  # NOQA
+    import marconi.bootstrap
+    Bootstrap = marconi.bootstrap.Bootstrap
 
 import marconi.version
 

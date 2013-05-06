@@ -15,6 +15,7 @@
 
 from marconi.common import config
 from marconi.tests import util as testing
+from marconi.tests.util import helpers
 
 
 cfg_handle = config.project()
@@ -35,5 +36,5 @@ class TestConfig(testing.TestBase):
 
     def test_wrong_type(self):
         ns = config.namespace('local')
-        with testing.expected(config.cfg.Error):
+        with helpers.expected(config.cfg.Error):
             ns.from_options(opt={})

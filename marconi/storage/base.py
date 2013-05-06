@@ -23,29 +23,22 @@ class DriverBase:
 
     @abc.abstractproperty
     def queue_controller(self):
-        """
-        Returns storage's queues controller
-        """
+        """Returns storage's queues controller."""
         raise NotImplementedError
 
     @abc.abstractproperty
     def message_controller(self):
-        """
-        Returns storage's messages controller
-        """
+        """Returns storage's messages controller."""
         raise NotImplementedError
 
     @abc.abstractproperty
     def claim_controller(self):
-        """
-        Returns storage's claims controller
-        """
+        """Returns storage's claims controller."""
         raise NotImplementedError
 
 
 class ControllerBase(object):
-    """
-    Top level class for controllers.
+    """Top-level class for controllers.
 
     :param driver: Instance of the driver
         instantiating this controller.
@@ -56,14 +49,13 @@ class ControllerBase(object):
 
 
 class QueueBase(ControllerBase):
-    """
-    This class is responsible of managing
-    queues which means handling their CRUD
-    operations, monitoring and interactions.
+    """This class is responsible for managing queues.
 
-    Storages' implementations of this class
-    should be capable of handling high work
-    loads and huge number of queues.
+    Queue operations include CRUD, monitoring, etc.
+
+    Storage driver implementations of this class should
+    be capable of handling high workloads and huge
+    numbers of queues.
     """
 
     __metaclass__ = abc.ABCMeta
@@ -71,8 +63,7 @@ class QueueBase(ControllerBase):
     @abc.abstractmethod
     def list(self, project=None, marker=None,
              limit=10, detailed=False):
-        """
-        Base method for listing queues.
+        """Base method for listing queues.
 
         :param project: Project id
         :param marker: The last queue name
@@ -86,8 +77,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def get(self, name, project=None):
-        """
-        Base method for queue retrieval.
+        """Base method for queue retrieval.
 
         :param name: The queue name
         :param project: Project id
@@ -99,9 +89,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def upsert(self, name, metadata, project=None):
-        """
-        This methods handles both creates and updates
-        operations for queues.
+        """This method handles both create and update operations.
 
         :param name: The queue name
         :param metadata: Arbitrary metadata
@@ -114,8 +102,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def delete(self, name, project=None):
-        """
-        Base method for queue deletion.
+        """Base method for deleting a queue.
 
         :param name: The queue name
         :param project: Project id
@@ -124,8 +111,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def stats(self, name, project=None):
-        """
-        Base method for queue stats.
+        """Base method for queue stats.
 
         :param name: The queue name
         :param project: Project id
@@ -136,8 +122,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def actions(self, name, project=None, marker=None, limit=10):
-        """
-        Base method for queue actions.
+        """Base method for queue actions.
 
         :param name: Queue name
         :param project: Project id
@@ -149,18 +134,14 @@ class QueueBase(ControllerBase):
 
 
 class MessageBase(ControllerBase):
-    """
-    This class is responsible for managing
-    messages CRUD.
-    """
+    """This class is responsible for managing message CRUD."""
 
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list(self, queue, project=None, marker=None,
              limit=10, echo=False, client_uuid=None):
-        """
-        Base message list method
+        """Base method for listing messages.
 
         :param queue: Name of the queue to get the
             message from.
@@ -179,8 +160,7 @@ class MessageBase(ControllerBase):
         raise NotImplementedError
 
     def get(self, queue, message_id, project=None):
-        """
-        Base message get method
+        """Base method for getting a message.
 
         :param queue: Name of the queue to get the
             message from.
@@ -194,8 +174,7 @@ class MessageBase(ControllerBase):
 
     @abc.abstractmethod
     def post(self, queue, messages, client_uuid, project=None):
-        """
-        Base message post method
+        """Base method for posting one or more messages.
 
         Implementations of this method should guarantee
         and preserve the order, in the returned list, of
@@ -213,8 +192,7 @@ class MessageBase(ControllerBase):
 
     @abc.abstractmethod
     def delete(self, queue, message_id, project=None, claim=None):
-        """
-        Base message delete method
+        """Base method for deleting a single message.
 
         :param queue: Name of the queue to post
             message to.
@@ -234,8 +212,7 @@ class ClaimBase(ControllerBase):
 
     @abc.abstractmethod
     def get(self, queue, claim_id, project=None):
-        """
-        Base claim get method
+        """Base method for getting a claim.
 
         :param queue: Name of the queue this
             claim belongs to.
@@ -249,8 +226,7 @@ class ClaimBase(ControllerBase):
 
     @abc.abstractmethod
     def create(self, queue, metadata, project=None, limit=10):
-        """
-        Base claim create method
+        """Base method for creating a claim.
 
         :param queue: Name of the queue this
             claim belongs to.
@@ -266,8 +242,7 @@ class ClaimBase(ControllerBase):
 
     @abc.abstractmethod
     def update(self, queue, claim_id, metadata, project=None):
-        """
-        Base claim update method
+        """Base method for updating a claim.
 
         :param queue: Name of the queue this
             claim belongs to.
@@ -280,8 +255,7 @@ class ClaimBase(ControllerBase):
 
     @abc.abstractmethod
     def delete(self, queue, claim_id, project=None):
-        """
-        Base claim delete method
+        """Base method for deleting a claim.
 
         :param queue: Name of the queue this
             claim belongs to.

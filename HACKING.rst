@@ -124,10 +124,9 @@ Docstrings that span more than one line should look like this:
 
 Example::
 
-  """
-  Start the docstring on the line following the opening triple-double-quote
+  """Single-line summary, right after the opening triple-double-quote.
 
-  If you are going to describe parameters and return values, use Sphinx, the
+  If you are going to describe parameters and return values, use Sphinx; the
   appropriate syntax is as follows.
 
   :param foo: the foo parameter

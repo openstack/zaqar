@@ -17,6 +17,7 @@
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.tests import util as testing
+from marconi.tests.util import helpers
 
 
 class ControllerBaseTest(testing.TestBase):
@@ -40,9 +41,7 @@ class ControllerBaseTest(testing.TestBase):
 
 
 class QueueControllerTest(ControllerBaseTest):
-    """
-    Queue Controller base tests
-    """
+    """Queue Controller base tests."""
     controller_base_class = storage.QueueBase
 
     def setUp(self):
@@ -109,8 +108,7 @@ class QueueControllerTest(ControllerBaseTest):
 
 
 class MessageControllerTest(ControllerBaseTest):
-    """
-    Message Controller base tests
+    """Message Controller base tests.
 
     NOTE(flaper87): Implementations of this class should
     override the tearDown method in order
@@ -203,7 +201,7 @@ class MessageControllerTest(ControllerBaseTest):
         [msg1, msg2] = msgs
 
         # A wrong claim does not ensure the message deletion
-        with testing.expected(storage.exceptions.NotPermitted):
+        with helpers.expected(storage.exceptions.NotPermitted):
             self.controller.delete(self.queue_name, msg1["id"],
                                    project=self.project,
                                    claim=another_cid)
@@ -213,7 +211,7 @@ class MessageControllerTest(ControllerBaseTest):
                                project=self.project,
                                claim=cid)
 
-        with testing.expected(storage.exceptions.DoesNotExist):
+        with helpers.expected(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msg1["id"],
                                 project=self.project)
 
@@ -226,7 +224,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.claim_controller.delete(self.queue_name, cid,
                                      project=self.project)
 
-        with testing.expected(storage.exceptions.NotPermitted):
+        with helpers.expected(storage.exceptions.NotPermitted):
             self.controller.delete(self.queue_name, msg2["id"],
                                    project=self.project,
                                    claim=cid)
@@ -238,7 +236,7 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid='my_uuid')
 
-        with testing.expected(storage.exceptions.DoesNotExist):
+        with helpers.expected(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msgid,
                                 project=self.project)
 
@@ -257,7 +255,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         self.assertEquals(len(msgs), 0)
 
-        with testing.expected(exceptions.DoesNotExist):
+        with helpers.expected(exceptions.DoesNotExist):
             self.controller.get('unused', 'illformed', '480924')
 
     def test_illformed_claim(self):
@@ -267,15 +265,14 @@ class MessageControllerTest(ControllerBaseTest):
                                        project='480924',
                                        client_uuid='unused')
 
-        with testing.expected(exceptions.NotPermitted):
+        with helpers.expected(exceptions.NotPermitted):
             self.controller.delete('unused', msgid,
                                    project='480924',
                                    claim='illformed')
 
 
 class ClaimControllerTest(ControllerBaseTest):
-    """
-    Claim Controller base tests
+    """Claim Controller base tests.
 
     NOTE(flaper87): Implementations of this class should
     override the tearDown method in order
@@ -357,11 +354,11 @@ class ClaimControllerTest(ControllerBaseTest):
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
 
-        with testing.expected(storage.exceptions.DoesNotExist):
+        with helpers.expected(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, claim_id,
                                 project=self.project)
 
-        with testing.expected(storage.exceptions.DoesNotExist):
+        with helpers.expected(storage.exceptions.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, project=self.project)
 
@@ -371,7 +368,7 @@ class ClaimControllerTest(ControllerBaseTest):
         self.queue_controller.upsert('unused', {}, '480924')
         self.controller.delete('unused', 'illformed', '480924')
 
-        with testing.expected(exceptions.DoesNotExist):
+        with helpers.expected(exceptions.DoesNotExist):
             self.controller.update('unused', 'illformed',
                                    {'ttl': 40}, '480924')
 

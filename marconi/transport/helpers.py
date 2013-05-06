@@ -21,8 +21,7 @@ class MalformedJSON(Exception):
 
 
 def read_json(stream):
-    """
-    Like json.load, but raises an exception upon failure.
+    """Like json.load, but raises an exception upon failure.
 
     :param stream: a file-like object
     """
@@ -34,19 +33,16 @@ def read_json(stream):
 
 
 def to_json(obj):
-    """
-    Like json.dumps, but outputs a UTF-8 encoded string.
+    """Like json.dumps, but outputs a UTF-8 encoded string.
 
     :param obj: a JSON-serializable object
     """
     return json.dumps(obj, ensure_ascii=False)
 
 
-def purge(d):
-    """
-    Remove entries with a value of None from a dict by
-    returning a purged copy.
+def purge(src):
+    """Returns a copy of a dict, excluding any keys set to `None`.
 
-    :param d: a dictionary object
+    :param src: a dictionary-like object to copy
     """
-    return dict([(k, v) for k, v in d.items() if v is not None])
+    return dict([(k, v) for k, v in src.items() if v is not None])

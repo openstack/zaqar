@@ -23,8 +23,7 @@ cfg = config.project()
 
 
 class TestBase(testtools.TestCase):
-    """
-    Child class of testtools.TestCase for testing Marconi
+    """Child class of testtools.TestCase for testing Marconi.
 
     Inherit from this and write your test methods. If the child class defines
     a prepare(self) method, this method will be called before executing each
@@ -32,8 +31,7 @@ class TestBase(testtools.TestCase):
     """
 
     def conf_path(self, filename):
-        """
-        Returns the full path to the specified Marconi conf file
+        """Returns the full path to the specified Marconi conf file.
 
         :param filename: Name of the conf file to find (e.g.,
                          "wsgi_memory.conf")
@@ -43,8 +41,7 @@ class TestBase(testtools.TestCase):
         return os.path.join(parent, 'etc', filename)
 
     def load_conf(self, filename):
-        """
-        Loads `filename` configuration file.
+        """Loads `filename` configuration file.
 
         :param filename: Name of the conf file to find (e.g.,
                          "wsgi_memory.conf")

@@ -25,11 +25,10 @@ cfg = config.namespace('drivers').from_options(
 
 
 class Bootstrap(object):
-    """
-    Defines the Marconi Bootstrap
+    """Defines the Marconi bootstrapper.
 
-    The bootstrap loads up drivers per a given configuration, and manages their
-    lifetimes.
+    The bootstrap loads up drivers per a given configuration, and
+    manages their lifetimes.
     """
 
     def __init__(self, config_file=None, cli_args=None):

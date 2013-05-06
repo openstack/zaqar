@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Mongodb storage controllers  implementation
+"""Implements Mongodb storage controllers.
 
-Fields Mapping:
+Field Mappings:
     In order to reduce the disk / memory space used,
     fields name will be, most of the time, the first
     letter of their long name. Fields mapping will be
@@ -34,7 +33,8 @@ from marconi.storage.mongodb import utils
 
 
 class QueueController(storage.QueueBase):
-    """
+    """Implements queue resource operations using MongoDB.
+
     Queues:
         Name       Field
         ----------------
@@ -87,8 +87,7 @@ class QueueController(storage.QueueBase):
         return queue
 
     def get_id(self, name, project=None):
-        """
-        Just like `get` method but returns the queue's id
+        """Just like the `get` method, but only returns the queue's id
 
         :returns: Queue's `ObjectId`
         """
@@ -133,7 +132,8 @@ class QueueController(storage.QueueBase):
 
 
 class MessageController(storage.MessageBase):
-    """
+    """Implements message resource operations using MongoDB.
+
     Messages:
         Name       Field
         ----------------
@@ -374,7 +374,8 @@ class MessageController(storage.MessageBase):
 
 
 class ClaimController(storage.ClaimBase):
-    """
+    """Implements claim resource operations using MongoDB.
+
     No dedicated collection is being used
     for claims.
 
@@ -440,7 +441,8 @@ class ClaimController(storage.ClaimBase):
         return (claim, messages)
 
     def create(self, queue, metadata, project=None, limit=10):
-        """
+        """Creates a claim.
+
         This implementation was done in a best-effort fashion.
         In order to create a claim we need to get a list
         of messages that can be claimed. Once we have that

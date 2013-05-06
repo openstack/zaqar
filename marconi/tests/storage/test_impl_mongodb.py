@@ -111,10 +111,10 @@ class MongodbClaimTests(base.ClaimControllerTest):
         self.load_conf("wsgi_mongodb.conf")
 
     def test_claim_doesnt_exist(self):
-        """
-        Tests that methods raise an exception when
-        the claim doesn't exists and / or
-        has expired.
+        """Verifies that operations fail on expired/missing claims.
+
+        Methods should raise an exception when the claim doesn't
+        exists and/or has expired.
         """
         epoch = '000000000000000000000000'
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,

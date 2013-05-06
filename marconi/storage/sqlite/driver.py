@@ -39,9 +39,7 @@ class Driver(storage.DriverBase):
 
     @staticmethod
     def pack(o):
-        """
-        Convert a Python variable to a SQlite variable
-        with the customized type `DOCUMENT`.
+        """Converts a Python variable to a custom SQlite `DOCUMENT`.
 
         :param o: a Python str, unicode, int, long, float, bool, None
                   or a dict or list of %o
@@ -52,8 +50,7 @@ class Driver(storage.DriverBase):
                                msgpack.loads(s, encoding='utf-8'))
 
     def run(self, sql, *args):
-        """
-        Perform a SQL query.
+        """Performs a SQL query.
 
         :param sql: a query string with the '?' placeholders
         :param args: the arguments to substitute the placeholders
@@ -61,8 +58,7 @@ class Driver(storage.DriverBase):
         return self.__db.execute(sql, args)
 
     def run_multiple(self, sql, it):
-        """
-        Iteratively perform multiple SQL queries.
+        """Iteratively perform multiple SQL queries.
 
         :param sql: a query string with the '?' placeholders
         :param it: an iterator which yields a sequence of arguments to
@@ -71,8 +67,7 @@ class Driver(storage.DriverBase):
         self.__db.executemany(sql, it)
 
     def get(self, sql, *args):
-        """
-        Get one entry from the query result.
+        """Runs %sql and returns the first entry in the results.
 
         :param sql: a query string with the '?' placeholders
         :param args: the arguments to substitute the placeholders
@@ -86,18 +81,13 @@ class Driver(storage.DriverBase):
 
     @property
     def affected(self):
-        """
-        Check whether a row is affected in
-        the last operation.
-        """
+        """Checks whether a row is affected in the last operation."""
         assert self.__db.rowcount in (0, 1)
         return self.__db.rowcount == 1
 
     @property
     def lastrowid(self):
-        """
-        Get last inserted row id.
-        """
+        """Returns the last inserted row id."""
         return self.__db.lastrowid
 
     @contextlib.contextmanager

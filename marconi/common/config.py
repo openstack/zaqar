@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Decentralized configuration module.
+"""Decentralized configuration module.
 
 A config variable `foo` is a read-only property accessible through
 
@@ -75,8 +74,7 @@ def _init():
     conf = cfg.ConfigOpts()
 
     def namespace(name, title=None):
-        """
-        Create a config namespace.
+        """Create a config namespace.
 
         :param name: the section name appears in the .ini file
         :param title: an optional description
@@ -87,8 +85,7 @@ def _init():
         conf.register_group(grp)
 
         def from_options(**opts):
-            """
-            Define options under the associated namespace.
+            """Define options under the associated namespace.
 
             :returns: ConfigProxy of the associated namespace
             """
@@ -105,16 +102,14 @@ def _init():
         return Obj(from_options=from_options)
 
     def project(name=None):
-        """
-        Access the global namespace.
+        """Access the global namespace.
 
         :param name: the name of the project
         :returns: a global option object
         """
 
         def from_options(**opts):
-            """
-            Define options under the global namespace.
+            """Define options under the global namespace.
 
             :returns: ConfigProxy of the global namespace
             """
@@ -170,11 +165,12 @@ namespace, project = _init()
 
 
 def _make_opt(name, default):
-    """
-    Create an oslo.config option with the type deduce from the %default
-    value of an option %name.
+    """Create an oslo.config option with type deduction
 
-    A default value of None is deduced to Opt.  MultiStrOpt is not supported.
+    The type for the option is deduced from the %default value given
+    for that option. A default value of None is deduced to Opt.
+
+    Note: MultiStrOpt is not supported.
 
     :param name: the name of the option in a valid Python identifier
     :param default: the default value of the option, or (default, description)

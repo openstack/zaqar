@@ -23,8 +23,5 @@ class DriverBase:
 
     @abc.abstractmethod
     def listen():
-        """
-        Called to start listening for client requests when Marconi is
-        ran in self-hosting mode.
-        """
+        """Start listening for client requests (self-hosting mode)."""
         raise NotImplementedError

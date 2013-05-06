@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Mongodb storage driver implementation
-"""
+"""Mongodb storage driver implementation."""
 
 import pymongo
 import pymongo.errors
@@ -39,10 +37,7 @@ class Driver(storage.DriverBase):
 
     @property
     def db(self):
-        """
-        Property for lazy instantiation of
-        mongodb's database.
-        """
+        """Property for lazy instantiation of mongodb's database."""
         if not self._database:
             if cfg.uri and 'replicaSet' in cfg.uri:
                 conn = pymongo.MongoReplicaSetClient(cfg.uri)

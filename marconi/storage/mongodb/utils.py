@@ -20,14 +20,14 @@ from marconi.openstack.common import timeutils
 
 
 def to_oid(obj):
-    """
-    Creates a new ObjectId based on the input
-    and raises ValueError whenever a TypeError
-    or InvalidId error is raised by the ObjectID
-    class.
+    """Creates a new ObjectId based on the input.
+
+    Raises ValueError when TypeError or InvalidId
+    is raised by the ObjectID class.
 
     :param obj: Anything that can be passed as an
         input to `objectid.ObjectId`
+    :raises: ValueError
     """
     try:
         return objectid.ObjectId(obj)
@@ -37,10 +37,7 @@ def to_oid(obj):
 
 
 def oid_utc(oid):
-    """
-    Creates a non-tz-aware datetime based on
-    the incoming objectid's datetime information.
-    """
+    """Converts an ObjectId to a non-tz-aware datetime."""
     try:
         return timeutils.normalize_time(oid.generation_time)
     except AttributeError:
