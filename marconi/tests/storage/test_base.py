@@ -35,24 +35,24 @@ class Driver(storage.DriverBase):
 
 class QueueController(storage.QueueBase):
 
-    def list(self, tenant=None):
-        super(QueueController, self).list(tenant)
+    def list(self, project=None):
+        super(QueueController, self).list(project)
 
-    def get(self, name, tenant=None):
-        super(QueueController, self).get(name, tenant=tenant)
+    def get(self, name, project=None):
+        super(QueueController, self).get(name, project=project)
 
-    def upsert(self, name, metadata, tenant=None):
-        super(QueueController, self).upsert(name, tenant=tenant,
+    def upsert(self, name, metadata, project=None):
+        super(QueueController, self).upsert(name, project=project,
                                             metadata=metadata)
 
-    def delete(self, name, tenant=None):
-        super(QueueController, self).delete(name, tenant=tenant)
+    def delete(self, name, project=None):
+        super(QueueController, self).delete(name, project=project)
 
-    def stats(self, name, tenant=None):
-        super(QueueController, self).stats(name, tenant=tenant)
+    def stats(self, name, project=None):
+        super(QueueController, self).stats(name, project=project)
 
-    def actions(self, name, tenant=None, marker=None, limit=10):
-        super(QueueController, self).actions(name, tenant=tenant,
+    def actions(self, name, project=None, marker=None, limit=10):
+        super(QueueController, self).actions(name, project=project,
                                              marker=marker, limit=limit)
 
 

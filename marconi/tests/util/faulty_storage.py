@@ -35,22 +35,22 @@ class QueueController(storage.QueueBase):
     def __init__(self, driver):
         pass
 
-    def list(self, tenant=None):
+    def list(self, project=None):
         raise NotImplementedError()
 
-    def get(self, name, tenant=None):
+    def get(self, name, project=None):
         raise NotImplementedError()
 
-    def upsert(self, name, metadata, tenant=None):
+    def upsert(self, name, metadata, project=None):
         raise NotImplementedError()
 
-    def delete(self, name, tenant=None):
+    def delete(self, name, project=None):
         raise NotImplementedError()
 
-    def stats(self, name, tenant=None):
+    def stats(self, name, project=None):
         raise NotImplementedError()
 
-    def actions(self, name, tenant=None, marker=None, limit=10):
+    def actions(self, name, project=None, marker=None, limit=10):
         raise NotImplementedError()
 
 
@@ -58,16 +58,16 @@ class MessageController(storage.MessageBase):
     def __init__(self, driver):
         pass
 
-    def get(self, queue, tenant=None, message_id=None,
+    def get(self, queue, project=None, message_id=None,
             marker=None, echo=False, client_uuid=None):
         raise NotImplementedError()
 
-    def list(self, queue, tenant=None, marker=None,
+    def list(self, queue, project=None, marker=None,
              limit=10, echo=False, client_uuid=None):
         raise NotImplementedError()
 
-    def post(self, queue, messages, tenant=None):
+    def post(self, queue, messages, project=None):
         raise NotImplementedError()
 
-    def delete(self, queue, message_id, tenant=None, claim=None):
+    def delete(self, queue, message_id, project=None, claim=None):
         raise NotImplementedError()

@@ -69,12 +69,12 @@ class QueueBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def list(self, tenant=None, marker=None,
+    def list(self, project=None, marker=None,
              limit=10, detailed=False):
         """
         Base method for listing queues.
 
-        :param tenant: Tenant id
+        :param project: Project id
         :param marker: The last queue name
         :param limit: (Default 10) Max number
         :param detailed: Whether metadata is included
@@ -85,12 +85,12 @@ class QueueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, name, tenant=None):
+    def get(self, name, project=None):
         """
         Base method for queue retrieval.
 
         :param name: The queue name
-        :param tenant: Tenant id
+        :param project: Project id
 
         :returns: Dictionary containing queue metadata
         :raises: DoesNotExist
@@ -98,14 +98,14 @@ class QueueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upsert(self, name, metadata, tenant=None):
+    def upsert(self, name, metadata, project=None):
         """
         This methods handles both creates and updates
         operations for queues.
 
         :param name: The queue name
         :param metadata: Arbitrary metadata
-        :param tenant: Tenant id
+        :param project: Project id
         :returns: True if a queue was created and False
             if it was updated.
         """
@@ -113,34 +113,34 @@ class QueueBase(ControllerBase):
         assert isinstance(metadata, dict), msg
 
     @abc.abstractmethod
-    def delete(self, name, tenant=None):
+    def delete(self, name, project=None):
         """
         Base method for queue deletion.
 
         :param name: The queue name
-        :param tenant: Tenant id
+        :param project: Project id
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def stats(self, name, tenant=None):
+    def stats(self, name, project=None):
         """
         Base method for queue stats.
 
         :param name: The queue name
-        :param tenant: Tenant id
+        :param project: Project id
         :returns: Dictionary with the
             queue stats
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def actions(self, name, tenant=None, marker=None, limit=10):
+    def actions(self, name, project=None, marker=None, limit=10):
         """
         Base method for queue actions.
 
         :param name: Queue name
-        :param tenant: Tenant id
+        :param project: Project id
         :param marker: Tail identifier
         :param limit: (Default 10) Max number
             of messages to retrieve.
@@ -157,14 +157,14 @@ class MessageBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def list(self, queue, tenant=None, marker=None,
+    def list(self, queue, project=None, marker=None,
              limit=10, echo=False, client_uuid=None):
         """
         Base message list method
 
         :param queue: Name of the queue to get the
             message from.
-        :param tenant: Tenant id
+        :param project: Project id
         :param marker: Tail identifier
         :param limit: (Default 10) specifies up to 100
             messages to return.
@@ -178,13 +178,13 @@ class MessageBase(ControllerBase):
         """
         raise NotImplementedError
 
-    def get(self, queue, message_id, tenant=None):
+    def get(self, queue, message_id, project=None):
         """
         Base message get method
 
         :param queue: Name of the queue to get the
             message from.
-        :param tenant: Tenant id
+        :param project: Project id
         :param message_id: Message ID
 
         :returns: Dictionary containing message data
@@ -193,7 +193,7 @@ class MessageBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def post(self, queue, messages, client_uuid, tenant=None):
+    def post(self, queue, messages, client_uuid, project=None):
         """
         Base message post method
 
@@ -205,21 +205,21 @@ class MessageBase(ControllerBase):
         :param messages: Messages to post to queue,
             it can be a list of 1 or more elements.
         :param client_uuid: Client's unique identifier.
-        :param tenant: Tenant id
+        :param project: Project id
 
         :returns: List of message ids
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, queue, message_id, tenant=None, claim=None):
+    def delete(self, queue, message_id, project=None, claim=None):
         """
         Base message delete method
 
         :param queue: Name of the queue to post
             message to.
         :param message_id: Message to be deleted
-        :param tenant: Tenant id
+        :param project: Project id
         :param claim: Claim this message
             belongs to. When specified, claim must
             be valid and message_id must belong to
@@ -233,14 +233,14 @@ class ClaimBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def get(self, queue, claim_id, tenant=None):
+    def get(self, queue, claim_id, project=None):
         """
         Base claim get method
 
         :param queue: Name of the queue this
             claim belongs to.
         :param claim_id: The claim id
-        :param tenant: Tenant id
+        :param project: Project id
 
         :returns: (Claim's metadata, claimed messages)
         :raises: DoesNotExist
@@ -248,7 +248,7 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, queue, metadata, tenant=None, limit=10):
+    def create(self, queue, metadata, project=None, limit=10):
         """
         Base claim create method
 
@@ -256,7 +256,7 @@ class ClaimBase(ControllerBase):
             claim belongs to.
         :param metadata: Claim's parameters
             to be stored.
-        :param tenant: Tenant id
+        :param project: Project id
         :param limit: (Default 10) Max number
             of messages to claim.
 
@@ -265,7 +265,7 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, queue, claim_id, metadata, tenant=None):
+    def update(self, queue, claim_id, metadata, project=None):
         """
         Base claim update method
 
@@ -274,18 +274,18 @@ class ClaimBase(ControllerBase):
         :param claim_id: Claim to be updated
         :param metadata: Claim's parameters
             to be updated.
-        :param tenant: Tenant id
+        :param project: Project id
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, queue, claim_id, tenant=None):
+    def delete(self, queue, claim_id, project=None):
         """
         Base claim delete method
 
         :param queue: Name of the queue this
             claim belongs to.
         :param claim_id: Claim to be deleted
-        :param tenant: Tenant id
+        :param project: Project id
         """
         raise NotImplementedError

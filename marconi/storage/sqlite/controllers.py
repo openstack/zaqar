@@ -26,23 +26,23 @@ class Queue(base.QueueBase):
             if not exists
             Queues (
                 id INTEGER,
-                tenant TEXT,
+                project TEXT,
                 name TEXT,
                 metadata DOCUMENT,
                 PRIMARY KEY(id),
-                UNIQUE(tenant, name)
+                UNIQUE(project, name)
             )
         ''')
 
-    def list(self, tenant, marker=None,
+    def list(self, project, marker=None,
              limit=10, detailed=False):
         sql = (('''
             select name from Queues''' if not detailed
                 else '''
             select name, metadata from Queues''') +
                '''
-             where tenant = ?''')
-        args = [tenant]
+             where project = ?''')
+        args = [project]
 
         if marker:
             sql += '''
@@ -67,37 +67,37 @@ class Queue(base.QueueBase):
         yield it()
         yield marker_name['next']
 
-    def get(self, name, tenant):
+    def get(self, name, project):
         try:
             return self.driver.get('''
                 select metadata from Queues
-                 where tenant = ? and name = ?''', tenant, name)[0]
+                 where project = ? and name = ?''', project, name)[0]
 
         except _NoResult:
-            raise exceptions.QueueDoesNotExist(name, tenant)
+            raise exceptions.QueueDoesNotExist(name, project)
 
-    def upsert(self, name, metadata, tenant):
+    def upsert(self, name, metadata, project):
         with self.driver('immediate'):
             previous_record = self.driver.run('''
                 select id from Queues
-                 where tenant = ? and name = ?
-            ''', tenant, name).fetchone()
+                 where project = ? and name = ?
+            ''', project, name).fetchone()
 
             self.driver.run('''
                 replace into Queues
                  values (null, ?, ?, ?)
-            ''', tenant, name, self.driver.pack(metadata))
+            ''', project, name, self.driver.pack(metadata))
 
             return previous_record is None
 
-    def delete(self, name, tenant):
+    def delete(self, name, project):
         self.driver.run('''
             delete from Queues
-             where tenant = ? and name = ?''', tenant, name)
+             where project = ? and name = ?''', project, name)
 
-    def stats(self, name, tenant):
+    def stats(self, name, project):
         with self.driver('deferred'):
-            qid = _get_qid(self.driver, name, tenant)
+            qid = _get_qid(self.driver, name, project)
             claimed, free = self.driver.get('''
                 select * from
                    (select count(msgid)
@@ -121,7 +121,7 @@ class Queue(base.QueueBase):
                 'actions': 0,
             }
 
-    def actions(self, name, tenant, marker=None, limit=10):
+    def actions(self, name, project, marker=None, limit=10):
         raise NotImplementedError
 
 
@@ -143,15 +143,15 @@ class Message(base.MessageBase):
             )
         ''')
 
-    def get(self, queue, message_id, tenant):
+    def get(self, queue, message_id, project):
         try:
             content, ttl, age = self.driver.get('''
                 select content, ttl, julianday() * 86400.0 - created
                   from Queues as Q join Messages as M
                     on qid = Q.id
                  where ttl > julianday() * 86400.0 - created
-                   and M.id = ? and tenant = ? and name = ?
-            ''', _msgid_decode(message_id), tenant, queue)
+                   and M.id = ? and project = ? and name = ?
+            ''', _msgid_decode(message_id), project, queue)
 
             return {
                 'id': message_id,
@@ -161,9 +161,9 @@ class Message(base.MessageBase):
             }
 
         except (_NoResult, _BadID):
-            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
-    def list(self, queue, tenant, marker=None,
+    def list(self, queue, project, marker=None,
              limit=10, echo=False, client_uuid=None):
         with self.driver('deferred'):
             try:
@@ -172,7 +172,7 @@ class Message(base.MessageBase):
                       from Messages
                      where ttl > julianday() * 86400.0 - created
                        and qid = ?'''
-                args = [_get_qid(self.driver, queue, tenant)]
+                args = [_get_qid(self.driver, queue, project)]
 
                 if not echo:
                     sql += '''
@@ -207,9 +207,9 @@ class Message(base.MessageBase):
             except _BadID:
                 return
 
-    def post(self, queue, messages, client_uuid, tenant):
+    def post(self, queue, messages, client_uuid, project):
         with self.driver('immediate'):
-            qid = _get_qid(self.driver, queue, tenant)
+            qid = _get_qid(self.driver, queue, project)
 
             # cleanup all expired messages in this queue
 
@@ -237,7 +237,7 @@ class Message(base.MessageBase):
 
         return map(_msgid_encode, range(unused, my['newid']))
 
-    def delete(self, queue, message_id, tenant, claim=None):
+    def delete(self, queue, message_id, project, claim=None):
         try:
             id = _msgid_decode(message_id)
 
@@ -246,8 +246,8 @@ class Message(base.MessageBase):
                     delete from Messages
                      where id = ?
                        and qid = (select id from Queues
-                                   where tenant = ? and name = ?)
-                ''', id, tenant, queue)
+                                   where project = ? and name = ?)
+                ''', id, project, queue)
                 return
 
             with self.driver('immediate'):
@@ -256,8 +256,8 @@ class Message(base.MessageBase):
                       from Queues as Q join Messages as M
                         on qid = Q.id
                      where ttl > julianday() * 86400.0 - created
-                       and M.id = ? and tenant = ? and name = ?
-                ''', id, tenant, queue)
+                       and M.id = ? and project = ? and name = ?
+                ''', id, project, queue)
 
                 if not message_exists:
                     return
@@ -312,7 +312,7 @@ class Claim(base.ClaimBase):
             )
         ''')
 
-    def get(self, queue, claim_id, tenant):
+    def get(self, queue, claim_id, project):
         with self.driver('deferred'):
             try:
                 id, ttl, age = self.driver.get('''
@@ -320,8 +320,8 @@ class Claim(base.ClaimBase):
                       from Queues as Q join Claims as C
                         on Q.id = C.qid
                      where C.ttl > julianday() * 86400.0 - C.created
-                       and C.id = ? and tenant = ? and name = ?
-                ''', _cid_decode(claim_id), tenant, queue)
+                       and C.id = ? and project = ? and name = ?
+                ''', _cid_decode(claim_id), project, queue)
 
                 return (
                     {
@@ -333,11 +333,11 @@ class Claim(base.ClaimBase):
                 )
 
             except (_NoResult, _BadID):
-                raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+                raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
-    def create(self, queue, metadata, tenant, limit=10):
+    def create(self, queue, metadata, project, limit=10):
         with self.driver('immediate'):
-            qid = _get_qid(self.driver, queue, tenant)
+            qid = _get_qid(self.driver, queue, project)
 
             # cleanup all expired claims in this queue
 
@@ -383,7 +383,7 @@ class Claim(base.ClaimBase):
                 'body': content,
             }
 
-    def update(self, queue, claim_id, metadata, tenant):
+    def update(self, queue, claim_id, metadata, project):
         try:
             id = _cid_decode(claim_id)
 
@@ -397,16 +397,18 @@ class Claim(base.ClaimBase):
                      where ttl > julianday() * 86400.0 - created
                        and id = ?
                        and qid = (select id from Queues
-                                   where tenant = ? and name = ?)
-                ''', metadata['ttl'], id, tenant, queue)
+                                   where project = ? and name = ?)
+                ''', metadata['ttl'], id, project, queue)
 
                 if not self.driver.affected:
-                    raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+                    raise exceptions.ClaimDoesNotExist(claim_id,
+                                                       queue,
+                                                       project)
 
                 self.__update_claimed(id, metadata['ttl'])
 
         except _BadID:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
     def __update_claimed(self, cid, ttl):
         # Precondition: cid is not expired
@@ -419,14 +421,14 @@ class Claim(base.ClaimBase):
                            where cid = ?)
         ''', ttl, ttl, cid)
 
-    def delete(self, queue, claim_id, tenant):
+    def delete(self, queue, claim_id, project):
         try:
             self.driver.run('''
                 delete from Claims
                  where id = ?
                    and qid = (select id from Queues
-                               where tenant = ? and name = ?)
-            ''', _cid_decode(claim_id), tenant, queue)
+                               where project = ? and name = ?)
+            ''', _cid_decode(claim_id), project, queue)
 
         except _BadID:
             pass
@@ -440,14 +442,14 @@ class _BadID(Exception):
     pass
 
 
-def _get_qid(driver, queue, tenant):
+def _get_qid(driver, queue, project):
     try:
         return driver.get('''
             select id from Queues
-             where tenant = ? and name = ?''', tenant, queue)[0]
+             where project = ? and name = ?''', project, queue)[0]
 
     except _NoResult:
-        raise exceptions.QueueDoesNotExist(queue, tenant)
+        raise exceptions.QueueDoesNotExist(queue, project)
 
 
 # The utilities below make the database IDs opaque to the users

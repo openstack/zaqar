@@ -38,7 +38,7 @@ class QueueController(storage.QueueBase):
     Queues:
         Name       Field
         ----------------
-        tenant    ->   t
+        project    ->  p
         metadata  ->   m
         name      ->   n
 
@@ -49,15 +49,15 @@ class QueueController(storage.QueueBase):
 
         self._col = self.driver.db["queues"]
         # NOTE(flaper87): This creates a unique compound index for
-        # tenant and name. Using tenant as the first field of the
-        # index allows for querying by tenant and tenant+name.
+        # project and name. Using project as the first field of the
+        # index allows for querying by project and project+name.
         # This is also useful for retrieving the queues list for
-        # as specific tenant, for example. Order Matters!
-        self._col.ensure_index([("t", 1), ("n", 1)], unique=True)
+        # as specific project, for example. Order Matters!
+        self._col.ensure_index([("p", 1), ("n", 1)], unique=True)
 
-    def list(self, tenant=None, marker=None,
+    def list(self, project=None, marker=None,
              limit=10, detailed=False):
-        query = {"t": tenant}
+        query = {"p": project}
         if marker:
             query["n"] = {"$gt": marker}
 
@@ -80,29 +80,29 @@ class QueueController(storage.QueueBase):
         yield normalizer(cursor)
         yield marker_name["next"]
 
-    def _get(self, name, tenant=None, fields={"m": 1, "_id": 0}):
-        queue = self._col.find_one({"t": tenant, "n": name}, fields=fields)
+    def _get(self, name, project=None, fields={"m": 1, "_id": 0}):
+        queue = self._col.find_one({"p": project, "n": name}, fields=fields)
         if queue is None:
-            raise exceptions.QueueDoesNotExist(name, tenant)
+            raise exceptions.QueueDoesNotExist(name, project)
         return queue
 
-    def get_id(self, name, tenant=None):
+    def get_id(self, name, project=None):
         """
         Just like `get` method but returns the queue's id
 
         :returns: Queue's `ObjectId`
         """
-        queue = self._get(name, tenant, fields=["_id"])
+        queue = self._get(name, project, fields=["_id"])
         return queue.get("_id")
 
-    def get(self, name, tenant=None):
-        queue = self._get(name, tenant)
+    def get(self, name, project=None):
+        queue = self._get(name, project)
         return queue.get("m", {})
 
-    def upsert(self, name, metadata, tenant=None):
-        super(QueueController, self).upsert(name, metadata, tenant)
+    def upsert(self, name, metadata, project=None):
+        super(QueueController, self).upsert(name, metadata, project)
 
-        rst = self._col.update({"t": tenant, "n": name},
+        rst = self._col.update({"p": project, "n": name},
                                {"$set": {"m": metadata}},
                                multi=False,
                                upsert=True,
@@ -110,12 +110,12 @@ class QueueController(storage.QueueBase):
 
         return not rst["updatedExisting"]
 
-    def delete(self, name, tenant=None):
-        self.driver.message_controller.purge_queue(name, tenant)
-        self._col.remove({"t": tenant, "n": name})
+    def delete(self, name, project=None):
+        self.driver.message_controller.purge_queue(name, project)
+        self._col.remove({"p": project, "n": name})
 
-    def stats(self, name, tenant=None):
-        qid = self.get_id(name, tenant)
+    def stats(self, name, project=None):
+        qid = self.get_id(name, project)
         msg_ctrl = self.driver.message_controller
         active = msg_ctrl.active(qid)
         claimed = msg_ctrl.claimed(qid)
@@ -128,7 +128,7 @@ class QueueController(storage.QueueBase):
             }
         }
 
-    def actions(self, name, tenant=None, marker=None, limit=10):
+    def actions(self, name, project=None, marker=None, limit=10):
         raise NotImplementedError
 
 
@@ -176,9 +176,9 @@ class MessageController(storage.MessageBase):
                                 ("c.e", 1),
                                 ("_id", -1)], background=True)
 
-    def _get_queue_id(self, queue, tenant):
+    def _get_queue_id(self, queue, project):
         queue_controller = self.driver.queue_controller
-        return queue_controller.get_id(queue, tenant)
+        return queue_controller.get_id(queue, project)
 
     def all(self):
         return self._col.find()
@@ -247,11 +247,11 @@ class MessageController(storage.MessageBase):
                          {"$set": {"c": {"id": None, "e": 0}}},
                          upsert=False, multi=True)
 
-    def list(self, queue, tenant=None, marker=None,
+    def list(self, queue, project=None, marker=None,
              limit=10, echo=False, client_uuid=None):
 
         try:
-            qid = self._get_queue_id(queue, tenant)
+            qid = self._get_queue_id(queue, project)
             messages = self.active(qid, marker, echo, client_uuid)
         except ValueError:
             return
@@ -276,18 +276,18 @@ class MessageController(storage.MessageBase):
         yield utils.HookedCursor(messages, denormalizer)
         yield str(marker_id['next'])
 
-    def get(self, queue, message_id, tenant=None):
+    def get(self, queue, message_id, project=None):
 
         # Base query, always check expire time
         try:
             mid = utils.to_oid(message_id)
         except ValueError:
-            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
         now = timeutils.utcnow()
 
         query = {
-            "q": self._get_queue_id(queue, tenant),
+            "q": self._get_queue_id(queue, project),
             "e": {"$gt": now},
             "_id": mid
         }
@@ -295,7 +295,7 @@ class MessageController(storage.MessageBase):
         message = self._col.find_one(query)
 
         if message is None:
-            raise exceptions.MessageDoesNotExist(message_id, queue, tenant)
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
         oid = message["_id"]
         age = now - utils.oid_utc(oid)
@@ -307,8 +307,8 @@ class MessageController(storage.MessageBase):
             "body": message["b"],
         }
 
-    def post(self, queue, messages, client_uuid, tenant=None):
-        qid = self._get_queue_id(queue, tenant)
+    def post(self, queue, messages, client_uuid, project=None):
+        qid = self._get_queue_id(queue, project)
 
         now = timeutils.utcnow()
 
@@ -329,7 +329,7 @@ class MessageController(storage.MessageBase):
         ids = self._col.insert(denormalizer(messages))
         return map(str, ids)
 
-    def delete(self, queue, message_id, tenant=None, claim=None):
+    def delete(self, queue, message_id, project=None, claim=None):
         try:
             try:
                 mid = utils.to_oid(message_id)
@@ -337,7 +337,7 @@ class MessageController(storage.MessageBase):
                 return
 
             query = {
-                "q": self._get_queue_id(queue, tenant),
+                "q": self._get_queue_id(queue, project),
                 "_id": mid
             }
 
@@ -365,9 +365,9 @@ class MessageController(storage.MessageBase):
         except exceptions.QueueDoesNotExist:
             pass
 
-    def purge_queue(self, queue, tenant=None):
+    def purge_queue(self, queue, project=None):
         try:
-            qid = self._get_queue_id(queue, tenant)
+            qid = self._get_queue_id(queue, project)
             self._col.remove({"q": qid}, w=0)
         except exceptions.QueueDoesNotExist:
             pass
@@ -393,15 +393,15 @@ class ClaimController(storage.ClaimBase):
     the claim id and it's expiration timestamp.
     """
 
-    def _get_queue_id(self, queue, tenant):
+    def _get_queue_id(self, queue, project):
         queue_controller = self.driver.queue_controller
-        return queue_controller.get_id(queue, tenant)
+        return queue_controller.get_id(queue, project)
 
-    def get(self, queue, claim_id, tenant=None):
+    def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
 
         # Check whether the queue exists or not
-        qid = self._get_queue_id(queue, tenant)
+        qid = self._get_queue_id(queue, project)
 
         # Base query, always check expire time
         now = timeutils.utcnow()
@@ -435,11 +435,11 @@ class ClaimController(storage.ClaimBase):
                 "id": str(claim["id"]),
             }
         except StopIteration:
-            raise exceptions.ClaimDoesNotExist(cid, queue, tenant)
+            raise exceptions.ClaimDoesNotExist(cid, queue, project)
 
         return (claim, messages)
 
-    def create(self, queue, metadata, tenant=None, limit=10):
+    def create(self, queue, metadata, project=None, limit=10):
         """
         This implementation was done in a best-effort fashion.
         In order to create a claim we need to get a list
@@ -460,7 +460,7 @@ class ClaimController(storage.ClaimBase):
 
         # We don't need the qid here but
         # we need to verify it exists.
-        qid = self._get_queue_id(queue, tenant)
+        qid = self._get_queue_id(queue, project)
 
         ttl = int(metadata.get("ttl", 60))
         oid = objectid.ObjectId()
@@ -513,14 +513,14 @@ class ClaimController(storage.ClaimBase):
                              upsert=False, multi=True)
 
         if updated != 0:
-            claim, messages = self.get(queue, oid, tenant=tenant)
+            claim, messages = self.get(queue, oid, project=project)
         return (str(oid), messages)
 
-    def update(self, queue, claim_id, metadata, tenant=None):
+    def update(self, queue, claim_id, metadata, project=None):
         try:
             cid = utils.to_oid(claim_id)
         except ValueError:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
         now = timeutils.utcnow()
         ttl = int(metadata.get("ttl", 60))
@@ -532,14 +532,14 @@ class ClaimController(storage.ClaimBase):
             msg = _("New ttl will make the claim expires")
             raise ValueError(msg)
 
-        qid = self._get_queue_id(queue, tenant)
+        qid = self._get_queue_id(queue, project)
         msg_ctrl = self.driver.message_controller
         claimed = msg_ctrl.claimed(qid, cid, expires=now, limit=1)
 
         try:
             claimed.next()
         except StopIteration:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, tenant)
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
         meta = {
             "id": cid,
@@ -561,6 +561,6 @@ class ClaimController(storage.ClaimBase):
                              {"$set": {"e": expires, "t": ttl}},
                              upsert=False, multi=True)
 
-    def delete(self, queue, claim_id, tenant=None):
+    def delete(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
         msg_ctrl.unclaim(claim_id)

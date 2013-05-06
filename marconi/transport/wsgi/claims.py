@@ -31,7 +31,7 @@ class CollectionResource(object):
     def __init__(self, claim_controller):
         self.claim_ctrl = claim_controller
 
-    def on_post(self, req, resp, tenant_id, queue_name):
+    def on_post(self, req, resp, project_id, queue_name):
         if req.content_length is None or req.content_length == 0:
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Missing claim metadata.'))
@@ -46,7 +46,7 @@ class CollectionResource(object):
             cid, msgs = self.claim_ctrl.create(
                 queue_name,
                 metadata=metadata,
-                tenant=tenant_id,
+                project=project_id,
                 **kwargs)
             resp_msgs = list(msgs)
 
@@ -83,12 +83,12 @@ class ItemResource(object):
     def __init__(self, claim_controller):
         self.claim_ctrl = claim_controller
 
-    def on_get(self, req, resp, tenant_id, queue_name, claim_id):
+    def on_get(self, req, resp, project_id, queue_name, claim_id):
         try:
             meta, msgs = self.claim_ctrl.get(
                 queue_name,
                 claim_id=claim_id,
-                tenant=tenant_id)
+                project=project_id)
 
             meta['messages'] = list(msgs)
             for msg in meta['messages']:
@@ -112,7 +112,7 @@ class ItemResource(object):
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-    def on_patch(self, req, resp, tenant_id, queue_name, claim_id):
+    def on_patch(self, req, resp, project_id, queue_name, claim_id):
         if req.content_length is None or req.content_length == 0:
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Missing claim metadata.'))
@@ -122,7 +122,7 @@ class ItemResource(object):
             self.claim_ctrl.update(queue_name,
                                    claim_id=claim_id,
                                    metadata=metadata,
-                                   tenant=tenant_id)
+                                   project=project_id)
 
             resp.status = falcon.HTTP_204
 
@@ -139,11 +139,11 @@ class ItemResource(object):
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-    def on_delete(self, req, resp, tenant_id, queue_name, claim_id):
+    def on_delete(self, req, resp, project_id, queue_name, claim_id):
         try:
             self.claim_ctrl.delete(queue_name,
                                    claim_id=claim_id,
-                                   tenant=tenant_id)
+                                   project=project_id)
 
             resp.status = falcon.HTTP_204
 

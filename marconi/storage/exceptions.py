@@ -24,27 +24,27 @@ class NotPermitted(Exception):
 
 class QueueDoesNotExist(DoesNotExist):
 
-    def __init__(self, name, tenant):
-        msg = (_("Queue %(name)s does not exist for tenant %(tenant)s") %
-               dict(name=name, tenant=tenant))
+    def __init__(self, name, project):
+        msg = (_("Queue %(name)s does not exist for project %(project)s") %
+               dict(name=name, project=project))
         super(QueueDoesNotExist, self).__init__(msg)
 
 
 class MessageDoesNotExist(DoesNotExist):
 
-    def __init__(self, mid, queue, tenant):
+    def __init__(self, mid, queue, project):
         msg = (_("Message %(mid)s does not exist in "
-                 "queue %(queue)s of tenant %(tenant)s") %
-               dict(mid=mid, queue=queue, tenant=tenant))
+                 "queue %(queue)s of project %(project)s") %
+               dict(mid=mid, queue=queue, project=project))
         super(MessageDoesNotExist, self).__init__(msg)
 
 
 class ClaimDoesNotExist(DoesNotExist):
 
-    def __init__(self, cid, queue, tenant):
+    def __init__(self, cid, queue, project):
         msg = (_("Claim %(cid)s does not exist in "
-                 "queue %(queue)s of tenant %(tenant)s") %
-               dict(cid=cid, queue=queue, tenant=tenant))
+                 "queue %(queue)s of project %(project)s") %
+               dict(cid=cid, queue=queue, project=project))
         super(ClaimDoesNotExist, self).__init__(msg)
 
 

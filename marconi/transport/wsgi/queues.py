@@ -32,7 +32,7 @@ class ItemResource(object):
     def __init__(self, queue_controller):
         self.queue_ctrl = queue_controller
 
-    def on_put(self, req, resp, tenant_id, queue_name):
+    def on_put(self, req, resp, project_id, queue_name):
         if req.content_length > transport.MAX_QUEUE_METADATA_SIZE:
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Queue metadata size is too large.'))
@@ -45,7 +45,7 @@ class ItemResource(object):
             metadata = _filtered(helpers.read_json(req.stream))
             created = self.queue_ctrl.upsert(queue_name,
                                              metadata=metadata,
-                                             tenant=tenant_id)
+                                             project=project_id)
         except helpers.MalformedJSON:
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Malformed queue metadata.'))
@@ -59,10 +59,10 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
-    def on_get(self, req, resp, tenant_id, queue_name):
+    def on_get(self, req, resp, project_id, queue_name):
         try:
             doc = self.queue_ctrl.get(queue_name,
-                                      tenant=tenant_id)
+                                      project=project_id)
 
             resp.content_location = req.relative_uri
             resp.body = helpers.to_json(doc)
@@ -76,10 +76,10 @@ class ItemResource(object):
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-    def on_delete(self, req, resp, tenant_id, queue_name):
+    def on_delete(self, req, resp, project_id, queue_name):
         try:
             self.queue_ctrl.delete(queue_name,
-                                   tenant=tenant_id)
+                                   project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -97,7 +97,7 @@ class CollectionResource(object):
     def __init__(self, queue_controller):
         self.queue_ctrl = queue_controller
 
-    def on_get(self, req, resp, tenant_id):
+    def on_get(self, req, resp, project_id):
         #TODO(zyuan): where do we define the limits?
         kwargs = helpers.purge({
             'marker': req.get_param('marker'),
@@ -106,7 +106,7 @@ class CollectionResource(object):
         })
 
         try:
-            interaction = self.queue_ctrl.list(tenant=tenant_id, **kwargs)
+            interaction = self.queue_ctrl.list(project=project_id, **kwargs)
 
             resp_dict = {
                 'queues': list(interaction.next())

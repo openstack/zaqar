@@ -61,7 +61,7 @@ class MongodbQueueTests(base.QueueControllerTest):
     def test_indexes(self):
         col = self.controller._col
         indexes = col.index_information()
-        self.assertIn("t_1_n_1", indexes)
+        self.assertIn("p_1_n_1", indexes)
 
     def test_messages_purged(self):
         queue_name = "test"
@@ -119,18 +119,18 @@ class MongodbClaimTests(base.ClaimControllerTest):
         epoch = '000000000000000000000000'
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
-                          epoch, tenant=self.tenant)
+                          epoch, project=self.project)
 
         claim_id, messages = self.controller.create(self.queue_name,
                                                     {"ttl": 1},
-                                                    tenant=self.tenant)
+                                                    project=self.project)
 
         # Lets let it expire
         time.sleep(1)
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
-                          claim_id, {}, tenant=self.tenant)
+                          claim_id, {}, project=self.project)
 
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
-                          claim_id, {}, tenant=self.tenant)
+                          claim_id, {}, project=self.project)

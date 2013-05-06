@@ -30,10 +30,10 @@ class Resource(object):
     def __init__(self, queue_controller):
         self.queue_ctrl = queue_controller
 
-    def on_get(self, req, resp, tenant_id, queue_name):
+    def on_get(self, req, resp, project_id, queue_name):
         try:
             resp_dict = self.queue_ctrl.stats(queue_name,
-                                              tenant=tenant_id)
+                                              project=project_id)
 
             resp.content_location = req.path
             resp.body = helpers.to_json(resp_dict)

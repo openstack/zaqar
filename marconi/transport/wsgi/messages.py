@@ -31,7 +31,7 @@ class CollectionResource(object):
     def __init__(self, message_controller):
         self.msg_ctrl = message_controller
 
-    def on_post(self, req, resp, tenant_id, queue_name):
+    def on_post(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
         if req.content_length is None or req.content_length == 0:
@@ -54,7 +54,7 @@ class CollectionResource(object):
             ls = filtered(helpers.read_json(req.stream))
             ns = self.msg_ctrl.post(queue_name,
                                     messages=ls,
-                                    tenant=tenant_id,
+                                    project=project_id,
                                     client_uuid=uuid)
 
             resp.location = req.path + '/' + ','.join(
@@ -74,7 +74,7 @@ class CollectionResource(object):
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-    def on_get(self, req, resp, tenant_id, queue_name):
+    def on_get(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
         #TODO(zyuan): where do we define the limits?
@@ -86,7 +86,7 @@ class CollectionResource(object):
 
         try:
             interaction = self.msg_ctrl.list(queue_name,
-                                             tenant=tenant_id,
+                                             project=project_id,
                                              client_uuid=uuid,
                                              **kwargs)
             resp_dict = {
@@ -129,11 +129,11 @@ class ItemResource(object):
     def __init__(self, message_controller):
         self.msg_ctrl = message_controller
 
-    def on_get(self, req, resp, tenant_id, queue_name, message_id):
+    def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
             msg = self.msg_ctrl.get(queue_name,
                                     message_id=message_id,
-                                    tenant=tenant_id)
+                                    project=project_id)
 
             msg['href'] = req.path
             del msg['id']
@@ -151,11 +151,11 @@ class ItemResource(object):
             msg = _('Please try again in a few seconds.')
             raise falcon.HTTPServiceUnavailable(title, msg, 30)
 
-    def on_delete(self, req, resp, tenant_id, queue_name, message_id):
+    def on_delete(self, req, resp, project_id, queue_name, message_id):
         try:
             self.msg_ctrl.delete(queue_name,
                                  message_id=message_id,
-                                 tenant=tenant_id,
+                                 project=project_id,
                                  claim=req.get_param('claim_id'))
 
             resp.status = falcon.HTTP_204
