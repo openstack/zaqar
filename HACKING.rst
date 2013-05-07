@@ -56,12 +56,13 @@ Example::
 
 Imports
 -------
+- Only modules may be imported
 - Do not make relative imports
 - Order your imports by the full module path
-- Import of classes is just allowed inside __init__ files.
-- Organize your imports according to the following template
+- Classes and functions may be hoisted into a package namespace, via __init__ files, with some discretion.
+- Organize your imports according to the template given below
 
-Example::
+Template::
 
   {{stdlib imports in human alphabetical order}}
   \n

@@ -17,7 +17,6 @@
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.tests import util as testing
-from marconi.tests.util import helpers
 
 
 class ControllerBaseTest(testing.TestBase):
@@ -201,7 +200,7 @@ class MessageControllerTest(ControllerBaseTest):
         [msg1, msg2] = msgs
 
         # A wrong claim does not ensure the message deletion
-        with helpers.expected(storage.exceptions.NotPermitted):
+        with testing.expect(storage.exceptions.NotPermitted):
             self.controller.delete(self.queue_name, msg1["id"],
                                    project=self.project,
                                    claim=another_cid)
@@ -211,7 +210,7 @@ class MessageControllerTest(ControllerBaseTest):
                                project=self.project,
                                claim=cid)
 
-        with helpers.expected(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msg1["id"],
                                 project=self.project)
 
@@ -224,7 +223,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.claim_controller.delete(self.queue_name, cid,
                                      project=self.project)
 
-        with helpers.expected(storage.exceptions.NotPermitted):
+        with testing.expect(storage.exceptions.NotPermitted):
             self.controller.delete(self.queue_name, msg2["id"],
                                    project=self.project,
                                    claim=cid)
@@ -236,7 +235,7 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid='my_uuid')
 
-        with helpers.expected(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msgid,
                                 project=self.project)
 
@@ -255,7 +254,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         self.assertEquals(len(msgs), 0)
 
-        with helpers.expected(exceptions.DoesNotExist):
+        with testing.expect(exceptions.DoesNotExist):
             self.controller.get('unused', 'illformed', '480924')
 
     def test_illformed_claim(self):
@@ -265,7 +264,7 @@ class MessageControllerTest(ControllerBaseTest):
                                        project='480924',
                                        client_uuid='unused')
 
-        with helpers.expected(exceptions.NotPermitted):
+        with testing.expect(exceptions.NotPermitted):
             self.controller.delete('unused', msgid,
                                    project='480924',
                                    claim='illformed')
@@ -354,11 +353,11 @@ class ClaimControllerTest(ControllerBaseTest):
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
 
-        with helpers.expected(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, claim_id,
                                 project=self.project)
 
-        with helpers.expected(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, project=self.project)
 
@@ -368,7 +367,7 @@ class ClaimControllerTest(ControllerBaseTest):
         self.queue_controller.upsert('unused', {}, '480924')
         self.controller.delete('unused', 'illformed', '480924')
 
-        with helpers.expected(exceptions.DoesNotExist):
+        with testing.expect(exceptions.DoesNotExist):
             self.controller.update('unused', 'illformed',
                                    {'ttl': 40}, '480924')
 
