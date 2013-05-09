@@ -36,10 +36,8 @@ class CollectionResource(object):
             raise falcon.HTTPBadRequest(_('Bad request'),
                                         _('Missing claim metadata.'))
 
-        #TODO(zyuan): where do we define the limits?
-        kwargs = helpers.purge({
-            'limit': req.get_param_as_int('limit'),
-        })
+        limit = req.get_param_as_int('limit')
+        claim_options = {} if limit is None else {'limit': limit}
 
         try:
             metadata = _filtered(helpers.read_json(req.stream))
@@ -47,7 +45,7 @@ class CollectionResource(object):
                 queue_name,
                 metadata=metadata,
                 project=project_id,
-                **kwargs)
+                **claim_options)
             resp_msgs = list(msgs)
 
             if len(resp_msgs) != 0:
