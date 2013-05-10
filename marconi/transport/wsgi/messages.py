@@ -16,11 +16,14 @@
 import falcon
 
 import marconi.openstack.common.log as logging
-from marconi.storage import exceptions
+from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import helpers
+from marconi.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.transport.wsgi import helpers as wsgi_helpers
 
 
 LOG = logging.getLogger(__name__)
+MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
 
 
 class CollectionResource(object):
@@ -33,50 +36,40 @@ class CollectionResource(object):
     def on_post(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
-        if req.content_length is None or req.content_length == 0:
-            raise falcon.HTTPBadRequest(_('Bad request'),
-                                        _('Missing message contents.'))
+        # Pull out just the fields we care about
+        messages = wsgi_helpers.filter_stream(
+            req.stream,
+            MESSAGE_POST_SPEC,
+            doctype=wsgi_helpers.JSONArray)
 
-        def filtered(ls):
-            try:
-                if len(ls) < 1:
-                    raise helpers.MalformedJSON
-
-                for m in ls:
-                    #TODO(zyuan): verify the TTL values
-                    yield {'ttl': m['ttl'], 'body': m['body']}
-
-            except Exception:
-                raise helpers.MalformedJSON
-
+        # Enqueue the messages
         try:
-            ls = filtered(helpers.read_json(req.stream))
-            ns = self.msg_ctrl.post(queue_name,
-                                    messages=ls,
-                                    project=project_id,
-                                    client_uuid=uuid)
+            message_ids = self.msg_ctrl.post(queue_name,
+                                             messages=messages,
+                                             project=project_id,
+                                             client_uuid=uuid)
 
-            resp.location = req.path + '/' + ','.join(
-                [n.encode('utf-8') for n in ns])
-            resp.status = falcon.HTTP_201
-
-        except helpers.MalformedJSON:
-            raise falcon.HTTPBadRequest(_('Bad request'),
-                                        _('Malformed messages.'))
-
-        except exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound
-
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
-            title = _('Service temporarily unavailable')
-            msg = _('Please try again in a few seconds.')
-            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+            description = _('Messages could not be enqueued.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # See if anything happened
+        if len(message_ids) == 0:
+            description = _('No messages to enqueue.')
+            raise wsgi_exceptions.HTTPBadRequestBody(description)
+
+        #TODO(kgriffs): Optimize
+        resource = ','.join([id.encode('utf-8') for id in message_ids])
+        resp.location = req.path + '/' + resource
+        resp.status = falcon.HTTP_201
 
     def on_get(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
-        #TODO(zyuan): where do we define the limits?
+        #TODO(kgriffs): Optimize
         kwargs = helpers.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
@@ -84,41 +77,45 @@ class CollectionResource(object):
         })
 
         try:
-            interaction = self.msg_ctrl.list(queue_name,
-                                             project=project_id,
-                                             client_uuid=uuid,
-                                             **kwargs)
-            resp_dict = {
-                'messages': list(interaction.next())
-            }
+            results = self.msg_ctrl.list(queue_name,
+                                         project=project_id,
+                                         client_uuid=uuid,
+                                         **kwargs)
+            # Buffer messages
+            cursor = results.next()
+            messages = list(cursor)
 
-            if len(resp_dict['messages']) != 0:
-                kwargs['marker'] = interaction.next()
-                for msg in resp_dict['messages']:
-                    msg['href'] = req.path + '/' + msg['id']
-                    del msg['id']
-
-                resp_dict['links'] = [
-                    {
-                        'rel': 'next',
-                        'href': req.path + falcon.to_query_str(kwargs)
-                    }
-                ]
-
-                resp.content_location = req.relative_uri
-                resp.body = helpers.to_json(resp_dict)
-                resp.status = falcon.HTTP_200
-            else:
-                resp.status = falcon.HTTP_204
-
-        except exceptions.DoesNotExist:
+        except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound
-
         except Exception as ex:
             LOG.exception(ex)
-            title = _('Service temporarily unavailable')
-            msg = _('Please try again in a few seconds.')
-            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+            description = _('Messages could not be listed.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # Check for no content
+        if len(messages) == 0:
+            resp.status = falcon.HTTP_204
+            return
+
+        # Found some messages, so prepare the response
+        kwargs['marker'] = results.next()
+        for each_message in messages:
+            each_message['href'] = req.path + '/' + each_message['id']
+            del each_message['id']
+
+        response_body = {
+            'messages': messages,
+            'links': [
+                {
+                    'rel': 'next',
+                    'href': req.path + falcon.to_query_str(kwargs)
+                }
+            ]
+        }
+
+        resp.content_location = req.relative_uri
+        resp.body = helpers.to_json(response_body)
+        resp.status = falcon.HTTP_200
 
 
 class ItemResource(object):
@@ -130,25 +127,24 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
-            msg = self.msg_ctrl.get(queue_name,
-                                    message_id=message_id,
-                                    project=project_id)
+            message = self.msg_ctrl.get(queue_name,
+                                        message_id=message_id,
+                                        project=project_id)
 
-            msg['href'] = req.path
-            del msg['id']
-
-            resp.content_location = req.relative_uri
-            resp.body = helpers.to_json(msg)
-            resp.status = falcon.HTTP_200
-
-        except exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound
-
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
-            title = _('Service temporarily unavailable')
-            msg = _('Please try again in a few seconds.')
-            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+            description = _('Message could not be retrieved.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # Prepare response
+        message['href'] = req.path
+        del message['id']
+
+        resp.content_location = req.relative_uri
+        resp.body = helpers.to_json(message)
+        resp.status = falcon.HTTP_200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
         try:
@@ -157,13 +153,16 @@ class ItemResource(object):
                                  project=project_id,
                                  claim=req.get_param('claim_id'))
 
-            resp.status = falcon.HTTP_204
-
-        except exceptions.NotPermitted:
-            resp.status = falcon.HTTP_403
-
+        except storage_exceptions.NotPermitted as ex:
+            LOG.exception(ex)
+            title = _('Invalid claim')
+            description = _('The specified claim either does not '
+                            'exist or has expired.')
+            raise falcon.HTTPForbidden(title, description)
         except Exception as ex:
             LOG.exception(ex)
-            title = _('Service temporarily unavailable')
-            msg = _('Please try again in a few seconds.')
-            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+            description = _('Message could not be deleted.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # Alles guete
+        resp.status = falcon.HTTP_204

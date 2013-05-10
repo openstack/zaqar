@@ -16,20 +16,21 @@
 import simplejson as json
 
 
-class MalformedJSON(Exception):
+class MalformedJSON(ValueError):
+    """JSON string is not valid."""
     pass
 
 
 def read_json(stream):
-    """Like json.load, but raises an exception upon failure.
+    """Like json.load, but converts ValueError to MalformedJSON upon failure.
 
     :param stream: a file-like object
     """
     try:
         return json.load(stream)
 
-    except Exception:
-        raise MalformedJSON
+    except ValueError as ex:
+        raise MalformedJSON(ex.message)
 
 
 def to_json(obj):
