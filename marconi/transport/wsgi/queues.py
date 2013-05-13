@@ -27,10 +27,10 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('queue_ctrl')
+    __slots__ = ('queue_controller')
 
     def __init__(self, queue_controller):
-        self.queue_ctrl = queue_controller
+        self.queue_controller = queue_controller
 
     def on_put(self, req, resp, project_id, queue_name):
         #TODO(kgriffs): Migrate this check to input validator middleware
@@ -56,9 +56,10 @@ class ItemResource(object):
 
         # Create or update the queue
         try:
-            created = self.queue_ctrl.upsert(queue_name,
-                                             metadata=metadata,
-                                             project=project_id)
+            created = self.queue_controller.upsert(
+                queue_name,
+                metadata=metadata,
+                project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -70,7 +71,7 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name):
         try:
-            doc = self.queue_ctrl.get(queue_name, project=project_id)
+            doc = self.queue_controller.get(queue_name, project=project_id)
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
         except Exception as ex:
@@ -83,8 +84,7 @@ class ItemResource(object):
 
     def on_delete(self, req, resp, project_id, queue_name):
         try:
-            self.queue_ctrl.delete(queue_name,
-                                   project=project_id)
+            self.queue_controller.delete(queue_name, project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -96,10 +96,10 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('queue_ctrl')
+    __slots__ = ('queue_controller')
 
     def __init__(self, queue_controller):
-        self.queue_ctrl = queue_controller
+        self.queue_controller = queue_controller
 
     def on_get(self, req, resp, project_id):
         #TODO(kgriffs): Optimize
@@ -110,7 +110,7 @@ class CollectionResource(object):
         })
 
         try:
-            results = self.queue_ctrl.list(project=project_id, **kwargs)
+            results = self.queue_controller.list(project=project_id, **kwargs)
         except Exception as ex:
             LOG.exception(ex)
             description = _('Queues could not be listed.')

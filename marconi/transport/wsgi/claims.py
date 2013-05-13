@@ -28,10 +28,10 @@ CLAIM_METADATA_SPEC = (('ttl', int),)
 
 class CollectionResource(object):
 
-    __slots__ = ('claim_ctrl')
+    __slots__ = ('claim_controller')
 
     def __init__(self, claim_controller):
-        self.claim_ctrl = claim_controller
+        self.claim_controller = claim_controller
 
     def on_post(self, req, resp, project_id, queue_name):
         # Check for an explicit limit on the # of messages to claim
@@ -44,7 +44,7 @@ class CollectionResource(object):
 
         # Claim some messages
         try:
-            cid, msgs = self.claim_ctrl.create(
+            cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
                 project=project_id,
@@ -79,14 +79,14 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('claim_ctrl')
+    __slots__ = ('claim_controller')
 
     def __init__(self, claim_controller):
-        self.claim_ctrl = claim_controller
+        self.claim_controller = claim_controller
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
         try:
-            meta, msgs = self.claim_ctrl.get(
+            meta, msgs = self.claim_controller.get(
                 queue_name,
                 claim_id=claim_id,
                 project=project_id)
@@ -122,10 +122,10 @@ class ItemResource(object):
         metadata, = wsgi_helpers.filter_stream(req.stream, CLAIM_METADATA_SPEC)
 
         try:
-            self.claim_ctrl.update(queue_name,
-                                   claim_id=claim_id,
-                                   metadata=metadata,
-                                   project=project_id)
+            self.claim_controller.update(queue_name,
+                                         claim_id=claim_id,
+                                         metadata=metadata,
+                                         project=project_id)
 
             resp.status = falcon.HTTP_204
 
@@ -138,9 +138,9 @@ class ItemResource(object):
 
     def on_delete(self, req, resp, project_id, queue_name, claim_id):
         try:
-            self.claim_ctrl.delete(queue_name,
-                                   claim_id=claim_id,
-                                   project=project_id)
+            self.claim_controller.delete(queue_name,
+                                         claim_id=claim_id,
+                                         project=project_id)
 
             resp.status = falcon.HTTP_204
 

@@ -28,10 +28,10 @@ MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
 
 class CollectionResource(object):
 
-    __slots__ = ('msg_ctrl')
+    __slots__ = ('message_controller')
 
     def __init__(self, message_controller):
-        self.msg_ctrl = message_controller
+        self.message_controller = message_controller
 
     def on_post(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
@@ -44,10 +44,11 @@ class CollectionResource(object):
 
         # Enqueue the messages
         try:
-            message_ids = self.msg_ctrl.post(queue_name,
-                                             messages=messages,
-                                             project=project_id,
-                                             client_uuid=uuid)
+            message_ids = self.message_controller.post(
+                queue_name,
+                messages=messages,
+                project=project_id,
+                client_uuid=uuid)
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
@@ -77,10 +78,12 @@ class CollectionResource(object):
         })
 
         try:
-            results = self.msg_ctrl.list(queue_name,
-                                         project=project_id,
-                                         client_uuid=uuid,
-                                         **kwargs)
+            results = self.message_controller.list(
+                queue_name,
+                project=project_id,
+                client_uuid=uuid,
+                **kwargs)
+
             # Buffer messages
             cursor = results.next()
             messages = list(cursor)
@@ -120,16 +123,17 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('msg_ctrl')
+    __slots__ = ('message_controller')
 
     def __init__(self, message_controller):
-        self.msg_ctrl = message_controller
+        self.message_controller = message_controller
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
-            message = self.msg_ctrl.get(queue_name,
-                                        message_id=message_id,
-                                        project=project_id)
+            message = self.message_controller.get(
+                queue_name,
+                message_id=message_id,
+                project=project_id)
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
@@ -148,10 +152,11 @@ class ItemResource(object):
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
         try:
-            self.msg_ctrl.delete(queue_name,
-                                 message_id=message_id,
-                                 project=project_id,
-                                 claim=req.get_param('claim_id'))
+            self.message_controller.delete(
+                queue_name,
+                message_id=message_id,
+                project=project_id,
+                claim=req.get_param('claim_id'))
 
         except storage_exceptions.NotPermitted as ex:
             LOG.exception(ex)
