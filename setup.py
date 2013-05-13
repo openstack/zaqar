@@ -40,6 +40,6 @@ setuptools.setup(
     cmdclass=common_setup.get_cmdclass(),
     entry_points={
         'console_scripts':
-            ['marconi-server = marconi.bin.server:run']
+            ['marconi-server = marconi.cmd.server:run']
     }
 )
