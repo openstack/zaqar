@@ -1,3 +1,7 @@
+[DEFAULT]
+; debug = False
+; verbose = False
+
 [drivers]
 ;transport = marconi.transport.wsgi, marconi.transport.zmq
 transport = marconi.transport.wsgi

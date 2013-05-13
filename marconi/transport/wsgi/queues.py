@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 import falcon
 
+import marconi.openstack.common.log as logging
 from marconi.storage import exceptions
 from marconi import transport
 from marconi.transport import helpers

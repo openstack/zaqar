@@ -20,6 +20,7 @@ import gunicorn.app.base as gunicorn
 import gunicorn.config as gconfig
 
 from marconi.common import config
+import marconi.openstack.common.log as logging
 
 
 OPTIONS = {
@@ -40,6 +41,8 @@ OPTIONS = {
 
 cfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
 
+LOG = logging.getLogger(__name__)
+
 
 class Application(gunicorn.Application):
 
@@ -55,3 +58,5 @@ class Application(gunicorn.Application):
 
         for key in OPTIONS:
             self.cfg.set(key, getattr(cfg, key))
+
+        self.logger = LOG

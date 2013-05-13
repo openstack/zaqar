@@ -1,11 +1,12 @@
 cliff
+eventlet>=0.9.12
 falcon>=0.1.4
-simplejson
+gunicorn
+iso8601>=0.1.4
 msgpack-python
 oslo.config>=1.1.0
 PasteDeploy
 pymongo
 python-keystoneclient
+simplejson
 WebOb
-gunicorn
-iso8601>=0.1.4
