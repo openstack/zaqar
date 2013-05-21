@@ -14,17 +14,70 @@
 # limitations under the License.
 
 import os
+import random
 import time
 
-from marconi.common import config
+from testtools import matchers
+
+from marconi.common import exceptions
 from marconi import storage
 from marconi.storage import mongodb
 from marconi.storage.mongodb import controllers
+from marconi.storage.mongodb import options as mongodb_options
+from marconi.storage.mongodb import utils
 from marconi.tests.storage import base
 from marconi.tests import util as testing
 
 
-cfg = config.namespace("drivers:storage:mongodb").from_options()
+class MongodbUtilsTest(testing.TestBase):
+
+    def test_dup_marker_from_error(self):
+        error_message = ("E11000 duplicate key error index: "
+                         "marconi.messages.$queue_marker  dup key: "
+                         "{ : ObjectId('51adff46b100eb85d8a93a2d'), : 3 }")
+
+        marker = utils.dup_marker_from_error(error_message)
+        self.assertEquals(marker, 3)
+
+        error_message = ("E11000 duplicate key error index: "
+                         "marconi.messages.$x_y  dup key: "
+                         "{ : ObjectId('51adff46b100eb85d8a93a2d'), : 3 }")
+
+        self.assertRaises(exceptions.PatternNotFound,
+                          utils.dup_marker_from_error, error_message)
+
+        error_message = ("E11000 duplicate key error index: "
+                         "marconi.messages.$queue_marker  dup key: "
+                         "{ : ObjectId('51adff46b100eb85d8a93a2d') }")
+
+        self.assertRaises(exceptions.PatternNotFound,
+                          utils.dup_marker_from_error, error_message)
+
+    def test_calculate_backoff(self):
+        sec = utils.calculate_backoff(0, 10, 2, 0)
+        self.assertEquals(sec, 0)
+
+        sec = utils.calculate_backoff(9, 10, 2, 0)
+        self.assertEquals(sec, 1.8)
+
+        sec = utils.calculate_backoff(4, 10, 2, 0)
+        self.assertEquals(sec, 0.8)
+
+        sec = utils.calculate_backoff(4, 10, 2, 1)
+        if sec != 0.8:
+            self.assertThat(sec, matchers.GreaterThan(0.8))
+            self.assertThat(sec, matchers.LessThan(1.8))
+
+        self.assertRaises(ValueError, utils.calculate_backoff, 0, 10, -2, -1)
+        self.assertRaises(ValueError, utils.calculate_backoff, 0, 10, -2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, 0, 10, 2, -1)
+
+        self.assertRaises(ValueError, utils.calculate_backoff, -2, -10, 2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, 2, -10, 2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, -2, 10, 2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, -1, 10, 2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, 10, 10, 2, 0)
+        self.assertRaises(ValueError, utils.calculate_backoff, 11, 10, 2, 0)
 
 
 class MongodbDriverTest(testing.TestBase):
@@ -39,7 +92,7 @@ class MongodbDriverTest(testing.TestBase):
     def test_db_instance(self):
         driver = mongodb.Driver()
         db = driver.db
-        self.assertEquals(db.name, cfg.database)
+        self.assertEquals(db.name, mongodb_options.CFG.database)
 
 
 class MongodbQueueTests(base.QueueControllerTest):
@@ -66,7 +119,7 @@ class MongodbQueueTests(base.QueueControllerTest):
     def test_messages_purged(self):
         queue_name = "test"
         self.controller.upsert(queue_name, {})
-        qid = self.controller.get_id(queue_name)
+        qid = self.controller._get_id(queue_name)
         self.message_controller.post(queue_name,
                                      [{"ttl": 60}],
                                      1234)
@@ -91,12 +144,92 @@ class MongodbMessageTests(base.MessageControllerTest):
         self.controller._col.drop()
         super(MongodbMessageTests, self).tearDown()
 
+    def _count_expired(self, queue, project=None):
+        queue_id = self.queue_controller._get_id(queue, project)
+        return self.controller._count_expired(queue_id)
+
     def test_indexes(self):
         col = self.controller._col
         indexes = col.index_information()
-        #self.assertIn("e_1", indexes)
-        self.assertIn("q_1_e_1_c.e_1__id_-1", indexes)
-        self.assertIn("q_1_c.id_1_c.e_1__id_-1", indexes)
+        self.assertIn("active", indexes)
+        self.assertIn("claimed", indexes)
+        self.assertIn("queue_marker", indexes)
+
+    def test_next_marker(self):
+        queue_name = "marker_test"
+        iterations = 10
+
+        self.queue_controller.upsert(queue_name, {})
+        queue_id = self.queue_controller._get_id(queue_name)
+
+        seed_marker1 = self.controller._next_marker(queue_name)
+        self.assertEqual(seed_marker1, 1, "First marker is 1")
+
+        for i in range(iterations):
+            self.controller.post(queue_name, [{"ttl": 60}], "uuid")
+            marker1 = self.controller._next_marker(queue_id)
+            marker2 = self.controller._next_marker(queue_id)
+            marker3 = self.controller._next_marker(queue_id)
+            self.assertEqual(marker1, marker2)
+            self.assertEqual(marker2, marker3)
+
+            self.assertEqual(marker1, i+2)
+
+    def test_remove_expired(self):
+        num_projects = 10
+        num_queues = 10
+        total_queues = num_projects * num_queues
+        gc_threshold = mongodb_options.CFG.gc_threshold
+        messages_per_queue = gc_threshold
+        nogc_messages_per_queue = gc_threshold - 1
+
+        projects = ["gc-test-project-%s" % i for i in range(num_projects)]
+        queue_names = ["gc-test-%s" % i for i in range(num_queues)]
+        client_uuid = "b623c53c-cf75-11e2-84e1-a1187188419e"
+        messages = [{"ttl": 0, "body": str(i)}
+                    for i in range(messages_per_queue)]
+
+        for project in projects:
+            for queue in queue_names:
+                self.queue_controller.upsert(queue, {}, project)
+                self.controller.post(queue, messages, client_uuid, project)
+
+        # Add one that should not be gc'd due to being under threshold
+        self.queue_controller.upsert("nogc-test", {}, "nogc-test-project")
+        nogc_messages = [{"ttl": 0, "body": str(i)}
+                         for i in range(nogc_messages_per_queue)]
+        self.controller.post("nogc-test", nogc_messages,
+                             client_uuid, "nogc-test-project")
+
+        total_expired = sum(
+            self._count_expired(queue, project)
+            for queue in queue_names
+            for project in projects)
+
+        self.assertEquals(total_expired, total_queues * messages_per_queue)
+        self.controller.remove_expired()
+
+        # Make sure the messages in this queue were not gc'd since
+        # the count was under the threshold.
+        self.assertEquals(
+            self._count_expired("nogc-test", "nogc-test-project"),
+            len(nogc_messages))
+
+        total_expired = sum(
+            self._count_expired(queue, project)
+            for queue in queue_names
+            for project in projects)
+
+        # Expect that the most recent message for each queue
+        # will not be removed.
+        self.assertEquals(total_expired, total_queues)
+
+        # Sanity-check that the most recent message is the
+        # one remaining in the queue.
+        queue = random.choice(queue_names)
+        queue_id = self.queue_controller._get_id(queue, project)
+        message = self.driver.db.messages.find_one({"q": queue_id})
+        self.assertEquals(message["k"], messages_per_queue)
 
 
 class MongodbClaimTests(base.ClaimControllerTest):

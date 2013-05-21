@@ -16,3 +16,7 @@
 
 class InvalidDriver(Exception):
     pass
+
+
+class PatternNotFound(Exception):
+    """A string did not match the expected pattern or regex."""

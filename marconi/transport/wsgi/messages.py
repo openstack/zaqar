@@ -57,6 +57,8 @@ class CollectionResource(object):
         messages = itertools.chain((first_message,), messages)
 
         # Enqueue the messages
+        partial = False
+
         try:
             message_ids = self.message_controller.post(
                 queue_name,
@@ -66,15 +68,30 @@ class CollectionResource(object):
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
+        except storage_exceptions.MessageConflict as ex:
+            LOG.exception(ex)
+            partial = True
+            message_ids = ex.succeeded_ids
+
+            if not message_ids:
+                #TODO(kgriffs): Include error code that is different
+                # from the code used in the generic case, below.
+                description = _('No messages could be enqueued.')
+                raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Messages could not be enqueued.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
-        #TODO(kgriffs): Optimize
-        resource = ','.join([id.encode('utf-8') for id in message_ids])
-        resp.location = req.path + '/' + resource
+        # Prepare the response
         resp.status = falcon.HTTP_201
+        resource = ','.join(message_ids)
+        resp.location = req.path + '/' + resource
+
+        hrefs = [req.path + '/' + id for id in message_ids]
+        body = {"resources": hrefs, "partial": partial}
+        resp.body = helpers.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
@@ -98,7 +115,19 @@ class CollectionResource(object):
             messages = list(cursor)
 
         except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound
+            raise falcon.HTTPNotFound()
+
+        except storage_exceptions.MalformedMarker:
+            title = _('Invalid query string parameter')
+            description = _('The value for the query string '
+                            'parameter "marker" could not be '
+                            'parsed. We recommend using the '
+                            '"next" URI from a previous '
+                            'request directly, rather than '
+                            'constructing the URI manually. ')
+
+            raise falcon.HTTPBadRequest(title, description)
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Messages could not be listed.')

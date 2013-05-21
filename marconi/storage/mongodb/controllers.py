@@ -22,25 +22,34 @@ Field Mappings:
     updated and documented in each class.
 """
 
+import collections
 import datetime
+import time
 
 from bson import objectid
+import pymongo.errors
 
+import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi import storage
 from marconi.storage import exceptions
+from marconi.storage.mongodb import options
 from marconi.storage.mongodb import utils
+
+
+LOG = logging.getLogger(__name__)
 
 
 class QueueController(storage.QueueBase):
     """Implements queue resource operations using MongoDB.
 
     Queues:
-        Name       Field
-        ----------------
-        project    ->  p
-        metadata  ->   m
-        name      ->   n
+        Name         Field
+        ------------------
+        name        ->   n
+        project     ->   p
+        counter     ->   c
+        metadata    ->   m
 
     """
 
@@ -54,6 +63,34 @@ class QueueController(storage.QueueBase):
         # This is also useful for retrieving the queues list for
         # as specific project, for example. Order Matters!
         self._col.ensure_index([("p", 1), ("n", 1)], unique=True)
+
+    #-----------------------------------------------------------------------
+    # Helpers
+    #-----------------------------------------------------------------------
+
+    def _get(self, name, project=None, fields={"m": 1, "_id": 0}):
+        queue = self._col.find_one({"p": project, "n": name}, fields=fields)
+        if queue is None:
+            raise exceptions.QueueDoesNotExist(name, project)
+
+        return queue
+
+    def _get_id(self, name, project=None):
+        """Just like the `get` method, but only returns the queue's id
+
+        :returns: Queue's `ObjectId`
+        """
+        queue = self._get(name, project, fields=["_id"])
+        return queue.get("_id")
+
+    def _get_ids(self):
+        """Returns a generator producing a list of all queue IDs."""
+        cursor = self._col.find({}, fields={"_id": 1})
+        return (doc["_id"] for doc in cursor)
+
+    #-----------------------------------------------------------------------
+    # Interface
+    #-----------------------------------------------------------------------
 
     def list(self, project=None, marker=None,
              limit=10, detailed=False):
@@ -80,20 +117,6 @@ class QueueController(storage.QueueBase):
         yield normalizer(cursor)
         yield marker_name["next"]
 
-    def _get(self, name, project=None, fields={"m": 1, "_id": 0}):
-        queue = self._col.find_one({"p": project, "n": name}, fields=fields)
-        if queue is None:
-            raise exceptions.QueueDoesNotExist(name, project)
-        return queue
-
-    def get_id(self, name, project=None):
-        """Just like the `get` method, but only returns the queue's id
-
-        :returns: Queue's `ObjectId`
-        """
-        queue = self._get(name, project, fields=["_id"])
-        return queue.get("_id")
-
     def get(self, name, project=None):
         queue = self._get(name, project)
         return queue.get("m", {})
@@ -102,7 +125,7 @@ class QueueController(storage.QueueBase):
         super(QueueController, self).upsert(name, metadata, project)
 
         rst = self._col.update({"p": project, "n": name},
-                               {"$set": {"m": metadata}},
+                               {"$set": {"m": metadata, "c": 1}},
                                multi=False,
                                upsert=True,
                                manipulate=False)
@@ -110,14 +133,14 @@ class QueueController(storage.QueueBase):
         return not rst["updatedExisting"]
 
     def delete(self, name, project=None):
-        self.driver.message_controller.purge_queue(name, project)
+        self.driver.message_controller._purge_queue(name, project)
         self._col.remove({"p": project, "n": name})
 
     def stats(self, name, project=None):
-        qid = self.get_id(name, project)
-        msg_ctrl = self.driver.message_controller
-        active = msg_ctrl.active(qid)
-        claimed = msg_ctrl.claimed(qid)
+        queue_id = self._get_id(name, project)
+        controller = self.driver.message_controller
+        active = controller.active(queue_id)
+        claimed = controller.claimed(queue_id)
 
         return {
             "actions": 0,
@@ -135,28 +158,28 @@ class MessageController(storage.MessageBase):
     """Implements message resource operations using MongoDB.
 
     Messages:
-        Name       Field
-        ----------------
-        queue   ->   q
-        expires ->   e
-        ttl     ->   t
-        uuid    ->   u
-        claim    ->   c
+        Name        Field
+        -----------------
+        queue_id   ->   q
+        expires    ->   e
+        ttl        ->   t
+        uuid       ->   u
+        claim      ->   c
+        marker     ->   k
     """
 
     def __init__(self, *args, **kwargs):
         super(MessageController, self).__init__(*args, **kwargs)
+
+        # Cache for convenience and performance (avoids extra lookups and
+        # recreating the range for every request.)
+        self._queue_controller = self.driver.queue_controller
+        self._db = self.driver.db
+        self._retry_range = range(options.CFG.max_attempts)
+
         # Make sure indexes exist before,
         # doing anything.
-        self._col = self.driver.db["messages"]
-
-        # NOTE(flaper87): Let's make sure we clean up
-        # expired messages. Notice that TTL indexes run
-        # a clean up thread every minute, this means that
-        # every message would have an implicit 1min grace
-        # if we don't filter them out in the active method.
-        self._col.ensure_index("e", background=True,
-                               expireAfterSeconds=0)
+        self._col = self._db["messages"]
 
         # NOTE(flaper87): This index is used mostly in the
         # active method but some parts of it are used in
@@ -165,33 +188,184 @@ class MessageController(storage.MessageBase):
         #       beginning of the index.
         #   * e: Together with q is used for getting a
         #       specific message. (see `get`)
-        self._col.ensure_index([("q", 1),
-                                ("e", 1),
-                                ("c.e", 1),
-                                ("_id", -1)], background=True)
+        active_fields = [
+            ("q", 1),
+            ("e", 1),
+            ("c.e", 1),
+            ("k", 1),
+            ("_id", -1),
+        ]
 
-        # Indexes used for claims
-        self._col.ensure_index([("q", 1),
-                                ("c.id", 1),
-                                ("c.e", 1),
-                                ("_id", -1)], background=True)
+        self._col.ensure_index(active_fields,
+                               name="active",
+                               background=True)
 
-    def _get_queue_id(self, queue, project):
-        queue_controller = self.driver.queue_controller
-        return queue_controller.get_id(queue, project)
+        # Index used for claims
+        claimed_fields = [
+            ("q", 1),
+            ("c.id", 1),
+            ("c.e", 1),
+            ("_id", -1),
+        ]
+
+        self._col.ensure_index(claimed_fields,
+                               name="claimed",
+                               background=True)
+
+        # Index used for _next_marker() and also to ensure
+        # uniqueness.
+        #
+        # NOTE(kgriffs): This index must be unique so that
+        # inserting a message with the same marker to the
+        # same queue will fail; this is used to detect a
+        # race condition which can cause an observer client
+        # to miss a message when there is more than one
+        # producer posting messages to the same queue, in
+        # parallel.
+        self._col.ensure_index([("q", 1), ("k", -1)],
+                               name="queue_marker",
+                               unique=True,
+                               background=True)
+
+    #-----------------------------------------------------------------------
+    # Helpers
+    #-----------------------------------------------------------------------
+
+    def _get_queue_id(self, queue, project=None):
+        return self._queue_controller._get_id(queue, project)
+
+    def _get_queue_ids(self):
+        return self._queue_controller._get_ids()
+
+    def _next_marker(self, queue_id):
+        """Retrieves the next message marker for a given queue.
+
+        This helper is used to generate monotonic pagination
+        markers that are saved as part of the message
+        document. Simply taking the max of the current message
+        markers works, since Marconi always leaves the most recent
+        message in the queue (new queues always return 1).
+
+        Note 1: Markers are scoped per-queue and so are *not*
+            globally unique or globally ordered.
+
+        Note 2: If two or more requests to this method are made
+            in parallel, this method will return the same
+            marker. This is done intentionally so that the caller
+            can detect a parallel message post, allowing it to
+            mitigate race conditions between producer and
+            observer clients.
+
+        :param queue_id: queue ID
+        :returns: next message marker as an integer
+        """
+
+        document = self._col.find_one({"q": queue_id},
+                                      sort=[("k", -1)],
+                                      fields={"k": 1, "_id": 0})
+
+        # NOTE(kgriffs): this approach is faster than using "or"
+        return 1 if document is None else (document["k"] + 1)
+
+    def _backoff_sleep(self, attempt):
+        """Sleep between retries using a jitter algorithm.
+
+        Mitigates thrashing between multiple parallel requests, and
+        creates backpressure on clients to slow down the rate
+        at which they submit requests.
+
+        :param attempt: current attempt number, zero-based
+        """
+        seconds = utils.calculate_backoff(attempt, options.CFG.max_attempts,
+                                          options.CFG.max_retry_sleep,
+                                          options.CFG.max_retry_jitter)
+
+        time.sleep(seconds)
+
+    def _count_expired(self, queue_id):
+        """Counts the number of expired messages in a queue.
+
+        :param queue_id: id for the queue to stat
+        """
+
+        query = {
+            "q": queue_id,
+            "e": {"$lte": timeutils.utcnow()},
+        }
+
+        return self._col.find(query).count()
+
+    def _remove_expired(self, queue_id):
+        """Removes all expired messages except for the most recent
+        in each queue.
+
+        This method is used in lieu of mongo's TTL index since we
+        must always leave at least one message in the queue for
+        calculating the next marker.
+
+        Note that expired messages are only removed if their count
+        exceeds options.CFG.gc_threshold.
+
+        :param queue_id: id for the queue from which to remove
+            expired messages
+        """
+
+        if options.CFG.gc_threshold <= self._count_expired(queue_id):
+            # Get the message with the highest marker, and leave
+            # it in the queue
+            head = self._col.find_one({"q": queue_id},
+                                      sort=[("k", -1)],
+                                      fields={"_id": 1})
+
+            if head is None:
+                # Assume queue was just deleted via a parallel request
+                LOG.warning(_("Queue %s is empty or missing.") % queue_id)
+                return
+
+            query = {
+                "q": queue_id,
+                "e": {"$lte": timeutils.utcnow()},
+                "_id": {"$ne": head["_id"]}
+            }
+
+            self._col.remove(query)
+
+    def _purge_queue(self, queue, project=None):
+        """Removes all messages from the queue.
+
+        Warning: Only use this when deleting the queue; otherwise
+        you can cause a side-effect of reseting the marker counter
+        which can cause clients to miss tons of messages.
+
+        If the queue does not exist, this method fails silently.
+
+        :param queue: name of the queue to purge
+        :param project: name of the project to which the queue belongs
+        """
+        try:
+            qid = self._get_queue_id(queue, project)
+            self._col.remove({"q": qid}, w=0)
+        except exceptions.QueueDoesNotExist:
+            pass
+
+    #-----------------------------------------------------------------------
+    # Interface
+    #-----------------------------------------------------------------------
 
     def all(self):
         return self._col.find()
 
-    def active(self, queue, marker=None, echo=False,
+    def active(self, queue_id, marker=None, echo=False,
                client_uuid=None, fields=None):
 
         now = timeutils.utcnow()
 
         query = {
             # Messages must belong to this queue
-            "q": utils.to_oid(queue),
+            "q": utils.to_oid(queue_id),
+            # The messages can not be expired
             "e": {"$gt": now},
+            # Include messages that are part of expired claims
             "c.e": {"$lte": now},
         }
 
@@ -202,17 +376,17 @@ class MessageController(storage.MessageBase):
             query["u"] = {"$ne": client_uuid}
 
         if marker:
-            query["_id"] = {"$gt": utils.to_oid(marker)}
+            query["k"] = {"$gt": marker}
 
         return self._col.find(query, fields=fields)
 
-    def claimed(self, queue, claim_id=None, expires=None, limit=None):
-
+    def claimed(self, queue_id, claim_id=None, expires=None, limit=None):
         query = {
             "c.id": claim_id,
             "c.e": {"$gt": expires or timeutils.utcnow()},
-            "q": utils.to_oid(queue),
+            "q": utils.to_oid(queue_id),
         }
+
         if not claim_id:
             # lookup over c.id to use the index
             query["c.id"] = {"$ne": None}
@@ -243,18 +417,50 @@ class MessageController(storage.MessageBase):
             cid = utils.to_oid(claim_id)
         except ValueError:
             return
+
         self._col.update({"c.id": cid},
                          {"$set": {"c": {"id": None, "e": 0}}},
                          upsert=False, multi=True)
 
+    def remove_expired(self, project=None):
+        """Removes all expired messages except for the most recent
+        in each queue.
+
+        This method is used in lieu of mongo's TTL index since we
+        must always leave at least one message in the queue for
+        calculating the next marker.
+
+        Warning: This method is expensive, since it must perform
+        separate queries for each queue, due to the requirement that
+        it must leave at least one message in each queue, and it
+        is impractical to send a huge list of _id's to filter out
+        in a single call. That being said, this is somewhat mitigated
+        by the gc_threshold configuration option, which reduces the
+        frequency at which the DB is locked for non-busy queues. Also,
+        since .remove is run on each queue seperately, this reduces
+        the duration that any given lock is held, avoiding blocking
+        regular writes.
+        """
+
+        # TODO(kgriffs): Optimize first by batching the .removes, second
+        # by setting a "last inserted ID" in the queue collection for
+        # each message inserted (TBD, may cause problematic side-effect),
+        # and third, by changing the marker algorithm such that it no
+        # longer depends on retaining the last message in the queue!
+        for id in self._get_queue_ids():
+            self._remove_expired(id)
+
     def list(self, queue, project=None, marker=None,
              limit=10, echo=False, client_uuid=None):
 
-        try:
-            qid = self._get_queue_id(queue, project)
-            messages = self.active(qid, marker, echo, client_uuid)
-        except ValueError:
-            return
+        if marker is not None:
+            try:
+                marker = int(marker)
+            except ValueError:
+                raise exceptions.MalformedMarker()
+
+        qid = self._get_queue_id(queue, project)
+        messages = self.active(qid, marker, echo, client_uuid)
 
         messages = messages.limit(limit).sort("_id")
         marker_id = {}
@@ -264,7 +470,7 @@ class MessageController(storage.MessageBase):
         def denormalizer(msg):
             oid = msg["_id"]
             age = now - utils.oid_utc(oid)
-            marker_id['next'] = oid
+            marker_id['next'] = msg["k"]
 
             return {
                 "id": str(oid),
@@ -277,15 +483,10 @@ class MessageController(storage.MessageBase):
         yield str(marker_id['next'])
 
     def get(self, queue, message_id, project=None):
-
-        # Base query, always check expire time
-        try:
-            mid = utils.to_oid(message_id)
-        except ValueError:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
-
+        mid = utils.to_oid(message_id)
         now = timeutils.utcnow()
 
+        # Base query, always check expire time
         query = {
             "q": self._get_queue_id(queue, project),
             "e": {"$gt": now},
@@ -308,33 +509,114 @@ class MessageController(storage.MessageBase):
         }
 
     def post(self, queue, messages, client_uuid, project=None):
-        qid = self._get_queue_id(queue, project)
-
         now = timeutils.utcnow()
+        queue_id = self._get_queue_id(queue, project)
 
-        def denormalizer(messages):
-            for msg in messages:
-                ttl = int(msg["ttl"])
-                expires = now + datetime.timedelta(seconds=ttl)
+        # Set the next basis marker for the first attempt.
+        next_marker = self._next_marker(queue_id)
 
-                yield {
-                    "t": ttl,
-                    "q": qid,
-                    "e": expires,
-                    "u": client_uuid,
-                    "c": {"id": None, "e": now},
-                    "b": msg['body'] if 'body' in msg else {}
-                }
+        # Results are aggregated across all attempts
+        # NOTE(kgriffs): lazy instantiation
+        aggregated_results = None
 
-        ids = self._col.insert(denormalizer(messages))
-        return map(str, ids)
+        # NOTE(kgriffs): This avoids iterating over messages twice,
+        # since pymongo internally will iterate over them all to
+        # encode as bson before submitting to mongod. By using a
+        # generator, we can produce each message only once,
+        # as needed by pymongo. At the same time, each message is
+        # cached in case we need to retry any of them.
+        message_gen = (
+            {
+                "t": message["ttl"],
+                "q": queue_id,
+                "e": now + datetime.timedelta(seconds=message["ttl"]),
+                "u": client_uuid,
+                "c": {"id": None, "e": now},
+                "b": message["body"] if "body" in message else {},
+                "k": next_marker + index,
+            }
+
+            for index, message in enumerate(messages)
+        )
+
+        prepared_messages, cached_messages = utils.cached_gen(message_gen)
+
+        # Use a retry range for sanity, although we expect
+        # to rarely, if ever, reach the maximum number of
+        # retries.
+        for attempt in self._retry_range:
+            try:
+                ids = self._col.insert(prepared_messages)
+
+                # NOTE(kgriffs): Only use aggregated results if we must,
+                # which saves some cycles on the happy path.
+                if aggregated_results:
+                    aggregated_results.extend(ids)
+                    ids = aggregated_results
+
+                return map(str, ids)
+
+            except pymongo.errors.DuplicateKeyError as ex:
+                # Try again with the remaining messages
+
+                # TODO(kgriffs): Record stats of how often retries happen,
+                # and how many attempts, on average, are required to insert
+                # messages.
+
+                # NOTE(kgriffs): Slice prepared_messages. We have to interpret
+                # the error message to get the duplicate key, which gives
+                # us the marker that had a dupe, allowing us to extrapolate
+                # how many messages were consumed, since markers are monotonic
+                # counters.
+                duplicate_marker = utils.dup_marker_from_error(str(ex))
+                failed_index = duplicate_marker - next_marker
+
+                # First time here, convert the deque to a list
+                # to support slicing.
+                if isinstance(cached_messages, collections.deque):
+                    cached_messages = list(cached_messages)
+
+                # Put the successful one's IDs into aggregated_results.
+                succeeded_messages = cached_messages[:failed_index]
+                succeeded_ids = [msg["_id"] for msg in succeeded_messages]
+
+                # Results are aggregated across all attempts
+                if aggregated_results is None:
+                    aggregated_results = succeeded_ids
+                else:
+                    aggregated_results.extend(succeeded_ids)
+
+                # Retry the remaining messages with a new sequence
+                # of markers.
+                prepared_messages = cached_messages[failed_index:]
+                next_marker = self._next_marker(queue_id)
+                for index, message in enumerate(prepared_messages):
+                    message["k"] = next_marker + index
+
+                self._backoff_sleep(attempt)
+
+            except Exception as ex:
+                # TODO(kgriffs): Query the DB to get the last marker that
+                # made it, and extrapolate from there to figure out what
+                # needs to be retried. Definitely retry on AutoReconnect;
+                # other types of errors TBD.
+
+                LOG.exception(ex)
+                raise
+
+        message = _("Hit maximum number of attempts (%(max)s) for queue "
+                    "%(id)s in project %(project)s")
+        message %= dict(max=options.CFG.max_attempts, id=queue_id,
+                        project=project)
+
+        LOG.warning(message)
+
+        succeeded_ids = map(str, aggregated_results)
+        raise exceptions.MessageConflict(queue, project, succeeded_ids)
 
     def delete(self, queue, message_id, project=None, claim=None):
         try:
-            try:
-                mid = utils.to_oid(message_id)
-            except ValueError:
-                return
+            mid = utils.to_oid(message_id)
 
             query = {
                 "q": self._get_queue_id(queue, project),
@@ -349,10 +631,7 @@ class MessageController(storage.MessageBase):
                 if message is None:
                     return
 
-                try:
-                    cid = utils.to_oid(claim)
-                except ValueError:
-                    raise exceptions.ClaimNotPermitted(message_id, claim)
+                cid = utils.to_oid(claim)
 
                 if not ("c" in message and
                         message["c"]["id"] == cid and
@@ -362,13 +641,6 @@ class MessageController(storage.MessageBase):
                 self._col.remove(query["_id"], w=0)
             else:
                 self._col.remove(query, w=0)
-        except exceptions.QueueDoesNotExist:
-            pass
-
-    def purge_queue(self, queue, project=None):
-        try:
-            qid = self._get_queue_id(queue, project)
-            self._col.remove({"q": qid}, w=0)
         except exceptions.QueueDoesNotExist:
             pass
 
@@ -396,7 +668,7 @@ class ClaimController(storage.ClaimBase):
 
     def _get_queue_id(self, queue, project):
         queue_controller = self.driver.queue_controller
-        return queue_controller.get_id(queue, project)
+        return queue_controller._get_id(queue, project)
 
     def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller

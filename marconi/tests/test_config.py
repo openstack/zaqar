@@ -17,8 +17,8 @@ from marconi.common import config
 from marconi.tests import util as testing
 
 
-cfg_handle = config.project()
-cfg = cfg_handle.from_options(
+PROJECT_CONFIG = config.project()
+CFG = PROJECT_CONFIG.from_options(
     without_help=3,
     with_help=(None, "nonsense"))
 
@@ -27,11 +27,11 @@ class TestConfig(testing.TestBase):
 
     def test_cli(self):
         args = ['--with_help', 'sense']
-        cfg_handle.load(self.conf_path('wsgi_sqlite.conf'), args)
-        self.assertEquals(cfg.with_help, 'sense')
+        PROJECT_CONFIG.load(self.conf_path('wsgi_sqlite.conf'), args)
+        self.assertEquals(CFG.with_help, 'sense')
 
-        cfg_handle.load(args=[])
-        self.assertEquals(cfg.with_help, None)
+        PROJECT_CONFIG.load(args=[])
+        self.assertEquals(CFG.with_help, None)
 
     def test_wrong_type(self):
         ns = config.namespace('local')

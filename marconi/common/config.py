@@ -17,17 +17,17 @@
 
 A config variable `foo` is a read-only property accessible through
 
-    cfg.foo
+    CFG.foo
 
-, where `cfg` is either a global configuration accessible through
+, where `CFG` is either a global configuration accessible through
 
-    cfg = config.project('marconi').from_options(
+    CFG = config.project('marconi').from_options(
         foo=("bar", "usage"),
         ...)
 
 , or a local configuration associated with a namespace
 
-    cfg = config.namespace('drivers:transport:wsgi').from_options(
+    CFG = config.namespace('drivers:transport:wsgi').from_options(
         port=80,
         ...)
 
@@ -43,8 +43,8 @@ sections named by their associated namespaces.
 
 To load the configurations from a file:
 
-    cfg_handle = config.project('marconi')
-    cfg_handle.load(filename="/path/to/example.conf")
+    PROJECT_CFG = config.project('marconi')
+    PROJECT_CFG.load(filename="/path/to/example.conf")
 
 A call to `.load` without a filename looks up for the default ones:
 
@@ -54,7 +54,7 @@ A call to `.load` without a filename looks up for the default ones:
 Global config variables, if any, can also be read from the command line
 arguments:
 
-    cfg_handle.load(filename="example.conf", args=sys.argv[1:])
+    PROJECT_CFG.load(filename="example.conf", args=sys.argv[1:])
 """
 
 from oslo.config import cfg

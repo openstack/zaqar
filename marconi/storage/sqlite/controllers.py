@@ -160,52 +160,49 @@ class Message(base.MessageBase):
                 'body': content,
             }
 
-        except (_NoResult, _BadID):
+        except _NoResult:
             raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
     def list(self, queue, project, marker=None,
              limit=10, echo=False, client_uuid=None):
+
         with self.driver('deferred'):
-            try:
-                sql = '''
-                    select id, content, ttl, julianday() * 86400.0 - created
-                      from Messages
-                     where ttl > julianday() * 86400.0 - created
-                       and qid = ?'''
-                args = [_get_qid(self.driver, queue, project)]
+            sql = '''
+                select id, content, ttl, julianday() * 86400.0 - created
+                  from Messages
+                 where ttl > julianday() * 86400.0 - created
+                   and qid = ?'''
+            args = [_get_qid(self.driver, queue, project)]
 
-                if not echo:
-                    sql += '''
-                       and client != ?'''
-                    args += [client_uuid]
-
-                if marker:
-                    sql += '''
-                       and id > ?'''
-                    args += [_marker_decode(marker)]
-
+            if not echo:
                 sql += '''
-                     limit ?'''
-                args += [limit]
+                   and client != ?'''
+                args += [client_uuid]
 
-                records = self.driver.run(sql, *args)
-                marker_id = {}
+            if marker:
+                sql += '''
+                   and id > ?'''
+                args += [_marker_decode(marker)]
 
-                def it():
-                    for id, content, ttl, age in records:
-                        marker_id['next'] = id
-                        yield {
-                            'id': _msgid_encode(id),
-                            'ttl': ttl,
-                            'age': int(age),
-                            'body': content,
-                        }
+            sql += '''
+                 limit ?'''
+            args += [limit]
 
-                yield it()
-                yield _marker_encode(marker_id['next'])
+            records = self.driver.run(sql, *args)
+            marker_id = {}
 
-            except _BadID:
-                return
+            def it():
+                for id, content, ttl, age in records:
+                    marker_id['next'] = id
+                    yield {
+                        'id': _msgid_encode(id),
+                        'ttl': ttl,
+                        'age': int(age),
+                        'body': content,
+                    }
+
+            yield it()
+            yield _marker_encode(marker_id['next'])
 
     def post(self, queue, messages, client_uuid, project):
         with self.driver('immediate'):
@@ -238,52 +235,44 @@ class Message(base.MessageBase):
         return map(_msgid_encode, range(unused, my['newid']))
 
     def delete(self, queue, message_id, project, claim=None):
-        try:
-            id = _msgid_decode(message_id)
+        id = _msgid_decode(message_id)
 
-            if not claim:
-                self.driver.run('''
-                    delete from Messages
-                     where id = ?
-                       and qid = (select id from Queues
-                                   where project = ? and name = ?)
-                ''', id, project, queue)
-                return
-
-            with self.driver('immediate'):
-                message_exists, = self.driver.get('''
-                    select count(M.id)
-                      from Queues as Q join Messages as M
-                        on qid = Q.id
-                     where ttl > julianday() * 86400.0 - created
-                       and M.id = ? and project = ? and name = ?
-                ''', id, project, queue)
-
-                if not message_exists:
-                    return
-
-                self.__delete_claimed(id, claim)
-
-        except _BadID:
-            pass
-
-    def __delete_claimed(self, id, claim):
-        # Precondition: id exists in a specific queue
-        try:
+        if not claim:
             self.driver.run('''
                 delete from Messages
                  where id = ?
-                   and id in (select msgid
-                                from Claims join Locked
-                                  on id = cid
-                               where ttl > julianday() * 86400.0 - created
-                                 and id = ?)
-            ''', id, _cid_decode(claim))
+                   and qid = (select id from Queues
+                               where project = ? and name = ?)
+            ''', id, project, queue)
+            return
 
-            if not self.driver.affected:
-                raise exceptions.ClaimNotPermitted(_msgid_encode(id), claim)
+        with self.driver('immediate'):
+            message_exists, = self.driver.get('''
+                select count(M.id)
+                  from Queues as Q join Messages as M
+                    on qid = Q.id
+                 where ttl > julianday() * 86400.0 - created
+                   and M.id = ? and project = ? and name = ?
+            ''', id, project, queue)
 
-        except _BadID:
+            if not message_exists:
+                return
+
+            self.__delete_claimed(id, claim)
+
+    def __delete_claimed(self, id, claim):
+        # Precondition: id exists in a specific queue
+        self.driver.run('''
+            delete from Messages
+             where id = ?
+               and id in (select msgid
+                            from Claims join Locked
+                              on id = cid
+                           where ttl > julianday() * 86400.0 - created
+                             and id = ?)
+        ''', id, _cid_decode(claim))
+
+        if not self.driver.affected:
             raise exceptions.ClaimNotPermitted(_msgid_encode(id), claim)
 
 
@@ -332,7 +321,7 @@ class Claim(base.ClaimBase):
                     self.__get(id)
                 )
 
-            except (_NoResult, _BadID):
+            except (_NoResult, exceptions.MalformedID()):
                 raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
     def create(self, queue, metadata, project, limit=10):
@@ -386,29 +375,28 @@ class Claim(base.ClaimBase):
     def update(self, queue, claim_id, metadata, project):
         try:
             id = _cid_decode(claim_id)
-
-            with self.driver('deferred'):
-
-                # still delay the cleanup here
-                self.driver.run('''
-                    update Claims
-                       set created = julianday() * 86400.0,
-                           ttl = ?
-                     where ttl > julianday() * 86400.0 - created
-                       and id = ?
-                       and qid = (select id from Queues
-                                   where project = ? and name = ?)
-                ''', metadata['ttl'], id, project, queue)
-
-                if not self.driver.affected:
-                    raise exceptions.ClaimDoesNotExist(claim_id,
-                                                       queue,
-                                                       project)
-
-                self.__update_claimed(id, metadata['ttl'])
-
-        except _BadID:
+        except exceptions.MalformedID:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+
+        with self.driver('deferred'):
+
+            # still delay the cleanup here
+            self.driver.run('''
+                update Claims
+                   set created = julianday() * 86400.0,
+                       ttl = ?
+                 where ttl > julianday() * 86400.0 - created
+                   and id = ?
+                   and qid = (select id from Queues
+                               where project = ? and name = ?)
+            ''', metadata['ttl'], id, project, queue)
+
+            if not self.driver.affected:
+                raise exceptions.ClaimDoesNotExist(claim_id,
+                                                   queue,
+                                                   project)
+
+            self.__update_claimed(id, metadata['ttl'])
 
     def __update_claimed(self, cid, ttl):
         # Precondition: cid is not expired
@@ -423,22 +411,19 @@ class Claim(base.ClaimBase):
 
     def delete(self, queue, claim_id, project):
         try:
-            self.driver.run('''
-                delete from Claims
-                 where id = ?
-                   and qid = (select id from Queues
-                               where project = ? and name = ?)
-            ''', _cid_decode(claim_id), project, queue)
+            cid = _cid_decode(claim_id)
+        except exceptions.MalformedID:
+            return
 
-        except _BadID:
-            pass
+        self.driver.run('''
+            delete from Claims
+             where id = ?
+               and qid = (select id from Queues
+                           where project = ? and name = ?)
+        ''', cid, project, queue)
 
 
 class _NoResult(Exception):
-    pass
-
-
-class _BadID(Exception):
     pass
 
 
@@ -469,7 +454,7 @@ def _msgid_decode(id):
         return int(id, 16) ^ 0x5c693a53
 
     except ValueError:
-        raise _BadID
+        raise exceptions.MalformedID()
 
 
 def _marker_encode(id):
@@ -481,7 +466,7 @@ def _marker_decode(id):
         return int(id, 8) ^ 0x3c96a355
 
     except ValueError:
-        raise _BadID
+        raise exceptions.MalformedMarker()
 
 
 def _cid_encode(id):
@@ -493,4 +478,4 @@ def _cid_decode(id):
         return int(id, 16) ^ 0x63c9a59c
 
     except ValueError:
-        raise _BadID
+        raise exceptions.MalformedID()

@@ -243,31 +243,48 @@ class MessageControllerTest(ControllerBaseTest):
                                               project=self.project)
         self.assertEquals(countof['messages']['free'], 0)
 
-    def test_illformed_id(self):
-        # any ill-formed IDs should be regarded as non-existing ones.
+    def test_bad_id(self):
+        # A malformed ID should result in an error. This
+        # doesn't hurt anything, since an attacker could just
+        # read the source code anyway to find out how IDs are
+        # implemented. Plus, if someone is just trying to
+        # get a message that they don't own, they would
+        # more likely just list the messages, not try to
+        # guess an ID of an arbitrary message.
 
-        self.queue_controller.upsert('unused', {}, '480924')
-        self.controller.delete('unused', 'illformed', '480924')
+        queue = 'foo'
+        project = '480924'
+        self.queue_controller.upsert(queue, {}, project)
 
-        msgs = list(self.controller.list('unused', '480924',
-                                         marker='illformed'))
+        bad_message_id = 'xyz'
+        with testing.expect(exceptions.MalformedID):
+            self.controller.delete(queue, bad_message_id, project)
 
-        self.assertEquals(len(msgs), 0)
+        with testing.expect(exceptions.MalformedID):
+            self.controller.get(queue, bad_message_id, project)
 
-        with testing.expect(exceptions.DoesNotExist):
-            self.controller.get('unused', 'illformed', '480924')
-
-    def test_illformed_claim(self):
+    def test_bad_claim_id(self):
         self.queue_controller.upsert('unused', {}, '480924')
         [msgid] = self.controller.post('unused',
                                        [{'body': {}, 'ttl': 10}],
                                        project='480924',
                                        client_uuid='unused')
 
-        with testing.expect(exceptions.NotPermitted):
+        bad_claim_id = '; DROP TABLE queues'
+        with testing.expect(exceptions.MalformedID):
             self.controller.delete('unused', msgid,
                                    project='480924',
-                                   claim='illformed')
+                                   claim=bad_claim_id)
+
+    def test_bad_marker(self):
+        queue = 'foo'
+        project = '480924'
+        self.queue_controller.upsert(queue, {}, project)
+
+        bad_marker = 'xyz'
+        func = self.controller.list
+        results = func(queue, project, marker=bad_marker)
+        self.assertRaises(exceptions.MalformedMarker, results.next)
 
 
 class ClaimControllerTest(ControllerBaseTest):
@@ -378,7 +395,7 @@ def _insert_fixtures(controller, queue_name, project=None,
     def messages():
         for n in xrange(num):
             yield {
-                "ttl": 60,
+                "ttl": 120,
                 "body": {
                     "event": "Event number %s" % n
                 }}

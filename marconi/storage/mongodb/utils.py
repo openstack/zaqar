@@ -13,27 +13,118 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
+import random
+import re
+
 from bson import errors as berrors
 from bson import objectid
 
+from marconi.common import exceptions
 from marconi.openstack.common import timeutils
+from marconi.storage import exceptions as storage_exceptions
+
+
+DUP_MARKER_REGEX = re.compile(r"\$queue_marker\s+dup key: { : [^:]+: (\d)+")
+
+
+def dup_marker_from_error(error_message):
+    """Extracts the duplicate marker from a MongoDB error string.
+
+    :param error_message: raw error message string returned
+        by mongod on a duplicate key error.
+
+    :raises: marconi.common.exceptions.PatternNotFound
+    :returns: extracted marker as an integer
+    """
+    match = DUP_MARKER_REGEX.search(error_message)
+    if match is None:
+        description = (_("Error message could not be parsed: %s") %
+                       error_message)
+        raise exceptions.PatternNotFound(description)
+
+    return int(match.groups()[0])
+
+
+def cached_gen(iterable):
+    """Converts the iterable into a caching generator.
+
+    Returns a proxy that yields each item of iterable, while at
+    the same time caching those items in a deque.
+
+    :param iterable: an iterable to wrap in a caching generator
+
+    :returns: (proxy(iterable), cached_items)
+    """
+    cached_items = collections.deque()
+
+    def generator(iterable):
+        for item in iterable:
+            cached_items.append(item)
+            yield item
+
+    return (generator(iterable), cached_items)
+
+
+def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
+    """Calculates backoff time, in seconds, when retrying an operation.
+
+    This function calculates a simple linear backoff time with
+    optional jitter, useful for retrying a request under high
+    concurrency.
+
+    The result may be passed directly into time.sleep() in order to
+    mitigate stampeding herd syndrome and introduce backpressure towards
+    the clients, slowing them down.
+
+    :param attempt: current value of the attempt counter (zero-based)
+    :param max_attempts: maximum number of attempts that will be tried
+    :param max_sleep: maximum sleep value to apply before jitter, assumed
+        to be seconds. Fractional seconds are supported to 1 ms
+        granularity.
+    :param max_jitter: maximum jitter value to add to the baseline sleep
+        time. Actual value will be chosen randomly.
+
+    :raises: ValueError
+    :returns: float representing the number of seconds to sleep, within
+        the interval [0, max_sleep), determined linearly according to
+        the ratio attempt / max_attempts, with optional jitter.
+    """
+    if max_attempts < 0:
+        raise ValueError("max_attempts must be >= 0")
+
+    if max_sleep < 0:
+        raise ValueError("max_sleep must be >= 0")
+
+    if max_jitter < 0:
+        raise ValueError("max_jitter must be >= 0")
+
+    if not (0 <= attempt < max_attempts):
+        raise ValueError("attempt value is out of range")
+
+    ratio = float(attempt) / float(max_attempts)
+    backoff_sec = ratio * max_sleep
+    jitter_sec = random.random() * max_jitter
+
+    return backoff_sec + jitter_sec
 
 
 def to_oid(obj):
     """Creates a new ObjectId based on the input.
 
-    Raises ValueError when TypeError or InvalidId
+    Raises MalformedID when TypeError or berrors.InvalidId
     is raised by the ObjectID class.
 
     :param obj: Anything that can be passed as an
         input to `objectid.ObjectId`
-    :raises: ValueError
+
+    :raises: MalformedID
     """
     try:
         return objectid.ObjectId(obj)
     except (TypeError, berrors.InvalidId):
         msg = _("Wrong id %s") % obj
-        raise ValueError(msg)
+        raise storage_exceptions.MalformedID(msg)
 
 
 def oid_utc(oid):
