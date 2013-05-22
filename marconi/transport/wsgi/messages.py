@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
+
 import falcon
 
 import marconi.openstack.common.log as logging
@@ -42,6 +44,17 @@ class CollectionResource(object):
             MESSAGE_POST_SPEC,
             doctype=wsgi_helpers.JSONArray)
 
+        # Verify that at least one message was provided.
+        try:
+            first_message = messages.next()
+        except StopIteration:
+            description = _('No messages were provided.')
+            raise wsgi_exceptions.HTTPBadRequestBody(description)
+
+        # Hack to make message_controller oblivious to the
+        # fact that we just popped the first message.
+        messages = itertools.chain((first_message,), messages)
+
         # Enqueue the messages
         try:
             message_ids = self.message_controller.post(
@@ -56,11 +69,6 @@ class CollectionResource(object):
             LOG.exception(ex)
             description = _('Messages could not be enqueued.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        # See if anything happened
-        if len(message_ids) == 0:
-            description = _('No messages to enqueue.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         #TODO(kgriffs): Optimize
         resource = ','.join([id.encode('utf-8') for id in message_ids])

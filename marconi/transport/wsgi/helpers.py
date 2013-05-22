@@ -51,11 +51,16 @@ def filter_stream(stream, spec, doctype=JSONObject):
     """
 
     try:
+        #TODO(kgriffs): read_json should stream the resulting list
+        # of messages, returning a generator rather than buffering
+        # everything in memory (bp/streaming-serialization).
         document = helpers.read_json(stream)
+
     except helpers.MalformedJSON as ex:
         LOG.exception(ex)
         description = _('Body could not be parsed.')
         raise exceptions.HTTPBadRequestBody(description)
+
     except Exception as ex:
         # Error while reading from the network/server
         LOG.exception(ex)
@@ -72,6 +77,8 @@ def filter_stream(stream, spec, doctype=JSONObject):
         if not isinstance(document, JSONArray):
             raise exceptions.HTTPDocumentTypeNotSupported()
 
+        # Return as a generator since we plan on doing a
+        # streaming JSON deserializer (see above.git )
         return (filter(obj, spec) for obj in document)
 
     raise ValueError("doctype not in (JSONObject, JSONArray)")

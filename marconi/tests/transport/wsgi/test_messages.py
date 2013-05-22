@@ -98,6 +98,14 @@ class MessagesBaseTest(base.TestBase):
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
+                                     method="POST",
+                                     body='{}',
+                                     headers=self.headers)
+
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_delete(self):
         self._post_messages('/v1/480924/queues/fizbit/messages')
         [msg_id] = self._get_msg_ids(self.srmock.headers_dict)

@@ -181,8 +181,9 @@ class MessageBase(ControllerBase):
         incoming messages.
 
         :param queue: Name of the queue to post message to.
-        :param messages: Messages to post to queue,
-            it can be a list of 1 or more elements.
+        :param messages: Messages to post to queue, an iterable
+            yielding 1 or more elements. An empty iterable
+            results in undefined behavior.
         :param client_uuid: Client's unique identifier.
         :param project: Project id
 
