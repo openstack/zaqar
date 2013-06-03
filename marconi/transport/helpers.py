@@ -30,7 +30,7 @@ def read_json(stream):
         return json.load(stream)
 
     except ValueError as ex:
-        raise MalformedJSON(ex.message)
+        raise MalformedJSON(ex)
 
 
 def to_json(obj):
