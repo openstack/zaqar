@@ -14,43 +14,68 @@
 # limitations under the License.
 
 import falcon
+from wsgiref import simple_server
 
+from marconi.common import config
+import marconi.openstack.common.log as logging
 from marconi import transport
-from marconi.transport.wsgi import app
+from marconi.transport.wsgi import claims
+from marconi.transport.wsgi import messages
+from marconi.transport.wsgi import queues
+from marconi.transport.wsgi import stats
+
+OPTIONS = {
+    'bind': '0.0.0.0',
+    'port': 8888
+}
+
+cfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
+
+LOG = logging.getLogger(__name__)
 
 
 class Driver(transport.DriverBase):
 
-    def __init__(self, queue_controller, message_controller,
-                 claim_controller):
+    def __init__(self, storage):
+        super(Driver, self).__init__(storage)
 
-        queue_collection = transport.wsgi.queues.CollectionResource(
-            queue_controller)
-        queue_item = transport.wsgi.queues.ItemResource(queue_controller)
+        self.app = falcon.API()
 
-        stats_endpoint = transport.wsgi.stats.Resource(queue_controller)
+        # Queues Endpoints
+        queue_controller = self.storage.queue_controller
+        queue_collection = queues.CollectionResource(queue_controller)
+        self.app.add_route('/v1/{project_id}/queues', queue_collection)
 
-        msg_collection = transport.wsgi.messages.CollectionResource(
-            message_controller)
-        msg_item = transport.wsgi.messages.ItemResource(message_controller)
+        queue_item = queues.ItemResource(queue_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}', queue_item)
 
-        claim_collection = transport.wsgi.claims.CollectionResource(
-            claim_controller)
-        claim_item = transport.wsgi.claims.ItemResource(claim_controller)
+        stats_endpoint = stats.Resource(queue_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+                           '/stats', stats_endpoint)
 
-        self.app = api = falcon.API()
-        api.add_route('/v1/{project_id}/queues', queue_collection)
-        api.add_route('/v1/{project_id}/queues/{queue_name}', queue_item)
-        api.add_route('/v1/{project_id}/queues/{queue_name}'
-                      '/stats', stats_endpoint)
-        api.add_route('/v1/{project_id}/queues/{queue_name}'
-                      '/messages', msg_collection)
-        api.add_route('/v1/{project_id}/queues/{queue_name}'
-                      '/messages/{message_id}', msg_item)
-        api.add_route('/v1/{project_id}/queues/{queue_name}'
-                      '/claims', claim_collection)
-        api.add_route('/v1/{project_id}/queues/{queue_name}'
-                      '/claims/{claim_id}', claim_item)
+        # Messages Endpoints
+        message_controller = self.storage.message_controller
+        msg_collection = messages.CollectionResource(message_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+                           '/messages', msg_collection)
+
+        msg_item = messages.ItemResource(message_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+                           '/messages/{message_id}', msg_item)
+
+        # Claims Endpoints
+        claim_controller = self.storage.claim_controller
+        claim_collection = claims.CollectionResource(claim_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+                           '/claims', claim_collection)
+
+        claim_item = claims.ItemResource(claim_controller)
+        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+                           '/claims/{claim_id}', claim_item)
 
     def listen(self):
-        return app.Application(self.app).run()
+        msg = _("Serving on host %(bind)s:%(port)s") % {"bind": cfg.bind,
+                                                        "port": cfg.port}
+        LOG.debug(msg)
+        httpd = simple_server.make_server(cfg.bind, cfg.port, self.app)
+        httpd.serve_forever()

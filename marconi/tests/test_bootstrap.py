@@ -28,19 +28,21 @@ class TestBootstrap(base.TestBase):
         self.assertRaises(cfg.ConfigFilesNotFoundError, marconi.Bootstrap, '')
 
     def test_storage_invalid(self):
+        conf_file = 'etc/drivers_storage_invalid.conf'
+        bootstrap = marconi.Bootstrap(conf_file)
         self.assertRaises(exceptions.InvalidDriver,
-                          marconi.Bootstrap,
-                          'etc/drivers_storage_invalid.conf')
+                          lambda: bootstrap.storage)
 
     def test_storage_sqlite(self):
-        bootstrap = marconi.Bootstrap('etc/wsgi_sqlite.conf')
-
+        conf_file = 'etc/wsgi_sqlite.conf'
+        bootstrap = marconi.Bootstrap(conf_file)
         self.assertIsInstance(bootstrap.storage, sqlite.Driver)
 
     def test_transport_invalid(self):
+        conf_file = 'etc/drivers_transport_invalid.conf'
+        bootstrap = marconi.Bootstrap(conf_file)
         self.assertRaises(exceptions.InvalidDriver,
-                          marconi.Bootstrap,
-                          'etc/drivers_transport_invalid.conf')
+                          lambda: bootstrap.transport)
 
     def test_transport_wsgi(self):
         bootstrap = marconi.Bootstrap('etc/wsgi_sqlite.conf')
