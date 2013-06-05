@@ -4,7 +4,6 @@ falcon>=0.1.4
 iso8601>=0.1.4
 msgpack-python
 oslo.config>=1.1.0
-PasteDeploy
 pymongo
 python-keystoneclient
 simplejson

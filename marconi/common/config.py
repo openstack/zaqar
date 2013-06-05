@@ -145,7 +145,7 @@ def _init():
             else:
                 conf(args=args, default_config_files=[filename])
 
-        return Obj(from_options=from_options, load=load)
+        return Obj(from_options=from_options, load=load, conf=conf)
 
     def opaque_type_of(base, postfix):
         return type('%s of %s' % (base.__name__, postfix), (base,), {})

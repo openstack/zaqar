@@ -1,6 +1,7 @@
 [DEFAULT]
 ; debug = False
 ; verbose = False
+; auth_strategy = 
 
 [drivers]
 ;transport = marconi.transport.wsgi, marconi.transport.zmq

@@ -19,6 +19,7 @@ from wsgiref import simple_server
 from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi import transport
+from marconi.transport import auth
 from marconi.transport.wsgi import claims
 from marconi.transport.wsgi import messages
 from marconi.transport.wsgi import queues
@@ -29,7 +30,9 @@ OPTIONS = {
     'port': 8888
 }
 
-cfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
+pconfig = config.project('marconi')
+gcfg = pconfig.from_options()
+lcfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
 
 LOG = logging.getLogger(__name__)
 
@@ -73,9 +76,14 @@ class Driver(transport.DriverBase):
         self.app.add_route('/v1/{project_id}/queues/{queue_name}'
                            '/claims/{claim_id}', claim_item)
 
+        # NOTE(flaper87): Install Auth
+        if gcfg.auth_strategy:
+            strategy = auth.strategy(gcfg.auth_strategy)
+            self.app = strategy.install(self.app, pconfig.conf)
+
     def listen(self):
-        msg = _("Serving on host %(bind)s:%(port)s") % {"bind": cfg.bind,
-                                                        "port": cfg.port}
+        msg = _("Serving on host %(bind)s:%(port)s") % {"bind": lcfg.bind,
+                                                        "port": lcfg.port}
         LOG.debug(msg)
-        httpd = simple_server.make_server(cfg.bind, cfg.port, self.app)
+        httpd = simple_server.make_server(lcfg.bind, lcfg.port, self.app)
         httpd.serve_forever()
