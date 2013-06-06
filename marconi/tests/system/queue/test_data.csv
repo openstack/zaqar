@@ -1,0 +1,28 @@
+TestID|httpverb|url|header|body|params|expectedRC|expectedResponseBody
+1|PUT     |<BASE_URL>/queues/qtestqueue||{"messages":{"ttl": 86400}}||201|
+1|GET     |<BASE_URL>/queues/qtestqueue||||200|{"ttl": 86400}
+2|PUT     |<BASE_URL>/queues/qtestqueue||{"messages": {"ttl": 86400}}||204|
+2|GET     |<BASE_URL>/queues/qtestqueue||||200|{"ttl": 86400}
+3|PUT     |<BASE_URL>/queues/qtestqueue||{"messages": {"ttl": 86400}}||204|
+3|GET     |<BASE_URL>/queues/qtestqueue||||200|{"ttl": 86400}
+4|PUT     |<BASE_URL>/queues/qtestqueue||||400|{"title": "Bad request","description": "Missing queue metadata."}
+5|PUT     |<BASE_URL>/queues/qtestqueue||{"messages": {"ttl": 86400}}||401|
+6|PUT     |<BASE_URL>/queues/qtestqueue||{"messages": {"ttl": 86400}}||400|
+7|PUT     |<BASE_URL>/queues/qtestqueue||{"_TOPLEVEL": {"ttl": 86400}}||400|
+8|PUT     |<BASE_URL>/queues/qtestqueue||{"TOPLEVEL": {"ttl": 86400}}||406|
+9|PUT     |<BASE_URL>/queues/qtestqueue||{"TOPLEVEL": {"ttl": 86400}}||200|
+10|PUT    |<BASE_URL>/queues/汉字/漢字||{"messages": {"ttl": 86400}}||201|
+11|PUT    |<BASE_URL>/queues/qtestqueue||{"汉字": {"ttl": 86400}}||201|
+12|PUT    |<BASE_URL>/queues/qtestqueue||||201|
+13|PUT    |<BASE_URL>/queues/qtestqueue||||400|
+14|PUT    |<BASE_URL>/queues/qtestqueue||||204|
+15|PUT    |||{"messages":{"ttl": 86400}}||400|
+16|GET    |<BASE_URL>/queues/qtestqueue/stats||||200|
+17|GET    |<BASE_URL>/queues||||200|
+18|GET    |<BASE_URL>/queues?detailed=true||||200|
+19|DELETE |<BASE_URL>/queues/qtestqueue||||204|
+20|PUT    |<BASE_URL>/queues/qtestqueue||{"messages":{"ttl": 86400}}||201|
+20|GET    |<BASE_URL>/queues/qtestqueue||||200|{"ttl": 86400}
+21|PUT    |<BASE_URL>/queues/qtestqueue||{"mess~&%^":{"ttl": 86400}}||400|
+22|DELETE |<BASE_URL>/queues/qtestqueue||||204|
+23|GET    |<BASE_URL>/queues/nonexistingqueue||||404|

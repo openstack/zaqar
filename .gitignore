@@ -9,8 +9,10 @@ build
 cover
 venv
 .venv
+output.xml
 *.sublime-workspace
 *.sqlite
+*.html
 .*.swp
 .DS_Store
 .testrepository
