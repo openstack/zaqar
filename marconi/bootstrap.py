@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from marconi.common import config
+from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import importutils
 
@@ -34,14 +35,15 @@ class Bootstrap(object):
     def __init__(self, config_file=None, cli_args=None):
         cfg_handle.load(filename=config_file, args=cli_args)
 
-        self.storage_module = import_driver(cfg.storage)
-        self.transport_module = import_driver(cfg.transport)
+    @decorators.lazy_property(write=False)
+    def storage(self):
+        storage_module = import_driver(cfg.storage)
+        return storage_module.Driver()
 
-        self.storage = self.storage_module.Driver()
-        self.transport = self.transport_module.Driver(
-            self.storage.queue_controller,
-            self.storage.message_controller,
-            self.storage.claim_controller)
+    @decorators.lazy_property(write=False)
+    def transport(self):
+        transport_module = import_driver(cfg.transport)
+        return transport_module.Driver(self.storage)
 
     def run(self):
         self.transport.listen()

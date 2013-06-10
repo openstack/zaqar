@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
-
-import marconi
-
-
-class WSGI(object):
-    @staticmethod
-    def app_factory(global_config, **local_config):
-        bootstrap = marconi.Bootstrap()
-
-        return bootstrap.transport.app

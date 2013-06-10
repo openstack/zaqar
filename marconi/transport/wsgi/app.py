@@ -12,51 +12,20 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""WSGI App for WSGI Containers
+
+This app should be used by external WSGI
+containers. For example:
+
+    $ gunicorn marconi.transport.wsgi.app:app
+
+NOTE: As for external containers, it is necessary
+to put config files in the standard paths. There's
+no common way to specify / pass configuration files
+to the WSGI app when it is called from other apps.
 """
-Gunicorn Application implementation for Marconi
-"""
 
-import gunicorn.app.base as gunicorn
-import gunicorn.config as gconfig
+from marconi import bootstrap
 
-from marconi.common import config
-import marconi.openstack.common.log as logging
-
-
-OPTIONS = {
-    # Process
-    "user": None,
-    "group": None,
-    "proc_name": "marconi",
-
-    # SSL
-    "certfile": None,
-    "keyfile": None,
-
-    # Network
-    "workers": 1,
-    "bind": "0.0.0.0:8888",
-    "worker_class": "sync"
-}
-
-cfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
-
-LOG = logging.getLogger(__name__)
-
-
-class Application(gunicorn.Application):
-
-    def __init__(self, wsgi_app, *args, **kwargs):
-        super(Application, self).__init__(*args, **kwargs)
-        self.app = wsgi_app
-
-    def load(self):
-        return self.app
-
-    def load_config(self):
-        self.cfg = gconfig.Config(self.usage, prog=self.prog)
-
-        for key in OPTIONS:
-            self.cfg.set(key, getattr(cfg, key))
-
-        self.logger = LOG
+app = bootstrap.Bootstrap().transport.app

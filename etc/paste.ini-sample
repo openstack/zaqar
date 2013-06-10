@@ -11,4 +11,4 @@ admin_user = %SERVICE_USER%
 admin_password = %SERVICE_PASSWORD%
 
 [app:marconi]
-paste.app_factory = lib.marconi_paste:WSGI.app_factory
+paste.app_factory = marconi.transport.wsgi.app:app

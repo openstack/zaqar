@@ -16,10 +16,16 @@
 import abc
 
 
-class DriverBase:
-    """Base class for Transport Drivers to document the expected interface."""
+class DriverBase(object):
+    """Base class for Transport Drivers to document the expected interface.
+
+    :param storage: The storage driver
+    """
 
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, storage):
+        self.storage = storage
 
     @abc.abstractmethod
     def listen():
