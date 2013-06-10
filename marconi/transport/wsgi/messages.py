@@ -41,6 +41,7 @@ class CollectionResource(object):
         # Pull out just the fields we care about
         messages = wsgi_helpers.filter_stream(
             req.stream,
+            req.content_length,
             MESSAGE_POST_SPEC,
             doctype=wsgi_helpers.JSONArray)
 

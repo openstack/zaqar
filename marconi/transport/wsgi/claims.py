@@ -40,7 +40,8 @@ class CollectionResource(object):
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_helpers.filter_stream(req.stream, CLAIM_METADATA_SPEC)
+        metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
+                                               CLAIM_METADATA_SPEC)
 
         # Claim some messages
         try:
@@ -119,7 +120,8 @@ class ItemResource(object):
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_helpers.filter_stream(req.stream, CLAIM_METADATA_SPEC)
+        metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
+                                               CLAIM_METADATA_SPEC)
 
         try:
             self.claim_controller.update(queue_name,

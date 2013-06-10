@@ -109,28 +109,30 @@ class TestWSGIHelpers(testtools.TestCase):
     def test_filter_stream_expect_obj(self):
         obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
 
-        stream = io.StringIO(json.dumps(obj, ensure_ascii=False))
+        document = json.dumps(obj, ensure_ascii=False)
+        stream = io.StringIO(document)
         spec = [('body', dict), ('id', basestring)]
-        filtered_object, = helpers.filter_stream(stream, spec)
+        filtered_object, = helpers.filter_stream(stream, len(document), spec)
 
         self.assertEqual(filtered_object, obj)
 
         stream.seek(0)
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter_stream, stream, spec,
+                          helpers.filter_stream, stream, len(document), spec,
                           doctype=helpers.JSONArray)
 
     def test_filter_stream_expect_array(self):
         array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
 
-        stream = io.StringIO(json.dumps(array, ensure_ascii=False))
+        document = json.dumps(array, ensure_ascii=False)
+        stream = io.StringIO(document)
         spec = [('body', dict)]
         filtered_objects = list(helpers.filter_stream(
-            stream, spec, doctype=helpers.JSONArray))
+            stream, len(document), spec, doctype=helpers.JSONArray))
 
         self.assertEqual(filtered_objects, array)
 
         stream.seek(0)
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter_stream, stream, spec,
+                          helpers.filter_stream, stream, len(document), spec,
                           doctype=helpers.JSONObject)

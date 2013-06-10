@@ -21,13 +21,14 @@ class MalformedJSON(ValueError):
     pass
 
 
-def read_json(stream):
+def read_json(stream, len):
     """Like json.load, but converts ValueError to MalformedJSON upon failure.
 
     :param stream: a file-like object
+    :param len: the number of bytes to read from stream
     """
     try:
-        return json.load(stream)
+        return json.loads(stream.read(len))
 
     except ValueError as ex:
         raise MalformedJSON(ex)

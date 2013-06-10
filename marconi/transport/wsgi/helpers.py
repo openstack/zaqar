@@ -30,11 +30,12 @@ LOG = logging.getLogger(__name__)
 
 
 #TODO(kgriffs): Consider moving this to Falcon and/or Oslo
-def filter_stream(stream, spec, doctype=JSONObject):
+def filter_stream(stream, len, spec, doctype=JSONObject):
     """Reads, deserializes, and validates a document from a stream.
 
     :param stream: file-like object from which to read an object or
         array of objects.
+    :param len: number of bytes to read from stream
     :param spec: iterable describing expected fields, yielding
         tuples with the form of: (field_name, value_type). Note that
         value_type may either be a Python type, or the special
@@ -54,7 +55,7 @@ def filter_stream(stream, spec, doctype=JSONObject):
         #TODO(kgriffs): read_json should stream the resulting list
         # of messages, returning a generator rather than buffering
         # everything in memory (bp/streaming-serialization).
-        document = helpers.read_json(stream)
+        document = helpers.read_json(stream, len)
 
     except helpers.MalformedJSON as ex:
         LOG.exception(ex)

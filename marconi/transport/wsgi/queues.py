@@ -40,7 +40,7 @@ class ItemResource(object):
 
         # Deserialize queue metadata
         try:
-            metadata = helpers.read_json(req.stream)
+            metadata = helpers.read_json(req.stream, req.content_length)
         except helpers.MalformedJSON:
             description = _('Request body could not be parsed.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
