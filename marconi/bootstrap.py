@@ -17,6 +17,7 @@ from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import importutils
+from marconi import transport  # NOQA.
 
 
 cfg_handle = config.project('marconi')
