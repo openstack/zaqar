@@ -23,16 +23,17 @@ cfg = config.Config()
 
 
 def get_data():
-    """Gets Test Data from a csv file."""
-    DATA = []
+    """Gets Test data from a csv file."""
+    data = []
     with open('marconi/tests/system/queue/test_data.csv', 'rb') as datafile:
         test_data = csv.DictReader(datafile, delimiter='|')
         for row in test_data:
-            DATA.append(row)
-    for row in DATA:
+            data.append(row)
+
+    for row in data:
         row['header'] = functionlib.get_headers(row['header'])
         row['url'] = row['url'].replace("<BASE_URL>", cfg.base_url)
-    return DATA
 
+    return data
 
 API_TEST_DATA = get_data()

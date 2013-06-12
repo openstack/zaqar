@@ -23,10 +23,10 @@ def verify_claim_msg(count, *claim_response):
     """Verifies claim messages.
 
     Validation steps include - verifying the
-    1. number of messages returned is <= limit specified
-    2. query claim & verifying the response
-    :param count: limit specified in the claim request
-    :param claim_response : response returned for the claim request
+    1. number of messages returned is <= limit specified.
+    2. query claim & verifying the response.
+    :param count: limit specified in the claim request.
+    :param claim_response : [header, body] returned for post claim request.
     """
     msg_length_flag = False
 
@@ -41,7 +41,11 @@ def verify_claim_msg(count, *claim_response):
 
 
 def verify_claim_msglength(count, *body):
-    """Validates that number of messages returned is <= limit specified."""
+    """Validates that number of messages returned is <= limit specified.
+
+    :param count: value of limit specified in the post claim.
+    :param *body: response body returned for the post claim.
+    """
     msg_list = body
     msg_list = json.loads(msg_list[0])
     return (len(msg_list) <= count)
@@ -53,6 +57,8 @@ def query_claim(headers, *body):
     Does a Query Claim using the href in post claim.
     Compares the messages returned in Query claim with the messages
     returned on Post Claim.
+    :param headers: headers returned in the post claim response.
+    :param *body: message list returned in the post claim response.
     """
     test_result_flag = False
 
@@ -90,6 +96,8 @@ def verify_query_msgs(querymsgs, msg_list):
 
     Compares the messages returned in Query Claim with the messages
     returned when the claim was posted.
+    :param querymsgs: response body returned for Query Claim.
+    :param msg_list: message list returned for the original claim.
     """
     test_result_flag = True
     idx = 0
@@ -109,6 +117,7 @@ def patch_claim(*claim_response):
 
     Extracts claim id from the POST response input & updates the claim.
     If PATCH claim succeeds, verifies that the claim TTL is extended.
+    :param *claim_response: [headers, body] returned for the original claim
     """
     test_result_flag = False
 
@@ -161,7 +170,7 @@ def verify_patch_claim(url, header, ttl_extended):
 def create_urllist_fromhref(*response):
     """EXtracts href & creates a url list.
 
-    :param *response : http response text with the list of messages.
+    :param *response : http response containing the list of messages.
     """
     rspbody = json.loads(response[1])
     urllist = [functionlib.create_url_from_appender(item["href"])
@@ -173,6 +182,7 @@ def delete_claimed_msgs(*claim_response):
     """Deletes claimed messages.
 
     Verifies that the deletes were successful with a GET on the deleted msg.
+    :param *claim_response: [header, body] returned for post claim request.
     """
     test_result_flag = False
 
@@ -195,7 +205,10 @@ def delete_claimed_msgs(*claim_response):
 
 
 def get_claimed_msgs(*claim_response):
-    """Does get on all messages returned in the claim."""
+    """Does get on all messages returned in the claim.
+
+    :param *claim_response: [header, body] returned for post claim request.
+    """
     test_result_flag = True
 
     urllist = create_urllist_fromhref(*claim_response)
@@ -218,6 +231,7 @@ def release_claim(*claim_response):
 
     Extracts claim id from the POST response input & deletes the claim.
     If DELETE claim succeeds, verifies that a GET claim returns 404.
+    :param *claim_response: [header, body] returned for post claim request.
     """
     test_result_flag = False
 

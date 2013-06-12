@@ -24,14 +24,16 @@ cfg = config.Config()
 
 def get_data():
     """Reads the test data from claim/test_data.csv."""
-    DATA = []
+    data = []
     with open('marconi/tests/system/claim/test_data.csv', 'rb') as datafile:
         testdata = csv.DictReader(datafile, delimiter='|')
         for row in testdata:
-            DATA.append(row)
-    for row in DATA:
+            data.append(row)
+
+    for row in data:
         row['header'] = functionlib.get_headers(row['header'])
         row['url'] = row['url'].replace("<BASE_URL>", cfg.base_url)
-    return DATA
+
+    return data
 
 API_TEST_DATA = get_data()
