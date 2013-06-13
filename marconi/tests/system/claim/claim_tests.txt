@@ -1,5 +1,5 @@
-| *Setting*      | *Value* 			    		|
-| Documentation  | Marconi - Queue Test Suite	|
+| *Setting*      | *Value*                      |
+| Documentation  | Marconi - Queue Test Suite   |
 | Library        | ../common/http.py            |
 | Library        | ../common/functionlib.py     |
 | Library        | ../messages/msgfnlib.py      |
@@ -13,7 +13,7 @@
 
 | *Test Case*        | *Action*            | *Argument*          | *Argument*         | *Argument*    | # Comment
 | 0:SUITE SETUP      | [DOCUMENTATION]     |                     | Post 500 messages  |               | #SUITE SETUP - POST MULTIPLE MESSAGES
-|                    | [Tags]			   | INSERT_MESSAGE      |                    |               | #(Robot allows only one keyword in setup)
+|                    | [Tags]              | INSERT_MESSAGE      |                    |               | #(Robot allows only one keyword in setup)
 |                    | ${reqparam}=        | Create Dictionary   | messagecount       | ${50}         | # Specify count of messages to be posted
 |                    |                     | ...                 | ttl                | ${300}        | # Specify count of messages to be posted
 |                    | ${msgbody}=         | dummygetmessagebody | ${reqparam}        |               | # Gets the message body to post
@@ -29,7 +29,7 @@
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[1]}    | # Post a claim; postresponse = [httpheaders, httpresponsebody]
 |                    | verifyclaimmsg      | ${5}            | @{postresponse}        |
 | 3:CLAIM   MESSAGES | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 3 - CLAIM DEFAULT # OF MESSAGES
-|                    | ...                 | with no params  |                        |                (currently 10) 
+|                    | ...                 | with no params  |                        |                (currently 10)
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[2]}    | # postresponse = [httpheaders, httpresponsebody]
 |                    | verifyclaimmsg      | ${10}           | @{postresponse}        |
 | 4:CLAIM 15 MESSAGE | [DOCUMENTATION]     | Claim messages  |                        | #TEST CASE 4 - CLAIM 15 MESSAGES
@@ -51,7 +51,7 @@
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[9]}    | # Post a claim with TTL= 1 sec
 |                    | Sleep               | 3s              |                        |
 |                    | patchclaim          | @{postresponse} |                        | # Patch the above claim
-| 9: DELETE MESSAGE ON EXPIRED CLAIM  | [DOCUMENTATION]      | Delete message         | # TEST CASE 9 - DELETE MESSAGE ON AN EXPIRED CLAIM 
+| 9: DELETE MESSAGE ON EXPIRED CLAIM  | [DOCUMENTATION]      | Delete message         | # TEST CASE 9 - DELETE MESSAGE ON AN EXPIRED CLAIM
 |                    | ...                                   | on expired claim       |
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[10]}   | # Post a claim with TTL= 1 sec
 |                    | Sleep               | 3s              |                        |
@@ -59,7 +59,7 @@
 | 10: RELEASE CLAIM  | [DOCUMENTATION]     | Release claim   |                        | # TEST CASE 10 - RELEASE CLAIM
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[11]}   | # Post a claim with TTL= 1 sec
 |                    | releaseclaim        | @{postresponse} |                        | # Patch the above claim
-| 11: GET MESSAGE FROM EXPIRED CLAIM  | [DOCUMENTATION]      | Get message            | # TEST CASE 11 - GET MESSAGE FROM EXPIRED CLAIM 
+| 11: GET MESSAGE FROM EXPIRED CLAIM  | [DOCUMENTATION]      | Get message            | # TEST CASE 11 - GET MESSAGE FROM EXPIRED CLAIM
 |                    | ...                                   | from expired claim     |
 |                    | @{postresponse}=    | executetests    | ${API_TEST_DATA[12]}   | # Post a claim with TTL= 1 sec
 |                    | Sleep               | 3s              |                        |

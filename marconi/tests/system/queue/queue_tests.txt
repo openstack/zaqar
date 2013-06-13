@@ -1,4 +1,4 @@
-| *Setting*      | *Value* 			    		|
+| *Setting*      | *Value*                      |
 | Documentation  | Marconi - Queue Test Suite   |
 | Library        | ../common/http.py            |
 | Library        | queuefnlib.py                |

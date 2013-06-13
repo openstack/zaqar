@@ -26,7 +26,10 @@ cfg = config.Config()
 
 
 def generate_dict(dict_length):
-    """Returns dictionary of specified length. Key:Value is random data."""
+    """Returns dictionary of specified length. Key:Value is random data.
+
+    :param dict_length: length of the dictionary
+    """
     with open('/usr/share/dict/words', 'rt') as f:
         words = f.readlines()
     words = [w.rstrip() for w in words]
@@ -43,8 +46,8 @@ def single_message_body(**kwargs):
 
     The ttl will be a random value (60 <= TTL <= 1209600).
     The message body will be random dict.
-    :param **kwargs can be {messagesize: x} , where x is message size
-    :param **kwargs can be {ttl: x} , where x is ttl in seconds
+    :param **kwargs: can be {messagesize: x} , where x is message size
+    :param **kwargs: can be {ttl: x} , where x is ttl in seconds
     """
     valid_ttl = random.randint(60, 1209600)
 
@@ -65,15 +68,13 @@ def single_message_body(**kwargs):
 def get_message_body(**kwargs):
     """Returns request body for post message tests.
 
-    :param **kwargs can be {messagecount: x} , where x is the # of messages.
+    :param **kwargs: can be {messagecount: x} , where x is the # of messages.
     """
     message_count = kwargs["messagecount"]
     multiple_message_body = []
-    i = 0
-    while i < message_count:
+    for i in range[message_count]:
         message_body = single_message_body(**kwargs)
         multiple_message_body.append(message_body)
-        i = i + 1
     return multiple_message_body
 
 
@@ -107,7 +108,10 @@ def verify_msg_length(count=10, *msg_list):
 
 
 def get_href(*msg_list):
-    """Extracts href."""
+    """Extracts href.
+
+    :param *msg_list: list of messages returned by the server.
+    """
     msg_body = json.loads(msg_list[0])
     link = msg_body["links"]
     href = link[0]["href"]
@@ -118,6 +122,8 @@ def verify_post_msg(msg_headers, posted_body):
     """Verifies the response of POST Message(s).
 
     Retrieves the posted Message(s) & validates the message metadata.
+    :param msg_headers: headers returned for post message request.
+    :param posted_body: message metadata(s) in the post message request.
     """
     test_result_flag = False
 
@@ -162,7 +168,11 @@ def get_next_msgset(responsetext):
 
 
 def verify_get_msgs(count, *getresponse):
-    """Verifies GET message & does a recursive GET if needed."""
+    """Verifies GET message & does a recursive GET if needed.
+
+    :param count: limit value specified in the get message request.
+    :param *getresponse: [headers, body] returned for get message request.
+    """
     test_result_flag = False
 
     body = getresponse[1]
@@ -179,7 +189,10 @@ def verify_get_msgs(count, *getresponse):
 
 
 def delete_msg(*postresponse):
-    """Post DELETE message & verifies that a subsequent GET returns 404."""
+    """Post DELETE message & verifies that a subsequent GET returns 404.
+
+    :param *postresponse: [headers, body] returned for post message request.
+    """
     test_result_flag = False
     headers = str(postresponse[0])
     headers = headers.replace("'", '"')

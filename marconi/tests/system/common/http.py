@@ -168,9 +168,11 @@ def verify_response(response, expected_RC):
     test_result_flag = True
     actual_RC = response.status_code
     actual_response_body = response.text
+
     if actual_RC != expected_RC:
         test_result_flag = False
         print("Unexpected http Response code {}".format(actual_RC))
         print "Response Body returned"
         print actual_response_body
+
     return test_result_flag

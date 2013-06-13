@@ -43,6 +43,7 @@ def get_keystone_token():
     response_body = json.loads(response.text)
 
     auth_token = response_body["access"]["token"]["id"]
+
     return auth_token
 
 
@@ -52,6 +53,7 @@ def get_auth_token():
         auth_token = get_keystone_token()
     else:
         auth_token = "notrealtoken"
+
     return auth_token
 
 
@@ -138,6 +140,7 @@ def get_headers(input_header):
         header = input_header
     else:
         header = create_marconi_headers()
+
     return header
 
 
@@ -147,6 +150,7 @@ def get_custom_body(kwargs):
     if "metadatasize" in kwargs.keys():
         random_data = binascii.b2a_hex(os.urandom(kwargs["metadatasize"]))
         req_body["data"] = random_data
+
     return json.dumps(req_body)
 
 
@@ -164,13 +168,14 @@ def get_url_from_location(header):
 
 
 def verify_metadata(get_data, posted_body):
-    """@todo(malini) - Really verify the metadata."""
+    """TODO(malini) - Really verify the metadata."""
     test_result_flag = False
 
     get_data = str(get_data)
     posted_body = str(posted_body)
     print(get_data, type(get_data))
     print(posted_body, type(posted_body))
+
     if get_data in posted_body:
         print("AYYY")
     else:

@@ -18,7 +18,7 @@ TestID|httpverb|url|header|body|params|expectedRC|expectedResponseBody
 14|PUT    |<BASE_URL>/queues/qtestqueue||||204|
 15|PUT    |||{"messages":{"ttl": 86400}}||400|
 16|GET    |<BASE_URL>/queues/qtestqueue/stats||||200|
-17|GET    |<BASE_URL>/queues||||200|
+17|GET    |<BASE_URL>/queues?limit=1||||200|
 18|GET    |<BASE_URL>/queues?detailed=true||||200|
 19|DELETE |<BASE_URL>/queues/qtestqueue||||204|
 20|PUT    |<BASE_URL>/queues/qtestqueue||{"messages":{"ttl": 86400}}||201|
