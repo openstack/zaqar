@@ -18,8 +18,7 @@ import testtools
 
 from marconi.common import config
 
-
-cfg = config.project()
+CFG = config.project()
 
 
 class TestBase(testtools.TestCase):
@@ -48,8 +47,8 @@ class TestBase(testtools.TestCase):
 
         :returns: Project's config object.
         """
-        cfg.load(filename=self.conf_path(filename))
-        return cfg
+        CFG.load(filename=self.conf_path(filename))
+        return CFG
 
     def _my_dir(self):
         return os.path.abspath(os.path.dirname(__file__))

@@ -21,6 +21,29 @@ import abc
 class DriverBase:
     __metaclass__ = abc.ABCMeta
 
+    def gc(self):
+        """Runs a garbage collection operation.
+
+        Called periodically by mongo-gc to trigger removal
+        of expired resources from the storage provider.
+
+        If GC is supported by a given driver, the driver
+        MUST override this method.
+        """
+        raise NotImplementedError
+
+    @property
+    def gc_interval(self):
+        """Returns the GC interval, in seconds.
+
+        Used by mongo-gc to determine how often to
+        call driver.gc().
+
+        If GC is supported by a given driver, the driver
+        MUST override this method.
+        """
+        raise NotImplementedError
+
     @abc.abstractproperty
     def queue_controller(self):
         """Returns storage's queues controller."""

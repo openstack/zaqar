@@ -18,35 +18,45 @@
 import pymongo
 import pymongo.errors
 
-from marconi.common import config
+from marconi.openstack.common import log as logging
 from marconi import storage
 from marconi.storage.mongodb import controllers
+from marconi.storage.mongodb import options
 
-options = {
-    "uri": None,
-    "database": "marconi",
-}
-
-cfg = config.namespace('drivers:storage:mongodb').from_options(**options)
+LOG = logging.getLogger(__name__)
 
 
 class Driver(storage.DriverBase):
 
     def __init__(self):
+        # Lazy instantiation
         self._database = None
 
     @property
     def db(self):
         """Property for lazy instantiation of mongodb's database."""
-        if not self._database:
-            if cfg.uri and 'replicaSet' in cfg.uri:
-                conn = pymongo.MongoReplicaSetClient(cfg.uri)
+        if self._database is None:
+            if options.CFG.uri and 'replicaSet' in options.CFG.uri:
+                conn = pymongo.MongoReplicaSetClient(options.CFG.uri)
             else:
-                conn = pymongo.MongoClient(cfg.uri)
+                conn = pymongo.MongoClient(options.CFG.uri)
 
-            self._database = conn[cfg.database]
+            self._database = conn[options.CFG.database]
 
         return self._database
+
+    def gc(self):
+        LOG.info("Performing garbage collection.")
+
+        try:
+            self.message_controller.remove_expired()
+        except pymongo.errors.ConnectionFailure as ex:
+            # Better luck next time...
+            LOG.exception(ex)
+
+    @property
+    def gc_interval(self):
+        return options.CFG.gc_interval
 
     @property
     def queue_controller(self):

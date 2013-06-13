@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import os
 
 import falcon
 from falcon import testing
@@ -35,6 +36,13 @@ class MessagesBaseTest(base.TestBase):
             'Client-ID': '30387f00',
         }
 
+    def tearDown(self):
+        env = testing.create_environ('/v1/480924/queues/fizbit',
+                                     method="DELETE")
+        self.app(env, self.srmock)
+
+        super(MessagesBaseTest, self).tearDown()
+
     def test_post(self):
         doc = '''
         [
@@ -43,15 +51,23 @@ class MessagesBaseTest(base.TestBase):
             {"body": [1, 3], "ttl": 30}
         ]
         '''
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
+
+        path = '/v1/480924/queues/fizbit/messages'
+        env = testing.create_environ(path,
                                      method="POST",
                                      body=doc,
                                      headers=self.headers)
 
-        self.app(env, self.srmock)
+        body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
+
+        body = json.loads(body[0])
+        expected_resources = [unicode(path + '/' + id) for id in msg_ids]
+        self.assertEquals(expected_resources, body['resources'])
+        self.assertFalse(body['partial'])
+
         real_msgs = json.loads(doc)
 
         self.assertEquals(len(msg_ids), len(real_msgs))
@@ -59,16 +75,16 @@ class MessagesBaseTest(base.TestBase):
         lookup = dict([(m['ttl'], m['body']) for m in real_msgs])
 
         for msg_id in msg_ids:
-            env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                         + msg_id, method="GET")
+            message_uri = path + '/' + msg_id
+            env = testing.create_environ(message_uri, method="GET")
 
             body = self.app(env, self.srmock)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
             self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                              env['PATH_INFO'])
+                              message_uri)
 
             msg = json.loads(body[0])
-            self.assertEquals(msg['href'], env['PATH_INFO'])
+            self.assertEquals(msg['href'], message_uri)
             self.assertEquals(msg['body'], lookup[msg['ttl']])
 
         self._post_messages('/v1/480924/queues/nonexistent/messages')
@@ -175,6 +191,16 @@ class MessagesBaseTest(base.TestBase):
         body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+    def test_list_with_bad_marker(self):
+        self._post_messages('/v1/480924/queues/fizbit/messages', repeat=5)
+        query_string = 'limit=3&echo=true&marker=sfhlsfdjh2048'
+        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
+                                     query_string=query_string,
+                                     headers=self.headers)
+
+        self.app(env, self.srmock)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
     def test_no_uuid(self):
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
                                      method="POST",
@@ -188,13 +214,6 @@ class MessagesBaseTest(base.TestBase):
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-    def tearDown(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method="DELETE")
-        self.app(env, self.srmock)
-
-        super(MessagesBaseTest, self).tearDown()
 
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{"body": 239, "ttl": 30}] * repeat)
@@ -212,6 +231,17 @@ class MessagesBaseTest(base.TestBase):
 class MessagesSQLiteTests(MessagesBaseTest):
 
     config_filename = 'wsgi_sqlite.conf'
+
+
+class MessagesMongoDBTests(MessagesBaseTest):
+
+    config_filename = 'wsgi_mongodb.conf'
+
+    def setUp(self):
+        if not os.environ.get("MONGODB_TEST_LIVE"):
+            self.skipTest("No MongoDB instance running")
+
+        super(MessagesMongoDBTests, self).setUp()
 
 
 class MessagesFaultyDriverTests(base.TestBase):

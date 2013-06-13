@@ -1,12 +1,12 @@
 [DEFAULT]
 ; debug = False
 ; verbose = False
-; auth_strategy = 
+; auth_strategy =
 
 [drivers]
-;transport = marconi.transport.wsgi, marconi.transport.zmq
+# Transport driver module (e.g., marconi.transport.wsgi, marconi.transport.zmq)
 transport = marconi.transport.wsgi
-;storage = marconi.storage.mongodb, marconi.storage.sqlite
+# Storage driver module (e.g., marconi.storage.mongodb, marconi.storage.sqlite)
 storage = marconi.storage.mongodb
 
 [drivers:transport:wsgi]
@@ -19,3 +19,30 @@ port = 8888
 [drivers:storage:mongodb]
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
 database = marconi
+
+# Maximum number of times to retry a failed operation. Currently
+# only used for retrying a message post.
+;max_attempts = 1000
+
+# Maximum sleep interval between retries (actual sleep time
+# increases linearly according to number of attempts performed).
+;max_retry_sleep = 0.1
+
+# Maximum jitter interval, to be added to the sleep interval, in
+# order to decrease probability that parallel requests will retry
+# at the same instant.
+;max_retry_jitter = 0.005
+
+# Frequency of message garbage collections, in seconds
+;gc_interval = 5 * 60
+
+# Threshold of number of expired messages to reach in a given
+# queue, before performing the GC. Useful for reducing frequent
+# locks on the DB for non-busy queues, or for worker queues
+# which process jobs quickly enough to keep the number of in-
+# flight messages low.
+#
+# Note: The higher this number, the larger the memory-mapped DB
+# files will be.
+;gc_threshold = 1000
+

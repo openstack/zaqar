@@ -14,10 +14,14 @@
 # limitations under the License.
 
 import json
+import os
+
+import pymongo
 
 import falcon
 from falcon import testing
 
+from marconi.common import config
 from marconi.tests.transport.wsgi import base
 
 
@@ -192,6 +196,23 @@ class ClaimsBaseTest(base.TestBase):
         self.app(env, self.srmock)
 
         super(ClaimsBaseTest, self).tearDown()
+
+
+class ClaimsMongoDBTests(ClaimsBaseTest):
+
+    config_filename = 'wsgi_mongodb.conf'
+
+    def setUp(self):
+        if not os.environ.get("MONGODB_TEST_LIVE"):
+            self.skipTest("No MongoDB instance running")
+        super(ClaimsMongoDBTests, self).setUp()
+
+        self.cfg = config.namespace("drivers:storage:mongodb").from_options()
+
+    def tearDown(self):
+        conn = pymongo.MongoClient(self.cfg.uri)
+        conn.drop_database(self.cfg.database)
+        super(ClaimsMongoDBTests, self).tearDown()
 
 
 class ClaimsSQLiteTests(ClaimsBaseTest):

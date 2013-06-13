@@ -23,15 +23,14 @@ from marconi.common import config
 from marconi import storage
 from marconi.storage.sqlite import controllers
 
-
-cfg = config.namespace('drivers:storage:sqlite').from_options(
+CFG = config.namespace('drivers:storage:sqlite').from_options(
     database=':memory:')
 
 
 class Driver(storage.DriverBase):
 
     def __init__(self):
-        self.__path = cfg.database
+        self.__path = CFG.database
         self.__conn = sqlite3.connect(self.__path,
                                       detect_types=sqlite3.PARSE_DECLTYPES)
         self.__db = self.__conn.cursor()
