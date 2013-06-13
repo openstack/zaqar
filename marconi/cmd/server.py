@@ -16,7 +16,6 @@
 import sys
 
 from marconi import bootstrap
-from marconi.openstack.common import log
 
 
 def fail(returncode, e):
@@ -26,7 +25,6 @@ def fail(returncode, e):
 
 def run():
     try:
-        log.setup('marconi')
         server = bootstrap.Bootstrap(cli_args=sys.argv[1:])
         server.run()
     except KeyboardInterrupt:

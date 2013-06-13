@@ -1,7 +1,24 @@
 [DEFAULT]
-; debug = False
-; verbose = False
-; auth_strategy =
+# Show more verbose log output (sets INFO log level output)
+#verbose = False
+
+# Show debugging output in logs (sets DEBUG log level output)
+#debug = False
+
+# Log to this file!
+log_file = /var/log/marconi/server.log
+
+; auth_strategy = 
+
+# ================= Syslog Options ============================
+
+# Send logs to syslog (/dev/log) instead of to file specified
+# by `log_file`
+#use_syslog = False
+
+# Facility to use. If unset defaults to LOG_USER.
+#syslog_log_facility = LOG_LOCAL0
+
 
 [drivers]
 # Transport driver module (e.g., marconi.transport.wsgi, marconi.transport.zmq)

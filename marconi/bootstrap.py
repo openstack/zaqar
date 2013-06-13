@@ -17,6 +17,7 @@ from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import importutils
+from marconi.openstack.common import log
 from marconi import transport  # NOQA.
 
 
@@ -24,6 +25,8 @@ cfg_handle = config.project('marconi')
 cfg = config.namespace('drivers').from_options(
     transport='marconi.transport.wsgi',
     storage='marconi.storage.sqlite')
+
+LOG = log.getLogger(__name__)
 
 
 class Bootstrap(object):
@@ -35,14 +38,19 @@ class Bootstrap(object):
 
     def __init__(self, config_file=None, cli_args=None):
         cfg_handle.load(filename=config_file, args=cli_args)
+        log.setup("marconi")
 
     @decorators.lazy_property(write=False)
     def storage(self):
+        msg = _("Loading Storage Driver")
+        LOG.debug(msg)
         storage_module = import_driver(cfg.storage)
         return storage_module.Driver()
 
     @decorators.lazy_property(write=False)
     def transport(self):
+        msg = _("Loading Transport Driver")
+        LOG.debug(msg)
         transport_module = import_driver(cfg.transport)
         return transport_module.Driver(self.storage)
 

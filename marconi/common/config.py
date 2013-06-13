@@ -71,7 +71,7 @@ def _init():
         __getattr__ = dict.__getitem__
         __setattr__ = dict.__setitem__
 
-    conf = cfg.ConfigOpts()
+    conf = cfg.CONF
 
     def namespace(name, title=None):
         """Create a config namespace.

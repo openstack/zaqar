@@ -1,45 +1,37 @@
-; Loaded via logging.config.fileConfig
-; @todo Customize for Marconi loggers
-
 [loggers]
-keys=root
+keys=root,server,combined
+
+[formatters]
+keys=normal,normal_with_name,debug
 
 [handlers]
 keys=production,file,devel
 
-[formatters]
-keys=minimal,normal,debug
-
-
-###########
-# Loggers #
-###########
-
 [logger_root]
-level=WARNING
-handlers=file
+level=NOTSET
+handlers=devel
 
-[logger_access]
-level=INFO
-qualname=access
-handlers=access_file
+[logger_server]
+level=DEBUG
+handlers=devel
+qualname=marconi-server
 
-
-################
-# Log Handlers #
-################
+[logger_combined]
+level=DEBUG
+handlers=devel
+qualname=marconi-combined
 
 [handler_production]
 class=handlers.SysLogHandler
 level=ERROR
-formatter=normal
+formatter=normal_with_name
 args=(('localhost', handlers.SYSLOG_UDP_PORT), handlers.SysLogHandler.LOG_USER)
 
 [handler_file]
-class=handlers.WatchedFileHandler
-level=WARNING
-formatter=normal
-args=('error.log',)
+class=FileHandler
+level=DEBUG
+formatter=normal_with_name
+args=('marconi.log', 'w')
 
 [handler_devel]
 class=StreamHandler
@@ -47,16 +39,11 @@ level=NOTSET
 formatter=debug
 args=(sys.stdout,)
 
-
-##################
-# Log Formatters #
-##################
-
-[formatter_minimal]
-format=%(message)s
-
 [formatter_normal]
+format=%(asctime)s %(levelname)s %(message)s
+
+[formatter_normal_with_name]
 format=(%(name)s): %(asctime)s %(levelname)s %(message)s
 
 [formatter_debug]
-format=(%(name)s): %(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s
+format=(%(name)s): %(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s 
