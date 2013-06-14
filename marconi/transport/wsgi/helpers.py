@@ -29,7 +29,7 @@ JSONArray = list
 LOG = logging.getLogger(__name__)
 
 
-#TODO(kgriffs): Consider moving this to Falcon and/or Oslo
+# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
 def filter_stream(stream, len, spec, doctype=JSONObject):
     """Reads, deserializes, and validates a document from a stream.
 
@@ -52,7 +52,7 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
     """
 
     try:
-        #TODO(kgriffs): read_json should stream the resulting list
+        # TODO(kgriffs): read_json should stream the resulting list
         # of messages, returning a generator rather than buffering
         # everything in memory (bp/streaming-serialization).
         document = helpers.read_json(stream, len)
@@ -82,10 +82,10 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
         # streaming JSON deserializer (see above.git )
         return (filter(obj, spec) for obj in document)
 
-    raise ValueError("doctype not in (JSONObject, JSONArray)")
+    raise ValueError('doctype not in (JSONObject, JSONArray)')
 
 
-#TODO(kgriffs): Consider moving this to Falcon and/or Oslo
+# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
 def filter(document, spec):
     """Validates and retrieves typed fields from a single document.
 
@@ -111,7 +111,7 @@ def filter(document, spec):
     return filtered
 
 
-#TODO(kgriffs): Consider moving this to Falcon and/or Oslo
+# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
 def get_checked_field(document, name, value_type):
     """Validates and retrieves a typed field from a document.
 

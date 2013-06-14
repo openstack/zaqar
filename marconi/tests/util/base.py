@@ -44,7 +44,7 @@ class TestBase(testtools.TestCase):
         """Returns the full path to the specified Marconi conf file.
 
         :param filename: Name of the conf file to find (e.g.,
-                         "wsgi_memory.conf")
+                         'wsgi_memory.conf')
         """
 
         parent = os.path.dirname(self._my_dir())
@@ -54,7 +54,7 @@ class TestBase(testtools.TestCase):
         """Loads `filename` configuration file.
 
         :param filename: Name of the conf file to find (e.g.,
-                         "wsgi_memory.conf")
+                         'wsgi_memory.conf')
 
         :returns: Project's config object.
         """

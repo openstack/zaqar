@@ -52,7 +52,7 @@ class CollectionResource(object):
                 **claim_options)
 
             # Buffer claimed messages
-            #TODO(kgriffs): optimize, along with serialization (below)
+            # TODO(kgriffs): optimize, along with serialization (below)
             resp_msgs = list(msgs)
 
         except storage_exceptions.DoesNotExist:
@@ -93,7 +93,7 @@ class ItemResource(object):
                 project=project_id)
 
             # Buffer claimed messages
-            #TODO(kgriffs): Optimize along with serialization (see below)
+            # TODO(kgriffs): Optimize along with serialization (see below)
             meta['messages'] = list(msgs)
 
         except storage_exceptions.DoesNotExist:
@@ -104,7 +104,7 @@ class ItemResource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Serialize claimed messages
-        #TODO(kgriffs): Optimize
+        # TODO(kgriffs): Optimize
         for msg in meta['messages']:
             msg['href'] = _msg_uri_from_claim(
                 req.path.rsplit('/', 2)[0], msg['id'], meta['id'])
@@ -152,7 +152,7 @@ class ItemResource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
 
-#TODO(kgriffs): Clean up/optimize and move to wsgi.helpers
+# TODO(kgriffs): Clean up/optimize and move to wsgi.helpers
 def _msg_uri_from_claim(base_path, msg_id, claim_id):
     return '/'.join(
         [base_path, 'messages', msg_id]

@@ -120,7 +120,7 @@ class QueueBase(ControllerBase):
         :returns: True if a queue was created and False
             if it was updated.
         """
-        msg = _("Metadata should be an instance of dict")
+        msg = _('Metadata should be an instance of dict')
         assert isinstance(metadata, dict), msg
 
     @abc.abstractmethod

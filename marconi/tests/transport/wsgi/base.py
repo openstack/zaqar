@@ -29,7 +29,7 @@ class TestBase(util.TestBase):
         super(TestBase, self).setUp()
 
         if self.config_filename is None:
-            self.skipTest("No config specified")
+            self.skipTest('No config specified')
 
         conf_file = self.conf_path(self.config_filename)
         boot = marconi.Bootstrap(conf_file)
@@ -43,9 +43,9 @@ class TestBaseFaulty(TestBase):
     def setUp(self):
         self._storage_backup = marconi.Bootstrap.storage
         faulty = faulty_storage.Driver()
-        setattr(marconi.Bootstrap, "storage", faulty)
+        setattr(marconi.Bootstrap, 'storage', faulty)
         super(TestBaseFaulty, self).setUp()
 
     def tearDown(self):
-        setattr(marconi.Bootstrap, "storage", self._storage_backup)
+        setattr(marconi.Bootstrap, 'storage', self._storage_backup)
         super(TestBaseFaulty, self).tearDown()

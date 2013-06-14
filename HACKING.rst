@@ -12,9 +12,27 @@ General
 - Put two newlines between top-level code (funcs, classes, etc.)
 - Put one newline between methods in classes and anywhere else.
 - Use blank lines to group related logic.
-- Do not write "except:", use "except Exception:" at the very least.
-- Include your name with TODOs as in "#TODO(termie)".
-- All classes must inherit from "object" (explicitly).
+- Never write ``except:`` (use ``except Exception:`` instead, at
+  the very least).
+- All classes must inherit from ``object`` (explicitly).
+- Use single-quotes for strings unless the string contains a
+  single-quote.
+- Use the double-quote character for blockquotes (``"""``, not ``'''``)
+- USE_ALL_CAPS_FOR_GLOBAL_CONSTANTS
+
+Comments
+--------
+- In general use comments as "memory pegs" for those coming after you up
+  the trail.
+- Guide the reader though long functions with a comments introducing
+  different sections of the code.
+- Choose clean, descriptive names for functions and variables to make
+  them self-documenting.
+- Include your name with TODOs as in ``# TODO(termie): blah blah...``.
+- Add ``# NOTE(termie): blah blah...`` comments to clarify your intent, or
+  to explain a tricky algorithm, when it isn't obvious from just reading
+  the code.
+
 
 Identifiers
 -----------

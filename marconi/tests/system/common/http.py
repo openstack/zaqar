@@ -24,13 +24,13 @@ def get(url, header='', param=''):
     try:
         response = requests.get(url, headers=header, params=param)
     except requests.ConnectionError as detail:
-        print("ConnectionError: Exception in http.get {}".format(detail))
+        print('ConnectionError: Exception in http.get {}'.format(detail))
     except requests.HTTPError as detail:
-        print("HTTPError: Exception in http.get {}".format(detail))
+        print('HTTPError: Exception in http.get {}'.format(detail))
     except requests.Timeout as detail:
-        print("Timeout: Exception in http.get {}".format(detail))
+        print('Timeout: Exception in http.get {}'.format(detail))
     except requests.TooManyRedirects as detail:
-        print("TooManyRedirects: Exception in http.get {}".format(detail))
+        print('TooManyRedirects: Exception in http.get {}'.format(detail))
     return response
 
 
@@ -44,13 +44,13 @@ def post(url, header='', body='', param=''):
         response = requests.post(url, headers=header, data=body,
                                  params=param)
     except requests.ConnectionError as detail:
-        print("ConnectionError: Exception in http.post {}".format(detail))
+        print('ConnectionError: Exception in http.post {}'.format(detail))
     except requests.HTTPError as detail:
-        print("HTTPError: Exception in http.post {}".format(detail))
+        print('HTTPError: Exception in http.post {}'.format(detail))
     except requests.Timeout as detail:
-        print("Timeout: Exception in http.post {}".format(detail))
+        print('Timeout: Exception in http.post {}'.format(detail))
     except requests.TooManyRedirects as detail:
-        print("TooManyRedirects: Exception in http.post {}".format(detail))
+        print('TooManyRedirects: Exception in http.post {}'.format(detail))
     return response
 
 
@@ -64,13 +64,13 @@ def put(url, header='', body='', param=''):
         response = requests.put(url, headers=header, data=body,
                                 params=param)
     except requests.ConnectionError as detail:
-        print("ConnectionError: Exception in http.put {}".format(detail))
+        print('ConnectionError: Exception in http.put {}'.format(detail))
     except requests.HTTPError as detail:
-        print("HTTPError: Exception in http.put {}".format(detail))
+        print('HTTPError: Exception in http.put {}'.format(detail))
     except requests.Timeout as detail:
-        print("Timeout: Exception in http.put {}".format(detail))
+        print('Timeout: Exception in http.put {}'.format(detail))
     except requests.TooManyRedirects as detail:
-        print("TooManyRedirects: Exception in http.put {}".format(detail))
+        print('TooManyRedirects: Exception in http.put {}'.format(detail))
     return response
 
 
@@ -83,13 +83,13 @@ def delete(url, header='', param=''):
     try:
         response = requests.delete(url, headers=header, params=param)
     except requests.ConnectionError as detail:
-        print("ConnectionError: Exception in http.delete {}".format(detail))
+        print('ConnectionError: Exception in http.delete {}'.format(detail))
     except requests.HTTPError as detail:
-        print("HTTPError: Exception in http.delete {}".format(detail))
+        print('HTTPError: Exception in http.delete {}'.format(detail))
     except requests.Timeout as detail:
-        print("Timeout: Exception in http.delete {}".format(detail))
+        print('Timeout: Exception in http.delete {}'.format(detail))
     except requests.TooManyRedirects as detail:
-        print("TooManyRedirects: Exception in http.delete {}".format(detail))
+        print('TooManyRedirects: Exception in http.delete {}'.format(detail))
     return response
 
 
@@ -103,13 +103,13 @@ def patch(url, header='', body='', param=''):
         response = requests.patch(url, headers=header, data=body,
                                   params=param)
     except requests.ConnectionError as detail:
-        print("ConnectionError: Exception in http.patch {}".format(detail))
+        print('ConnectionError: Exception in http.patch {}'.format(detail))
     except requests.HTTPError as detail:
-        print("HTTPError: Exception in http.patch {}".format(detail))
+        print('HTTPError: Exception in http.patch {}'.format(detail))
     except requests.Timeout as detail:
-        print("Timeout: Exception in http.patch {}".format(detail))
+        print('Timeout: Exception in http.patch {}'.format(detail))
     except requests.TooManyRedirects as detail:
-        print("TooManyRedirects: Exception in http.patch {}".format(detail))
+        print('TooManyRedirects: Exception in http.patch {}'.format(detail))
     return response
 
 
@@ -153,14 +153,14 @@ def executetests(row):
         print url
         print header
         print body
-        print "Actual Response: {}".format(response.status_code)
-        print "Actual Response Headers"
+        print 'Actual Response: {}'.format(response.status_code)
+        print 'Actual Response Headers'
         print response.headers
-        print"Actual Response Body"
+        print'Actual Response Body'
         print response.text
-        print"ExpectedRC: {}".format(expected_RC)
-        print"expectedresponsebody: {}".format(expected_response_body)
-        assert test_result_flag, "Actual Response does not match the Expected"
+        print'ExpectedRC: {}'.format(expected_RC)
+        print'expectedresponsebody: {}'.format(expected_response_body)
+        assert test_result_flag, 'Actual Response does not match the Expected'
 
 
 def verify_response(response, expected_RC):
@@ -171,8 +171,8 @@ def verify_response(response, expected_RC):
 
     if actual_RC != expected_RC:
         test_result_flag = False
-        print("Unexpected http Response code {}".format(actual_RC))
-        print "Response Body returned"
+        print('Unexpected http Response code {}'.format(actual_RC))
+        print 'Response Body returned'
         print actual_response_body
 
     return test_result_flag

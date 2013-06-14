@@ -35,7 +35,7 @@ class TestWSGIAuth(base.TestBase):
 
     def test_non_authenticated(self):
         env = testing.create_environ('/v1/480924/queues/',
-                                     method="GET",
+                                     method='GET',
                                      headers=self.headers)
 
         self.app(env, self.srmock)

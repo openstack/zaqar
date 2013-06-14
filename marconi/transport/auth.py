@@ -40,7 +40,7 @@ class KeystoneAuth(object):
         return auth_token.AuthProtocol(app, conf=conf)
 
 
-STRATEGIES["keystone"] = KeystoneAuth
+STRATEGIES['keystone'] = KeystoneAuth
 
 
 def strategy(strategy):

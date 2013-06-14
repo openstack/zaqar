@@ -20,7 +20,7 @@ from marconi.tests import util as testing
 
 
 class ControllerBaseTest(testing.TestBase):
-    project = "project"
+    project = 'project'
     driver_class = None
     controller_class = None
     controller_base_class = None
@@ -29,10 +29,10 @@ class ControllerBaseTest(testing.TestBase):
         super(ControllerBaseTest, self).setUp()
 
         if not self.driver_class:
-            self.skipTest("No driver class specified")
+            self.skipTest('No driver class specified')
 
         if not issubclass(self.controller_class, self.controller_base_class):
-            self.skipTest("%s is not an instance of %s. Tests not supported" %
+            self.skipTest('%s is not an instance of %s. Tests not supported' %
                           (self.controller_class, self.controller_base_class))
 
         self.driver = self.driver_class()
@@ -73,36 +73,36 @@ class QueueControllerTest(ControllerBaseTest):
 
     def test_queue_lifecycle(self):
         # Test Queue Creation
-        created = self.controller.upsert("test", project=self.project,
-                                         metadata=dict(topic="test_queue"))
+        created = self.controller.upsert('test', project=self.project,
+                                         metadata=dict(topic='test_queue'))
 
         self.assertTrue(created)
 
         # Test Queue retrieval
-        queue = self.controller.get("test", project=self.project)
+        queue = self.controller.get('test', project=self.project)
         self.assertIsNotNone(queue)
 
         # Test Queue Update
-        created = self.controller.upsert("test", project=self.project,
-                                         metadata=dict(meta="test_meta"))
+        created = self.controller.upsert('test', project=self.project,
+                                         metadata=dict(meta='test_meta'))
         self.assertFalse(created)
 
-        queue = self.controller.get("test", project=self.project)
-        self.assertEqual(queue["meta"], "test_meta")
+        queue = self.controller.get('test', project=self.project)
+        self.assertEqual(queue['meta'], 'test_meta')
 
         # Test Queue Statistic
-        _insert_fixtures(self.message_controller, "test",
-                         project=self.project, client_uuid="my_uuid", num=12)
+        _insert_fixtures(self.message_controller, 'test',
+                         project=self.project, client_uuid='my_uuid', num=12)
 
-        countof = self.controller.stats("test", project=self.project)
+        countof = self.controller.stats('test', project=self.project)
         self.assertEqual(countof['messages']['free'], 12)
 
         # Test Queue Deletion
-        self.controller.delete("test", project=self.project)
+        self.controller.delete('test', project=self.project)
 
         # Test DoesNotExist Exception
         self.assertRaises(storage.exceptions.DoesNotExist,
-                          self.controller.get, "test",
+                          self.controller.get, 'test',
                           project=self.project)
 
 
@@ -113,7 +113,7 @@ class MessageControllerTest(ControllerBaseTest):
     override the tearDown method in order
     to clean up storage's state.
     """
-    queue_name = "test_queue"
+    queue_name = 'test_queue'
     controller_base_class = storage.MessageBase
 
     def setUp(self):
@@ -134,10 +134,10 @@ class MessageControllerTest(ControllerBaseTest):
 
         messages = [
             {
-                "ttl": 60,
-                "body": {
-                    "event": "BackupStarted",
-                    "backupId": "c378813c-3f0b-11e2-ad92-7823d2b0f3ce"
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce'
                 }
             },
         ]
@@ -145,7 +145,7 @@ class MessageControllerTest(ControllerBaseTest):
         # Test Message Creation
         created = list(self.controller.post(queue_name, messages,
                                             project=self.project,
-                                            client_uuid="unused"))
+                                            client_uuid='unused'))
         self.assertEqual(len(created), 1)
 
         # Test Message Get
@@ -162,7 +162,7 @@ class MessageControllerTest(ControllerBaseTest):
 
     def test_get_multi(self):
         _insert_fixtures(self.controller, self.queue_name,
-                         project=self.project, client_uuid="my_uuid", num=15)
+                         project=self.project, client_uuid='my_uuid', num=15)
 
         def load_messages(expected, *args, **kwargs):
             interaction = self.controller.list(*args, **kwargs)
@@ -172,7 +172,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         # Test all messages, echo False and uuid
         load_messages(0, self.queue_name, project=self.project,
-                      client_uuid="my_uuid")
+                      client_uuid='my_uuid')
 
         # Test all messages and limit
         load_messages(15, self.queue_name, project=self.project, limit=20,
@@ -181,17 +181,17 @@ class MessageControllerTest(ControllerBaseTest):
         # Test all messages, echo True, and uuid
         interaction = load_messages(10, self.queue_name, echo=True,
                                     project=self.project,
-                                    client_uuid="my_uuid")
+                                    client_uuid='my_uuid')
 
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, project=self.project,
-                      marker=interaction.next(), client_uuid="my_uuid")
+                      marker=interaction.next(), client_uuid='my_uuid')
 
     def test_claim_effects(self):
         _insert_fixtures(self.controller, self.queue_name,
-                         project=self.project, client_uuid="my_uuid", num=12)
+                         project=self.project, client_uuid='my_uuid', num=12)
 
-        meta = {"ttl": 70}
+        meta = {'ttl': 70}
 
         another_cid, _ = self.claim_controller.create(self.queue_name, meta,
                                                       project=self.project)
@@ -201,21 +201,21 @@ class MessageControllerTest(ControllerBaseTest):
 
         # A wrong claim does not ensure the message deletion
         with testing.expect(storage.exceptions.NotPermitted):
-            self.controller.delete(self.queue_name, msg1["id"],
+            self.controller.delete(self.queue_name, msg1['id'],
                                    project=self.project,
                                    claim=another_cid)
 
         # Make sure a message can be deleted with a claim
-        self.controller.delete(self.queue_name, msg1["id"],
+        self.controller.delete(self.queue_name, msg1['id'],
                                project=self.project,
                                claim=cid)
 
         with testing.expect(storage.exceptions.DoesNotExist):
-            self.controller.get(self.queue_name, msg1["id"],
+            self.controller.get(self.queue_name, msg1['id'],
                                 project=self.project)
 
         # Make sure such a deletion is idempotent
-        self.controller.delete(self.queue_name, msg1["id"],
+        self.controller.delete(self.queue_name, msg1['id'],
                                project=self.project,
                                claim=cid)
 
@@ -224,7 +224,7 @@ class MessageControllerTest(ControllerBaseTest):
                                      project=self.project)
 
         with testing.expect(storage.exceptions.NotPermitted):
-            self.controller.delete(self.queue_name, msg2["id"],
+            self.controller.delete(self.queue_name, msg2['id'],
                                    project=self.project,
                                    claim=cid)
 
@@ -294,7 +294,7 @@ class ClaimControllerTest(ControllerBaseTest):
     override the tearDown method in order
     to clean up storage's state.
     """
-    queue_name = "test_queue"
+    queue_name = 'test_queue'
     controller_base_class = storage.ClaimBase
 
     def setUp(self):
@@ -312,9 +312,9 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_claim_lifecycle(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid="my_uuid", num=20)
+                         project=self.project, client_uuid='my_uuid', num=20)
 
-        meta = {"ttl": 70}
+        meta = {'ttl': 70}
 
         # Make sure create works
         claim_id, messages = self.controller.create(self.queue_name, meta,
@@ -337,10 +337,10 @@ class ClaimControllerTest(ControllerBaseTest):
         messages2 = list(messages2)
         self.assertEquals(len(messages2), 15)
         self.assertEquals(messages, messages2)
-        self.assertEquals(claim["ttl"], 70)
-        self.assertEquals(claim["id"], claim_id)
+        self.assertEquals(claim['ttl'], 70)
+        self.assertEquals(claim['id'], claim_id)
 
-        new_meta = {"ttl": 100}
+        new_meta = {'ttl': 100}
         self.controller.update(self.queue_name, claim_id,
                                new_meta, project=self.project)
 
@@ -350,11 +350,14 @@ class ClaimControllerTest(ControllerBaseTest):
 
         messages2 = list(messages2)
         self.assertEquals(len(messages2), 15)
-        #TODO(zyuan): Add some tests to ensure the ttl is extended/not-extended
+
+        # TODO(zyuan): Add some tests to ensure the ttl is
+        # extended/not-extended.
         for msg1, msg2 in zip(messages, messages2):
             self.assertEquals(msg1['body'], msg2['body'])
-        self.assertEquals(claim["ttl"], 100)
-        self.assertEquals(claim["id"], claim_id)
+
+        self.assertEquals(claim['ttl'], 100)
+        self.assertEquals(claim['id'], claim_id)
 
         # Make sure delete works
         self.controller.delete(self.queue_name, claim_id,
@@ -365,7 +368,7 @@ class ClaimControllerTest(ControllerBaseTest):
                           claim_id, project=self.project)
 
     def test_expired_claim(self):
-        meta = {"ttl": 0}
+        meta = {'ttl': 0}
 
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
@@ -395,9 +398,9 @@ def _insert_fixtures(controller, queue_name, project=None,
     def messages():
         for n in xrange(num):
             yield {
-                "ttl": 120,
-                "body": {
-                    "event": "Event number %s" % n
+                'ttl': 120,
+                'body': {
+                    'event': 'Event number %s' % n
                 }}
     controller.post(queue_name, messages(),
                     project=project, client_uuid=client_uuid)

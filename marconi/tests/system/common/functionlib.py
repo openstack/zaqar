@@ -21,38 +21,38 @@ from marconi.tests.system.common import config
 from marconi.tests.system.common import http
 
 
-cfg = config.Config()
+CFG = config.Config()
 
 
 def get_keystone_token():
     """Gets Keystone Auth token."""
     req_json = {
-        "auth": {
-        "passwordCredentials": {
-        "username": cfg.username,
-        "password": cfg.password
+        'auth': {
+        'passwordCredentials': {
+        'username': CFG.username,
+        'password': CFG.password
         }
         },
     }
 
     header = '{"Host":  "identity.api.rackspacecloud.com",'
     header += '"Content-Type": "application/json","Accept":"application/json"}'
-    url = cfg.auth_url
+    url = CFG.auth_url
 
     response = http.post(url=url, header=header, body=req_json)
     response_body = json.loads(response.text)
 
-    auth_token = response_body["access"]["token"]["id"]
+    auth_token = response_body['access']['token']['id']
 
     return auth_token
 
 
 def get_auth_token():
     """Returns a valid auth token if auth is turned on."""
-    if cfg.auth_enabled == "true":
+    if CFG.auth_enabled == 'true':
         auth_token = get_keystone_token()
     else:
-        auth_token = "notrealtoken"
+        auth_token = 'notrealtoken'
 
     return auth_token
 
@@ -64,10 +64,10 @@ def create_marconi_headers():
     headers = '{"Host": "<HOST>","User-Agent": "<USER-AGENT>","Date":"<DATE>",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
     headers += '"X-Auth-Token":  "<auth_token>","Client-ID":  "<UUID>"}'
-    headers = headers.replace("<auth_token>", auth_token)
-    headers = headers.replace("<HOST>", cfg.host)
-    headers = headers.replace("<USER-AGENT>", cfg.user_agent)
-    headers = headers.replace("<UUID>", cfg.uuid)
+    headers = headers.replace('<auth_token>', auth_token)
+    headers = headers.replace('<HOST>', CFG.host)
+    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
+    headers = headers.replace('<UUID>', CFG.uuid)
 
     return headers
 
@@ -78,10 +78,10 @@ def invalid_auth_token_header():
 
     headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace("<auth_token>", auth_token)
-    headers = headers.replace("<HOST>", cfg.host)
-    headers = headers.replace("<USER-AGENT>", cfg.user_agent)
+    headers += 'X-Auth-Token:  <auth_token>}'
+    headers = headers.replace('<auth_token>', auth_token)
+    headers = headers.replace('<HOST>', CFG.host)
+    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
 
     return headers
 
@@ -93,8 +93,8 @@ def missing_header_fields():
     headers = '{"Host":  "<HOST>","Date":  "<DATE>",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
     headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace("<auth_token>", auth_token)
-    headers = headers.replace("<HOST>", cfg.host)
+    headers = headers.replace('<auth_token>', auth_token)
+    headers = headers.replace('<HOST>', CFG.host)
 
     return headers
 
@@ -106,9 +106,9 @@ def plain_text_in_header():
     headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
     headers += '"Accept":  "text/plain","Accept-Encoding":  "gzip",'
     headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace("<auth_token>", auth_token)
-    headers = headers.replace("<HOST>", cfg.host)
-    headers = headers.replace("<USER-AGENT>", cfg.user_agent)
+    headers = headers.replace('<auth_token>', auth_token)
+    headers = headers.replace('<HOST>', CFG.host)
+    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
 
     return headers
 
@@ -120,9 +120,9 @@ def asterisk_in_header():
     headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
     headers += '"Accept":  "*/*","Accept-Encoding":  "gzip",'
     headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace("<auth_token>", auth_token)
-    headers = headers.replace("<HOST>", cfg.host)
-    headers = headers.replace("<USER-AGENT>", cfg.user_agent)
+    headers = headers.replace('<auth_token>', auth_token)
+    headers = headers.replace('<HOST>', CFG.host)
+    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
 
     return headers
 
@@ -146,23 +146,23 @@ def get_headers(input_header):
 
 def get_custom_body(kwargs):
     """Returns a custom request body."""
-    req_body = {"data": "<DATA>"}
-    if "metadatasize" in kwargs.keys():
-        random_data = binascii.b2a_hex(os.urandom(kwargs["metadatasize"]))
-        req_body["data"] = random_data
+    req_body = {'data': '<DATA>'}
+    if 'metadatasize' in kwargs.keys():
+        random_data = binascii.b2a_hex(os.urandom(kwargs['metadatasize']))
+        req_body['data'] = random_data
 
     return json.dumps(req_body)
 
 
 def create_url_from_appender(appender):
     """Returns complete url using the appender (with a  a preceding '/')."""
-    next_url = str(cfg.base_server + appender)
+    next_url = str(CFG.base_server + appender)
     return(next_url)
 
 
 def get_url_from_location(header):
     """returns : the complete url referring to the location."""
-    location = header["location"]
+    location = header['location']
     url = create_url_from_appender(location)
     return url
 
@@ -177,10 +177,10 @@ def verify_metadata(get_data, posted_body):
     print(posted_body, type(posted_body))
 
     if get_data in posted_body:
-        print("AYYY")
+        print('AYYY')
     else:
         test_result_flag = False
-        print("NAYYY")
+        print('NAYYY')
 
     return test_result_flag
 
@@ -193,13 +193,13 @@ def verify_delete(url, header):
     if getmsg.status_code == 404:
         test_result_flag = True
     else:
-        print("GET after DELETE failed")
-        print("URL")
+        print('GET after DELETE failed')
+        print('URL')
         print url
-        print("headers")
+        print('headers')
         print header
-        print("Response Body")
+        print('Response Body')
         print getmsg.text
-        assert test_result_flag, "GET Code {}".format(getmsg.status_code)
+        assert test_result_flag, 'GET Code {}'.format(getmsg.status_code)
 
     return test_result_flag

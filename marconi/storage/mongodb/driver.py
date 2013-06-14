@@ -46,7 +46,7 @@ class Driver(storage.DriverBase):
         return self._database
 
     def gc(self):
-        LOG.info("Performing garbage collection.")
+        LOG.info('Performing garbage collection.')
 
         try:
             self.message_controller.remove_expired()

@@ -33,7 +33,7 @@ class ItemResource(object):
         self.queue_controller = queue_controller
 
     def on_put(self, req, resp, project_id, queue_name):
-        #TODO(kgriffs): Migrate this check to input validator middleware
+        # TODO(kgriffs): Migrate this check to input validator middleware
         if req.content_length > transport.MAX_QUEUE_METADATA_SIZE:
             description = _('Queue metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
@@ -102,7 +102,7 @@ class CollectionResource(object):
         self.queue_controller = queue_controller
 
     def on_get(self, req, resp, project_id):
-        #TODO(kgriffs): Optimize
+        # TODO(kgriffs): Optimize
         kwargs = helpers.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
