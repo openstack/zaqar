@@ -21,10 +21,10 @@ log_file = /var/log/marconi/server.log
 
 
 [drivers]
-# Transport driver module (e.g., marconi.transport.wsgi, marconi.transport.zmq)
-transport = marconi.transport.wsgi
-# Storage driver module (e.g., marconi.storage.mongodb, marconi.storage.sqlite)
-storage = marconi.storage.mongodb
+# Transport driver module (e.g., wsgi, zmq)
+transport = wsgi
+# Storage driver module (e.g., mongodb, sqlite)
+storage = mongodb
 
 [drivers:transport:wsgi]
 bind = 0.0.0.0
