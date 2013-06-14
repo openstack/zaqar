@@ -554,10 +554,32 @@ class MessageController(storage.MessageBase):
                     aggregated_results.extend(ids)
                     ids = aggregated_results
 
+                # Log a message if we retried, for debugging perf issues
+                if attempt != 0:
+                    message = _("%(attempts)d attempt(s) required to post "
+                                "%(num_messages)d messages to queue "
+                                "%(queue_id)s")
+                    message %= dict(queue_id=queue_id, attempts=attempt + 1,
+                                    num_messages=len(ids))
+
+                    LOG.debug(message)
+
                 return map(str, ids)
 
             except pymongo.errors.DuplicateKeyError as ex:
                 # Try again with the remaining messages
+
+                # NOTE(kgriffs): This can be used in conjunction with the
+                # log line, above, that is emitted after all messages have
+                # been posted, to guage how long it is taking for messages
+                # to be posted to a given queue, or overall.
+                #
+                # TODO(kgriffs): Add transaction ID to help match up loglines
+                if attempt == 0:
+                    message = _("First attempt failed while adding messages "
+                                "to queue %s for current request") % queue_id
+
+                    LOG.debug(message)
 
                 # TODO(kgriffs): Record stats of how often retries happen,
                 # and how many attempts, on average, are required to insert
@@ -593,6 +615,7 @@ class MessageController(storage.MessageBase):
                 for index, message in enumerate(prepared_messages):
                     message["k"] = next_marker + index
 
+                # Chill out to avoid thrashing/thundering
                 self._backoff_sleep(attempt)
 
             except Exception as ex:
