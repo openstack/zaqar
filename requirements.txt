@@ -10,3 +10,4 @@ pymongo
 python-keystoneclient
 simplejson
 WebOb
+stevedore>=0.9

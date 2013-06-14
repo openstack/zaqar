@@ -244,7 +244,7 @@ class MessagesMongoDBTests(MessagesBaseTest):
         super(MessagesMongoDBTests, self).setUp()
 
 
-class MessagesFaultyDriverTests(base.TestBase):
+class MessagesFaultyDriverTests(base.TestBaseFaulty):
 
     config_filename = 'wsgi_faulty.conf'
 

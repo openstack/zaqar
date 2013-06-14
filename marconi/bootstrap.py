@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stevedore import driver
+
 from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
-from marconi.openstack.common import importutils
 from marconi.openstack.common import log
 from marconi import transport  # NOQA.
 
 
 cfg_handle = config.project('marconi')
 cfg = config.namespace('drivers').from_options(
-    transport='marconi.transport.wsgi',
-    storage='marconi.storage.sqlite')
+    transport='wsgi',
+    storage='sqlite')
 
 LOG = log.getLogger(__name__)
 
@@ -42,25 +43,26 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        msg = _("Loading Storage Driver")
-        LOG.debug(msg)
-        storage_module = import_driver(cfg.storage)
-        return storage_module.Driver()
+        LOG.debug(_("Loading Storage Driver"))
+        try:
+            mgr = driver.DriverManager('marconi.storage',
+                                       cfg.storage,
+                                       invoke_on_load=True)
+            return mgr.driver
+        except RuntimeError as exc:
+                raise exceptions.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
-        msg = _("Loading Transport Driver")
-        LOG.debug(msg)
-        transport_module = import_driver(cfg.transport)
-        return transport_module.Driver(self.storage)
+        LOG.debug(_("Loading Transport Driver"))
+        try:
+            mgr = driver.DriverManager('marconi.transport',
+                                       cfg.transport,
+                                       invoke_on_load=True,
+                                       invoke_args=[self.storage])
+            return mgr.driver
+        except RuntimeError as exc:
+                raise exceptions.InvalidDriver(exc)
 
     def run(self):
         self.transport.listen()
-
-
-def import_driver(module_name):
-    try:
-        return importutils.import_module(module_name)
-    except ImportError:
-        raise exceptions.InvalidDriver(
-            'No module named %s' % module_name)

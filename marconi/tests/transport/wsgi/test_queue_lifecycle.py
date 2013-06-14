@@ -230,7 +230,7 @@ class QueueLifecycleSQLiteTests(QueueLifecycleBaseTest):
     config_filename = 'wsgi_sqlite.conf'
 
 
-class QueueFaultyDriverTests(base.TestBase):
+class QueueFaultyDriverTests(base.TestBaseFaulty):
 
     config_filename = 'wsgi_faulty.conf'
 
