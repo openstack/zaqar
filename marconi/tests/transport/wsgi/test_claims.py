@@ -220,7 +220,7 @@ class ClaimsSQLiteTests(ClaimsBaseTest):
     config_filename = 'wsgi_sqlite.conf'
 
 
-class ClaimsFaultyDriverTests(base.TestBase):
+class ClaimsFaultyDriverTests(base.TestBaseFaulty):
 
     config_filename = 'wsgi_faulty.conf'
 

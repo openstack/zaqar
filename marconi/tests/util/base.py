@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import fixtures
 import os
 import testtools
 
@@ -28,6 +29,16 @@ class TestBase(testtools.TestCase):
     a prepare(self) method, this method will be called before executing each
     test method.
     """
+
+    def setUp(self):
+        super(TestBase, self).setUp()
+        self.useFixture(fixtures.FakeLogger('marconi'))
+
+        stdout = self.useFixture(fixtures.StringStream('stdout')).stream
+        self.useFixture(fixtures.MonkeyPatch('sys.stdout', stdout))
+
+        stderr = self.useFixture(fixtures.StringStream('stderr')).stream
+        self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
     def conf_path(self, filename):
         """Returns the full path to the specified Marconi conf file.

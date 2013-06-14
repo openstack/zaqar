@@ -18,6 +18,7 @@ from falcon import testing
 
 import marconi
 from marconi.tests import util
+from marconi.tests.util import faulty_storage
 
 
 class TestBase(util.TestBase):
@@ -35,3 +36,16 @@ class TestBase(util.TestBase):
 
         self.app = boot.transport.app
         self.srmock = testing.StartResponseMock()
+
+
+class TestBaseFaulty(TestBase):
+
+    def setUp(self):
+        self._storage_backup = marconi.Bootstrap.storage
+        faulty = faulty_storage.Driver()
+        setattr(marconi.Bootstrap, "storage", faulty)
+        super(TestBaseFaulty, self).setUp()
+
+    def tearDown(self):
+        setattr(marconi.Bootstrap, "storage", self._storage_backup)
+        super(TestBaseFaulty, self).tearDown()
