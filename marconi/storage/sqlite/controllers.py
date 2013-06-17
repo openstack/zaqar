@@ -143,25 +143,29 @@ class Message(base.MessageBase):
             )
         ''')
 
-    def get(self, queue, message_id, project):
-        try:
-            content, ttl, age = self.driver.get('''
-                select content, ttl, julianday() * 86400.0 - created
-                  from Queues as Q join Messages as M
-                    on qid = Q.id
-                 where ttl > julianday() * 86400.0 - created
-                   and M.id = ? and project = ? and name = ?
-            ''', _msgid_decode(message_id), project, queue)
+    def get(self, queue, message_ids, project):
+        if not isinstance(message_ids, list):
+            message_ids = [message_ids]
 
-            return {
-                'id': message_id,
+        message_ids = ["'%s'" % _msgid_decode(id) for id in message_ids]
+        message_ids = ','.join(message_ids)
+
+        sql = '''
+            select M.id, content, ttl, julianday() * 86400.0 - created
+              from Queues as Q join Messages as M
+                on qid = Q.id
+             where ttl > julianday() * 86400.0 - created
+               and M.id in (%s) and project = ? and name = ?
+        ''' % message_ids
+
+        records = self.driver.run(sql, project, queue)
+        for id, content, ttl, age in records:
+            yield {
+                'id': id,
                 'ttl': ttl,
                 'age': int(age),
                 'body': content,
             }
-
-        except _NoResult:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
     def list(self, queue, project, marker=None,
              limit=10, echo=False, client_uuid=None):
@@ -446,7 +450,11 @@ def _get_qid(driver, queue, project):
 # come with no special functionalities.
 
 def _msgid_encode(id):
-    return hex(id ^ 0x5c693a53)[2:]
+    try:
+        return hex(id ^ 0x5c693a53)[2:]
+
+    except TypeError:
+        raise exceptions.MalformedID()
 
 
 def _msgid_decode(id):

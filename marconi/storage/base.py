@@ -182,15 +182,16 @@ class MessageBase(ControllerBase):
         """
         raise NotImplementedError
 
-    def get(self, queue, message_id, project=None):
+    def get(self, queue, message_ids, project=None):
         """Base method for getting a message.
 
         :param queue: Name of the queue to get the
             message from.
         :param project: Project id
-        :param message_id: Message ID
+        :param message_ids: One or more message IDs. Can be a single
+            string ID or a list of IDs.
 
-        :returns: Dictionary containing message data
+        :returns: An iterable, yielding dicts containing message details
         :raises: DoesNotExist
         """
         raise NotImplementedError

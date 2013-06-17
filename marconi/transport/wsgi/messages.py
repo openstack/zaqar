@@ -170,10 +170,10 @@ class ItemResource(object):
         try:
             message = self.message_controller.get(
                 queue_name,
-                message_id=message_id,
-                project=project_id)
+                message_id,
+                project=project_id).next()
 
-        except storage_exceptions.DoesNotExist:
+        except StopIteration:
             raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)

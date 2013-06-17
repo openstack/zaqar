@@ -482,31 +482,34 @@ class MessageController(storage.MessageBase):
         yield utils.HookedCursor(messages, denormalizer)
         yield str(marker_id['next'])
 
-    def get(self, queue, message_id, project=None):
-        mid = utils.to_oid(message_id)
+    def get(self, queue, message_ids, project=None):
+        if not isinstance(message_ids, list):
+            message_ids = [message_ids]
+
+        message_ids = [utils.to_oid(id) for id in message_ids]
         now = timeutils.utcnow()
 
         # Base query, always check expire time
         query = {
             'q': self._get_queue_id(queue, project),
             'e': {'$gt': now},
-            '_id': mid
+            '_id': {'$in': message_ids},
         }
 
-        message = self._col.find_one(query)
+        messages = self._col.find(query)
 
-        if message is None:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+        def denormalizer(msg):
+            oid = msg['_id']
+            age = now - utils.oid_utc(oid)
 
-        oid = message['_id']
-        age = now - utils.oid_utc(oid)
+            return {
+                'id': str(oid),
+                'age': age.seconds,
+                'ttl': msg['t'],
+                'body': msg['b'],
+            }
 
-        return {
-            'id': str(oid),
-            'age': age.seconds,
-            'ttl': message['t'],
-            'body': message['b'],
-        }
+        return utils.HookedCursor(messages, denormalizer)
 
     def post(self, queue, messages, client_uuid, project=None):
         now = timeutils.utcnow()
