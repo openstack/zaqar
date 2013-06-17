@@ -22,7 +22,7 @@ A config variable `foo` is a read-only property accessible through
 , where `CFG` is either a global configuration accessible through
 
     CFG = config.project('marconi').from_options(
-        foo=("bar", "usage"),
+        foo=('bar', 'usage'),
         ...)
 
 , or a local configuration associated with a namespace
@@ -44,7 +44,7 @@ sections named by their associated namespaces.
 To load the configurations from a file:
 
     PROJECT_CFG = config.project('marconi')
-    PROJECT_CFG.load(filename="/path/to/example.conf")
+    PROJECT_CFG.load(filename='/path/to/example.conf')
 
 A call to `.load` without a filename looks up for the default ones:
 
@@ -54,7 +54,7 @@ A call to `.load` without a filename looks up for the default ones:
 Global config variables, if any, can also be read from the command line
 arguments:
 
-    PROJECT_CFG.load(filename="example.conf", args=sys.argv[1:])
+    PROJECT_CFG.load(filename='example.conf', args=sys.argv[1:])
 """
 
 from oslo.config import cfg
@@ -197,4 +197,4 @@ def _make_opt(name, default):
     try:
         return deduction[type(default)](name, help=help, default=default)
     except KeyError:
-        raise cfg.Error("unrecognized option type")
+        raise cfg.Error('unrecognized option type')

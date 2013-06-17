@@ -32,6 +32,6 @@ class TestTransportAuth(util.TestBase):
         self.cfg.conf = cfg.ConfigOpts()
 
     def test_configs(self):
-        auth.strategy("keystone")._register_opts(self.cfg.conf)
-        self.assertIn("keystone_authtoken", self.cfg.conf)
-        self.assertIn("keystone_authtoken", dir(self.cfg.from_options()))
+        auth.strategy('keystone')._register_opts(self.cfg.conf)
+        self.assertIn('keystone_authtoken', self.cfg.conf)
+        self.assertIn('keystone_authtoken', dir(self.cfg.from_options()))

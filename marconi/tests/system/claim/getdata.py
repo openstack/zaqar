@@ -19,7 +19,7 @@ from marconi.tests.system.common import config
 from marconi.tests.system.common import functionlib
 
 
-cfg = config.Config()
+CFG = config.Config()
 
 
 def get_data():
@@ -32,7 +32,7 @@ def get_data():
 
     for row in data:
         row['header'] = functionlib.get_headers(row['header'])
-        row['url'] = row['url'].replace("<BASE_URL>", cfg.base_url)
+        row['url'] = row['url'].replace('<BASE_URL>', CFG.base_url)
 
     return data
 

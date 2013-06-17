@@ -30,9 +30,9 @@ OPTIONS = {
     'port': 8888
 }
 
-pconfig = config.project('marconi')
-gcfg = pconfig.from_options()
-lcfg = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
+PROJECT_CFG = config.project('marconi')
+GLOBAL_CFG = PROJECT_CFG.from_options()
+WSGI_CFG = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
 
 LOG = logging.getLogger(__name__)
 
@@ -77,13 +77,14 @@ class Driver(transport.DriverBase):
                            '/claims/{claim_id}', claim_item)
 
         # NOTE(flaper87): Install Auth
-        if gcfg.auth_strategy:
-            strategy = auth.strategy(gcfg.auth_strategy)
-            self.app = strategy.install(self.app, pconfig.conf)
+        if GLOBAL_CFG.auth_strategy:
+            strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
+            self.app = strategy.install(self.app, PROJECT_CFG.conf)
 
     def listen(self):
-        msg = _("Serving on host %(bind)s:%(port)s") % {"bind": lcfg.bind,
-                                                        "port": lcfg.port}
+        msg = _('Serving on host %(bind)s:%(port)s')
+        msg %= {'bind': WSGI_CFG.bind, 'port': WSGI_CFG.port}
         LOG.debug(msg)
-        httpd = simple_server.make_server(lcfg.bind, lcfg.port, self.app)
+        httpd = simple_server.make_server(WSGI_CFG.bind, WSGI_CFG.port,
+                                          self.app)
         httpd.serve_forever()

@@ -37,7 +37,7 @@ def verify_claim_msg(count, *claim_response):
     if msg_length_flag:
         query_claim(headers, body)
     else:
-        assert msg_length_flag, "More msgs returned than specified in limit"
+        assert msg_length_flag, 'More msgs returned than specified in limit'
 
 
 def verify_claim_msglength(count, *body):
@@ -65,30 +65,30 @@ def query_claim(headers, *body):
     msg_list = body[0]
     msg_list = json.loads(msg_list)
 
-    location = headers["Location"]
+    location = headers['Location']
     url = functionlib.create_url_from_appender(location)
     header = functionlib.create_marconi_headers()
 
     get_msg = http.get(url, header)
     if get_msg.status_code == 200:
         query_body = json.loads(get_msg.text)
-        query_msgs = query_body["messages"]
+        query_msgs = query_body['messages']
         test_result_flag = verify_query_msgs(query_msgs, msg_list)
 
     if test_result_flag:
         return test_result_flag
     else:
-        print "URL"
+        print 'URL'
         print url
-        print "HEADER"
+        print 'HEADER'
         print header
-        print "Messages returned by Query Claim"
+        print 'Messages returned by Query Claim'
         print query_msgs
-        print "# of Messages returned by Query Claim", len(query_msgs)
+        print '# of Messages returned by Query Claim', len(query_msgs)
         print 'Messages returned by Claim Messages'
         print msg_list
-        print "# of Messages returned by Claim messages", len(msg_list)
-        assert test_result_flag, "Query Claim Failed"
+        print '# of Messages returned by Claim messages', len(msg_list)
+        assert test_result_flag, 'Query Claim Failed'
 
 
 def verify_query_msgs(querymsgs, msg_list):
@@ -103,9 +103,9 @@ def verify_query_msgs(querymsgs, msg_list):
     idx = 0
 
     for msg in querymsgs:
-        if ((msg["body"] != msg_list[idx]["body"]) or
-           (msg["href"] != msg_list[idx]["href"]) or
-           (msg["ttl"] != msg_list[idx]["ttl"])):
+        if ((msg['body'] != msg_list[idx]['body']) or
+           (msg['href'] != msg_list[idx]['href']) or
+           (msg['ttl'] != msg_list[idx]['ttl'])):
                 test_result_flag = False
         idx = idx + 1
 
@@ -122,25 +122,25 @@ def patch_claim(*claim_response):
     test_result_flag = False
 
     headers = claim_response[0]
-    location = headers["Location"]
+    location = headers['Location']
     url = functionlib.create_url_from_appender(location)
     header = functionlib.create_marconi_headers()
 
     ttl_value = 300
-    payload = '{ "ttl": ttlvalue }'
-    payload = payload.replace("ttlvalue", str(ttl_value))
+    payload = '{"ttl": ttlvalue }'
+    payload = payload.replace('ttlvalue', str(ttl_value))
 
     patch_response = http.patch(url, header, body=payload)
     if patch_response.status_code == 204:
         test_result_flag = verify_patch_claim(url, header, ttl_value)
     else:
-        print "Patch HTTP Response code: {}".format(patch_response.status_code)
+        print 'Patch HTTP Response code: {}'.format(patch_response.status_code)
         print patch_response.headers
         print patch_response.text
-        assert test_result_flag, "Patch Claim Failed"
+        assert test_result_flag, 'Patch Claim Failed'
 
     if not test_result_flag:
-        assert test_result_flag, "Query claim after the patch failed"
+        assert test_result_flag, 'Query claim after the patch failed'
 
 
 def verify_patch_claim(url, header, ttl_extended):
@@ -157,7 +157,7 @@ def verify_patch_claim(url, header, ttl_extended):
     get_claim = http.get(url, header)
     response_body = json.loads(get_claim.text)
 
-    ttl = response_body["ttl"]
+    ttl = response_body['ttl']
     if ttl < ttl_extended:
         print get_claim.status_code
         print get_claim.headers
@@ -173,7 +173,7 @@ def create_urllist_fromhref(*response):
     :param *response : http response containing the list of messages.
     """
     rspbody = json.loads(response[1])
-    urllist = [functionlib.create_url_from_appender(item["href"])
+    urllist = [functionlib.create_url_from_appender(item['href'])
                for item in rspbody]
     return urllist
 
@@ -194,14 +194,14 @@ def delete_claimed_msgs(*claim_response):
         if delete_response.status_code == 204:
             test_result_flag = functionlib.verify_delete(url, header)
         else:
-            print "DELETE message with claim ID: {}".format(url)
+            print 'DELETE message with claim ID: {}'.format(url)
             print delete_response.status_code
             print delete_response.headers
             print delete_response.text
-            assert test_result_flag, "Delete Claimed Message Failed"
+            assert test_result_flag, 'Delete Claimed Message Failed'
 
     if not test_result_flag:
-        assert test_result_flag, "Get message after DELETE did not return 404"
+        assert test_result_flag, 'Get message after DELETE did not return 404'
 
 
 def get_claimed_msgs(*claim_response):
@@ -219,11 +219,11 @@ def get_claimed_msgs(*claim_response):
         if get_response.status_code != 200:
             print url
             print header
-            print "Get Response Code: {}".format(get_response.status_code)
+            print 'Get Response Code: {}'.format(get_response.status_code)
             test_result_flag = False
 
     if not test_result_flag:
-        assert test_result_flag, "Get Claimed message Failed"
+        assert test_result_flag, 'Get Claimed message Failed'
 
 
 def release_claim(*claim_response):
@@ -236,7 +236,7 @@ def release_claim(*claim_response):
     test_result_flag = False
 
     headers = claim_response[0]
-    location = headers["Location"]
+    location = headers['Location']
     url = functionlib.create_url_from_appender(location)
     header = functionlib.create_marconi_headers()
 
@@ -244,10 +244,10 @@ def release_claim(*claim_response):
     if release_response.status_code == 204:
         test_result_flag = functionlib.verify_delete(url, header)
     else:
-        print "Release Claim HTTP code:{}".format(release_response.status_code)
+        print 'Release Claim HTTP code:{}'.format(release_response.status_code)
         print release_response.headers
         print release_response.text
-        assert test_result_flag, "Release Claim Failed"
+        assert test_result_flag, 'Release Claim Failed'
 
     if not test_result_flag:
-        assert test_result_flag, "Get claim after the release failed"
+        assert test_result_flag, 'Get claim after the release failed'

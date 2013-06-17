@@ -47,9 +47,9 @@ class MessageConflict(Conflict):
             posted. Note that these must be in the same order as the
             list of messages originally submitted to be enqueued.
         """
-        msg = (_("Message could not be enqueued due to a conflict "
-                 "with another message that is already in "
-                 "queue %(queue)s for project %(project)s") %
+        msg = (_('Message could not be enqueued due to a conflict '
+                 'with another message that is already in '
+                 'queue %(queue)s for project %(project)s') %
                dict(queue=queue, project=project))
 
         super(MessageConflict, self).__init__(msg)
@@ -64,7 +64,7 @@ class MessageConflict(Conflict):
 class QueueDoesNotExist(DoesNotExist):
 
     def __init__(self, name, project):
-        msg = (_("Queue %(name)s does not exist for project %(project)s") %
+        msg = (_('Queue %(name)s does not exist for project %(project)s') %
                dict(name=name, project=project))
         super(QueueDoesNotExist, self).__init__(msg)
 
@@ -72,8 +72,8 @@ class QueueDoesNotExist(DoesNotExist):
 class MessageDoesNotExist(DoesNotExist):
 
     def __init__(self, mid, queue, project):
-        msg = (_("Message %(mid)s does not exist in "
-                 "queue %(queue)s for project %(project)s") %
+        msg = (_('Message %(mid)s does not exist in '
+                 'queue %(queue)s for project %(project)s') %
                dict(mid=mid, queue=queue, project=project))
         super(MessageDoesNotExist, self).__init__(msg)
 
@@ -81,8 +81,8 @@ class MessageDoesNotExist(DoesNotExist):
 class ClaimDoesNotExist(DoesNotExist):
 
     def __init__(self, cid, queue, project):
-        msg = (_("Claim %(cid)s does not exist in "
-                 "queue %(queue)s for project %(project)s") %
+        msg = (_('Claim %(cid)s does not exist in '
+                 'queue %(queue)s for project %(project)s') %
                dict(cid=cid, queue=queue, project=project))
         super(ClaimDoesNotExist, self).__init__(msg)
 
@@ -90,6 +90,6 @@ class ClaimDoesNotExist(DoesNotExist):
 class ClaimNotPermitted(NotPermitted):
 
     def __init__(self, mid, cid):
-        msg = (_("Message %(mid)s is not claimed by %(cid)s") %
+        msg = (_('Message %(mid)s is not claimed by %(cid)s') %
                dict(cid=cid, mid=mid))
         super(ClaimNotPermitted, self).__init__(msg)

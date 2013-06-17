@@ -22,7 +22,7 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 
 
-cfg = config.Config()
+CFG = config.Config()
 
 
 def generate_dict(dict_length):
@@ -51,17 +51,17 @@ def single_message_body(**kwargs):
     """
     valid_ttl = random.randint(60, 1209600)
 
-    if "messagesize" in kwargs.keys():
-        body = generate_dict(kwargs["messagesize"])
+    if 'messagesize' in kwargs.keys():
+        body = generate_dict(kwargs['messagesize'])
     else:
         body = generate_dict(2)
 
-    if "ttl" in kwargs.keys():
-        ttl = kwargs["ttl"]
+    if 'ttl' in kwargs.keys():
+        ttl = kwargs['ttl']
     else:
         ttl = valid_ttl
 
-    message_body = {"ttl": ttl, "body": body}
+    message_body = {'ttl': ttl, 'body': body}
     return message_body
 
 
@@ -70,7 +70,7 @@ def get_message_body(**kwargs):
 
     :param **kwargs: can be {messagecount: x} , where x is the # of messages.
     """
-    message_count = kwargs["messagecount"]
+    message_count = kwargs['messagecount']
     multiple_message_body = []
     for i in range[message_count]:
         message_body = single_message_body(**kwargs)
@@ -84,7 +84,7 @@ def dummyget_message_body(dict):
     return dict
 
 
-def create_url(base_url=cfg.base_url, *msg_id_list):
+def create_url(base_url=CFG.base_url, *msg_id_list):
     """Creates url list for retrieving messages with message id."""
     url = [(base_url + msg_id) for msg_id in msg_id_list]
     return url
@@ -98,7 +98,7 @@ def verify_msg_length(count=10, *msg_list):
     """
     test_result_flag = False
     msg_body = json.loads(msg_list[0])
-    msg_list = msg_body["messages"]
+    msg_list = msg_body['messages']
     msg_count = len(msg_list)
     if (msg_count <= count):
         test_result_flag = True
@@ -113,8 +113,8 @@ def get_href(*msg_list):
     :param *msg_list: list of messages returned by the server.
     """
     msg_body = json.loads(msg_list[0])
-    link = msg_body["links"]
-    href = link[0]["href"]
+    link = msg_body['links']
+    href = link[0]['href']
     return href
 
 
@@ -136,14 +136,14 @@ def verify_post_msg(msg_headers, posted_body):
         test_result_flag = functionlib.verify_metadata(getmsg.text,
                                                        posted_body)
     else:
-        print("Failed to GET {}".format(url))
-        print("Request Header")
+        print('Failed to GET {}'.format(url))
+        print('Request Header')
         print header
-        print("Response Headers")
+        print('Response Headers')
         print getmsg.headers
-        print("Response Body")
+        print('Response Body')
         print getmsg.text
-        assert test_result_flag, "HTTP code {}".format(getmsg.status_code)
+        assert test_result_flag, 'HTTP code {}'.format(getmsg.status_code)
 
 
 def get_next_msgset(responsetext):
@@ -162,9 +162,9 @@ def get_next_msgset(responsetext):
         return test_result_flag
     else:
         test_result_flag = False
-        print("Failed to GET {}".format(url))
+        print('Failed to GET {}'.format(url))
         print(getmsg.text)
-        assert test_result_flag, "HTTP code {}".format(getmsg.status_code)
+        assert test_result_flag, 'HTTP code {}'.format(getmsg.status_code)
 
 
 def verify_get_msgs(count, *getresponse):
@@ -181,11 +181,11 @@ def verify_get_msgs(count, *getresponse):
     if msglengthflag:
         test_result_flag = get_next_msgset(body)
     else:
-        print("Messages returned exceed requested number of messages")
+        print('Messages returned exceed requested number of messages')
         test_result_flag = False
 
     if not test_result_flag:
-        assert test_result_flag, "Recursive Get Messages Failed"
+        assert test_result_flag, 'Recursive Get Messages Failed'
 
 
 def delete_msg(*postresponse):
@@ -204,11 +204,11 @@ def delete_msg(*postresponse):
     if deletemsg.status_code == 204:
         test_result_flag = functionlib.verify_delete(url, header)
     else:
-        print("DELETE message failed")
-        print("URL")
+        print('DELETE message failed')
+        print('URL')
         print url
-        print("headers")
+        print('headers')
         print header
-        print("Response Body")
+        print('Response Body')
         print deletemsg.text
-        assert test_result_flag, "DELETE Code {}".format(deletemsg.status_code)
+        assert test_result_flag, 'DELETE Code {}'.format(deletemsg.status_code)

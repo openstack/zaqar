@@ -65,6 +65,6 @@ class TestQueueBase(testing.TestBase):
 
     def test_upsert(self):
         self.assertRaises(AssertionError, self.controller.upsert,
-                          "test", metadata=[])
+                          'test', metadata=[])
 
-        self.assertIsNone(self.controller.upsert("test", metadata={}))
+        self.assertIsNone(self.controller.upsert('test', metadata={}))

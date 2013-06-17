@@ -19,11 +19,11 @@ from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
-from marconi import transport  # NOQA.
+from marconi import transport  # NOQA
 
 
-cfg_handle = config.project('marconi')
-cfg = config.namespace('drivers').from_options(
+PROJECT_CFG = config.project('marconi')
+CFG = config.namespace('drivers').from_options(
     transport='wsgi',
     storage='sqlite')
 
@@ -38,15 +38,15 @@ class Bootstrap(object):
     """
 
     def __init__(self, config_file=None, cli_args=None):
-        cfg_handle.load(filename=config_file, args=cli_args)
-        log.setup("marconi")
+        PROJECT_CFG.load(filename=config_file, args=cli_args)
+        log.setup('marconi')
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        LOG.debug(_("Loading Storage Driver"))
+        LOG.debug(_('Loading Storage Driver'))
         try:
             mgr = driver.DriverManager('marconi.storage',
-                                       cfg.storage,
+                                       CFG.storage,
                                        invoke_on_load=True)
             return mgr.driver
         except RuntimeError as exc:
@@ -54,10 +54,10 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def transport(self):
-        LOG.debug(_("Loading Transport Driver"))
+        LOG.debug(_('Loading Transport Driver'))
         try:
             mgr = driver.DriverManager('marconi.transport',
-                                       cfg.transport,
+                                       CFG.transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage])
             return mgr.driver

@@ -27,9 +27,9 @@ class MessagesBaseTest(base.TestBase):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
-        doc = '{ "_ttl": 60 }'
+        doc = '{"_ttl": 60}'
         env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
         self.app(env, self.srmock)
 
         self.headers = {
@@ -38,23 +38,23 @@ class MessagesBaseTest(base.TestBase):
 
     def tearDown(self):
         env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method="DELETE")
+                                     method='DELETE')
         self.app(env, self.srmock)
 
         super(MessagesBaseTest, self).tearDown()
 
     def test_post(self):
-        doc = '''
+        doc = """
         [
             {"body": 239, "ttl": 10},
             {"body": {"key": "value"}, "ttl": 20},
             {"body": [1, 3], "ttl": 30}
         ]
-        '''
+        """
 
         path = '/v1/480924/queues/fizbit/messages'
         env = testing.create_environ(path,
-                                     method="POST",
+                                     method='POST',
                                      body=doc,
                                      headers=self.headers)
 
@@ -76,7 +76,7 @@ class MessagesBaseTest(base.TestBase):
 
         for msg_id in msg_ids:
             message_uri = path + '/' + msg_id
-            env = testing.create_environ(message_uri, method="GET")
+            env = testing.create_environ(message_uri, method='GET')
 
             body = self.app(env, self.srmock)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
@@ -92,14 +92,14 @@ class MessagesBaseTest(base.TestBase):
 
     def test_post_bad_message(self):
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      headers=self.headers)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      body='[',
                                      headers=self.headers)
 
@@ -107,7 +107,7 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      body='[]',
                                      headers=self.headers)
 
@@ -115,7 +115,7 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      body='{}',
                                      headers=self.headers)
 
@@ -127,19 +127,19 @@ class MessagesBaseTest(base.TestBase):
         [msg_id] = self._get_msg_ids(self.srmock.headers_dict)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method="GET")
+                                     + msg_id, method='GET')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method="DELETE")
+                                     + msg_id, method='DELETE')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method="GET")
+                                     + msg_id, method='GET')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
@@ -203,23 +203,23 @@ class MessagesBaseTest(base.TestBase):
 
     def test_no_uuid(self):
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      body='[{"body": 0, "ttl": 0}]')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="GET")
+                                     method='GET')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def _post_messages(self, target, repeat=1):
-        doc = json.dumps([{"body": 239, "ttl": 30}] * repeat)
+        doc = json.dumps([{'body': 239, 'ttl': 30}] * repeat)
 
         env = testing.create_environ(target,
-                                     method="POST",
+                                     method='POST',
                                      body=doc,
                                      headers=self.headers)
         self.app(env, self.srmock)
@@ -238,8 +238,8 @@ class MessagesMongoDBTests(MessagesBaseTest):
     config_filename = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        if not os.environ.get("MONGODB_TEST_LIVE"):
-            self.skipTest("No MongoDB instance running")
+        if not os.environ.get('MONGODB_TEST_LIVE'):
+            self.skipTest('No MongoDB instance running')
 
         super(MessagesMongoDBTests, self).setUp()
 
@@ -255,7 +255,7 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
         }
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="POST",
+                                     method='POST',
                                      body=doc,
                                      headers=headers)
 
@@ -263,7 +263,7 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method="GET",
+                                     method='GET',
                                      headers=headers)
 
         self.app(env, self.srmock)
@@ -271,14 +271,14 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages'
                                      '/nonexistent',
-                                     method="GET")
+                                     method='GET')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages'
                                      '/nonexistent',
-                                     method="DELETE")
+                                     method='DELETE')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

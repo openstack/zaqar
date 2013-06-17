@@ -20,28 +20,28 @@ from marconi.common import config
 
 OPTIONS = {
     # Connection string
-    "uri": None,
+    'uri': None,
 
     # Database name
-    #TODO(kgriffs): Consider local sharding across DBs to mitigate
+    # TODO(kgriffs): Consider local sharding across DBs to mitigate
     # per-DB locking latency.
-    "database": "marconi",
+    'database': 'marconi',
 
     # Maximum number of times to retry a failed operation. Currently
     # only used for retrying a message post.
-    "max_attempts": 1000,
+    'max_attempts': 1000,
 
     # Maximum sleep interval between retries (actual sleep time
     # increases linearly according to number of attempts performed).
-    "max_retry_sleep": 0.1,
+    'max_retry_sleep': 0.1,
 
     # Maximum jitter interval, to be added to the sleep interval, in
     # order to decrease probability that parallel requests will retry
     # at the same instant.
-    "max_retry_jitter": 0.005,
+    'max_retry_jitter': 0.005,
 
     # Frequency of message garbage collections, in seconds
-    "gc_interval": 5 * 60,
+    'gc_interval': 5 * 60,
 
     # Threshold of number of expired messages to reach in a given
     # queue, before performing the GC. Useful for reducing frequent
@@ -51,7 +51,7 @@ OPTIONS = {
     #
     # Note: The higher this number, the larger the memory-mapped DB
     # files will be.
-    "gc_threshold": 1000,
+    'gc_threshold': 1000,
 }
 
 CFG = config.namespace('drivers:storage:mongodb').from_options(**OPTIONS)

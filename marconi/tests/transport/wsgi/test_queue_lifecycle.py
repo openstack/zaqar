@@ -35,7 +35,7 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Create
         env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
@@ -51,7 +51,7 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Delete
         env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method="DELETE")
+                                     method='DELETE')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
@@ -63,22 +63,22 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_no_metadata(self):
-        env = testing.create_environ('/v1/480924/queues/fizbat', method="PUT")
+        env = testing.create_environ('/v1/480924/queues/fizbat', method='PUT')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_bad_metadata(self):
         env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     body="{",
-                                     method="PUT")
+                                     body='{',
+                                     method='PUT')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     body="[]",
-                                     method="PUT")
+                                     body='[]',
+                                     method='PUT')
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
@@ -88,7 +88,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2) + 1
         doc = doc % ('x' * padding_len)
         env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
@@ -98,7 +98,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         padding_len = transport.MAX_QUEUE_METADATA_SIZE * 100
         doc = doc % ('x' * padding_len)
         env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
@@ -109,7 +109,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2)
         doc = doc % ('x' * padding_len)
         env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
@@ -124,7 +124,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         # Create
         doc1 = '{"messages": {"ttl": 600}}'
         env = testing.create_environ('/v1/480924/queues/xyz',
-                                     method="PUT", body=doc1)
+                                     method='PUT', body=doc1)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
@@ -132,7 +132,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         # Update
         doc2 = '{"messages": {"ttl": 100}}'
         env = testing.create_environ('/v1/480924/queues/xyz',
-                                     method="PUT", body=doc2)
+                                     method='PUT', body=doc2)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
@@ -155,18 +155,18 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Create some
         env = testing.create_environ('/v1/480924/queues/q1',
-                                     method="PUT",
-                                     body='{ "_ttl": 30 }')
+                                     method='PUT',
+                                     body='{"_ttl": 30 }')
         self.app(env, self.srmock)
 
         env = testing.create_environ('/v1/480924/queues/q2',
-                                     method="PUT",
+                                     method='PUT',
                                      body='{}')
         self.app(env, self.srmock)
 
         env = testing.create_environ('/v1/480924/queues/q3',
-                                     method="PUT",
-                                     body='{ "_ttl": 30 }')
+                                     method='PUT',
+                                     body='{"_ttl": 30 }')
         self.app(env, self.srmock)
 
         # List
@@ -213,11 +213,11 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
     config_filename = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        if not os.environ.get("MONGODB_TEST_LIVE"):
-            self.skipTest("No MongoDB instance running")
+        if not os.environ.get('MONGODB_TEST_LIVE'):
+            self.skipTest('No MongoDB instance running')
         super(QueueLifecycleMongoDBTests, self).setUp()
 
-        self.cfg = config.namespace("drivers:storage:mongodb").from_options()
+        self.cfg = config.namespace('drivers:storage:mongodb').from_options()
 
     def tearDown(self):
         conn = pymongo.MongoClient(self.cfg.uri)
@@ -237,7 +237,7 @@ class QueueFaultyDriverTests(base.TestBaseFaulty):
     def test_simple(self):
         doc = '{"messages": {"ttl": 600}}'
         env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method="PUT", body=doc)
+                                     method='PUT', body=doc)
 
         self.app(env, self.srmock)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

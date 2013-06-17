@@ -38,14 +38,14 @@ def verify_queue_stats(*get_response):
     keys_in_body = body.keys()
     keys_in_body.sort()
 
-    if (keys_in_body == ["actions", "messages"]):
-        stats = body["messages"]
+    if (keys_in_body == ['actions', 'messages']):
+        stats = body['messages']
         keys_in_stats = stats.keys()
         keys_in_stats.sort()
-        if (keys_in_stats == ["claimed", "free"]):
+        if (keys_in_stats == ['claimed', 'free']):
             try:
-                int(stats["claimed"])
-                int(stats["free"])
+                int(stats['claimed'])
+                int(stats['free'])
             except Exception:
                 test_result_flag = False
         else:
@@ -58,7 +58,7 @@ def verify_queue_stats(*get_response):
     else:
         print headers
         print body
-        assert test_result_flag, "Get Request stats failed"
+        assert test_result_flag, 'Get Request stats failed'
 
 
 def get_queue_name(namelength=65):
@@ -68,7 +68,7 @@ def get_queue_name(namelength=65):
     :param namelength: length of the queue name.
     """
 
-    appender = "/queues/" + binascii.b2a_hex(os.urandom(namelength))
+    appender = '/queues/' + binascii.b2a_hex(os.urandom(namelength))
     url = functionlib.create_url_from_appender(appender)
     return url
 

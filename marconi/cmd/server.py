@@ -19,7 +19,7 @@ from marconi import bootstrap
 
 
 def fail(returncode, e):
-    sys.stderr.write("ERROR: %s\n" % e)
+    sys.stderr.write('ERROR: %s\n' % e)
     sys.exit(returncode)
 
 

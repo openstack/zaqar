@@ -40,17 +40,17 @@ class TestLazyProperty(testing.TestBase):
 
     def test_write_delete(self):
         self.assertTrue(self.cls_instance.read_write_delete)
-        self.assertTrue(hasattr(self.cls_instance, "_lazy_read_write_delete"))
+        self.assertTrue(hasattr(self.cls_instance, '_lazy_read_write_delete'))
 
         self.cls_instance.read_write_delete = False
         self.assertFalse(self.cls_instance.read_write_delete)
 
         del self.cls_instance.read_write_delete
-        self.assertFalse(hasattr(self.cls_instance, "_lazy_read_write_delete"))
+        self.assertFalse(hasattr(self.cls_instance, '_lazy_read_write_delete'))
 
     def test_write(self):
         self.assertTrue(self.cls_instance.read_write)
-        self.assertTrue(hasattr(self.cls_instance, "_lazy_read_write"))
+        self.assertTrue(hasattr(self.cls_instance, '_lazy_read_write'))
 
         self.cls_instance.read_write = False
         self.assertFalse(self.cls_instance.read_write)
@@ -60,11 +60,11 @@ class TestLazyProperty(testing.TestBase):
             self.fail()
         except TypeError:
             # Bool object is not callable
-            self.assertTrue(hasattr(self.cls_instance, "_lazy_read_write"))
+            self.assertTrue(hasattr(self.cls_instance, '_lazy_read_write'))
 
     def test_delete(self):
         self.assertTrue(self.cls_instance.read_delete)
-        self.assertTrue(hasattr(self.cls_instance, "_lazy_read_delete"))
+        self.assertTrue(hasattr(self.cls_instance, '_lazy_read_delete'))
 
         try:
             self.cls_instance.read_delete = False
@@ -74,4 +74,4 @@ class TestLazyProperty(testing.TestBase):
             pass
 
         del self.cls_instance.read_delete
-        self.assertFalse(hasattr(self.cls_instance, "_lazy_read_delete"))
+        self.assertFalse(hasattr(self.cls_instance, '_lazy_read_delete'))

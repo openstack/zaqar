@@ -74,7 +74,7 @@ class CollectionResource(object):
             message_ids = ex.succeeded_ids
 
             if not message_ids:
-                #TODO(kgriffs): Include error code that is different
+                # TODO(kgriffs): Include error code that is different
                 # from the code used in the generic case, below.
                 description = _('No messages could be enqueued.')
                 raise wsgi_exceptions.HTTPServiceUnavailable(description)
@@ -90,13 +90,13 @@ class CollectionResource(object):
         resp.location = req.path + '/' + resource
 
         hrefs = [req.path + '/' + id for id in message_ids]
-        body = {"resources": hrefs, "partial": partial}
+        body = {'resources': hrefs, 'partial': partial}
         resp.body = helpers.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
-        #TODO(kgriffs): Optimize
+        # TODO(kgriffs): Optimize
         kwargs = helpers.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),

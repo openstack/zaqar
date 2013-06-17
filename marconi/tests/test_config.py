@@ -20,7 +20,7 @@ from marconi.tests import util as testing
 PROJECT_CONFIG = config.project()
 CFG = PROJECT_CONFIG.from_options(
     without_help=3,
-    with_help=(None, "nonsense"))
+    with_help=(None, 'nonsense'))
 
 
 class TestConfig(testing.TestBase):
