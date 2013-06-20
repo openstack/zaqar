@@ -86,8 +86,13 @@ class CollectionResource(object):
 
         # Prepare the response
         resp.status = falcon.HTTP_201
-        resource = ','.join(message_ids)
-        resp.location = req.path + '/' + resource
+
+        if len(message_ids) == 1:
+            base_path = req.path[0:req.path.rfind('/')]
+            resp.location = base_path + '/' + message_ids[0]
+        else:
+            ids_value = ','.join(message_ids)
+            resp.location = req.path + '?ids=' + ids_value
 
         hrefs = [req.path + '/' + id for id in message_ids]
         body = {'resources': hrefs, 'partial': partial}
@@ -168,6 +173,7 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
+            print message_id
             message = self.message_controller.get(
                 queue_name,
                 message_id,

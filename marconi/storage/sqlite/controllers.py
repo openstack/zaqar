@@ -161,7 +161,7 @@ class Message(base.MessageBase):
         records = self.driver.run(sql, project, queue)
         for id, content, ttl, age in records:
             yield {
-                'id': id,
+                'id': _msgid_encode(id),
                 'ttl': ttl,
                 'age': int(age),
                 'body': content,

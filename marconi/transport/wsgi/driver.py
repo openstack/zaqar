@@ -44,12 +44,15 @@ class Driver(transport.DriverBase):
 
         self.app = falcon.API()
 
-        # Queues Endpoints
         queue_controller = self.storage.queue_controller
+        message_controller = self.storage.message_controller
+        claim_controller = self.storage.claim_controller
+
+        # Queues Endpoints
         queue_collection = queues.CollectionResource(queue_controller)
         self.app.add_route('/v1/{project_id}/queues', queue_collection)
 
-        queue_item = queues.ItemResource(queue_controller)
+        queue_item = queues.ItemResource(queue_controller, message_controller)
         self.app.add_route('/v1/{project_id}/queues/{queue_name}', queue_item)
 
         stats_endpoint = stats.Resource(queue_controller)
@@ -57,7 +60,6 @@ class Driver(transport.DriverBase):
                            '/stats', stats_endpoint)
 
         # Messages Endpoints
-        message_controller = self.storage.message_controller
         msg_collection = messages.CollectionResource(message_controller)
         self.app.add_route('/v1/{project_id}/queues/{queue_name}'
                            '/messages', msg_collection)
@@ -67,7 +69,6 @@ class Driver(transport.DriverBase):
                            '/messages/{message_id}', msg_item)
 
         # Claims Endpoints
-        claim_controller = self.storage.claim_controller
         claim_collection = claims.CollectionResource(claim_controller)
         self.app.add_route('/v1/{project_id}/queues/{queue_name}'
                            '/claims', claim_collection)

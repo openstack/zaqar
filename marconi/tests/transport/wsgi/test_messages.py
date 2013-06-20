@@ -52,8 +52,9 @@ class MessagesBaseTest(base.TestBase):
         ]
         """
 
-        path = '/v1/480924/queues/fizbit/messages'
-        env = testing.create_environ(path,
+        queue_path = '/v1/480924/queues/fizbit'
+        messages_path = queue_path + '/messages'
+        env = testing.create_environ(messages_path,
                                      method='POST',
                                      body=doc,
                                      headers=self.headers)
@@ -62,31 +63,47 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
+        print msg_ids
+        self.assertEquals(len(msg_ids), 3)
 
         body = json.loads(body[0])
-        expected_resources = [unicode(path + '/' + id) for id in msg_ids]
+        expected_resources = [unicode(messages_path + '/' + id)
+                              for id in msg_ids]
         self.assertEquals(expected_resources, body['resources'])
         self.assertFalse(body['partial'])
 
-        real_msgs = json.loads(doc)
+        sample_messages = json.loads(doc)
 
-        self.assertEquals(len(msg_ids), len(real_msgs))
+        self.assertEquals(len(msg_ids), len(sample_messages))
 
-        lookup = dict([(m['ttl'], m['body']) for m in real_msgs])
+        lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
 
+        # Test GET on the message resource directly
         for msg_id in msg_ids:
-            message_uri = path + '/' + msg_id
+            message_uri = messages_path + '/' + msg_id
             env = testing.create_environ(message_uri, method='GET')
 
-            body = self.app(env, self.srmock)
+            body = self.app(env, self.srmock)[0]
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
             self.assertEquals(self.srmock.headers_dict['Content-Location'],
                               message_uri)
 
-            msg = json.loads(body[0])
+            msg = json.loads(body)
             self.assertEquals(msg['href'], message_uri)
             self.assertEquals(msg['body'], lookup[msg['ttl']])
 
+        # Test bulk GET
+        query_string = 'ids=' + ','.join(msg_ids)
+        env = testing.create_environ(queue_path, method='GET',
+                                     query_string=query_string)
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        body = self.app(env, self.srmock)[0]
+        document = json.loads(body)
+        expected_ttls = set(m['ttl'] for m in sample_messages)
+        actual_ttls = set(m['ttl'] for m in document)
+        self.assertFalse(expected_ttls - actual_ttls)
+
+    def test_post_to_mia_queue(self):
         self._post_messages('/v1/480924/queues/nonexistent/messages')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
@@ -124,7 +141,10 @@ class MessagesBaseTest(base.TestBase):
 
     def test_delete(self):
         self._post_messages('/v1/480924/queues/fizbit/messages')
-        [msg_id] = self._get_msg_ids(self.srmock.headers_dict)
+
+        # NOTE(kgriffs): This implictly tests that posting a single
+        # message returns a message resource, not a queue resource.
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
 
         env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
                                      + msg_id, method='GET')
@@ -224,8 +244,11 @@ class MessagesBaseTest(base.TestBase):
                                      headers=self.headers)
         self.app(env, self.srmock)
 
-    def _get_msg_ids(self, headers_dict):
-        return headers_dict['Location'].rsplit('/', 1)[-1].split(',')
+    def _get_msg_id(self, headers):
+        return headers['Location'].rsplit('/', 1)[-1]
+
+    def _get_msg_ids(self, headers):
+        return headers['Location'].rsplit('=', 1)[-1].split(',')
 
 
 class MessagesSQLiteTests(MessagesBaseTest):

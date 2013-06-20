@@ -27,10 +27,56 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('queue_controller')
+    __slots__ = ('queue_controller', 'message_controller')
 
-    def __init__(self, queue_controller):
+    def __init__(self, queue_controller, message_controller):
         self.queue_controller = queue_controller
+        self.message_controller = message_controller
+
+    #-----------------------------------------------------------------------
+    # Helpers
+    #-----------------------------------------------------------------------
+
+    def _get_metadata(self, project_id, queue_name):
+        """Returns non-serialized queue metadata."""
+        try:
+            return self.queue_controller.get(queue_name, project=project_id)
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _('Queue metdata could not be retrieved.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+    def _get_messages_by_id(self, base_path, project_id, queue_name, ids):
+        """Returns one or more messages from the queue by ID."""
+        try:
+            messages = self.message_controller.get(
+                queue_name,
+                ids,
+                project=project_id)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _('Message could not be retrieved.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # Prepare response
+        messages = list(messages)
+        if not messages:
+            raise falcon.HTTPNotFound()
+
+        base_path += '/'
+        for each_message in messages:
+            print each_message
+            each_message['href'] = base_path + each_message['id']
+            del each_message['id']
+
+        return messages
+
+    #-----------------------------------------------------------------------
+    # Interface
+    #-----------------------------------------------------------------------
 
     def on_put(self, req, resp, project_id, queue_name):
         # TODO(kgriffs): Migrate this check to input validator middleware
@@ -70,14 +116,13 @@ class ItemResource(object):
         resp.location = req.path
 
     def on_get(self, req, resp, project_id, queue_name):
-        try:
-            doc = self.queue_controller.get(queue_name, project=project_id)
-        except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound()
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Queue metdata could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+        message_ids = req.get_param_as_list('ids')
+        if message_ids is None:
+            doc = self._get_metadata(project_id, queue_name)
+        else:
+            base_path = req.path + '/messages'
+            doc = self._get_messages_by_id(base_path, project_id, queue_name,
+                                           message_ids)
 
         resp.content_location = req.relative_uri
         resp.body = helpers.to_json(doc)
