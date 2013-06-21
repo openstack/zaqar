@@ -37,12 +37,16 @@ WSGI_CFG = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
 LOG = logging.getLogger(__name__)
 
 
+def _extract_project_id(req, resp, params):
+    params['project_id'] = req.get_header('X-PROJECT-ID')
+
+
 class Driver(transport.DriverBase):
 
     def __init__(self, storage):
         super(Driver, self).__init__(storage)
 
-        self.app = falcon.API()
+        self.app = falcon.API(before=_extract_project_id)
 
         queue_controller = self.storage.queue_controller
         message_controller = self.storage.message_controller
@@ -50,31 +54,31 @@ class Driver(transport.DriverBase):
 
         # Queues Endpoints
         queue_collection = queues.CollectionResource(queue_controller)
-        self.app.add_route('/v1/{project_id}/queues', queue_collection)
+        self.app.add_route('/v1/queues', queue_collection)
 
         queue_item = queues.ItemResource(queue_controller, message_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}', queue_item)
+        self.app.add_route('/v1/queues/{queue_name}', queue_item)
 
         stats_endpoint = stats.Resource(queue_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+        self.app.add_route('/v1/queues/{queue_name}'
                            '/stats', stats_endpoint)
 
         # Messages Endpoints
         msg_collection = messages.CollectionResource(message_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+        self.app.add_route('/v1/queues/{queue_name}'
                            '/messages', msg_collection)
 
         msg_item = messages.ItemResource(message_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+        self.app.add_route('/v1/queues/{queue_name}'
                            '/messages/{message_id}', msg_item)
 
         # Claims Endpoints
         claim_collection = claims.CollectionResource(claim_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+        self.app.add_route('/v1/queues/{queue_name}'
                            '/claims', claim_collection)
 
         claim_item = claims.ItemResource(claim_controller)
-        self.app.add_route('/v1/{project_id}/queues/{queue_name}'
+        self.app.add_route('/v1/queues/{queue_name}'
                            '/claims/{claim_id}', claim_item)
 
         # NOTE(flaper87): Install Auth

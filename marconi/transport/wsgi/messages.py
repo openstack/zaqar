@@ -173,13 +173,16 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
-            print message_id
             message = self.message_controller.get(
                 queue_name,
                 message_id,
                 project=project_id).next()
 
         except StopIteration:
+            # Good project_id and queue, but no messages
+            raise falcon.HTTPNotFound()
+        except storage_exceptions.DoesNotExist:
+            # This can happen if the queue or project_id is invalid
             raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)

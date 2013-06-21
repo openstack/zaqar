@@ -18,7 +18,6 @@ import json
 import os
 
 import falcon
-from falcon import testing
 import pymongo
 
 from marconi.common import config
@@ -31,76 +30,54 @@ class QueueLifecycleBaseTest(base.TestBase):
     config_filename = None
 
     def test_simple(self):
-        doc = '{"messages": {"ttl": 600}}'
+        path = '/v1/queues/gumshoe'
 
-        # Create
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='PUT', body=doc)
+        for project_id in ('480924', 'foo', '', None):
+            # Create
+            doc = '{"messages": {"ttl": 600}}'
+            self.simulate_put(path, project_id, body=doc)
+            self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+            location = ('Location', '/v1/queues/gumshoe')
+            self.assertIn(location, self.srmock.headers)
 
-        location = ('Location', '/v1/480924/queues/gumshoe')
-        self.assertIn(location, self.srmock.headers)
+            result = self.simulate_get(path, project_id)
+            result_doc = json.loads(result[0])
+            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertEquals(result_doc, json.loads(doc))
 
-        env = testing.create_environ('/v1/480924/queues/gumshoe')
-        result = self.app(env, self.srmock)
-        result_doc = json.loads(result[0])
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(result_doc, json.loads(doc))
+            # Delete
+            self.simulate_delete(path, project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        # Delete
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='DELETE')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
-
-        # Get non-existing
-        env = testing.create_environ('/v1/480924/queues/gumshoe')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+            # Get non-existing
+            self.simulate_get(path, project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_no_metadata(self):
-        env = testing.create_environ('/v1/480924/queues/fizbat', method='PUT')
-
-        self.app(env, self.srmock)
+        self.simulate_put('/v1/queues/fizbat')
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_bad_metadata(self):
-        env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     body='{',
-                                     method='PUT')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     body='[]',
-                                     method='PUT')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        for document in ('{', '[]', '.', '  ', ''):
+            self.simulate_put('/v1/queues/fizbat', '7e55e1a7e',
+                              body=document)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_too_much_metadata(self):
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2) + 1
         doc = doc % ('x' * padding_len)
-        env = testing.create_environ('/v1/480924/queues/fizbat',
-                                     method='PUT', body=doc)
 
-        self.app(env, self.srmock)
+        self.simulate_put('/v1/queues/fizbat', 'deadbeef', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_way_too_much_metadata(self):
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE * 100
         doc = doc % ('x' * padding_len)
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='PUT', body=doc)
 
-        self.app(env, self.srmock)
+        self.simulate_put('/v1/queues/fizbat', 'deadbeef', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_custom_metadata(self):
@@ -108,103 +85,84 @@ class QueueLifecycleBaseTest(base.TestBase):
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2)
         doc = doc % ('x' * padding_len)
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='PUT', body=doc)
-
-        self.app(env, self.srmock)
+        self.simulate_put('/v1/queues/fizbat', '480924', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         # Get
-        env = testing.create_environ('/v1/480924/queues/gumshoe')
-        result = self.app(env, self.srmock)
+        result = self.simulate_get('/v1/queues/fizbat', '480924')
         result_doc = json.loads(result[0])
         self.assertEquals(result_doc, json.loads(doc))
 
     def test_update_metadata(self):
+        path = '/v1/queues/xyz'
+        project_id = '480924'
+
         # Create
         doc1 = '{"messages": {"ttl": 600}}'
-        env = testing.create_environ('/v1/480924/queues/xyz',
-                                     method='PUT', body=doc1)
-
-        self.app(env, self.srmock)
+        self.simulate_put(path, project_id, body=doc1)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         # Update
         doc2 = '{"messages": {"ttl": 100}}'
-        env = testing.create_environ('/v1/480924/queues/xyz',
-                                     method='PUT', body=doc2)
-
-        self.app(env, self.srmock)
+        self.simulate_put(path, project_id, body=doc2)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Get
-        env = testing.create_environ('/v1/480924/queues/xyz')
-        result = self.app(env, self.srmock)
+        result = self.simulate_get(path, project_id)
         result_doc = json.loads(result[0])
 
         self.assertEquals(result_doc, json.loads(doc2))
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'])
+                          path)
 
     def test_list(self):
-        # List empty
-        env = testing.create_environ('/v1/480924/queues')
+        project_id = '644079696574693'
+        alt_project_id = '644079696574694'
 
-        self.app(env, self.srmock)
+        # List empty
+        self.simulate_get('/v1/queues', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Create some
-        env = testing.create_environ('/v1/480924/queues/q1',
-                                     method='PUT',
-                                     body='{"_ttl": 30 }')
-        self.app(env, self.srmock)
+        self.simulate_put('/v1/queues/q1', project_id, body='{"_ttl": 30 }')
+        self.simulate_put('/v1/queues/q2', project_id, body='{}')
+        self.simulate_put('/v1/queues/q3', project_id, body='{"_ttl": 30 }')
 
-        env = testing.create_environ('/v1/480924/queues/q2',
-                                     method='PUT',
-                                     body='{}')
-        self.app(env, self.srmock)
+        # List (no metadata)
+        result = self.simulate_get('/v1/queues', project_id,
+                                   query_string='limit=2')
 
-        env = testing.create_environ('/v1/480924/queues/q3',
-                                     method='PUT',
-                                     body='{"_ttl": 30 }')
-        self.app(env, self.srmock)
-
-        # List
-        env = testing.create_environ('/v1/480924/queues',
-                                     query_string='limit=2')
-
-        result = self.app(env, self.srmock)
         result_doc = json.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'] + '?' + env['QUERY_STRING'])
+                          '/v1/queues?limit=2')
 
         for queue in result_doc['queues']:
-            env = testing.create_environ(queue['href'])
-            self.app(env, self.srmock)
+            self.simulate_get(queue['href'], project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
+            self.simulate_get(queue['href'], alt_project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
             self.assertNotIn('metadata', queue)
 
         # List with metadata
-        env = testing.create_environ(target,
-                                     query_string=params + '&detailed=true')
+        result = self.simulate_get('/v1/queues', project_id,
+                                   query_string=params + '&detailed=true')
 
-        result = self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
         result_doc = json.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         [queue] = result_doc['queues']
-        env = testing.create_environ(queue['href'])
-        result = self.app(env, self.srmock)
+        result = self.simulate_get(queue['href'], project_id)
         result_doc = json.loads(result[0])
         self.assertEquals(result_doc, queue['metadata'])
 
         # List tail
-        env = testing.create_environ(target, query_string=params)
-
-        self.app(env, self.srmock)
+        self.simulate_get(target, project_id, query_string=params)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
 
@@ -235,36 +193,24 @@ class QueueFaultyDriverTests(base.TestBaseFaulty):
     config_filename = 'wsgi_faulty.conf'
 
     def test_simple(self):
+        path = '/v1/queues/gumshoe'
         doc = '{"messages": {"ttl": 600}}'
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='PUT', body=doc)
-
-        self.app(env, self.srmock)
+        self.simulate_put(path, '480924', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        location = ('Location', '/v1/480924/queues/gumshoe')
+        location = ('Location', path)
         self.assertNotIn(location, self.srmock.headers)
 
-        env = testing.create_environ('/v1/480924/queues/gumshoe')
-        result = self.app(env, self.srmock)
+        result = self.simulate_get(path, '480924')
         result_doc = json.loads(result[0])
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
         self.assertNotEquals(result_doc, json.loads(doc))
 
-        env = testing.create_environ('/v1/480924/queues/gumshoe/stats')
-        self.app(env, self.srmock)
+        self.simulate_get(path + '/stats', '480924')
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues')
-        self.app(env, self.srmock)
+        self.simulate_get('/v1/queues', '480924')
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/gumshoe',
-                                     method='DELETE')
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
-
-    def test_bad_document(self):
-        env = testing.create_environ('/v1/480924/queues/bad-doc')
-        self.app(env, self.srmock)
+        self.simulate_delete(path, '480924')
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

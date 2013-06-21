@@ -123,7 +123,7 @@ def to_oid(obj):
     try:
         return objectid.ObjectId(obj)
     except (TypeError, berrors.InvalidId):
-        msg = _('Wrong id %s') % obj
+        msg = _('Invalid oid: %s') % obj
         raise storage_exceptions.MalformedID(msg)
 
 

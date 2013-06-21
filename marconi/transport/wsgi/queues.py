@@ -68,7 +68,6 @@ class ItemResource(object):
 
         base_path += '/'
         for each_message in messages:
-            print each_message
             each_message['href'] = base_path + each_message['id']
             del each_message['id']
 

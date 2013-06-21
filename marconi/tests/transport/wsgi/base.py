@@ -37,6 +37,47 @@ class TestBase(util.TestBase):
         self.app = boot.transport.app
         self.srmock = testing.StartResponseMock()
 
+    def simulate_request(self, path, project_id=None, **kwargs):
+        """Simulate a request.
+
+        Simulates a WSGI request to the API for testing.
+
+        :param path: Request path for the desired resource
+        :param project_id: Project ID to use for the X-Project-ID header,
+            or None to not set the header
+        :param kwargs: Same as falcon.testing.create_environ()
+
+        :returns: standard WSGI iterable response
+        """
+
+        if project_id is not None:
+            headers = dict(kwargs['headers']) if 'headers' in kwargs else {}
+            headers['X-Project-ID'] = project_id
+            kwargs['headers'] = headers
+
+        return self.app(testing.create_environ(path=path, **kwargs),
+                        self.srmock)
+
+    def simulate_get(self, *args, **kwargs):
+        kwargs['method'] = 'GET'
+        return self.simulate_request(*args, **kwargs)
+
+    def simulate_put(self, *args, **kwargs):
+        kwargs['method'] = 'PUT'
+        return self.simulate_request(*args, **kwargs)
+
+    def simulate_post(self, *args, **kwargs):
+        kwargs['method'] = 'POST'
+        return self.simulate_request(*args, **kwargs)
+
+    def simulate_delete(self, *args, **kwargs):
+        kwargs['method'] = 'DELETE'
+        return self.simulate_request(*args, **kwargs)
+
+    def simulate_patch(self, *args, **kwargs):
+        kwargs['method'] = 'PATCH'
+        return self.simulate_request(*args, **kwargs)
+
 
 class TestBaseFaulty(TestBase):
 

@@ -19,7 +19,6 @@ import os
 import pymongo
 
 import falcon
-from falcon import testing
 
 from marconi.common import config
 from marconi.tests.transport.wsgi import base
@@ -30,172 +29,117 @@ class ClaimsBaseTest(base.TestBase):
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
 
+        self.project_id = '480924'
+        self.queue_path = '/v1/queues/fizbit'
+        self.claims_path = self.queue_path + '/claims'
+
         doc = '{"_ttl": 60 }'
-        env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method='PUT', body=doc)
-        self.app(env, self.srmock)
+
+        self.simulate_put(self.queue_path, self.project_id, body=doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         doc = json.dumps([{'body': 239, 'ttl': 30}] * 10)
+        self.simulate_post(self.queue_path + '/messages', self.project_id,
+                           body=doc, headers={'Client-ID': '30387f00'})
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body=doc,
-                                     headers={'Client-ID': '30387f00'})
-        self.app(env, self.srmock)
+    def tearDown(self):
+        self.simulate_delete(self.queue_path, self.project_id)
+
+        super(ClaimsBaseTest, self).tearDown()
 
     def test_bad_claim(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST', body='[')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST', body='{}')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        for doc in (None, '[', '[]', '{}', '.', '"fail"'):
+            self.simulate_post(self.claims_path, self.project_id,
+                               body=doc)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_bad_patch(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST',
-                                     body='{"ttl": 10}')
-        self.app(env, self.srmock)
-        target = self.srmock.headers_dict['Location']
+        self.simulate_post(self.claims_path, self.project_id,
+                           body='{"ttl": 10}')
+        href = self.srmock.headers_dict['Location']
 
-        env = testing.create_environ(target, method='PATCH')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ(target, method='PATCH', body='{')
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        for doc in (None, '[', '"crunchy"'):
+            self.simulate_patch(href, self.project_id, body=doc)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_lifecycle(self):
         doc = '{"ttl": 10}'
 
-        # claim some messages
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST',
-                                     body=doc)
-
-        body = self.app(env, self.srmock)
+        # First, claim some messages
+        body = self.simulate_post(self.claims_path, self.project_id, body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-        st = json.loads(body[0])
-        target = self.srmock.headers_dict['Location']
-        [msg_target, params] = st[0]['href'].split('?')
+        claim = json.loads(body[0])
+        claim_href = self.srmock.headers_dict['Location']
+        message_href, params = claim[0]['href'].split('?')
 
-        # no more messages to claim
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST',
-                                     body=doc,
-                                     query_string='limit=3')
-
-        self.app(env, self.srmock)
+        # No more messages to claim
+        self.simulate_post(self.claims_path, self.project_id, body=doc,
+                           query_string='limit=3')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        # check its metadata
-
-        env = testing.create_environ(target, method='GET')
-
-        body = self.app(env, self.srmock)
-        st = json.loads(body[0])
+        # Check the claim's metadata
+        body = self.simulate_get(claim_href, self.project_id)
+        claim = json.loads(body[0])
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'])
+                          claim_href)
+        self.assertEquals(claim['ttl'], 10)
 
-        self.assertEquals(st['ttl'], 10)
-
-        # delete a message with its associated claim
-
-        env = testing.create_environ(msg_target, query_string=params,
-                                     method='DELETE')
-
-        self.app(env, self.srmock)
+        # Delete the message and its associated claim
+        self.simulate_delete(message_href, self.project_id,
+                             query_string=params)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        env = testing.create_environ(msg_target, query_string=params)
-
-        self.app(env, self.srmock)
+        # Try to get it from the wrong project
+        self.simulate_get(message_href, 'bogus_project', query_string=params)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        # update the claim
+        # Get the message
+        self.simulate_get(message_href, self.project_id, query_string=params)
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        env = testing.create_environ(target,
-                                     body='{"ttl": 60}',
-                                     method='PATCH')
-
-        self.app(env, self.srmock)
+        # Update the claim
+        self.simulate_patch(claim_href, self.project_id, body='{"ttl": 60}')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        # get the claimed messages again
+        # Get the claimed messages (again)
+        body = self.simulate_get(claim_href, self.project_id)
+        claim = json.loads(body[0])
+        message_href, params = claim['messages'][0]['href'].split('?')
 
-        env = testing.create_environ(target, method='GET')
+        self.assertEquals(claim['ttl'], 60)
 
-        body = self.app(env, self.srmock)
-        st = json.loads(body[0])
-        [msg_target, params] = st['messages'][0]['href'].split('?')
-
-        self.assertEquals(st['ttl'], 60)
-
-        # delete the claim
-
-        env = testing.create_environ(st['href'], method='DELETE')
-
-        self.app(env, self.srmock)
+        # Delete the claim
+        self.simulate_delete(claim['href'], 'bad_id')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        # can not delete a message with a non-existing claim
+        self.simulate_delete(claim['href'], self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        env = testing.create_environ(msg_target, query_string=params,
-                                     method='DELETE')
-
-        self.app(env, self.srmock)
+        # Try to delete a message with an invalid claim ID
+        self.simulate_delete(message_href, self.project_id,
+                             query_string=params)
         self.assertEquals(self.srmock.status, falcon.HTTP_403)
 
-        env = testing.create_environ(msg_target, query_string=params)
-
-        self.app(env, self.srmock)
+        # Make sure it wasn't deleted!
+        self.simulate_get(message_href, self.project_id, query_string=params)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-        # get & update a non existing claim
-
-        env = testing.create_environ(st['href'], method='GET')
-
-        body = self.app(env, self.srmock)
+        # Try to get a claim that doesn't exist
+        self.simulate_get(claim['href'])
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        env = testing.create_environ(st['href'], method='PATCH', body=doc)
-
-        body = self.app(env, self.srmock)
+        # Try to update a claim that doesn't exist
+        self.simulate_patch(claim['href'], body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_nonexistent(self):
-        doc = '{"ttl": 10}'
-        env = testing.create_environ('/v1/480924/queues/nonexistent/claims',
-                                     method='POST', body=doc)
-
-        self.app(env, self.srmock)
+        self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
+                           body='{"ttl": 10}')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
-
-    def tearDown(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method='DELETE')
-        self.app(env, self.srmock)
-
-        super(ClaimsBaseTest, self).tearDown()
 
 
 class ClaimsMongoDBTests(ClaimsBaseTest):
@@ -225,32 +169,18 @@ class ClaimsFaultyDriverTests(base.TestBaseFaulty):
     config_filename = 'wsgi_faulty.conf'
 
     def test_simple(self):
+        project_id = '480924'
+        claims_path = '/v1/queues/fizbit/claims'
         doc = '{"ttl": 100}'
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims',
-                                     method='POST',
-                                     body=doc)
 
-        self.app(env, self.srmock)
+        self.simulate_post(claims_path, project_id, body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
-                                     '/nonexistent',
-                                     method='GET')
-
-        self.app(env, self.srmock)
+        self.simulate_get(claims_path + '/nichts', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
-                                     '/nonexistent',
-                                     method='PATCH',
-                                     body=doc)
+        self.simulate_patch(claims_path, project_id, body=doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_405)
 
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/claims'
-                                     '/nonexistent',
-                                     method='DELETE')
-
-        self.app(env, self.srmock)
+        self.simulate_delete(claims_path + '/foo', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

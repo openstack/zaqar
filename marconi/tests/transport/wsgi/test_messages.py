@@ -17,7 +17,6 @@ import json
 import os
 
 import falcon
-from falcon import testing
 
 from marconi.tests.transport.wsgi import base
 
@@ -27,20 +26,18 @@ class MessagesBaseTest(base.TestBase):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
+        self.project_id = '7e55e1a7e'
+        self.queue_path = '/v1/queues/fizbit'
+
         doc = '{"_ttl": 60}'
-        env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method='PUT', body=doc)
-        self.app(env, self.srmock)
+        self.simulate_put(self.queue_path, self.project_id, body=doc)
 
         self.headers = {
             'Client-ID': '30387f00',
         }
 
     def tearDown(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit',
-                                     method='DELETE')
-        self.app(env, self.srmock)
-
+        self.simulate_delete(self.queue_path, self.project_id)
         super(MessagesBaseTest, self).tearDown()
 
     def test_post(self):
@@ -52,28 +49,22 @@ class MessagesBaseTest(base.TestBase):
         ]
         """
 
-        queue_path = '/v1/480924/queues/fizbit'
-        messages_path = queue_path + '/messages'
-        env = testing.create_environ(messages_path,
-                                     method='POST',
-                                     body=doc,
-                                     headers=self.headers)
-
-        body = self.app(env, self.srmock)
+        messages_path = self.queue_path + '/messages'
+        result = self.simulate_post(messages_path, self.project_id,
+                                    body=doc, headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
+        result_doc = json.loads(result[0])
+
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
-        print msg_ids
         self.assertEquals(len(msg_ids), 3)
 
-        body = json.loads(body[0])
         expected_resources = [unicode(messages_path + '/' + id)
                               for id in msg_ids]
-        self.assertEquals(expected_resources, body['resources'])
-        self.assertFalse(body['partial'])
+        self.assertEquals(expected_resources, result_doc['resources'])
+        self.assertFalse(result_doc['partial'])
 
         sample_messages = json.loads(doc)
-
         self.assertEquals(len(msg_ids), len(sample_messages))
 
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
@@ -81,99 +72,72 @@ class MessagesBaseTest(base.TestBase):
         # Test GET on the message resource directly
         for msg_id in msg_ids:
             message_uri = messages_path + '/' + msg_id
-            env = testing.create_environ(message_uri, method='GET')
 
-            body = self.app(env, self.srmock)[0]
+            # Wrong project ID
+            self.simulate_get(message_uri, '777777')
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+            # Correct project ID
+            result = self.simulate_get(message_uri, self.project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
             self.assertEquals(self.srmock.headers_dict['Content-Location'],
                               message_uri)
 
-            msg = json.loads(body)
-            self.assertEquals(msg['href'], message_uri)
-            self.assertEquals(msg['body'], lookup[msg['ttl']])
+            message = json.loads(result[0])
+            self.assertEquals(message['href'], message_uri)
+            self.assertEquals(message['body'], lookup[message['ttl']])
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)
-        env = testing.create_environ(queue_path, method='GET',
-                                     query_string=query_string)
+        result = self.simulate_get(self.queue_path, self.project_id,
+                                   query_string=query_string)
+
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        body = self.app(env, self.srmock)[0]
-        document = json.loads(body)
+        result_doc = json.loads(result[0])
         expected_ttls = set(m['ttl'] for m in sample_messages)
-        actual_ttls = set(m['ttl'] for m in document)
+        actual_ttls = set(m['ttl'] for m in result_doc)
         self.assertFalse(expected_ttls - actual_ttls)
 
     def test_post_to_mia_queue(self):
-        self._post_messages('/v1/480924/queues/nonexistent/messages')
+        self._post_messages('/v1/queues/nonexistent/messages')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_post_bad_message(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     headers=self.headers)
+        for document in (None, '[', '[]', '{}', '.'):
+            self.simulate_post(self.queue_path + '/messages',
+                               body=document,
+                               headers=self.headers)
 
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body='[',
-                                     headers=self.headers)
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body='[]',
-                                     headers=self.headers)
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body='{}',
-                                     headers=self.headers)
-
-        self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_delete(self):
-        self._post_messages('/v1/480924/queues/fizbit/messages')
+        path = self.queue_path + '/messages'
+        self._post_messages(path)
 
         # NOTE(kgriffs): This implictly tests that posting a single
         # message returns a message resource, not a queue resource.
         msg_id = self._get_msg_id(self.srmock.headers_dict)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method='GET')
-
-        self.app(env, self.srmock)
+        self.simulate_get(path + '/' + msg_id, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method='DELETE')
-
-        self.app(env, self.srmock)
+        self.simulate_delete(path + '/' + msg_id, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages/'
-                                     + msg_id, method='GET')
-
-        self.app(env, self.srmock)
+        self.simulate_get(path + '/' + msg_id, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_list(self):
-        self._post_messages('/v1/480924/queues/fizbit/messages', repeat=10)
+        path = self.queue_path + '/messages'
+        self._post_messages(path, repeat=10)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     query_string='limit=3&echo=true',
-                                     headers=self.headers)
+        query_string = 'limit=3&echo=true'
+        body = self.simulate_get(path, self.project_id,
+                                 query_string=query_string,
+                                 headers=self.headers)
 
-        body = self.app(env, self.srmock)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'] + '?' + env['QUERY_STRING'])
+                          path + '?' + query_string)
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
@@ -181,68 +145,55 @@ class MessagesBaseTest(base.TestBase):
             [target, params] = contents['links'][0]['href'].split('?')
 
             for msg in contents['messages']:
-                env = testing.create_environ(msg['href'])
-                self.app(env, self.srmock)
+                self.simulate_get(msg['href'], self.project_id)
                 self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-            env = testing.create_environ(target,
-                                         query_string=params,
-                                         headers=self.headers)
-            body = self.app(env, self.srmock)
+            body = self.simulate_get(target, self.project_id,
+                                     query_string=params,
+                                     headers=self.headers)
             cnt += 1
 
         self.assertEquals(cnt, 4)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Stats
-        env = testing.create_environ('/v1/480924/queues/fizbit/stats')
-
-        body = self.app(env, self.srmock)
-        countof = json.loads(body[0])
-
+        body = self.simulate_get(self.queue_path + '/stats', self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
+        countof = json.loads(body[0])
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          env['PATH_INFO'])
+                          self.queue_path + '/stats')
         self.assertEquals(countof['messages']['free'], 10)
 
-        env = testing.create_environ('/v1/480924/queues/nonexistent/messages',
-                                     headers=self.headers)
-
-        body = self.app(env, self.srmock)
+        self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
+                          headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_list_with_bad_marker(self):
-        self._post_messages('/v1/480924/queues/fizbit/messages', repeat=5)
-        query_string = 'limit=3&echo=true&marker=sfhlsfdjh2048'
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     query_string=query_string,
-                                     headers=self.headers)
+        path = self.queue_path + '/messages'
+        self._post_messages(path, repeat=5)
 
-        self.app(env, self.srmock)
+        query_string = 'limit=3&echo=true&marker=sfhlsfdjh2048'
+        self.simulate_get(path, self.project_id,
+                          query_string=query_string,
+                          headers=self.headers)
+
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_no_uuid(self):
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body='[{"body": 0, "ttl": 0}]')
+        path = self.queue_path + '/messages'
 
-        self.app(env, self.srmock)
+        self.simulate_post(path, '7e7e7e', body='[{"body": 0, "ttl": 0}]')
+
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='GET')
-
-        self.app(env, self.srmock)
+        self.simulate_get(path, '7e7e7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 30}] * repeat)
-
-        env = testing.create_environ(target,
-                                     method='POST',
-                                     body=doc,
-                                     headers=self.headers)
-        self.app(env, self.srmock)
+        self.simulate_post(target, self.project_id, body=doc,
+                           headers=self.headers)
 
     def _get_msg_id(self, headers):
         return headers['Location'].rsplit('/', 1)[-1]
@@ -272,36 +223,24 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
     config_filename = 'wsgi_faulty.conf'
 
     def test_simple(self):
+        project_id = 'xyz'
+        path = '/v1/queues/fizbit/messages'
         doc = '[{"body": 239, "ttl": 10}]'
         headers = {
             'Client-ID': '30387f00',
         }
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='POST',
-                                     body=doc,
-                                     headers=headers)
-
-        self.app(env, self.srmock)
+        self.simulate_post(path, project_id,
+                           body=doc,
+                           headers=headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages',
-                                     method='GET',
-                                     headers=headers)
-
-        self.app(env, self.srmock)
+        self.simulate_get(path, project_id,
+                          headers=headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages'
-                                     '/nonexistent',
-                                     method='GET')
-
-        self.app(env, self.srmock)
+        self.simulate_get(path + '/nonexistent', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        env = testing.create_environ('/v1/480924/queues/fizbit/messages'
-                                     '/nonexistent',
-                                     method='DELETE')
-
-        self.app(env, self.srmock)
+        self.simulate_delete(path + '/nada', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

@@ -36,6 +36,10 @@ class Queue(base.QueueBase):
 
     def list(self, project, marker=None,
              limit=10, detailed=False):
+
+        if project is None:
+            project = ''
+
         sql = (('''
             select name from Queues''' if not detailed
                 else '''
@@ -68,6 +72,9 @@ class Queue(base.QueueBase):
         yield marker_name['next']
 
     def get(self, name, project):
+        if project is None:
+            project = ''
+
         try:
             return self.driver.get('''
                 select metadata from Queues
@@ -77,6 +84,9 @@ class Queue(base.QueueBase):
             raise exceptions.QueueDoesNotExist(name, project)
 
     def upsert(self, name, metadata, project):
+        if project is None:
+            project = ''
+
         with self.driver('immediate'):
             previous_record = self.driver.run('''
                 select id from Queues
@@ -91,11 +101,17 @@ class Queue(base.QueueBase):
             return previous_record is None
 
     def delete(self, name, project):
+        if project is None:
+            project = ''
+
         self.driver.run('''
             delete from Queues
              where project = ? and name = ?''', project, name)
 
     def stats(self, name, project):
+        if project is None:
+            project = ''
+
         with self.driver('deferred'):
             qid = _get_qid(self.driver, name, project)
             claimed, free = self.driver.get('''
@@ -144,6 +160,9 @@ class Message(base.MessageBase):
         ''')
 
     def get(self, queue, message_ids, project):
+        if project is None:
+            project = ''
+
         if not isinstance(message_ids, list):
             message_ids = [message_ids]
 
@@ -169,6 +188,9 @@ class Message(base.MessageBase):
 
     def list(self, queue, project, marker=None,
              limit=10, echo=False, client_uuid=None):
+
+        if project is None:
+            project = ''
 
         with self.driver('deferred'):
             sql = '''
@@ -209,6 +231,9 @@ class Message(base.MessageBase):
             yield _marker_encode(marker_id['next'])
 
     def post(self, queue, messages, client_uuid, project):
+        if project is None:
+            project = ''
+
         with self.driver('immediate'):
             qid = _get_qid(self.driver, queue, project)
 
@@ -239,6 +264,9 @@ class Message(base.MessageBase):
         return map(_msgid_encode, range(unused, my['newid']))
 
     def delete(self, queue, message_id, project, claim=None):
+        if project is None:
+            project = ''
+
         id = _msgid_decode(message_id)
 
         if not claim:
@@ -306,6 +334,9 @@ class Claim(base.ClaimBase):
         ''')
 
     def get(self, queue, claim_id, project):
+        if project is None:
+            project = ''
+
         with self.driver('deferred'):
             try:
                 id, ttl, age = self.driver.get('''
@@ -329,10 +360,13 @@ class Claim(base.ClaimBase):
                 raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
     def create(self, queue, metadata, project, limit=10):
+        if project is None:
+            project = ''
+
         with self.driver('immediate'):
             qid = _get_qid(self.driver, queue, project)
 
-            # cleanup all expired claims in this queue
+            # Clean up all expired claims in this queue
 
             self.driver.run('''
                 delete from Claims
@@ -377,6 +411,9 @@ class Claim(base.ClaimBase):
             }
 
     def update(self, queue, claim_id, metadata, project):
+        if project is None:
+            project = ''
+
         try:
             id = _cid_decode(claim_id)
         except exceptions.MalformedID:
@@ -414,6 +451,9 @@ class Claim(base.ClaimBase):
         ''', ttl, ttl, cid)
 
     def delete(self, queue, claim_id, project):
+        if project is None:
+            project = ''
+
         try:
             cid = _cid_decode(claim_id)
         except exceptions.MalformedID:
