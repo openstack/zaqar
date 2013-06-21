@@ -32,11 +32,11 @@ class TestBase(testtools.TestCase):
 
     def setUp(self):
         super(TestBase, self).setUp()
+
         self.useFixture(fixtures.FakeLogger('marconi'))
 
-        stdout = self.useFixture(fixtures.StringStream('stdout')).stream
-        self.useFixture(fixtures.MonkeyPatch('sys.stdout', stdout))
-
+        # NOTE(kgriffs): Don't monkey-patch stdout since it breaks
+        # debugging with pdb.
         stderr = self.useFixture(fixtures.StringStream('stderr')).stream
         self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
