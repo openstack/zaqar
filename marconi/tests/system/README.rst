@@ -13,8 +13,8 @@ Running the System Tests
 #. Setup a Marconi server. Refer to the Marconi `README`_ on
    how to run Marconi locally, or simply use an existing server.
 
-#. System tests require the `requests`_ & `robot`_ packages. Run
-   the following to install them: ::
+#. System tests require the `requests` package. Run
+   the following to install it: ::
 
      pip install -r tools/system-test-requires
 
@@ -31,35 +31,21 @@ Running the System Tests
 #. If leaving keystone auth enabled, update system-tests.conf with a
    valid set of credentials.
 
-#. Now, to run the sytem tests, simply use the pybot commands, e.g.:
+#. Now, to run the sytem tests, simply use the nosetests commands, 
+   from the marconi/tests/system directory. e.g.:
 
     Run all test suites: ::
 
-        pybot queue/queue_tests.txt messages/messages_tests.txt claim/claim_tests.txt
-
-    Run test suites individually: ::
-
-        pybot queue/queue_tests.txt
-        pybot messages/messages_tests.txt
-        pybot claim/claim_tests.txt
-
-    Note: pybot will generate ``report.html`` & ``log.html`` after the
-    test run is complete.
-
+        nosetests -v
 
 Adding New Tests
 ----------------
 
-*See also the Robot* `user guide`_ *for more details on writing test cases.*
+#. Add test case to an appropriate  test case file: ::
 
-#. Add a test case definition to an appropriate robot test case file: ::
-
-    queue/queue_tests.txt
-    messages/messages_tests.txt
-    claim/claim_tests.txt).
-
-#. Add test data to the test_data.csv in the same directory as the test case
-   file you updated above (eg. queue/test_data.csv)
+    queue/test_queue.py
+    messages/test_messages.py
+    claim/test_claims.py
 
 #. Add any validation logic you might need, to the following utility modules:
 
@@ -71,7 +57,3 @@ Adding New Tests
 
 .. _README : https://github.com/stackforge/marconi/blob/master/README.rst
 .. _requests : https://pypi.python.org/pypi/requests
-.. _robot : https://pypi.python.org/pypi/robotframework
-.. _user guide : http://robotframework.googlecode.com/hg/doc/userguide/RobotFrameworkUserGuide.html?r=#.7.7#creating-test-cases
-
-

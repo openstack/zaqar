@@ -28,16 +28,17 @@ def verify_claim_msg(count, *claim_response):
     :param count: limit specified in the claim request.
     :param claim_response : [header, body] returned for post claim request.
     """
-    msg_length_flag = False
+    test_result_flag = False
 
     headers = claim_response[0]
     body = claim_response[1]
 
-    msg_length_flag = verify_claim_msglength(count, body)
-    if msg_length_flag:
-        query_claim(headers, body)
+    test_result_flag = verify_claim_msglength(count, body)
+    if test_result_flag:
+        test_result_flag = query_claim(headers, body)
     else:
-        assert msg_length_flag, 'More msgs returned than specified in limit'
+        print 'More msgs returned than specified in limit'
+    return test_result_flag
 
 
 def verify_claim_msglength(count, *body):
@@ -75,9 +76,7 @@ def query_claim(headers, *body):
         query_msgs = query_body['messages']
         test_result_flag = verify_query_msgs(query_msgs, msg_list)
 
-    if test_result_flag:
-        return test_result_flag
-    else:
+    if not test_result_flag:
         print 'URL'
         print url
         print 'HEADER'
@@ -88,7 +87,8 @@ def query_claim(headers, *body):
         print 'Messages returned by Claim Messages'
         print msg_list
         print '# of Messages returned by Claim messages', len(msg_list)
-        assert test_result_flag, 'Query Claim Failed'
+        print 'Query Claim Failed'
+    return test_result_flag
 
 
 def verify_query_msgs(querymsgs, msg_list):
@@ -137,10 +137,8 @@ def patch_claim(*claim_response):
         print 'Patch HTTP Response code: {}'.format(patch_response.status_code)
         print patch_response.headers
         print patch_response.text
-        assert test_result_flag, 'Patch Claim Failed'
 
-    if not test_result_flag:
-        assert test_result_flag, 'Query claim after the patch failed'
+    return test_result_flag
 
 
 def verify_patch_claim(url, header, ttl_extended):
@@ -198,10 +196,9 @@ def delete_claimed_msgs(*claim_response):
             print delete_response.status_code
             print delete_response.headers
             print delete_response.text
-            assert test_result_flag, 'Delete Claimed Message Failed'
+            print 'Delete Claimed Message Failed'
 
-    if not test_result_flag:
-        assert test_result_flag, 'Get message after DELETE did not return 404'
+    return test_result_flag
 
 
 def get_claimed_msgs(*claim_response):

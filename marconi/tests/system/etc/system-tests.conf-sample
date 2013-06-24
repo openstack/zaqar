@@ -6,10 +6,10 @@ username = user
 password = secret
 
 [marconi_env]
-marconi_url = http://166.78.143.130:80
+marconi_url = http://0.0.0.0:8888
 marconi_version = v1
-tenant_id = 1
 
 [header_values]
 host = marconi.test.com
 useragent = systemtests
+project_id = 123456

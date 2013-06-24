@@ -69,8 +69,7 @@ def get_queue_name(namelength=65):
     """
 
     appender = '/queues/' + binascii.b2a_hex(os.urandom(namelength))
-    url = functionlib.create_url_from_appender(appender)
-    return url
+    return appender
 
 
 def verify_list_queues(*list_queue_response):
@@ -78,6 +77,7 @@ def verify_list_queues(*list_queue_response):
 
     :param *list_queue_response: [header, body] returned for list queue.
     """
+    test_result_flag = True
     response_body = json.loads(list_queue_response[1])
     links = response_body['links']
     href = links[0]['href']
@@ -90,10 +90,12 @@ def verify_list_queues(*list_queue_response):
     if False in test_result_flags:
         test_result_flag = False
         print 'List Queue API response: {}'.format(response_body)
-        assert test_result_flag, 'List Queue failed'
+        return test_result_flag
 
     if links[0]['rel'] == 'next':
-        list_queues(href)
+        test_result_flag = list_queues(href)
+
+    return test_result_flag
 
 
 def verify_listed(queue, detail_enabled):
@@ -136,8 +138,7 @@ def list_queues(href):
     if list_queue_response.status_code == 200:
         headers = list_queue_response.headers
         text = list_queue_response.text
-        verify_list_queues(headers, text)
+        test_result_flag = verify_list_queues(headers, text)
     elif list_queue_response.status_code == 204:
         test_result_flag = True
-    else:
-        assert test_result_flag, 'List Queue failed'
+    return test_result_flag

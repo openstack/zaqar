@@ -16,6 +16,7 @@
 import binascii
 import json
 import os
+import string
 
 from marconi.tests.system.common import config
 from marconi.tests.system.common import http
@@ -49,7 +50,7 @@ def get_keystone_token():
 
 def get_auth_token():
     """Returns a valid auth token if auth is turned on."""
-    if CFG.auth_enabled == 'true':
+    if CFG.auth_enabled:
         auth_token = get_keystone_token()
     else:
         auth_token = 'notrealtoken'
@@ -61,70 +62,69 @@ def create_marconi_headers():
     """Returns headers to be used for all Marconi requests."""
     auth_token = get_auth_token()
 
-    headers = '{"Host": "<HOST>","User-Agent": "<USER-AGENT>","Date":"<DATE>",'
+    headers = '{"Host": "$host","User-Agent": "$user_agent","Date":"DATE",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "<auth_token>","Client-ID":  "<UUID>"}'
-    headers = headers.replace('<auth_token>', auth_token)
-    headers = headers.replace('<HOST>', CFG.host)
-    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
-    headers = headers.replace('<UUID>', CFG.uuid)
+    headers += '"X-Project-ID": "$project_id",'
+    headers += '"X-Auth-Token":  "$token","Client-ID":  "$uuid"}'
+    headers = string.Template(headers)
 
-    return headers
+    return headers.substitute(host=CFG.host, user_agent=CFG.user_agent,
+                              project_id=CFG.project_id,
+                              token=auth_token, uuid=CFG.uuid)
 
 
 def invalid_auth_token_header():
     """Returns a header with invalid auth token."""
-    auth_token = get_auth_token()
-
-    headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
+    headers = '{"Host":"$host","User-Agent":"$user_agent","Date":"DATE",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
-    headers += 'X-Auth-Token:  <auth_token>}'
-    headers = headers.replace('<auth_token>', auth_token)
-    headers = headers.replace('<HOST>', CFG.host)
-    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
+    headers += '"X-Project-ID": "$project_id",'
+    headers += '"X-Auth-Token":  "InvalidToken"}'
+    headers = string.Template(headers)
 
-    return headers
+    return headers.substitute(host=CFG.host,
+                              project_id=CFG.project_id,
+                              user_agent=CFG.user_agent)
 
 
 def missing_header_fields():
-    """Returns a header with missing USER_AGENT header."""
+    """Returns a header with missing USER_AGENT & X-Project-ID."""
     auth_token = get_auth_token()
 
-    headers = '{"Host":  "<HOST>","Date":  "<DATE>",'
+    headers = '{"Host":  "$host","Date":  "DATE",'
     headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace('<auth_token>', auth_token)
-    headers = headers.replace('<HOST>', CFG.host)
+    headers += '"X-Auth-Token":  "$token"}'
+    headers = string.Template(headers)
 
-    return headers
+    return headers.substitute(host=CFG.host, token=auth_token)
 
 
 def plain_text_in_header():
     """Returns headers to be used for all Marconi requests."""
     auth_token = get_auth_token()
 
-    headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
+    headers = '{"Host":"$host","User-Agent":"$user_agent","Date":"DATE",'
     headers += '"Accept":  "text/plain","Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace('<auth_token>', auth_token)
-    headers = headers.replace('<HOST>', CFG.host)
-    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
+    headers += '"X-Project-ID": "$project_id",'
+    headers += '"X-Auth-Token":  "$token","Client-ID":  "$uuid"}'
+    headers = string.Template(headers)
 
-    return headers
+    return headers.substitute(host=CFG.host, user_agent=CFG.user_agent,
+                              project_id=CFG.project_id,
+                              token=auth_token, uuid=CFG.uuid)
 
 
 def asterisk_in_header():
     """Returns headers to be used for all Marconi requests."""
     auth_token = get_auth_token()
 
-    headers = '{"Host":"<HOST>","User-Agent":"<USER-AGENT>","Date":"<DATE>",'
+    headers = '{"Host":"$host","User-Agent":"$user_agent","Date":"DATE",'
     headers += '"Accept":  "*/*","Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "<auth_token>"}'
-    headers = headers.replace('<auth_token>', auth_token)
-    headers = headers.replace('<HOST>', CFG.host)
-    headers = headers.replace('<USER-AGENT>', CFG.user_agent)
+    headers += '"X-Project-ID": "$project_id",'
+    headers += '"X-Auth-Token":  "$token"}'
+    headers = string.Template(headers)
 
-    return headers
+    return headers.substitute(host=CFG.host, user_agent=CFG.user_agent,
+                              project_id=CFG.project_id, token=auth_token)
 
 
 def get_headers(input_header):
@@ -146,7 +146,7 @@ def get_headers(input_header):
 
 def get_custom_body(kwargs):
     """Returns a custom request body."""
-    req_body = {'data': '<DATA>'}
+    req_body = {'data': '[DATA]'}
     if 'metadatasize' in kwargs.keys():
         random_data = binascii.b2a_hex(os.urandom(kwargs['metadatasize']))
         req_body['data'] = random_data
@@ -167,24 +167,6 @@ def get_url_from_location(header):
     return url
 
 
-def verify_metadata(get_data, posted_body):
-    """TODO(malini) - Really verify the metadata."""
-    test_result_flag = False
-
-    get_data = str(get_data)
-    posted_body = str(posted_body)
-    print(get_data, type(get_data))
-    print(posted_body, type(posted_body))
-
-    if get_data in posted_body:
-        print('AYYY')
-    else:
-        test_result_flag = False
-        print('NAYYY')
-
-    return test_result_flag
-
-
 def verify_delete(url, header):
     """Verifies the DELETE was successful, with a GET on the deleted item."""
     test_result_flag = False
@@ -200,6 +182,6 @@ def verify_delete(url, header):
         print header
         print('Response Body')
         print getmsg.text
-        assert test_result_flag, 'GET Code {}'.format(getmsg.status_code)
+        print 'GET Code {}'.format(getmsg.status_code)
 
     return test_result_flag
