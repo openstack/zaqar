@@ -59,22 +59,32 @@ class TestBase(util.TestBase):
                         self.srmock)
 
     def simulate_get(self, *args, **kwargs):
+        """Simulate a GET request."""
         kwargs['method'] = 'GET'
         return self.simulate_request(*args, **kwargs)
 
+    def simulate_head(self, *args, **kwargs):
+        """Simulate a HEAD request."""
+        kwargs['method'] = 'HEAD'
+        return self.simulate_request(*args, **kwargs)
+
     def simulate_put(self, *args, **kwargs):
+        """Simulate a PUT request."""
         kwargs['method'] = 'PUT'
         return self.simulate_request(*args, **kwargs)
 
     def simulate_post(self, *args, **kwargs):
+        """Simulate a POST request."""
         kwargs['method'] = 'POST'
         return self.simulate_request(*args, **kwargs)
 
     def simulate_delete(self, *args, **kwargs):
+        """Simulate a DELETE request."""
         kwargs['method'] = 'DELETE'
         return self.simulate_request(*args, **kwargs)
 
     def simulate_patch(self, *args, **kwargs):
+        """Simulate a PATCH request."""
         kwargs['method'] = 'PATCH'
         return self.simulate_request(*args, **kwargs)
 

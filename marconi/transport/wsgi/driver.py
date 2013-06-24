@@ -21,6 +21,7 @@ import marconi.openstack.common.log as logging
 from marconi import transport
 from marconi.transport import auth
 from marconi.transport.wsgi import claims
+from marconi.transport.wsgi import health
 from marconi.transport.wsgi import messages
 from marconi.transport.wsgi import queues
 from marconi.transport.wsgi import stats
@@ -46,6 +47,11 @@ class Driver(transport.DriverBase):
     def __init__(self, storage):
         super(Driver, self).__init__(storage)
 
+        self._init_routes()
+        self._init_middleware()
+
+    def _init_routes(self):
+        """Initialize URI routes to resources."""
         self.app = falcon.API(before=_extract_project_id)
 
         queue_controller = self.storage.queue_controller
@@ -81,15 +87,24 @@ class Driver(transport.DriverBase):
         self.app.add_route('/v1/queues/{queue_name}'
                            '/claims/{claim_id}', claim_item)
 
+        # Health
+        self.app.add_route('/v1/health', health.HealthResource())
+
+    def _init_middleware(self):
+        """Initialize WSGI middlewarez."""
+
         # NOTE(flaper87): Install Auth
         if GLOBAL_CFG.auth_strategy:
             strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
             self.app = strategy.install(self.app, PROJECT_CFG.conf)
 
     def listen(self):
+        """Self-host using 'bind' and 'port' from the WSGI config group."""
+
         msg = _('Serving on host %(bind)s:%(port)s')
         msg %= {'bind': WSGI_CFG.bind, 'port': WSGI_CFG.port}
-        LOG.debug(msg)
+        LOG.info(msg)
+
         httpd = simple_server.make_server(WSGI_CFG.bind, WSGI_CFG.port,
                                           self.app)
         httpd.serve_forever()
