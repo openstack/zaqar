@@ -1,0 +1,79 @@
+# Copyright (c) 2013 Rackspace, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from marconi.storage import exceptions
+
+
+class NoResult(Exception):
+    pass
+
+
+def get_qid(driver, queue, project):
+    try:
+        return driver.get('''
+            select id from Queues
+             where project = ? and name = ?''', project, queue)[0]
+
+    except NoResult:
+        raise exceptions.QueueDoesNotExist(queue, project)
+
+
+# The utilities below make the database IDs opaque to the users
+# of Marconi API.  The only purpose is to advise the users NOT to
+# make assumptions on the implementation of and/or relationship
+# between the message IDs, the markers, and claim IDs.
+#
+# The magic numbers are arbitrarily picked; the numbers themselves
+# come with no special functionalities.
+
+def msgid_encode(id):
+    try:
+        return hex(id ^ 0x5c693a53)[2:]
+
+    except TypeError:
+        raise exceptions.MalformedID()
+
+
+def msgid_decode(id):
+    try:
+        return int(id, 16) ^ 0x5c693a53
+
+    except ValueError:
+        raise exceptions.MalformedID()
+
+
+def marker_encode(id):
+    return oct(id ^ 0x3c96a355)[1:]
+
+
+def marker_decode(id):
+    try:
+        return int(id, 8) ^ 0x3c96a355
+
+    except ValueError:
+        raise exceptions.MalformedMarker()
+
+
+def cid_encode(id):
+    return hex(id ^ 0x63c9a59c)[2:]
+
+
+def cid_decode(id):
+    try:
+        return int(id, 16) ^ 0x63c9a59c
+
+    except ValueError:
+        raise exceptions.MalformedID()

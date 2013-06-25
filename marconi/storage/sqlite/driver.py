@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import contextlib
 import sqlite3
 
@@ -22,6 +21,7 @@ import msgpack
 from marconi.common import config
 from marconi import storage
 from marconi.storage.sqlite import controllers
+from marconi.storage.sqlite import utils
 
 CFG = config.namespace('drivers:storage:sqlite').from_options(
     database=':memory:')
@@ -70,13 +70,13 @@ class Driver(storage.DriverBase):
 
         :param sql: a query string with the '?' placeholders
         :param args: the arguments to substitute the placeholders
-        :raises: _NoResult if the result set is empty
+        :raises: utils.NoResult if the result set is empty
         """
         try:
             return self.run(sql, *args).next()
 
         except StopIteration:
-            raise controllers._NoResult
+            raise utils.NoResult
 
     @property
     def affected(self):
@@ -101,12 +101,12 @@ class Driver(storage.DriverBase):
 
     @property
     def queue_controller(self):
-        return controllers.Queue(self)
+        return controllers.QueueController(self)
 
     @property
     def message_controller(self):
-        return controllers.Message(self)
+        return controllers.MessageController(self)
 
     @property
     def claim_controller(self):
-        return controllers.Claim(self)
+        return controllers.ClaimController(self)
