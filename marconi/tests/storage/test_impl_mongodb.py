@@ -255,7 +255,7 @@ class MongodbClaimTests(base.ClaimControllerTest):
                           epoch, project=self.project)
 
         claim_id, messages = self.controller.create(self.queue_name,
-                                                    {'ttl': 1},
+                                                    {'ttl': 1, 'grace': 0},
                                                     project=self.project)
 
         # Lets let it expire
