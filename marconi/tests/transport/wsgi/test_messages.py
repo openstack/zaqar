@@ -40,31 +40,24 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_delete(self.queue_path, self.project_id)
         super(MessagesBaseTest, self).tearDown()
 
-    def test_post(self):
-        doc = """
-        [
-            {"body": 239, "ttl": 10},
-            {"body": {"key": "value"}, "ttl": 20},
-            {"body": [1, 3], "ttl": 30}
-        ]
-        """
+    def _test_post(self, sample_messages):
+        sample_doc = json.dumps(sample_messages)
 
         messages_path = self.queue_path + '/messages'
         result = self.simulate_post(messages_path, self.project_id,
-                                    body=doc, headers=self.headers)
+                                    body=sample_doc, headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         result_doc = json.loads(result[0])
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
-        self.assertEquals(len(msg_ids), 3)
+        self.assertEquals(len(msg_ids), len(sample_messages))
 
         expected_resources = [unicode(messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEquals(expected_resources, result_doc['resources'])
         self.assertFalse(result_doc['partial'])
 
-        sample_messages = json.loads(doc)
         self.assertEquals(len(msg_ids), len(sample_messages))
 
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
@@ -89,7 +82,7 @@ class MessagesBaseTest(base.TestBase):
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)
-        result = self.simulate_get(self.queue_path, self.project_id,
+        result = self.simulate_get(messages_path, self.project_id,
                                    query_string=query_string)
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
@@ -97,6 +90,22 @@ class MessagesBaseTest(base.TestBase):
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in result_doc)
         self.assertFalse(expected_ttls - actual_ttls)
+
+    def test_post_single(self):
+        sample_messages = [
+            {'body': {'key': 'value'}, 'ttl': 20},
+        ]
+
+        self._test_post(sample_messages)
+
+    def test_post_multiple(self):
+        sample_messages = [
+            {'body': 239, 'ttl': 10},
+            {'body': {'key': 'value'}, 'ttl': 20},
+            {'body': [1, 3], 'ttl': 30},
+        ]
+
+        self._test_post(sample_messages)
 
     def test_post_to_mia_queue(self):
         self._post_messages('/v1/queues/nonexistent/messages')
@@ -114,8 +123,6 @@ class MessagesBaseTest(base.TestBase):
         path = self.queue_path + '/messages'
         self._post_messages(path)
 
-        # NOTE(kgriffs): This implictly tests that posting a single
-        # message returns a message resource, not a queue resource.
         msg_id = self._get_msg_id(self.srmock.headers_dict)
 
         self.simulate_get(path + '/' + msg_id, self.project_id)
@@ -136,6 +143,7 @@ class MessagesBaseTest(base.TestBase):
                                  query_string=query_string,
                                  headers=self.headers)
 
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           path + '?' + query_string)
 
@@ -196,7 +204,7 @@ class MessagesBaseTest(base.TestBase):
                            headers=self.headers)
 
     def _get_msg_id(self, headers):
-        return headers['Location'].rsplit('/', 1)[-1]
+        return self._get_msg_ids(headers)[0]
 
     def _get_msg_ids(self, headers):
         return headers['Location'].rsplit('=', 1)[-1].split(',')
