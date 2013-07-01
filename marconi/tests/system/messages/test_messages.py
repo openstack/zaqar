@@ -53,7 +53,7 @@ class TestMessages(testtools.TestCase):
         self.assertEqual(result.status_code, 200)
 
         #Compare message metadata
-        result_body = result.json()['body']
+        result_body = result.json()[0]['body']
         posted_metadata = doc[0]['body']
         self.assertEqual(result_body, posted_metadata)
 
@@ -61,7 +61,8 @@ class TestMessages(testtools.TestCase):
 
     def test_002_message_bulk_insert(self):
         """Bulk Insert Messages into the Queue."""
-        doc = msgfnlib.get_message_body(messagecount=30)
+        message_count = 30
+        doc = msgfnlib.get_message_body(messagecount=message_count)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
         result = http.post(url, self.header, doc)
 
@@ -74,8 +75,14 @@ class TestMessages(testtools.TestCase):
         self.assertEqual(result.status_code, 200)
 
         #Compare message metadata
-        result_body = result.json()['body']
-        posted_metadata = doc[0]['body']
+        result_body = [result.json()['messages'][i]['body']
+                       for i in range(len(result.json()['messages']))]
+        result_body.sort()
+
+        posted_metadata = [doc[i]['body']
+                           for i in range(message_count)]
+        posted_metadata.sort()
+
         self.assertEqual(result_body, posted_metadata)
 
     test_002_message_bulk_insert.tags = ['smoke', 'positive']
