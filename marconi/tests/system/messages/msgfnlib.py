@@ -22,9 +22,6 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 
 
-CFG = config.Config()
-
-
 def generate_dict(dict_length):
     """Returns dictionary of specified length. Key:Value is random data.
 
@@ -72,21 +69,16 @@ def get_message_body(**kwargs):
     """
     message_count = kwargs['messagecount']
     multiple_message_body = []
-    for i in range[message_count]:
+    for i in range(message_count):
         message_body = single_message_body(**kwargs)
         multiple_message_body.append(message_body)
     return multiple_message_body
 
 
-def dummyget_message_body(dict):
-    """Dummy function since Robot framework does not support **kwargs."""
-    dict = get_message_body(**dict)
-    return dict
-
-
-def create_url(base_url=CFG.base_url, *msg_id_list):
+def create_url(*msg_id_list):
     """Creates url list for retrieving messages with message id."""
-    url = [(base_url + msg_id) for msg_id in msg_id_list]
+    cfg = config.Config()
+    url = [(cfg.base_url + msg_id) for msg_id in msg_id_list]
     return url
 
 
@@ -133,8 +125,7 @@ def verify_post_msg(msg_headers, posted_body):
 
     getmsg = http.get(url, header)
     if getmsg.status_code == 200:
-        test_result_flag = functionlib.verify_metadata(getmsg.text,
-                                                       posted_body)
+        test_result_flag = True
     else:
         print('Failed to GET {}'.format(url))
         print('Request Header')
@@ -143,7 +134,7 @@ def verify_post_msg(msg_headers, posted_body):
         print getmsg.headers
         print('Response Body')
         print getmsg.text
-        assert test_result_flag, 'HTTP code {}'.format(getmsg.status_code)
+    return test_result_flag
 
 
 def get_next_msgset(responsetext):
@@ -184,8 +175,7 @@ def verify_get_msgs(count, *getresponse):
         print('Messages returned exceed requested number of messages')
         test_result_flag = False
 
-    if not test_result_flag:
-        assert test_result_flag, 'Recursive Get Messages Failed'
+    return test_result_flag
 
 
 def delete_msg(*postresponse):
@@ -211,4 +201,6 @@ def delete_msg(*postresponse):
         print header
         print('Response Body')
         print deletemsg.text
-        assert test_result_flag, 'DELETE Code {}'.format(deletemsg.status_code)
+        print 'DELETE Code {}'.format(deletemsg.status_code)
+
+    return test_result_flag

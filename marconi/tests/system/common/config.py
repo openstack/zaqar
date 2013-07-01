@@ -42,6 +42,10 @@ class Config(object):
         return self.parser.get('auth', 'password')
 
     @property
+    def auth_url(self):
+        return self.parser.get('auth', 'url')
+
+    @property
     def base_server(self):
         return self.parser.get('marconi_env', 'marconi_url')
 
@@ -50,13 +54,8 @@ class Config(object):
         return self.parser.get('marconi_env', 'marconi_version')
 
     @property
-    def tenant_id(self):
-        return self.parser.get('marconi_env', 'tenant_id')
-
-    @property
     def base_url(self):
-        return (self.base_server + '/' + self.marconi_version +
-                '/' + self.tenant_id)
+        return (self.base_server + '/' + self.marconi_version)
 
     @property
     def uuid(self):
@@ -69,3 +68,7 @@ class Config(object):
     @property
     def host(self):
         return self.parser.get('header_values', 'host')
+
+    @property
+    def project_id(self):
+        return self.parser.get('header_values', 'project_id')
