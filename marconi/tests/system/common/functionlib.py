@@ -29,10 +29,10 @@ def get_keystone_token():
     """Gets Keystone Auth token."""
     req_json = {
         'auth': {
-        'passwordCredentials': {
-        'username': CFG.username,
-        'password': CFG.password
-        }
+            'passwordCredentials': {
+                'username': CFG.username,
+                'password': CFG.password
+            },
         },
     }
 

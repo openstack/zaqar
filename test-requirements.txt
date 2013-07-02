@@ -15,6 +15,4 @@ nose-exclude
 openstack.nose_plugin
 
 # Metrics and style
-coverage
-flake8
 hacking
