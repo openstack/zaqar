@@ -118,25 +118,29 @@ class ClaimController(storage.ClaimBase):
         number of messages.
 
         This 2 queries are required because there's no way, as for the
-        time being, to executed an update on a limited number of records
+        time being, to execute an update on a limited number of records.
         """
         msg_ctrl = self.driver.message_controller
 
         # We don't need the qid here but
         # we need to verify it exists.
         qid = self._get_queue_id(queue, project)
-
-        ttl = int(metadata.get('ttl', 60))
+        ttl = metadata['ttl']
+        grace = metadata['grace']
         oid = objectid.ObjectId()
 
         now = timeutils.utcnow()
         ttl_delta = datetime.timedelta(seconds=ttl)
-        expires = now + ttl_delta
+        claim_expires = now + ttl_delta
+
+        grace_delta = datetime.timedelta(seconds=grace)
+        message_expires = claim_expires + grace_delta
+        message_ttl = ttl + grace
 
         meta = {
             'id': oid,
             't': ttl,
-            'e': expires,
+            'e': claim_expires,
         }
 
         # Get a list of active, not claimed nor expired
@@ -170,14 +174,16 @@ class ClaimController(storage.ClaimBase):
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        msg_ctrl._col.update({'q': queue,
-                              'e': {'$lt': expires},
+        new_values = {'e': message_expires, 't': message_ttl}
+        msg_ctrl._col.update({'q': qid,
+                              'e': {'$lt': message_expires},
                               'c.id': oid},
-                             {'$set': {'e': expires, 't': ttl}},
+                             {'$set': new_values},
                              upsert=False, multi=True)
 
         if updated != 0:
             claim, messages = self.get(queue, oid, project=project)
+
         return (str(oid), messages)
 
     def update(self, queue, claim_id, metadata, project=None):

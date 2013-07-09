@@ -23,7 +23,7 @@ from marconi.transport.wsgi import helpers as wsgi_helpers
 
 
 LOG = logging.getLogger(__name__)
-CLAIM_METADATA_SPEC = (('ttl', int),)
+CLAIM_METADATA_SPEC = (('ttl', int), ('grace', int))
 
 
 class CollectionResource(object):

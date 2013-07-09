@@ -100,7 +100,8 @@ class ClaimController(base.ClaimBase):
                    and qid = ?
                  limit ?''', qid, limit)
 
-            self.__update_claimed(id, metadata['ttl'])
+            messages_ttl = metadata['ttl'] + metadata['grace']
+            self.__update_claimed(id, messages_ttl)
 
             return (utils.cid_encode(id), self.__get(id))
 

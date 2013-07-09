@@ -202,7 +202,7 @@ class MessageControllerTest(ControllerBaseTest):
         _insert_fixtures(self.controller, self.queue_name,
                          project=self.project, client_uuid='my_uuid', num=12)
 
-        meta = {'ttl': 70}
+        meta = {'ttl': 70, 'grace': 60}
 
         another_cid, _ = self.claim_controller.create(self.queue_name, meta,
                                                       project=self.project)
@@ -325,7 +325,7 @@ class ClaimControllerTest(ControllerBaseTest):
         _insert_fixtures(self.message_controller, self.queue_name,
                          project=self.project, client_uuid='my_uuid', num=20)
 
-        meta = {'ttl': 70}
+        meta = {'ttl': 70, 'grace': 30}
 
         # Make sure create works
         claim_id, messages = self.controller.create(self.queue_name, meta,
@@ -351,7 +351,7 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertEquals(claim['ttl'], 70)
         self.assertEquals(claim['id'], claim_id)
 
-        new_meta = {'ttl': 100}
+        new_meta = {'ttl': 100, 'grace': 60}
         self.controller.update(self.queue_name, claim_id,
                                new_meta, project=self.project)
 
@@ -378,8 +378,66 @@ class ClaimControllerTest(ControllerBaseTest):
                           self.controller.get, self.queue_name,
                           claim_id, project=self.project)
 
+    def test_extend_lifetime(self):
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         project=self.project, client_uuid='my_uuid',
+                         num=20, ttl=120)
+
+        meta = {'ttl': 777, 'grace': 0}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        for message in messages:
+            self.assertEquals(message['age'], 0)
+            self.assertEquals(message['ttl'], 777)
+
+    def test_extend_lifetime_with_grace_1(self):
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         project=self.project, client_uuid='my_uuid',
+                         num=20, ttl=120)
+
+        meta = {'ttl': 777, 'grace': 23}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        for message in messages:
+            self.assertEquals(message['age'], 0)
+            self.assertEquals(message['ttl'], 800)
+
+    def test_extend_lifetime_with_grace_2(self):
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         project=self.project, client_uuid='my_uuid',
+                         num=20, ttl=120)
+
+        # Although ttl is less than the message's TTL, the grace
+        # period puts it just over the edge.
+        meta = {'ttl': 100, 'grace': 22}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        for message in messages:
+            self.assertEquals(message['age'], 0)
+            self.assertEquals(message['ttl'], 122)
+
+    def test_do_not_extend_lifetime(self):
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         project=self.project, client_uuid='my_uuid',
+                         num=20, ttl=120)
+
+        # Choose a ttl that is less than the message's current TTL
+        meta = {'ttl': 60, 'grace': 30}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        for message in messages:
+            self.assertEquals(message['ttl'], 120)
+
     def test_expired_claim(self):
-        meta = {'ttl': 0}
+        meta = {'ttl': 0, 'grace': 60}
 
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
@@ -404,12 +462,12 @@ class ClaimControllerTest(ControllerBaseTest):
 
 
 def _insert_fixtures(controller, queue_name, project=None,
-                     client_uuid=None, num=4):
+                     client_uuid=None, num=4, ttl=120):
 
     def messages():
         for n in xrange(num):
             yield {
-                'ttl': 120,
+                'ttl': ttl,
                 'body': {
                     'event': 'Event number %s' % n
                 }}
