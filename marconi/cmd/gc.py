@@ -14,13 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
 import random
 import sys
-import termios
 import time
 
 from marconi import bootstrap
+from marconi.common import cli
 from marconi.common import config
 from marconi.openstack.common import log as logging
 
@@ -28,34 +27,7 @@ PROJECT_CFG = config.project('marconi')
 LOG = logging.getLogger(__name__)
 
 
-def _fail(returncode, ex):
-    """Handles terminal errors.
-
-    :param returncode: process return code to pass to sys.exit
-    :param ex: the error that occurred
-    """
-
-    LOG.exception(ex)
-    sys.stderr.write('ERROR: %s\n' % ex)
-    sys.exit(returncode)
-
-
-def _enable_echo(enable):
-    """Enables or disables terminal echo.
-
-    :param enable: pass True to enable echo, False to disable
-    """
-
-    fd = sys.stdin.fileno()
-    new = termios.tcgetattr(fd)
-    if enable:
-        new[3] |= termios.ECHO
-    else:
-        new[3] &= ~termios.ECHO
-
-    termios.tcsetattr(fd, termios.TCSANOW, new)
-
-
+@cli.runnable
 def run():
     """Entry point to start marconi-gc.
 
@@ -66,13 +38,7 @@ def run():
           or interrupted.
     """
 
-    atexit.register(_enable_echo, True)
-    _enable_echo(False)
-
     try:
-        logging.setup('marconi')
-        PROJECT_CFG.load(args=sys.argv[1:])
-
         info = _('Starting marconi-gc')
         print(info + _('. Use CTRL+C to exit...\n'))
         LOG.info(info)
@@ -95,9 +61,3 @@ def run():
 
         LOG.exception(ex)
         print('')
-
-    except KeyboardInterrupt:
-        LOG.info('Terminating marconi-gc')
-
-    except Exception as ex:
-        _fail(1, ex)

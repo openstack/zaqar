@@ -16,18 +16,10 @@
 import sys
 
 from marconi import bootstrap
+from marconi.common import cli
 
 
-def fail(returncode, e):
-    sys.stderr.write('ERROR: %s\n' % e)
-    sys.exit(returncode)
-
-
+@cli.runnable
 def run():
-    try:
-        server = bootstrap.Bootstrap(cli_args=sys.argv[1:])
-        server.run()
-    except KeyboardInterrupt:
-        fail(1, '... terminating marconi')
-    except RuntimeError as e:
-        fail(1, e)
+    server = bootstrap.Bootstrap(cli_args=sys.argv[1:])
+    server.run()
