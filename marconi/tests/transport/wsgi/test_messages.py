@@ -127,6 +127,15 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_get(path + '/' + msg_id, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+    def test_bulk_delete(self):
+        query_string = 'ids=1,2'
+        self.simulate_delete(self.queue_path, self.project_id,
+                             query_string=query_string)
+
+        # Bulk delete not supported, the filter is ignored unless
+        # the request is a GET request.
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
     def test_list(self):
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=10)
