@@ -14,6 +14,12 @@
 # limitations under the License.
 
 
+class ConnectionError(Exception):
+    """Raised when the connection with the back-end
+    was lost.
+    """
+
+
 class DoesNotExist(Exception):
     pass
 

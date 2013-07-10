@@ -14,18 +14,23 @@
 # limitations under the License.
 
 import collections
+import functools
 import random
 import re
 
 from bson import errors as berrors
 from bson import objectid
+from pymongo import errors
 
 from marconi.common import exceptions
+import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.storage import exceptions as storage_exceptions
 
 
 DUP_MARKER_REGEX = re.compile(r'\$queue_marker\s+dup key: { : [^:]+: (\d)+')
+
+LOG = logging.getLogger(__name__)
 
 
 def dup_marker_from_error(error_message):
@@ -135,6 +140,25 @@ def oid_utc(oid):
         raise TypeError(_('Expected ObjectId and got %s') % type(oid))
 
 
+def raises_conn_error(func):
+    """Handles mongodb ConnectionFailure error
+
+    This decorator catches mongodb's ConnectionFailure
+    exceptions and raises Marconi's ConnectionError instead.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except errors.ConnectionFailure:
+            # NOTE(flaper87): Raise the error
+            msg = "ConnectionFailure caught"
+            LOG.error(msg)
+            raise storage_exceptions.ConnectionError(msg)
+    return wrapper
+
+
 class HookedCursor(object):
 
     def __init__(self, cursor, denormalizer):
@@ -150,6 +174,7 @@ class HookedCursor(object):
     def __len__(self):
         return self.cursor.count(True)
 
+    @raises_conn_error
     def next(self):
         item = self.cursor.next()
         return self.denormalizer(item)

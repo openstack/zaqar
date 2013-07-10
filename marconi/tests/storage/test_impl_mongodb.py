@@ -17,6 +17,9 @@ import os
 import random
 import time
 
+import mock
+from pymongo import cursor
+import pymongo.errors
 from testtools import matchers
 
 from marconi.common import exceptions
@@ -126,6 +129,15 @@ class MongodbQueueTests(base.QueueControllerTest):
         self.controller.delete(queue_name)
         col = self.message_controller._col
         self.assertEqual(col.find({'q': qid}).count(), 0)
+
+    def test_raises_connection_error(self):
+
+        with mock.patch.object(cursor.Cursor, 'next', autospec=True) as method:
+            error = pymongo.errors.ConnectionFailure()
+            method.side_effect = error
+
+            queues = self.controller.list().next()
+            self.assertRaises(storage.exceptions.ConnectionError, queues.next)
 
 
 class MongodbMessageTests(base.MessageControllerTest):

@@ -60,6 +60,7 @@ class ClaimController(storage.ClaimBase):
         queue_controller = self.driver.queue_controller
         return queue_controller._get_id(queue, project)
 
+    @utils.raises_conn_error
     def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
 
@@ -102,6 +103,7 @@ class ClaimController(storage.ClaimBase):
 
         return (claim, messages)
 
+    @utils.raises_conn_error
     def create(self, queue, metadata, project=None, limit=10):
         """Creates a claim.
 
@@ -186,6 +188,7 @@ class ClaimController(storage.ClaimBase):
 
         return (str(oid), messages)
 
+    @utils.raises_conn_error
     def update(self, queue, claim_id, metadata, project=None):
         try:
             cid = utils.to_oid(claim_id)
@@ -231,6 +234,7 @@ class ClaimController(storage.ClaimBase):
                              {'$set': {'e': expires, 't': ttl}},
                              upsert=False, multi=True)
 
+    @utils.raises_conn_error
     def delete(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
         msg_ctrl.unclaim(claim_id)

@@ -24,6 +24,7 @@ Field Mappings:
 import marconi.openstack.common.log as logging
 from marconi import storage
 from marconi.storage import exceptions
+from marconi.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -94,21 +95,22 @@ class QueueController(storage.QueueBase):
         cursor = cursor.limit(limit).sort('n')
         marker_name = {}
 
-        def normalizer(records):
-            for rec in records:
-                queue = {'name': rec['n']}
-                marker_name['next'] = queue['name']
-                if detailed:
-                    queue['metadata'] = rec['m']
-                yield queue
+        def normalizer(record):
+            queue = {'name': record['n']}
+            marker_name['next'] = queue['name']
+            if detailed:
+                queue['metadata'] = record['m']
+            return queue
 
-        yield normalizer(cursor)
-        yield marker_name['next']
+        yield utils.HookedCursor(cursor, normalizer)
+        yield marker_name and marker_name['next']
 
+    @utils.raises_conn_error
     def get(self, name, project=None):
         queue = self._get(name, project)
         return queue.get('m', {})
 
+    @utils.raises_conn_error
     def upsert(self, name, metadata, project=None):
         super(QueueController, self).upsert(name, metadata, project)
 
@@ -120,10 +122,12 @@ class QueueController(storage.QueueBase):
 
         return not rst['updatedExisting']
 
+    @utils.raises_conn_error
     def delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
         self._col.remove({'p': project, 'n': name})
 
+    @utils.raises_conn_error
     def stats(self, name, project=None):
         queue_id = self._get_id(name, project)
         controller = self.driver.message_controller
@@ -138,5 +142,6 @@ class QueueController(storage.QueueBase):
             }
         }
 
+    @utils.raises_conn_error
     def actions(self, name, project=None, marker=None, limit=10):
         raise NotImplementedError

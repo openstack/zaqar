@@ -365,6 +365,7 @@ class MessageController(storage.MessageBase):
         yield utils.HookedCursor(messages, denormalizer)
         yield str(marker_id['next'])
 
+    @utils.raises_conn_error
     def get(self, queue, message_ids, project=None):
         if not isinstance(message_ids, list):
             message_ids = [message_ids]
@@ -394,6 +395,7 @@ class MessageController(storage.MessageBase):
 
         return utils.HookedCursor(messages, denormalizer)
 
+    @utils.raises_conn_error
     def post(self, queue, messages, client_uuid, project=None):
         now = timeutils.utcnow()
         queue_id = self._get_queue_id(queue, project)
@@ -523,6 +525,7 @@ class MessageController(storage.MessageBase):
         succeeded_ids = map(str, aggregated_results)
         raise exceptions.MessageConflict(queue, project, succeeded_ids)
 
+    @utils.raises_conn_error
     def delete(self, queue, message_id, project=None, claim=None):
         try:
             mid = utils.to_oid(message_id)

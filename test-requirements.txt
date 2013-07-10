@@ -1,10 +1,10 @@
 # Packaging
+mock
 distribute>=0.6.24
 
 # Unit testing
 discover
 fixtures
-mox
 python-subunit
 testrepository
 testtools
