@@ -18,7 +18,7 @@ Running a local Marconi server with MongoDB
 4. cd to your local copy of the repo
 5. Copy the Marconi config files to the directory **~/.marconi**::
 
-    cp -r marconi/etc/*.conf-sample ~/.marconi
+    cp -r marconi/etc/*.conf-sample ~/.marconi/marconi.conf
 
 6. Find the ``[drivers:storage:mongodb]`` section in **~/.marconi/marconi.conf** and modify the URI to point to your local mongod instance::
 
