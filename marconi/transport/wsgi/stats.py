@@ -16,7 +16,9 @@
 import falcon
 
 import marconi.openstack.common.log as logging
+from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import helpers
+from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -38,8 +40,10 @@ class Resource(object):
             resp.body = helpers.to_json(resp_dict)
             resp.status = falcon.HTTP_200
 
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
+
         except Exception as ex:
             LOG.exception(ex)
-            title = _('Service temporarily unavailable')
-            msg = _('Please try again in a few seconds.')
-            raise falcon.HTTPServiceUnavailable(title, msg, 30)
+            description = _('Queue stats could not be read.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
