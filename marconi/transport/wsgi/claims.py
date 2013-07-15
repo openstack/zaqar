@@ -23,7 +23,8 @@ from marconi.transport.wsgi import helpers as wsgi_helpers
 
 
 LOG = logging.getLogger(__name__)
-CLAIM_METADATA_SPEC = (('ttl', int), ('grace', int))
+CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
+CLAIM_PATCH_SPEC = (('ttl', int),)
 
 
 class CollectionResource(object):
@@ -41,7 +42,7 @@ class CollectionResource(object):
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
-                                               CLAIM_METADATA_SPEC)
+                                               CLAIM_POST_SPEC)
 
         # Claim some messages
         try:
@@ -121,7 +122,7 @@ class ItemResource(object):
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
-                                               CLAIM_METADATA_SPEC)
+                                               CLAIM_PATCH_SPEC)
 
         try:
             self.claim_controller.update(queue_name,

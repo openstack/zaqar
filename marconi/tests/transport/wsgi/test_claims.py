@@ -102,8 +102,8 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
         # Update the claim
-        new_claim = '{"ttl": 60, "grace": 60}'
-        self.simulate_patch(claim_href, self.project_id, body=new_claim)
+        new_claim_ttl = '{"ttl": 60}'
+        self.simulate_patch(claim_href, self.project_id, body=new_claim_ttl)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Get the claimed messages (again)
@@ -180,8 +180,8 @@ class ClaimsFaultyDriverTests(base.TestBaseFaulty):
         self.simulate_get(claims_path + '/nichts', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
-        self.simulate_patch(claims_path, project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_405)
+        self.simulate_patch(claims_path + '/nichts', project_id, body=doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_delete(claims_path + '/foo', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
