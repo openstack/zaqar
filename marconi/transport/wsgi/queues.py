@@ -136,7 +136,7 @@ class CollectionResource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Buffer list of queues
-        queues = list(results.next())
+        queues = list(next(results))
 
         # Check for an empty list
         if len(queues) == 0:
@@ -144,7 +144,7 @@ class CollectionResource(object):
             return
 
         # Got some. Prepare the response.
-        kwargs['marker'] = results.next()
+        kwargs['marker'] = next(results)
         for each_queue in queues:
             each_queue['href'] = req.path + '/' + each_queue['name']
 

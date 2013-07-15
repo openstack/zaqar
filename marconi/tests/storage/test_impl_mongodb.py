@@ -136,7 +136,7 @@ class MongodbQueueTests(base.QueueControllerTest):
             error = pymongo.errors.ConnectionFailure()
             method.side_effect = error
 
-            queues = self.controller.list().next()
+            queues = next(self.controller.list())
             self.assertRaises(storage.exceptions.ConnectionError, queues.next)
 
 

@@ -54,7 +54,7 @@ class QueueControllerTest(ControllerBaseTest):
 
         interaction = self.controller.list(project=self.project,
                                            detailed=True)
-        queues = list(interaction.next())
+        queues = list(next(interaction))
 
         self.assertEquals(all(map(lambda queue:
                                   'name' in queue and
@@ -62,8 +62,8 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertEquals(len(queues), 10)
 
         interaction = self.controller.list(project=self.project,
-                                           marker=interaction.next())
-        queues = list(interaction.next())
+                                           marker=next(interaction))
+        queues = list(next(interaction))
 
         self.assertEquals(all(map(lambda queue:
                                   'name' in queue and
@@ -164,7 +164,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         def load_messages(expected, *args, **kwargs):
             interaction = self.controller.list(*args, **kwargs)
-            msgs = list(interaction.next())
+            msgs = list(next(interaction))
             self.assertEqual(len(msgs), expected)
             return interaction
 
@@ -183,7 +183,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, project=self.project,
-                      marker=interaction.next(), client_uuid='my_uuid')
+                      marker=next(interaction), client_uuid='my_uuid')
 
     def test_get_multi_by_id(self):
         messages_in = [{'ttl': 120, 'body': 0}, {'ttl': 240, 'body': 1}]
@@ -221,8 +221,9 @@ class MessageControllerTest(ControllerBaseTest):
                                claim=cid)
 
         with testing.expect(StopIteration):
-            self.controller.get(self.queue_name, msg1['id'],
-                                project=self.project).next()
+            result = self.controller.get(self.queue_name, msg1['id'],
+                                         project=self.project)
+            next(result)
 
         # Make sure such a deletion is idempotent
         self.controller.delete(self.queue_name, msg1['id'],
@@ -246,8 +247,10 @@ class MessageControllerTest(ControllerBaseTest):
                                        client_uuid='my_uuid')
 
         with testing.expect(StopIteration):
-            self.controller.get(self.queue_name, msgid,
-                                project=self.project).next()
+            result = self.controller.get(self.queue_name, msgid,
+                                         project=self.project)
+
+            next(result)
 
         countof = self.queue_controller.stats(self.queue_name,
                                               project=self.project)
@@ -271,7 +274,8 @@ class MessageControllerTest(ControllerBaseTest):
             self.controller.delete(queue, bad_message_id, project)
 
         with testing.expect(exceptions.MalformedID):
-            self.controller.get(queue, bad_message_id, project).next()
+            result = self.controller.get(queue, bad_message_id, project)
+            next(result)
 
     def test_bad_claim_id(self):
         self.queue_controller.upsert('unused', {}, '480924')

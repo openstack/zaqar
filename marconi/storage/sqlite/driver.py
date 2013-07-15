@@ -73,7 +73,7 @@ class Driver(storage.DriverBase):
         :raises: utils.NoResult if the result set is empty
         """
         try:
-            return self.run(sql, *args).next()
+            return next(self.run(sql, *args))
 
         except StopIteration:
             raise utils.NoResult

@@ -82,7 +82,7 @@ class CollectionResource(object):
                 **kwargs)
 
             # Buffer messages
-            cursor = results.next()
+            cursor = next(results)
             messages = list(cursor)
 
         except storage_exceptions.DoesNotExist:
@@ -108,7 +108,7 @@ class CollectionResource(object):
             return None
 
         # Found some messages, so prepare the response
-        kwargs['marker'] = results.next()
+        kwargs['marker'] = next(results)
         for each_message in messages:
             each_message['href'] = req.path + '/' + each_message['id']
             del each_message['id']
@@ -139,7 +139,7 @@ class CollectionResource(object):
 
         # Verify that at least one message was provided.
         try:
-            first_message = messages.next()
+            first_message = next(messages)
         except StopIteration:
             description = _('No messages were provided.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
@@ -212,10 +212,12 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         try:
-            message = self.message_controller.get(
+            messages = self.message_controller.get(
                 queue_name,
                 message_id,
-                project=project_id).next()
+                project=project_id)
+
+            message = next(messages)
 
         except StopIteration:
             # Good project_id and queue, but no messages

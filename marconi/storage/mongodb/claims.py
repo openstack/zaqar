@@ -78,7 +78,7 @@ class ClaimController(storage.ClaimBase):
         age = now - utils.oid_utc(cid)
 
         def messages(msg_iter):
-            msg = msg_iter.next()
+            msg = next(msg_iter)
             yield msg.pop('claim')
             yield msg
 
@@ -92,7 +92,7 @@ class ClaimController(storage.ClaimBase):
             # from the first message
             # in the iterator
             messages = messages(msg_ctrl.claimed(qid, cid, now))
-            claim = messages.next()
+            claim = next(messages)
             claim = {
                 'age': age.seconds,
                 'ttl': claim.pop('t'),
@@ -210,7 +210,7 @@ class ClaimController(storage.ClaimBase):
         claimed = msg_ctrl.claimed(qid, cid, expires=now, limit=1)
 
         try:
-            claimed.next()
+            next(claimed)
         except StopIteration:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 

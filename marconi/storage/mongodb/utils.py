@@ -176,5 +176,5 @@ class HookedCursor(object):
 
     @raises_conn_error
     def next(self):
-        item = self.cursor.next()
+        item = next(self.cursor)
         return self.denormalizer(item)
