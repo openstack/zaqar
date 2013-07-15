@@ -33,6 +33,10 @@ class QueueLifecycleBaseTest(base.TestBase):
         path = '/v1/queues/gumshoe'
 
         for project_id in ('480924', 'foo', '', None):
+            # Stats
+            self.simulate_get(path + '/stats', project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
             # Create
             doc = '{"messages": {"ttl": 600}}'
             self.simulate_put(path, project_id, body=doc)
