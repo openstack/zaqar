@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.tests import util as testing
@@ -389,7 +388,6 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['age'], 0)
             self.assertEquals(message['ttl'], 777)
 
     def test_extend_lifetime_with_grace_1(self):
@@ -403,7 +401,6 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['age'], 0)
             self.assertEquals(message['ttl'], 800)
 
     def test_extend_lifetime_with_grace_2(self):
@@ -419,7 +416,6 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['age'], 0)
             self.assertEquals(message['ttl'], 122)
 
     def test_do_not_extend_lifetime(self):

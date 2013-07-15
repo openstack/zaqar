@@ -35,6 +35,98 @@ class CollectionResource(object):
     def __init__(self, message_controller):
         self.message_controller = message_controller
 
+    #-----------------------------------------------------------------------
+    # Helpers
+    #-----------------------------------------------------------------------
+
+    def _get_by_id(self, base_path, project_id, queue_name, ids):
+        """Returns one or more messages from the queue by ID."""
+        try:
+            messages = self.message_controller.get(
+                queue_name,
+                ids,
+                project=project_id)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _('Message could not be retrieved.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        # Prepare response
+        messages = list(messages)
+        if not messages:
+            raise falcon.HTTPNotFound()
+
+        base_path += '/'
+        for each_message in messages:
+            each_message['href'] = base_path + each_message['id']
+            del each_message['id']
+
+        return messages
+
+    def _get(self, req, project_id, queue_name):
+        uuid = req.get_header('Client-ID', required=True)
+
+        # TODO(kgriffs): Optimize
+        kwargs = helpers.purge({
+            'marker': req.get_param('marker'),
+            'limit': req.get_param_as_int('limit'),
+            'echo': req.get_param_as_bool('echo'),
+        })
+
+        try:
+            results = self.message_controller.list(
+                queue_name,
+                project=project_id,
+                client_uuid=uuid,
+                **kwargs)
+
+            # Buffer messages
+            cursor = results.next()
+            messages = list(cursor)
+
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
+
+        except storage_exceptions.MalformedMarker:
+            title = _('Invalid query string parameter')
+            description = _('The value for the query string '
+                            'parameter "marker" could not be '
+                            'parsed. We recommend using the '
+                            '"next" URI from a previous '
+                            'request directly, rather than '
+                            'constructing the URI manually. ')
+
+            raise falcon.HTTPBadRequest(title, description)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _('Messages could not be listed.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        if not messages:
+            return None
+
+        # Found some messages, so prepare the response
+        kwargs['marker'] = results.next()
+        for each_message in messages:
+            each_message['href'] = req.path + '/' + each_message['id']
+            del each_message['id']
+
+        return {
+            'messages': messages,
+            'links': [
+                {
+                    'rel': 'next',
+                    'href': req.path + falcon.to_query_str(kwargs)
+                }
+            ]
+        }
+
+    #-----------------------------------------------------------------------
+    # Interface
+    #-----------------------------------------------------------------------
+
     def on_post(self, req, resp, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
@@ -87,81 +179,28 @@ class CollectionResource(object):
         # Prepare the response
         resp.status = falcon.HTTP_201
 
-        if len(message_ids) == 1:
-            base_path = req.path[0:req.path.rfind('/')]
-            resp.location = base_path + '/' + message_ids[0]
-        else:
-            ids_value = ','.join(message_ids)
-            resp.location = req.path + '?ids=' + ids_value
+        ids_value = ','.join(message_ids)
+        resp.location = req.path + '?ids=' + ids_value
 
         hrefs = [req.path + '/' + id for id in message_ids]
         body = {'resources': hrefs, 'partial': partial}
         resp.body = helpers.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
-        uuid = req.get_header('Client-ID', required=True)
-
-        # TODO(kgriffs): Optimize
-        kwargs = helpers.purge({
-            'marker': req.get_param('marker'),
-            'limit': req.get_param_as_int('limit'),
-            'echo': req.get_param_as_bool('echo'),
-        })
-
-        try:
-            results = self.message_controller.list(
-                queue_name,
-                project=project_id,
-                client_uuid=uuid,
-                **kwargs)
-
-            # Buffer messages
-            cursor = results.next()
-            messages = list(cursor)
-
-        except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound()
-
-        except storage_exceptions.MalformedMarker:
-            title = _('Invalid query string parameter')
-            description = _('The value for the query string '
-                            'parameter "marker" could not be '
-                            'parsed. We recommend using the '
-                            '"next" URI from a previous '
-                            'request directly, rather than '
-                            'constructing the URI manually. ')
-
-            raise falcon.HTTPBadRequest(title, description)
-
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Messages could not be listed.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        # Check for no content
-        if len(messages) == 0:
-            resp.status = falcon.HTTP_204
-            return
-
-        # Found some messages, so prepare the response
-        kwargs['marker'] = results.next()
-        for each_message in messages:
-            each_message['href'] = req.path + '/' + each_message['id']
-            del each_message['id']
-
-        response_body = {
-            'messages': messages,
-            'links': [
-                {
-                    'rel': 'next',
-                    'href': req.path + falcon.to_query_str(kwargs)
-                }
-            ]
-        }
-
         resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(response_body)
-        resp.status = falcon.HTTP_200
+
+        ids = req.get_param_as_list('ids')
+        if ids is None:
+            response = self._get(req, project_id, queue_name)
+
+            if response is None:
+                resp.status = falcon.HTTP_204
+                return
+        else:
+            base_path = req.path + '/messages'
+            response = self._get_by_id(base_path, project_id, queue_name, ids)
+
+        resp.body = helpers.to_json(response)
 
 
 class ItemResource(object):

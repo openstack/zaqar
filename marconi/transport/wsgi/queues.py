@@ -48,31 +48,6 @@ class ItemResource(object):
             description = _('Queue metdata could not be retrieved.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
-    def _get_messages_by_id(self, base_path, project_id, queue_name, ids):
-        """Returns one or more messages from the queue by ID."""
-        try:
-            messages = self.message_controller.get(
-                queue_name,
-                ids,
-                project=project_id)
-
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Message could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        # Prepare response
-        messages = list(messages)
-        if not messages:
-            raise falcon.HTTPNotFound()
-
-        base_path += '/'
-        for each_message in messages:
-            each_message['href'] = base_path + each_message['id']
-            del each_message['id']
-
-        return messages
-
     #-----------------------------------------------------------------------
     # Interface
     #-----------------------------------------------------------------------
