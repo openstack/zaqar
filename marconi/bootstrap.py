@@ -50,7 +50,8 @@ class Bootstrap(object):
                                        invoke_on_load=True)
             return mgr.driver
         except RuntimeError as exc:
-                raise exceptions.InvalidDriver(exc)
+            LOG.exception(exc)
+            raise exceptions.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
@@ -62,7 +63,8 @@ class Bootstrap(object):
                                        invoke_args=[self.storage])
             return mgr.driver
         except RuntimeError as exc:
-                raise exceptions.InvalidDriver(exc)
+            LOG.exception(exc)
+            raise exceptions.InvalidDriver(exc)
 
     def run(self):
         self.transport.listen()
