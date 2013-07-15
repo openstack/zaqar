@@ -112,35 +112,6 @@ def verify_query_msgs(querymsgs, msg_list):
     return test_result_flag
 
 
-def patch_claim(*claim_response):
-    """Patches a claim & verifies the results.
-
-    Extracts claim id from the POST response input & updates the claim.
-    If PATCH claim succeeds, verifies that the claim TTL is extended.
-    :param *claim_response: [headers, body] returned for the original claim
-    """
-    test_result_flag = False
-
-    headers = claim_response[0]
-    location = headers['Location']
-    url = functionlib.create_url_from_appender(location)
-    header = functionlib.create_marconi_headers()
-
-    ttl_value = 300
-    payload = '{"ttl": ttlvalue }'
-    payload = payload.replace('ttlvalue', str(ttl_value))
-
-    patch_response = http.patch(url, header, body=payload)
-    if patch_response.status_code == 204:
-        test_result_flag = verify_patch_claim(url, header, ttl_value)
-    else:
-        print 'Patch HTTP Response code: {}'.format(patch_response.status_code)
-        print patch_response.headers
-        print patch_response.text
-
-    return test_result_flag
-
-
 def verify_patch_claim(url, header, ttl_extended):
     """Verifies if patch claim was successful.
 

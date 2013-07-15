@@ -117,14 +117,21 @@ class TestClaims(testtools.TestCase):
         """Update Claim."""
         #Test Setup - Post Claim
         url = self.cfg.base_url + '/queues/claimtestqueue/claims'
-        doc = '{"ttl": 300, "grace": 100}'
+        doc = '{"ttl": 300, "grace": 400}'
 
         result = http.post(url, self.header, doc)
         self.assertEqual(result.status_code, 200)
 
-        #Update Claim & Verify the patch
-        test_result_flag = claimfnlib.patch_claim(
-            result.headers, result.text)
+        #Patch Claim
+        claim_location = result.headers['Location']
+        url = self.cfg.base_server + claim_location
+        doc_updated = '{"ttl": 300}'
+
+        result = http.patch(url, self.header, doc_updated)
+        self.assertEqual(result.status_code, 204)
+
+        test_result_flag = claimfnlib.verify_patch_claim(url,
+                                                         self.header, 300)
         self.assertEqual(test_result_flag, True)
 
     test_005_claim_patch.tags = ['smoke', 'positive']
@@ -161,7 +168,7 @@ class TestClaims(testtools.TestCase):
         url = self.cfg.base_server + location
 
         #Update Expired Claim.
-        doc = '{"ttl": 300, "grace": 100}'
+        doc = '{"ttl": 300}'
         result = http.patch(url, self.header, doc)
         self.assertEqual(result.status_code, 404)
 
@@ -186,13 +193,19 @@ class TestClaims(testtools.TestCase):
 
         time.sleep(2)
 
-        #Create url, using message location from claim response.
+        #Get Claim & Message Locations.
+        claim_location = result.headers['Location']
         message_location = result.json()[0]['href']
-        url = self.cfg.base_server + message_location
 
         #Delete message with expired claim ID
+        url = self.cfg.base_server + message_location
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 403)
+
+        #Delete Expired Claim.
+        url = self.cfg.base_server + claim_location
+        result = http.delete(url, self.header)
+        self.assertEqual(result.status_code, 204)
 
     test_008_claim_expired_delete_message.tags = ['smoke', 'positive']
 
