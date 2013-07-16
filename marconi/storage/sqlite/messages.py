@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+import six
+
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
@@ -41,7 +43,7 @@ class MessageController(base.MessageBase):
         if project is None:
             project = ''
 
-        if not isinstance(message_ids, list):
+        if isinstance(message_ids, six.string_types):
             message_ids = [message_ids]
 
         message_ids = ["'%s'" % utils.msgid_decode(id) for id in message_ids]

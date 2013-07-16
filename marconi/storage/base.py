@@ -188,8 +188,8 @@ class MessageBase(ControllerBase):
         :param queue: Name of the queue to get the
             message from.
         :param project: Project id
-        :param message_ids: One or more message IDs. Can be a single
-            string ID or a list of IDs.
+        :param message_ids: One message ID or a
+            sequence of message IDs.
 
         :returns: An iterable, yielding dicts containing message details
         :raises: DoesNotExist
