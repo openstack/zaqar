@@ -26,6 +26,7 @@ import datetime
 import time
 
 import pymongo.errors
+import six
 
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
@@ -367,7 +368,7 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def get(self, queue, message_ids, project=None):
-        if not isinstance(message_ids, list):
+        if isinstance(message_ids, six.string_types):
             message_ids = [message_ids]
 
         message_ids = [utils.to_oid(id) for id in message_ids]
