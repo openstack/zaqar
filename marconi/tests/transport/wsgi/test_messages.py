@@ -143,6 +143,36 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_get(path + '/' + msg_id, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+        # Safe to delete non-existing ones
+        self.simulate_delete(path + '/' + msg_id, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+    def test_bulk_delete(self):
+        path = self.queue_path + '/messages'
+        self._post_messages(path, repeat=5)
+        [target, params] = self.srmock.headers_dict['Location'].split('?')
+
+        # Deleting the whole collection is denied
+        self.simulate_delete(path, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_delete(target, self.project_id, query_string=params)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_get(target, self.project_id, query_string=params)
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+        # Safe to delete non-existing ones
+        self.simulate_delete(target, self.project_id, query_string=params)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Even after the queue is gone
+        self.simulate_delete(self.queue_path, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_delete(target, self.project_id, query_string=params)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
     def test_list(self):
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=10)
