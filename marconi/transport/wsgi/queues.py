@@ -33,25 +33,6 @@ class ItemResource(object):
         self.queue_controller = queue_controller
         self.message_controller = message_controller
 
-    #-----------------------------------------------------------------------
-    # Helpers
-    #-----------------------------------------------------------------------
-
-    def _get_metadata(self, project_id, queue_name):
-        """Returns non-serialized queue metadata."""
-        try:
-            return self.queue_controller.get(queue_name, project=project_id)
-        except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound()
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Queue metdata could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-    #-----------------------------------------------------------------------
-    # Interface
-    #-----------------------------------------------------------------------
-
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(_("Queue item PUT - queue: %(queue)s, "
                     "project: %(project)s") %
@@ -96,16 +77,21 @@ class ItemResource(object):
         LOG.debug(_("Queue item GET - queue: %(queue)s, "
                     "project: %(project)s") %
                   {"queue": queue_name, "project": project_id})
-        message_ids = req.get_param_as_list('ids')
-        if message_ids is None:
-            doc = self._get_metadata(project_id, queue_name)
-        else:
-            base_path = req.path + '/messages'
-            doc = self._get_messages_by_id(base_path, project_id, queue_name,
-                                           message_ids)
 
-        resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(doc)
+        try:
+            doc = self.queue_controller.get(queue_name, project=project_id)
+
+        except storage_exceptions.DoesNotExist:
+            raise falcon.HTTPNotFound()
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _('Queue metadata could not be retrieved.')
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        else:
+            resp.content_location = req.relative_uri
+            resp.body = helpers.to_json(doc)
 
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(_("Queue item DELETE - queue: %(queue)s, "
