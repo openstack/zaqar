@@ -140,6 +140,19 @@ def oid_utc(oid):
         raise TypeError('Expected ObjectId and got %s' % type(oid))
 
 
+def stat_message(message, now):
+    """Creates a stat document from the given message, relative to now."""
+    oid = message['_id']
+    created = oid_utc(oid)
+    age = timeutils.delta_seconds(created, now)
+
+    return {
+        'id': str(oid),
+        'age': int(age),
+        'created': timeutils.isotime(created),
+    }
+
+
 def raises_conn_error(func):
     """Handles mongodb ConnectionFailure error
 
@@ -156,6 +169,7 @@ def raises_conn_error(func):
             msg = "ConnectionFailure caught"
             LOG.error(msg)
             raise storage_exceptions.ConnectionError(msg)
+
     return wrapper
 
 

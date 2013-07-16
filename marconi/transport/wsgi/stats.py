@@ -36,6 +36,19 @@ class Resource(object):
             resp_dict = self.queue_ctrl.stats(queue_name,
                                               project=project_id)
 
+            message_stats = resp_dict['messages']
+
+            if message_stats['total'] != 0:
+                base_path = req.path[:req.path.rindex('/')] + '/messages/'
+
+                newest = message_stats['newest']
+                newest['href'] = base_path + newest['id']
+                del newest['id']
+
+                oldest = message_stats['oldest']
+                oldest['href'] = base_path + oldest['id']
+                del oldest['id']
+
             resp.content_location = req.path
             resp.body = helpers.to_json(resp_dict)
             resp.status = falcon.HTTP_200

@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
+from testtools import matchers
+
+from marconi.openstack.common import timeutils
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.tests import util as testing
@@ -46,6 +51,10 @@ class QueueControllerTest(ControllerBaseTest):
         super(QueueControllerTest, self).setUp()
         self.message_controller = self.driver.message_controller
         self.claim_controller = self.driver.claim_controller
+
+    def tearDown(self):
+        timeutils.clear_time_override()
+        super(QueueControllerTest, self).tearDown()
 
     def test_list(self):
         num = 15
@@ -98,10 +107,45 @@ class QueueControllerTest(ControllerBaseTest):
 
         # Test Queue Statistic
         _insert_fixtures(self.message_controller, 'test',
-                         project=self.project, client_uuid='my_uuid', num=12)
+                         project=self.project, client_uuid='my_uuid',
+                         num=6)
 
-        countof = self.controller.stats('test', project=self.project)
-        self.assertEqual(countof['messages']['free'], 12)
+        # NOTE(kgriffs): We can't get around doing this, because
+        # we don't know how the storage drive may be calculating
+        # message timestamps (and may not be monkey-patchable).
+        time.sleep(1)
+
+        _insert_fixtures(self.message_controller, 'test',
+                         project=self.project, client_uuid='my_uuid',
+                         num=6)
+
+        stats = self.controller.stats('test', project=self.project)
+        message_stats = stats['messages']
+
+        self.assertEqual(message_stats['free'], 12)
+        self.assertEqual(message_stats['claimed'], 0)
+        self.assertEqual(message_stats['total'], 12)
+
+        oldest = message_stats['oldest']
+        newest = message_stats['newest']
+
+        self.assertNotEqual(oldest, newest)
+
+        # NOTE(kgriffs): Ensure "now" is different enough
+        # for the next comparison to work.
+        timeutils.set_time_override()
+        timeutils.advance_time_seconds(10)
+
+        for message_stat in (oldest, newest):
+            created_iso = message_stat['created']
+            created = timeutils.parse_isotime(created_iso)
+            self.assertThat(timeutils.normalize_time(created),
+                            matchers.LessThan(timeutils.utcnow()))
+
+            self.assertIn('id', message_stat)
+
+        self.assertThat(oldest['created'],
+                        matchers.LessThan(newest['created']))
 
         # Test Queue Deletion
         self.controller.delete('test', project=self.project)
@@ -115,6 +159,20 @@ class QueueControllerTest(ControllerBaseTest):
 
         with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.set_metadata('test', '{}', project=self.project)
+
+    def test_stats_for_empty_queue(self):
+        created = self.controller.create('test', project=self.project)
+        self.assertTrue(created)
+
+        stats = self.controller.stats('test', project=self.project)
+        message_stats = stats['messages']
+
+        self.assertEqual(message_stats['free'], 0)
+        self.assertEqual(message_stats['claimed'], 0)
+        self.assertEqual(message_stats['total'], 0)
+
+        self.assertNotIn('newest', message_stats)
+        self.assertNotIn('oldest', message_stats)
 
 
 class MessageControllerTest(ControllerBaseTest):
@@ -381,6 +439,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                               project=self.project)
         self.assertEqual(countof['messages']['claimed'], 15)
         self.assertEqual(countof['messages']['free'], 5)
+        self.assertEqual(countof['messages']['total'], 20)
 
         # Make sure get works
         claim, messages2 = self.controller.get(self.queue_name, claim_id,
@@ -509,5 +568,6 @@ def _insert_fixtures(controller, queue_name, project=None,
                 'body': {
                     'event': 'Event number %s' % n
                 }}
+
     controller.post(queue_name, messages(),
                     project=project, client_uuid=client_uuid)

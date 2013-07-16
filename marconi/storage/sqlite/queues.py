@@ -10,6 +10,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied.
+#
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
@@ -146,13 +147,27 @@ class QueueController(base.QueueBase):
                        and qid = ?)
             ''', qid, qid)
 
-            return {
-                'messages': {
-                    'claimed': claimed,
-                    'free': free,
-                },
-                'actions': 0,
+            total = free + claimed
+
+            message_stats = {
+                'claimed': claimed,
+                'free': free,
+                'total': total,
             }
+
+            if total != 0:
+                message_controller = self.driver.message_controller
+
+                try:
+                    oldest = message_controller.first(name, project, sort=1)
+                    newest = message_controller.first(name, project, sort=-1)
+                except exceptions.QueueIsEmpty:
+                    pass
+                else:
+                    message_stats['oldest'] = utils.stat_message(oldest)
+                    message_stats['newest'] = utils.stat_message(newest)
+
+            return {'messages': message_stats}
 
     def actions(self, name, project, marker=None, limit=10):
         raise NotImplementedError

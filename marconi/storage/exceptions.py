@@ -75,6 +75,14 @@ class QueueDoesNotExist(DoesNotExist):
         super(QueueDoesNotExist, self).__init__(msg)
 
 
+class QueueIsEmpty(Exception):
+
+    def __init__(self, name, project):
+        msg = ('Queue %(name)s in project %(project)s is empty' %
+               dict(name=name, project=project))
+        super(QueueIsEmpty, self).__init__(msg)
+
+
 class MessageDoesNotExist(DoesNotExist):
 
     def __init__(self, mid, queue, project):

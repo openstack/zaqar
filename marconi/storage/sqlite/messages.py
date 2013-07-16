@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from marconi.openstack.common import timeutils
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
@@ -81,6 +81,46 @@ class MessageController(base.MessageBase):
                 'id': utils.msgid_encode(id),
                 'ttl': ttl,
                 'age': int(age),
+                'body': content,
+            }
+
+    def first(self, queue, project, sort=1):
+        if project is None:
+            project = ''
+
+        with self.driver('deferred'):
+            sql = '''
+                select id, content, ttl, created,
+                       julianday() * 86400.0 - created
+                  from Messages
+                 where ttl > julianday() * 86400.0 - created
+                   and qid = ?
+              order by id %s
+                 limit 1'''
+
+            if sort not in (1, -1):
+                raise ValueError('sort must be either 1 (ascending) '
+                                 'or -1 (descending)')
+
+            sql = sql % ('DESC' if sort == -1 else 'ASC')
+
+            args = [utils.get_qid(self.driver, queue, project)]
+
+            records = self.driver.run(sql, *args)
+
+            try:
+                id, content, ttl, created, age = next(records)
+            except StopIteration:
+                raise exceptions.QueueIsEmpty(queue, project)
+
+            created_unix = utils.julian_to_unix(created)
+            created_iso8601 = timeutils.iso8601_from_timestamp(created_unix)
+
+            return {
+                'id': utils.msgid_encode(id),
+                'ttl': ttl,
+                'created': created_iso8601,
+                'age': age,
                 'body': content,
             }
 

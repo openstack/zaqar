@@ -17,6 +17,7 @@ import json
 import os
 
 import falcon
+from testtools import matchers
 
 from marconi.common import config
 from marconi.tests.transport.wsgi import base
@@ -111,7 +112,7 @@ class MessagesBaseTest(base.TestBase):
 
         self._test_post(sample_messages)
 
-    def test_post_to_mia_queue(self):
+    def test_post_to_missing_queue(self):
         self._post_messages('/v1/queues/nonexistent/messages')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
@@ -223,11 +224,18 @@ class MessagesBaseTest(base.TestBase):
         body = self.simulate_get(self.queue_path + '/stats', self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-        countof = json.loads(body[0])
+        message_stats = json.loads(body[0])['messages']
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           self.queue_path + '/stats')
-        self.assertEquals(countof['messages']['free'], 10)
 
+        # NOTE(kgriffs): The other parts of the stats are tested
+        # in tests.storage.base and so are not repeated here.
+        expected_pattern = self.queue_path + '/messages/[^/]+$'
+        for message_stat_name in ('oldest', 'newest'):
+            self.assertThat(message_stats[message_stat_name]['href'],
+                            matchers.MatchesRegex(expected_pattern))
+
+        # NOTE(kgriffs): Try to get messages for a missing queue
         self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
                           headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)

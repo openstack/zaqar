@@ -24,6 +24,7 @@ Field Mappings:
 import pymongo.errors
 
 import marconi.openstack.common.log as logging
+from marconi.openstack.common import timeutils
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.storage.mongodb import utils
@@ -143,18 +144,32 @@ class QueueController(storage.QueueBase):
 
     @utils.raises_conn_error
     def stats(self, name, project=None):
-        self._get_id(name, project)
-        controller = self.driver.message_controller
-        active = controller.active(name, project=project)
-        claimed = controller.claimed(name, project=project)
+        if not self.exists(name, project=project):
+            raise exceptions.QueueDoesNotExist(name, project)
 
-        return {
-            'actions': 0,
-            'messages': {
-                'claimed': claimed.count(),
-                'free': active.count(),
-            }
+        controller = self.driver.message_controller
+
+        active = controller.active(name, project=project).count()
+        total = controller.count(name, project=project)
+
+        message_stats = {
+            'claimed': total - active,
+            'free': active,
+            'total': total,
         }
+
+        if total != 0:
+            try:
+                oldest = controller.first(name, project=project, sort=1)
+                newest = controller.first(name, project=project, sort=-1)
+            except exceptions.QueueIsEmpty:
+                pass
+            else:
+                now = timeutils.utcnow()
+                message_stats['oldest'] = utils.stat_message(oldest, now)
+                message_stats['newest'] = utils.stat_message(newest, now)
+
+        return {'messages': message_stats}
 
     @utils.raises_conn_error
     def actions(self, name, project=None, marker=None, limit=10):

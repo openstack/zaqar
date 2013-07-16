@@ -240,6 +240,20 @@ class MongodbMessageTests(base.MessageControllerTest):
         message = self.driver.db.messages.find_one({'q': queue, 'p': project})
         self.assertEquals(message['k'], messages_per_queue)
 
+    def test_empty_queue_exception(self):
+        queue_name = 'empty-queue-test'
+        self.queue_controller.create(queue_name)
+
+        self.assertRaises(storage.exceptions.QueueIsEmpty,
+                          self.controller.first, queue_name)
+
+    def test_invalid_sort_option(self):
+        queue_name = 'empty-queue-test'
+        self.queue_controller.create(queue_name)
+
+        self.assertRaises(ValueError,
+                          self.controller.first, queue_name, sort=0)
+
 
 class MongodbClaimTests(base.ClaimControllerTest):
     driver_class = mongodb.Driver

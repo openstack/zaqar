@@ -122,7 +122,7 @@ class MessageController(storage.MessageBase):
     def _get_queue_np(self):
         return self._queue_controller._get_np()
 
-    def _next_marker(self, queue, project=None):
+    def _next_marker(self, queue_name, project=None):
         """Retrieves the next message marker for a given queue.
 
         This helper is used to generate monotonic pagination
@@ -141,16 +141,15 @@ class MessageController(storage.MessageBase):
             mitigate race conditions between producer and
             observer clients.
 
-        :param queue: queue name
+        :param queue_name: Determines the scope for the marker
         :param project: Queue's project
         :returns: next message marker as an integer
         """
 
-        document = self._col.find_one({'q': queue, 'p': project},
+        document = self._col.find_one({'q': queue_name, 'p': project},
                                       sort=[('k', -1)],
                                       fields={'k': 1, '_id': 0})
 
-        # NOTE(kgriffs): this approach is faster than using 'or'
         return 1 if document is None else (document['k'] + 1)
 
     def _backoff_sleep(self, attempt):
@@ -240,7 +239,7 @@ class MessageController(storage.MessageBase):
         self._col.remove({'q': queue, 'p': project}, w=0)
 
     def _list(self, queue_name, marker=None, echo=False, client_uuid=None,
-              fields=None, include_claimed=False, project=None):
+              fields=None, include_claimed=False, project=None, sort=1):
         """Message document listing helper.
 
         :param queue_name: Name of the queue to list
@@ -248,12 +247,19 @@ class MessageController(storage.MessageBase):
         :param marker: Message marker from which to start iterating
         :param echo: Whether to return messages that match client_uuid
         :param client_uuid: UUID for the client that originated this request
-        :param fields: fields to include in emmitted documents
+        :param fields: Fields to include in emmitted documents
         :param include_claimed: Whether to include claimed messages,
             not just active ones
+        :param sort: (Default 1) Sort order for the listing. Pass 1 for
+            ascending (oldest message first), or -1 for descending (newest
+            message first).
 
-        :returns: MongoDB "find" generator
+        :returns: MongoDB cursor
         """
+
+        if sort not in (1, -1):
+            raise ValueError('sort must be either 1 (ascending) '
+                             'or -1 (descending)')
 
         now = timeutils.utcnow()
 
@@ -270,7 +276,7 @@ class MessageController(storage.MessageBase):
         if fields and not isinstance(fields, (dict, list)):
             raise TypeError('Fields must be an instance of list / dict')
 
-        if not echo and client_uuid:
+        if not echo and client_uuid is not None:
             query['u'] = {'$ne': client_uuid}
 
         if marker:
@@ -283,11 +289,50 @@ class MessageController(storage.MessageBase):
 
         # NOTE(flaper87): Suggest the index to use for this query
         return self._col.find(query, fields=fields,
-                              sort=[('k', 1)]).hint(self.active_fields)
+                              sort=[('k', sort)]).hint(self.active_fields)
 
     #-----------------------------------------------------------------------
     # Interface
     #-----------------------------------------------------------------------
+
+    def count(self, queue_name, project=None):
+        """Return total number of (non-expired) messages in a queue.
+
+        This method is designed to very quickly count the number
+        of messages in a given queue. Expired messages are not
+        counted, of course. If the queue does not exist, the
+        count will always be 0.
+        """
+        query = {
+            # Messages must belong to this queue
+            'q': queue_name,
+            'p': project,
+            # The messages can not be expired
+            'e': {'$gt': timeutils.utcnow()},
+        }
+
+        return self._col.find(query).count()
+
+    def first(self, queue_name, project=None, sort=1):
+        """Get first message in the queue (including claimed).
+
+        :param queue_id: ObjectID of the queue to list
+        :param sort: (Default 1) Sort order for the listing. Pass 1 for
+            ascending (oldest message first), or -1 for descending (newest
+            message first).
+
+        :returns: First message in the queue, or None if the queue is
+            empty
+
+        """
+        cursor = self._list(queue_name, project=project,
+                            include_claimed=True, sort=sort).limit(1)
+        try:
+            message = next(cursor)
+        except StopIteration:
+            raise exceptions.QueueIsEmpty(queue_name, project)
+
+        return message
 
     def active(self, queue_name, marker=None, echo=False,
                client_uuid=None, fields=None, project=None):
@@ -297,7 +342,6 @@ class MessageController(storage.MessageBase):
 
     def claimed(self, queue_name, claim_id=None,
                 expires=None, limit=None, project=None):
-
         query = {
             'c.id': claim_id,
             'c.e': {'$gt': expires or timeutils.utcnow()},
@@ -362,7 +406,7 @@ class MessageController(storage.MessageBase):
         for name, project in self._get_queue_np():
             self._remove_expired(name, project)
 
-    def list(self, queue, project=None, marker=None, limit=10,
+    def list(self, queue_name, project=None, marker=None, limit=10,
              echo=False, client_uuid=None, include_claimed=False):
 
         if marker is not None:
@@ -371,7 +415,7 @@ class MessageController(storage.MessageBase):
             except ValueError:
                 raise exceptions.MalformedMarker()
 
-        messages = self._list(queue, marker, echo, client_uuid,
+        messages = self._list(queue_name, marker, echo, client_uuid,
                               include_claimed=include_claimed, project=project)
 
         messages = messages.limit(limit)
@@ -388,13 +432,13 @@ class MessageController(storage.MessageBase):
         yield str(marker_id['next'])
 
     @utils.raises_conn_error
-    def get(self, queue, message_id, project=None):
+    def get(self, queue_name, message_id, project=None):
         mid = utils.to_oid(message_id)
         now = timeutils.utcnow()
 
         query = {
             '_id': mid,
-            'q': queue,
+            'q': queue_name,
             'p': project,
             'e': {'$gt': now}
         }
@@ -402,18 +446,19 @@ class MessageController(storage.MessageBase):
         message = list(self._col.find(query).limit(1).hint([('_id', 1)]))
 
         if not message:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+            raise exceptions.MessageDoesNotExist(message_id, queue_name,
+                                                 project)
 
         return _basic_message(message[0], now)
 
     @utils.raises_conn_error
-    def bulk_get(self, queue, message_ids, project=None):
+    def bulk_get(self, queue_name, message_ids, project=None):
         message_ids = [utils.to_oid(id) for id in message_ids]
         now = timeutils.utcnow()
 
         # Base query, always check expire time
         query = {
-            'q': queue,
+            'q': queue_name,
             'p': project,
             '_id': {'$in': message_ids},
             'e': {'$gt': now},
@@ -429,14 +474,14 @@ class MessageController(storage.MessageBase):
         return utils.HookedCursor(messages, denormalizer)
 
     @utils.raises_conn_error
-    def post(self, queue, messages, client_uuid, project=None):
+    def post(self, queue_name, messages, client_uuid, project=None):
         now = timeutils.utcnow()
 
         # NOTE(flaper87): We need to assert the queue exists
-        self._get_queue_id(queue, project)
+        self._get_queue_id(queue_name, project)
 
         # Set the next basis marker for the first attempt.
-        next_marker = self._next_marker(queue, project)
+        next_marker = self._next_marker(queue_name, project)
 
         # Results are aggregated across all attempts
         # NOTE(kgriffs): lazy instantiation
@@ -451,7 +496,7 @@ class MessageController(storage.MessageBase):
         message_gen = (
             {
                 't': message['ttl'],
-                'q': queue,
+                'q': queue_name,
                 'p': project,
                 'e': now + datetime.timedelta(seconds=message['ttl']),
                 'u': client_uuid,
@@ -483,7 +528,7 @@ class MessageController(storage.MessageBase):
                     message = _('%(attempts)d attempt(s) required to post '
                                 '%(num_messages)d messages to queue '
                                 '%(queue_name)s and project %(project)s')
-                    message %= dict(queue_name=queue, attempts=attempt + 1,
+                    message %= dict(queue_name=queue_name, attempts=attempt+1,
                                     num_messages=len(ids), project=project)
 
                     LOG.debug(message)
@@ -501,7 +546,7 @@ class MessageController(storage.MessageBase):
                 # TODO(kgriffs): Add transaction ID to help match up loglines
                 if attempt == 0:
                     message = _('First attempt failed while adding messages '
-                                'to queue %s for current request') % queue
+                                'to queue %s for current request') % queue_name
 
                     LOG.debug(message)
 
@@ -535,7 +580,7 @@ class MessageController(storage.MessageBase):
                 # Retry the remaining messages with a new sequence
                 # of markers.
                 prepared_messages = cached_messages[failed_index:]
-                next_marker = self._next_marker(queue, project)
+                next_marker = self._next_marker(queue_name, project)
                 for index, message in enumerate(prepared_messages):
                     message['k'] = next_marker + index
 
@@ -553,21 +598,21 @@ class MessageController(storage.MessageBase):
 
         message = _('Hit maximum number of attempts (%(max)s) for queue '
                     '%(id)s in project %(project)s')
-        message %= dict(max=options.CFG.max_attempts, id=queue,
+        message %= dict(max=options.CFG.max_attempts, id=queue_name,
                         project=project)
 
         LOG.warning(message)
 
         succeeded_ids = map(str, aggregated_results)
-        raise exceptions.MessageConflict(queue, project, succeeded_ids)
+        raise exceptions.MessageConflict(queue_name, project, succeeded_ids)
 
     @utils.raises_conn_error
-    def delete(self, queue, message_id, project=None, claim=None):
+    def delete(self, queue_name, message_id, project=None, claim=None):
         try:
             mid = utils.to_oid(message_id)
 
             query = {
-                'q': queue,
+                'q': queue_name,
                 'p': project,
                 '_id': mid
             }
@@ -594,11 +639,11 @@ class MessageController(storage.MessageBase):
             pass
 
     @utils.raises_conn_error
-    def bulk_delete(self, queue, message_ids, project=None):
+    def bulk_delete(self, queue_name, message_ids, project=None):
         try:
             message_ids = [utils.to_oid(id) for id in message_ids]
             query = {
-                'q': queue,
+                'q': queue_name,
                 'p': project,
                 '_id': {'$in': message_ids},
             }
@@ -611,11 +656,11 @@ class MessageController(storage.MessageBase):
 
 def _basic_message(msg, now):
     oid = msg['_id']
-    age = now - utils.oid_utc(oid)
+    age = timeutils.delta_seconds(utils.oid_utc(oid), now)
 
     return {
         'id': str(oid),
-        'age': age.seconds,
+        'age': int(age),
         'ttl': msg['t'],
         'body': msg['b'],
     }

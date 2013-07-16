@@ -16,6 +16,8 @@
 
 from marconi.storage import exceptions
 
+UNIX_EPOCH_AS_JULIAN_SEC = 2440587.5 * 86400.0
+
 
 class NoResult(Exception):
     pass
@@ -77,3 +79,17 @@ def cid_decode(id):
 
     except ValueError:
         raise exceptions.MalformedID()
+
+
+def julian_to_unix(julian_sec):
+    """Converts Julian timestamp, in seconds, to a UNIX timestamp."""
+    return int(round(julian_sec - UNIX_EPOCH_AS_JULIAN_SEC))
+
+
+def stat_message(message):
+    """Creates a stat document based on a message."""
+    return {
+        'id': message['id'],
+        'age': message['age'],
+        'created': message['created'],
+    }
