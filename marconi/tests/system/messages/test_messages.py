@@ -42,18 +42,19 @@ class TestMessages(testtools.TestCase):
         """Insert Single Message into the Queue."""
         doc = msgfnlib.get_message_body(messagecount=1)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
-        result = http.post(url, self.header, doc)
 
+        result = http.post(url, self.header, doc)
         self.assertEqual(result.status_code, 201)
 
         #GET on posted message
-        location = result.headers['location']
-        url = self.cfg.base_server + location
+        href = result.json()['resources'][0]
+        url = self.cfg.base_server + href
+
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
 
         #Compare message metadata
-        result_body = result.json()[0]['body']
+        result_body = result.json()['body']
         posted_metadata = doc[0]['body']
         self.assertEqual(result_body, posted_metadata)
 
@@ -75,8 +76,8 @@ class TestMessages(testtools.TestCase):
         self.assertEqual(result.status_code, 200)
 
         #Compare message metadata
-        result_body = [result.json()['messages'][i]['body']
-                       for i in range(len(result.json()['messages']))]
+        result_body = [result.json()[i]['body']
+                       for i in range(len(result.json()))]
         result_body.sort()
 
         posted_metadata = [doc[i]['body']
@@ -91,8 +92,8 @@ class TestMessages(testtools.TestCase):
         """Get Messages with no params."""
         default_msg_count = 10
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
-        result = http.get(url, self.header)
 
+        result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
 
         test_result_flag = msgfnlib.verify_get_msgs(default_msg_count,
@@ -106,8 +107,8 @@ class TestMessages(testtools.TestCase):
         """Get Messages with no params."""
         msg_count = 5
         url = self.cfg.base_url + '/queues/messagetestqueue/messages?limit=5'
-        result = http.get(url, self.header)
 
+        result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
 
         test_result_flag = msgfnlib.verify_get_msgs(msg_count,
@@ -121,8 +122,8 @@ class TestMessages(testtools.TestCase):
         """Get Messages with echo=false."""
         url = self.cfg.base_url + \
             '/queues/messagetestqueue/messages?echo=false'
-        result = http.get(url, self.header)
 
+        result = http.get(url, self.header)
         self.assertEqual(result.status_code, 204)
 
     test_005_message_get_echo_false.tags = ['smoke', 'positive']
@@ -136,8 +137,9 @@ class TestMessages(testtools.TestCase):
         self.assertEqual(result.status_code, 201)
 
         #Delete posted message
-        location = result.headers['location']
-        url = self.cfg.base_server + location
+        href = result.json()['resources'][0]
+        url = self.cfg.base_server + href
+
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
 
@@ -153,8 +155,8 @@ class TestMessages(testtools.TestCase):
         """
         doc = msgfnlib.get_message_body(messagecount=60)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
-        result = http.post(url, self.header, doc)
 
+        result = http.post(url, self.header, doc)
         self.assertEqual(result.status_code, 400)
 
     test_007_message_bulk_insert_60.tags = ['negative']
@@ -162,4 +164,5 @@ class TestMessages(testtools.TestCase):
     def test_999_message_teardown(self):
         url = self.cfg.base_url + '/queues/messagetestqueue'
         http.delete(url, self.header)
+
     test_999_message_teardown.tags = ['smoke', 'positive']
