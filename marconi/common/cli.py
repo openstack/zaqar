@@ -33,6 +33,7 @@ def _fail(returncode, ex):
     :param ex: the error that occurred
     """
 
+    print >> sys.stderr, ex
     LOG.exception(ex)
     sys.exit(returncode)
 
