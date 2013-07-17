@@ -315,6 +315,15 @@ class TestQueue(testtools.TestCase):
 
     test_021_queue_get_nonexisting.tags = ['negative']
 
+    def test_022_check_health(self):
+        """Test health endpoint."""
+        url = self.cfg.base_url + '/health'
+        result = http.get(url, self.header)
+
+        self.assertEqual(result.status_code, 204)
+
+    test_022_check_health.tags = ['positive']
+
     def test_999_delete_queue(self):
         """Delete Queue.
 
