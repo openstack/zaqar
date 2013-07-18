@@ -62,6 +62,11 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
         description = _('Body could not be parsed.')
         raise exceptions.HTTPBadRequestBody(description)
 
+    except helpers.OverflowedJSONInteger as ex:
+        LOG.exception(ex)
+        description = _('JSON contains integer that is too large.')
+        raise exceptions.HTTPBadRequestBody(description)
+
     except Exception as ex:
         # Error while reading from the network/server
         LOG.exception(ex)

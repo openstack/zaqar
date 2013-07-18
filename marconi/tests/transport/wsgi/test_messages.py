@@ -119,6 +119,15 @@ class MessagesBaseTest(base.TestBase):
 
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+    def test_unsupported_json(self):
+        for document in ('{"overflow": 9223372036854775808}',
+                         '{"underflow": -9223372036854775809}'):
+            self.simulate_post(self.queue_path + '/messages',
+                               body=document,
+                               headers=self.headers)
+
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_delete(self):
         path = self.queue_path + '/messages'
         self._post_messages(path)
