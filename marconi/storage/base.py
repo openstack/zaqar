@@ -84,14 +84,15 @@ class QueueBase(ControllerBase):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def list(self, project=None, marker=None,
-             limit=10, detailed=False):
+    def list(self, project=None, marker=None, limit=10,
+             detailed=False, include_claimed=True):
         """Base method for listing queues.
 
         :param project: Project id
         :param marker: The last queue name
         :param limit: (Default 10) Max number
         :param detailed: Whether metadata is included
+        :param include_claimed: Whether to list claimed messages
 
         :returns: An iterator giving a sequence of queues
             and the marker of the next page.

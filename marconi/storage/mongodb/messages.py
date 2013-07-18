@@ -25,6 +25,7 @@ import collections
 import datetime
 import time
 
+from bson import objectid
 import pymongo.errors
 import six
 
@@ -232,25 +233,28 @@ class MessageController(storage.MessageBase):
         except exceptions.QueueDoesNotExist:
             pass
 
-    #-----------------------------------------------------------------------
-    # Interface
-    #-----------------------------------------------------------------------
+    def _list(self, queue_id, marker=None, echo=False,
+              client_uuid=None, fields=None, include_claimed=False):
+        """Message document listing helper.
 
-    def all(self):
-        return self._col.find()
+        :param queue_id: ObjectID of the queue to list
+        :param marker: Message marker from which to start iterating
+        :param echo: Whether to return messages that match client_uuid
+        :param client_uuid: UUID for the client that originated this request
+        :param fields: fields to include in emmitted documents
+        :param include_claimed: Whether to include claimed messages,
+            not just active ones
 
-    def active(self, queue_id, marker=None, echo=False,
-               client_uuid=None, fields=None):
+        :returns: MongoDB "find" generator
+        """
 
         now = timeutils.utcnow()
 
         query = {
             # Messages must belong to this queue
-            'q': utils.to_oid(queue_id),
+            'q': queue_id,
             # The messages can not be expired
             'e': {'$gt': now},
-            # Include messages that are part of expired claims
-            'c.e': {'$lte': now},
         }
 
         if fields and not isinstance(fields, (dict, list)):
@@ -262,13 +266,37 @@ class MessageController(storage.MessageBase):
         if marker:
             query['k'] = {'$gt': marker}
 
+        if not include_claimed:
+            # Only include messages that are not part of
+            # any claim, or are part of an expired claim.
+            query['c.e'] = {'$lte': now}
+
         return self._col.find(query, fields=fields)
 
+    #-----------------------------------------------------------------------
+    # Interface
+    #-----------------------------------------------------------------------
+
+    def active(self, queue_id, marker=None, echo=False,
+               client_uuid=None, fields=None):
+
+        # NOTE(kgriffs): Since this is a public method, queue_id
+        # might not be an ObjectID. Usually it will be, since active()
+        # is a utility method, so short-circuit for performance.
+        if not isinstance(queue_id, objectid.ObjectId):
+            queue_id = utils.to_oid(queue_id)
+
+        return self._list(queue_id, marker, echo, client_uuid, fields,
+                          include_claimed=False)
+
     def claimed(self, queue_id, claim_id=None, expires=None, limit=None):
+        if not isinstance(queue_id, objectid.ObjectId):
+            queue_id = utils.to_oid(queue_id)
+
         query = {
             'c.id': claim_id,
             'c.e': {'$gt': expires or timeutils.utcnow()},
-            'q': utils.to_oid(queue_id),
+            'q': queue_id,
         }
 
         if not claim_id:
@@ -334,8 +362,8 @@ class MessageController(storage.MessageBase):
         for id in self._get_queue_ids():
             self._remove_expired(id)
 
-    def list(self, queue, project=None, marker=None,
-             limit=10, echo=False, client_uuid=None):
+    def list(self, queue, project=None, marker=None, limit=10,
+             echo=False, client_uuid=None, include_claimed=False):
 
         if marker is not None:
             try:
@@ -344,7 +372,8 @@ class MessageController(storage.MessageBase):
                 raise exceptions.MalformedMarker()
 
         qid = self._get_queue_id(queue, project)
-        messages = self.active(qid, marker, echo, client_uuid)
+        messages = self._list(qid, marker, echo, client_uuid,
+                              include_claimed=include_claimed)
 
         messages = messages.limit(limit).sort('_id')
         marker_id = {}
