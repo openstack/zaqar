@@ -26,6 +26,7 @@ from marconi.transport.wsgi import messages
 from marconi.transport.wsgi import metadata
 from marconi.transport.wsgi import queues
 from marconi.transport.wsgi import stats
+from marconi.transport.wsgi import v1
 
 OPTIONS = {
     'bind': '0.0.0.0',
@@ -68,6 +69,9 @@ class Driver(transport.DriverBase):
         queue_controller = self.storage.queue_controller
         message_controller = self.storage.message_controller
         claim_controller = self.storage.claim_controller
+
+        # Home
+        self.app.add_route('/v1', v1.V1Resource())
 
         # Queues Endpoints
         queue_collection = queues.CollectionResource(queue_controller)
