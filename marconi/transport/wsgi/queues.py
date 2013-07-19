@@ -53,6 +53,9 @@ class ItemResource(object):
     #-----------------------------------------------------------------------
 
     def on_put(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Queue item PUT - queue: %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
         # TODO(kgriffs): Migrate this check to input validator middleware
         if req.content_length > transport.MAX_QUEUE_METADATA_SIZE:
             description = _('Queue metadata size is too large.')
@@ -90,6 +93,9 @@ class ItemResource(object):
         resp.location = req.path
 
     def on_get(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Queue item GET - queue: %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
         message_ids = req.get_param_as_list('ids')
         if message_ids is None:
             doc = self._get_metadata(project_id, queue_name)
@@ -102,6 +108,9 @@ class ItemResource(object):
         resp.body = helpers.to_json(doc)
 
     def on_delete(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Queue item DELETE - queue: %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
         try:
             self.queue_controller.delete(queue_name, project=project_id)
 

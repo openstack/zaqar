@@ -128,6 +128,10 @@ class CollectionResource(object):
     #-----------------------------------------------------------------------
 
     def on_post(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Messages collection POST - queue:  %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
+
         uuid = req.get_header('Client-ID', required=True)
 
         # Pull out just the fields we care about
@@ -187,6 +191,10 @@ class CollectionResource(object):
         resp.body = helpers.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Messages collection GET - queue: %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
+
         resp.content_location = req.relative_uri
 
         ids = req.get_param_as_list('ids')
@@ -211,6 +219,11 @@ class ItemResource(object):
         self.message_controller = message_controller
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
+        LOG.debug(_("Messages item GET - message: %(message)s, "
+                    "queue: %(queue)s, project: %(project)s") %
+                  {"message": message_id,
+                   "queue": queue_name,
+                   "project": project_id})
         try:
             messages = self.message_controller.get(
                 queue_name,
@@ -239,6 +252,11 @@ class ItemResource(object):
         resp.status = falcon.HTTP_200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
+        LOG.debug(_("Messages item DELETE - message: %(message)s, "
+                    "queue: %(queue)s, project: %(project)s") %
+                  {"message": message_id,
+                   "queue": queue_name,
+                   "project": project_id})
         try:
             self.message_controller.delete(
                 queue_name,
