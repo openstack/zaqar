@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import binascii
 import json
 import os
@@ -177,11 +178,11 @@ def verify_delete(url, header):
     else:
         print('GET after DELETE failed')
         print('URL')
-        print url
+        print(url)
         print('headers')
-        print header
+        print(header)
         print('Response Body')
-        print getmsg.text
-        print 'GET Code {}'.format(getmsg.status_code)
+        print(getmsg.text)
+        print('GET Code {}'.format(getmsg.status_code))
 
     return test_result_flag

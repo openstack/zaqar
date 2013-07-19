@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import json
 
 from marconi.tests.system.common import functionlib
@@ -37,7 +38,7 @@ def verify_claim_msg(count, *claim_response):
     if test_result_flag:
         test_result_flag = query_claim(headers, body)
     else:
-        print 'More msgs returned than specified in limit'
+        print('More msgs returned than specified in limit')
     return test_result_flag
 
 
@@ -77,17 +78,17 @@ def query_claim(headers, *body):
         test_result_flag = verify_query_msgs(query_msgs, msg_list)
 
     if not test_result_flag:
-        print 'URL'
-        print url
-        print 'HEADER'
-        print header
-        print 'Messages returned by Query Claim'
-        print query_msgs
-        print '# of Messages returned by Query Claim', len(query_msgs)
-        print 'Messages returned by Claim Messages'
-        print msg_list
-        print '# of Messages returned by Claim messages', len(msg_list)
-        print 'Query Claim Failed'
+        print('URL')
+        print(url)
+        print('HEADER')
+        print(header)
+        print('Messages returned by Query Claim')
+        print(query_msgs)
+        print('# of Messages returned by Query Claim', len(query_msgs))
+        print('Messages returned by Claim Messages')
+        print(msg_list)
+        print('# of Messages returned by Claim messages', len(msg_list))
+        print('Query Claim Failed')
     return test_result_flag
 
 
@@ -128,9 +129,9 @@ def verify_patch_claim(url, header, ttl_extended):
 
     ttl = response_body['ttl']
     if ttl < ttl_extended:
-        print get_claim.status_code
-        print get_claim.headers
-        print get_claim.text
+        print(get_claim.status_code)
+        print(get_claim.headers)
+        print(get_claim.text)
         test_result_flag = False
 
     return test_result_flag
@@ -163,11 +164,11 @@ def delete_claimed_msgs(*claim_response):
         if delete_response.status_code == 204:
             test_result_flag = functionlib.verify_delete(url, header)
         else:
-            print 'DELETE message with claim ID: {}'.format(url)
-            print delete_response.status_code
-            print delete_response.headers
-            print delete_response.text
-            print 'Delete Claimed Message Failed'
+            print('DELETE message with claim ID: {}'.format(url))
+            print(delete_response.status_code)
+            print(delete_response.headers)
+            print(delete_response.text)
+            print('Delete Claimed Message Failed')
 
     return test_result_flag
 
@@ -185,9 +186,9 @@ def get_claimed_msgs(*claim_response):
     for url in urllist:
         get_response = http.get(url, header)
         if get_response.status_code != 200:
-            print url
-            print header
-            print 'Get Response Code: {}'.format(get_response.status_code)
+            print(url)
+            print(header)
+            print('Get Response Code: {}'.format(get_response.status_code))
             test_result_flag = False
 
     if not test_result_flag:
@@ -212,9 +213,10 @@ def release_claim(*claim_response):
     if release_response.status_code == 204:
         test_result_flag = functionlib.verify_delete(url, header)
     else:
-        print 'Release Claim HTTP code:{}'.format(release_response.status_code)
-        print release_response.headers
-        print release_response.text
+        print('Release Claim HTTP code:{}'.format(
+            release_response.status_code))
+        print(release_response.headers)
+        print(release_response.text)
         assert test_result_flag, 'Release Claim Failed'
 
     if not test_result_flag:

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import atexit
 import functools
 import sys
@@ -33,7 +34,7 @@ def _fail(returncode, ex):
     :param ex: the error that occurred
     """
 
-    print >> sys.stderr, ex
+    print(ex, file=sys.stderr)
     LOG.exception(ex)
     sys.exit(returncode)
 

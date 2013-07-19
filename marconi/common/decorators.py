@@ -29,7 +29,7 @@ def lazy_property(write=False, delete=True):
                 setattr(self, attr_name, fn(self))
             return getattr(self, attr_name)
 
-        def setter(self,  value):
+        def setter(self, value):
             setattr(self, attr_name, value)
 
         def deleter(self):

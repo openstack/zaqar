@@ -185,7 +185,7 @@ class MongodbMessageTests(base.MessageControllerTest):
             self.assertEqual(marker1, marker2)
             self.assertEqual(marker2, marker3)
 
-            self.assertEqual(marker1, i+2)
+            self.assertEqual(marker1, i + 2)
 
     def test_remove_expired(self):
         num_projects = 10

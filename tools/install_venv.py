@@ -19,6 +19,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import print_function
 import os
 import sys
 
@@ -44,7 +45,7 @@ def print_help(venv, root):
 
     Also, make test will automatically use the virtualenv.
     """
-    print help % (venv, root)
+    print(help % (venv, root))
 
 
 def main(argv):

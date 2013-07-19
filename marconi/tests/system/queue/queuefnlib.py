@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import binascii
 import json
 import os
@@ -56,8 +57,8 @@ def verify_queue_stats(*get_response):
     if test_result_flag:
         return test_result_flag
     else:
-        print headers
-        print body
+        print(headers)
+        print(body)
         assert test_result_flag, 'Get Request stats failed'
 
 
@@ -89,7 +90,7 @@ def verify_list_queues(*list_queue_response):
 
     if False in test_result_flags:
         test_result_flag = False
-        print 'List Queue API response: {}'.format(response_body)
+        print('List Queue API response: {}'.format(response_body))
         return test_result_flag
 
     if links[0]['rel'] == 'next':
@@ -117,8 +118,8 @@ def verify_listed(queue, detail_enabled):
     if keys == expected_keys:
         return test_result_flag
     else:
-        print 'list_queue response does not match expected response'
-        print queue
+        print('list_queue response does not match expected response')
+        print(queue)
         test_result_flag = False
 
     return test_result_flag

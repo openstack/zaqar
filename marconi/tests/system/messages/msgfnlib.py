@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
 import json
 import random
 
@@ -129,11 +129,11 @@ def verify_post_msg(msg_headers, posted_body):
     else:
         print('Failed to GET {}'.format(url))
         print('Request Header')
-        print header
+        print(header)
         print('Response Headers')
-        print getmsg.headers
+        print(getmsg.headers)
         print('Response Body')
-        print getmsg.text
+        print(getmsg.text)
     return test_result_flag
 
 
@@ -196,11 +196,11 @@ def delete_msg(*postresponse):
     else:
         print('DELETE message failed')
         print('URL')
-        print url
+        print(url)
         print('headers')
-        print header
+        print(header)
         print('Response Body')
-        print deletemsg.text
-        print 'DELETE Code {}'.format(deletemsg.status_code)
+        print(deletemsg.text)
+        print('DELETE Code {}'.format(deletemsg.status_code))
 
     return test_result_flag
