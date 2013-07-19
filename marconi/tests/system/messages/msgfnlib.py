@@ -16,6 +16,7 @@
 from __future__ import print_function
 import json
 import random
+import string
 
 from marconi.tests.system.common import config
 from marconi.tests.system.common import functionlib
@@ -27,15 +28,18 @@ def generate_dict(dict_length):
 
     :param dict_length: length of the dictionary
     """
-    with open('/usr/share/dict/words', 'rt') as f:
-        words = f.readlines()
-    words = [w.rstrip() for w in words]
-
     dict = {}
     while len(dict) < dict_length:
-        key, value = random.sample(words, 2)
-        dict.update({key: value})
+        key = generate_random_string()
+        value = generate_random_string()
+        dict[key] = value
     return dict
+
+
+def generate_random_string(length=10):
+    """Returns an ASCII string of specified length."""
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for i in range(length))
 
 
 def single_message_body(**kwargs):
