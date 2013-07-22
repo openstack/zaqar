@@ -17,16 +17,17 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 from marconi.tests.system.messages import msgfnlib
 
-import testtools
 
-
-class TestMessages(testtools.TestCase):
+class TestMessages(functionlib.TestUtils):
     """Tests for Messages."""
 
     def setUp(self):
         super(TestMessages, self).setUp()
         self.cfg = config.Config()
         self.header = functionlib.create_marconi_headers()
+
+        self.headers_response_with_body = set(['location',
+                                               'content-type'])
 
     def test_000_message_setup(self):
         """Create Queue for Message Tests."""
@@ -45,6 +46,9 @@ class TestMessages(testtools.TestCase):
 
         result = http.post(url, self.header, doc)
         self.assertEqual(result.status_code, 201)
+
+        response_headers = set(result.headers.keys())
+        self.assertIsSubset(self.headers_response_with_body, response_headers)
 
         #GET on posted message
         href = result.json()['resources'][0]

@@ -18,6 +18,7 @@ import binascii
 import json
 import os
 import string
+import testtools
 
 from marconi.tests.system.common import config
 from marconi.tests.system.common import http
@@ -63,10 +64,10 @@ def create_marconi_headers():
     """Returns headers to be used for all Marconi requests."""
     auth_token = get_auth_token()
 
-    headers = '{"Host": "$host","User-Agent": "$user_agent","Date":"DATE",'
-    headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
-    headers += '"X-Project-ID": "$project_id",'
-    headers += '"X-Auth-Token":  "$token","Client-ID":  "$uuid"}'
+    headers = ('{"Host": "$host","User-Agent": "$user_agent","Date":"DATE",'
+               '"Accept":  "application/json","Accept-Encoding":  "gzip",'
+               '"X-Project-ID": "$project_id",'
+               '"X-Auth-Token":  "$token","Client-ID":  "$uuid"}')
     headers = string.Template(headers)
 
     return headers.substitute(host=CFG.host, user_agent=CFG.user_agent,
@@ -92,7 +93,7 @@ def missing_header_fields():
     auth_token = get_auth_token()
 
     headers = '{"Host":  "$host","Date":  "DATE",'
-    headers += '"Accept":  "application/json","Accept-Encoding":  "gzip",'
+    headers += '"Accept-Encoding":  "gzip",'
     headers += '"X-Auth-Token":  "$token"}'
     headers = string.Template(headers)
 
@@ -186,3 +187,11 @@ def verify_delete(url, header):
         print('GET Code {}'.format(getmsg.status_code))
 
     return test_result_flag
+
+
+class TestUtils(testtools.TestCase):
+
+    def assertIsSubset(self, required_values, actual_values):
+        form = 'Missing Header(s) - {}'
+        self.assertTrue(required_values.issubset(actual_values),
+                        msg=form.format((required_values - actual_values)))
