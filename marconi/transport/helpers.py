@@ -21,6 +21,20 @@ class MalformedJSON(ValueError):
     pass
 
 
+class OverflowedJSONInteger(OverflowError):
+    """JSON integer is too large."""
+    pass
+
+
+def _json_int(s):
+    """Parse a string as a base 10 64-bit signed integer."""
+    i = int(s)
+    if not (int(-2 ** 63) <= i <= int(2 ** 63 - 1)):
+        raise OverflowedJSONInteger()
+
+    return i
+
+
 def read_json(stream, len):
     """Like json.load, but converts ValueError to MalformedJSON upon failure.
 
@@ -28,7 +42,7 @@ def read_json(stream, len):
     :param len: the number of bytes to read from stream
     """
     try:
-        return json.loads(stream.read(len))
+        return json.loads(stream.read(len), parse_int=_json_int)
 
     except ValueError as ex:
         raise MalformedJSON(ex)
