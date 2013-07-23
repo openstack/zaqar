@@ -50,7 +50,7 @@ class QueueControllerTest(ControllerBaseTest):
     def test_list(self):
         num = 15
         for queue in xrange(num):
-            self.controller.upsert(queue, {}, project=self.project)
+            self.controller.create(queue, project=self.project)
 
         interaction = self.controller.list(project=self.project,
                                            detailed=True)
@@ -72,22 +72,26 @@ class QueueControllerTest(ControllerBaseTest):
 
     def test_queue_lifecycle(self):
         # Test Queue Creation
-        created = self.controller.upsert('test', project=self.project,
-                                         metadata=dict(topic='test_queue'))
-
+        created = self.controller.create('test', project=self.project)
         self.assertTrue(created)
 
         # Test Queue retrieval
-        queue = self.controller.get('test', project=self.project)
-        self.assertIsNotNone(queue)
+        metadata = self.controller.get('test', project=self.project)
+        self.assertEqual(metadata, {})
 
         # Test Queue Update
-        created = self.controller.upsert('test', project=self.project,
-                                         metadata=dict(meta='test_meta'))
+        created = self.controller.set_metadata('test', project=self.project,
+                                               metadata=dict(meta='test_meta'))
+
+        metadata = self.controller.get('test', project=self.project)
+        self.assertEqual(metadata['meta'], 'test_meta')
+
+        # Touching an existing queue does not affect metadata
+        created = self.controller.create('test', project=self.project)
         self.assertFalse(created)
 
-        queue = self.controller.get('test', project=self.project)
-        self.assertEqual(queue['meta'], 'test_meta')
+        metadata = self.controller.get('test', project=self.project)
+        self.assertEqual(metadata['meta'], 'test_meta')
 
         # Test Queue Statistic
         _insert_fixtures(self.message_controller, 'test',
@@ -100,9 +104,11 @@ class QueueControllerTest(ControllerBaseTest):
         self.controller.delete('test', project=self.project)
 
         # Test DoesNotExist Exception
-        self.assertRaises(storage.exceptions.DoesNotExist,
-                          self.controller.get, 'test',
-                          project=self.project)
+        with testing.expect(storage.exceptions.DoesNotExist):
+            self.controller.get('test', project=self.project)
+
+        with testing.expect(storage.exceptions.DoesNotExist):
+            self.controller.set_metadata('test', '{}', project=self.project)
 
 
 class MessageControllerTest(ControllerBaseTest):
@@ -121,8 +127,7 @@ class MessageControllerTest(ControllerBaseTest):
         # Lets create a queue
         self.queue_controller = self.driver.queue_controller
         self.claim_controller = self.driver.claim_controller
-        self.queue_controller.upsert(self.queue_name, {},
-                                     project=self.project)
+        self.queue_controller.create(self.queue_name, project=self.project)
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name, project=self.project)
@@ -292,7 +297,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         queue = 'foo'
         project = '480924'
-        self.queue_controller.upsert(queue, {}, project)
+        self.queue_controller.create(queue, project)
 
         bad_message_id = 'xyz'
         with testing.expect(exceptions.MalformedID):
@@ -303,7 +308,7 @@ class MessageControllerTest(ControllerBaseTest):
             next(result)
 
     def test_bad_claim_id(self):
-        self.queue_controller.upsert('unused', {}, '480924')
+        self.queue_controller.create('unused', '480924')
         [msgid] = self.controller.post('unused',
                                        [{'body': {}, 'ttl': 10}],
                                        project='480924',
@@ -318,7 +323,7 @@ class MessageControllerTest(ControllerBaseTest):
     def test_bad_marker(self):
         queue = 'foo'
         project = '480924'
-        self.queue_controller.upsert(queue, {}, project)
+        self.queue_controller.create(queue, project)
 
         bad_marker = 'xyz'
         func = self.controller.list
@@ -342,8 +347,7 @@ class ClaimControllerTest(ControllerBaseTest):
         # Lets create a queue
         self.queue_controller = self.driver.queue_controller
         self.message_controller = self.driver.message_controller
-        self.queue_controller.upsert(self.queue_name, {},
-                                     project=self.project)
+        self.queue_controller.create(self.queue_name, project=self.project)
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name, project=self.project)
@@ -478,7 +482,7 @@ class ClaimControllerTest(ControllerBaseTest):
     def test_illformed_id(self):
         # any ill-formed IDs should be regarded as non-existing ones.
 
-        self.queue_controller.upsert('unused', {}, '480924')
+        self.queue_controller.create('unused', '480924')
         self.controller.delete('unused', 'illformed', '480924')
 
         with testing.expect(exceptions.DoesNotExist):

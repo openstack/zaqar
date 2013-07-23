@@ -41,7 +41,10 @@ class QueueController(storage.QueueBase):
     def get(self, name, project=None):
         raise NotImplementedError()
 
-    def upsert(self, name, metadata, project=None):
+    def create(self, name, project=None):
+        raise NotImplementedError()
+
+    def set_metadata(self, name, metadata, project=None):
         raise NotImplementedError()
 
     def delete(self, name, project=None):

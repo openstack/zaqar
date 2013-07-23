@@ -121,7 +121,7 @@ class MongodbQueueTests(base.QueueControllerTest):
 
     def test_messages_purged(self):
         queue_name = 'test'
-        self.controller.upsert(queue_name, {})
+        self.controller.create(queue_name)
         qid = self.controller._get_id(queue_name)
         self.message_controller.post(queue_name,
                                      [{'ttl': 60}],
@@ -171,7 +171,7 @@ class MongodbMessageTests(base.MessageControllerTest):
         queue_name = 'marker_test'
         iterations = 10
 
-        self.queue_controller.upsert(queue_name, {})
+        self.queue_controller.create(queue_name)
         queue_id = self.queue_controller._get_id(queue_name)
 
         seed_marker1 = self.controller._next_marker(queue_name)
@@ -203,11 +203,11 @@ class MongodbMessageTests(base.MessageControllerTest):
 
         for project in projects:
             for queue in queue_names:
-                self.queue_controller.upsert(queue, {}, project)
+                self.queue_controller.create(queue, project)
                 self.controller.post(queue, messages, client_uuid, project)
 
         # Add one that should not be gc'd due to being under threshold
-        self.queue_controller.upsert('nogc-test', {}, 'nogc-test-project')
+        self.queue_controller.create('nogc-test', 'nogc-test-project')
         nogc_messages = [{'ttl': 0, 'body': str(i)}
                          for i in range(nogc_messages_per_queue)]
         self.controller.post('nogc-test', nogc_messages,

@@ -112,17 +112,26 @@ class QueueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upsert(self, name, metadata, project=None):
-        """This method handles both create and update operations.
+    def create(self, name, project=None):
+        """Base method for queue creation
 
         :param name: The queue name
-        :param metadata: Arbitrary metadata
         :param project: Project id
         :returns: True if a queue was created and False
             if it was updated.
         """
-        msg = _('Metadata should be an instance of dict')
-        assert isinstance(metadata, dict), msg
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_metadata(self, name, metadata, project=None):
+        """Base method for updating a queue metadata.
+
+        :param name: The queue name
+        :param metadata: Queue metadata as a dict
+        :param project: Project id
+        :raises: DoesNotExist
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, name, project=None):

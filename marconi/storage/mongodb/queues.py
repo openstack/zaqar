@@ -21,6 +21,8 @@ Field Mappings:
     letter of their long name.
 """
 
+import pymongo.errors
+
 import marconi.openstack.common.log as logging
 from marconi import storage
 from marconi.storage import exceptions
@@ -111,16 +113,24 @@ class QueueController(storage.QueueBase):
         return queue.get('m', {})
 
     @utils.raises_conn_error
-    def upsert(self, name, metadata, project=None):
-        super(QueueController, self).upsert(name, metadata, project)
+    def create(self, name, project=None):
+        try:
+            self._col.insert({'p': project, 'n': name, 'm': {}, 'c': 1})
 
+        except pymongo.errors.DuplicateKeyError:
+            return False
+        else:
+            return True
+
+    @utils.raises_conn_error
+    def set_metadata(self, name, metadata, project=None):
         rst = self._col.update({'p': project, 'n': name},
-                               {'$set': {'m': metadata, 'c': 1}},
+                               {'$set': {'m': metadata}},
                                multi=False,
-                               upsert=True,
                                manipulate=False)
 
-        return not rst['updatedExisting']
+        if not rst['updatedExisting']:
+            raise exceptions.QueueDoesNotExist(name, project)
 
     @utils.raises_conn_error
     def delete(self, name, project=None):

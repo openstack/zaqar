@@ -83,22 +83,30 @@ class QueueController(base.QueueBase):
         except utils.NoResult:
             raise exceptions.QueueDoesNotExist(name, project)
 
-    def upsert(self, name, metadata, project):
+    def create(self, name, project):
         if project is None:
             project = ''
 
-        with self.driver('immediate'):
-            previous_record = self.driver.run('''
-                select id from Queues
-                 where project = ? and name = ?
-            ''', project, name).fetchone()
+        # msgpack of {} is "\x80"
+        self.driver.run('''
+            insert or ignore into Queues
+            values (null, ?, ?, "\x80")
+        ''', project, name)
 
-            self.driver.run('''
-                replace into Queues
-                 values (null, ?, ?, ?)
-            ''', project, name, self.driver.pack(metadata))
+        return self.driver.affected
 
-            return previous_record is None
+    def set_metadata(self, name, metadata, project):
+        if project is None:
+            project = ''
+
+        self.driver.run('''
+            update Queues
+               set metadata = ?
+             where project = ? and name = ?
+        ''', self.driver.pack(metadata), project, name)
+
+        if not self.driver.affected:
+            raise exceptions.QueueDoesNotExist(name, project)
 
     def delete(self, name, project):
         if project is None:

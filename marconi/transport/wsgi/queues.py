@@ -60,7 +60,11 @@ class ItemResource(object):
 
         # Create or update the queue
         try:
-            created = self.queue_controller.upsert(
+            created = self.queue_controller.create(
+                queue_name,
+                project=project_id)
+
+            self.queue_controller.set_metadata(
                 queue_name,
                 metadata=metadata,
                 project=project_id)
