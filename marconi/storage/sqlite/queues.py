@@ -71,7 +71,7 @@ class QueueController(base.QueueBase):
         yield it()
         yield marker_name['next']
 
-    def get(self, name, project):
+    def get_metadata(self, name, project):
         if project is None:
             project = ''
 

@@ -29,7 +29,7 @@ class TestWSGIMediaType(base.TestBase):
 
         endpoints = [
             ('GET', '/v1/queues'),
-            ('GET', '/v1/queues/nonexistent'),
+            ('GET', '/v1/queues/nonexistent/metadata'),
             ('GET', '/v1/queues/nonexistent/stats'),
             ('POST', '/v1/queues/nonexistent/messages'),
             ('GET', '/v1/queues/nonexistent/messages/deadbeaf'),
