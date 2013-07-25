@@ -20,6 +20,7 @@ import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -66,20 +67,9 @@ class Resource(object):
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Deserialize queue metadata
-        try:
-            metadata = utils.read_json(req.stream, req.content_length)
-        except utils.MalformedJSON:
-            description = _('Request body could not be parsed.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Request body could not be read.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        # Metadata must be a JSON object
-        if not isinstance(metadata, dict):
-            description = _('Queue metadata must be an object.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
+        metadata, = wsgi_utils.filter_stream(req.stream,
+                                             req.content_length,
+                                             spec=None)
 
         try:
             self.queue_ctrl.set_metadata(queue_name,

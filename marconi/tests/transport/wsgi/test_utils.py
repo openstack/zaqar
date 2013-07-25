@@ -158,3 +158,17 @@ class TestWSGIutils(testtools.TestCase):
         self.assertRaises(falcon.HTTPBadRequest,
                           utils.filter_stream, stream, len(document), spec,
                           doctype=utils.JSONObject)
+
+    def test_filter_stream_wrong_use(self):
+        document = u'3'
+        stream = io.StringIO(document)
+        spec = None
+        self.assertRaises(TypeError,
+                          utils.filter_stream, stream, len(document), spec,
+                          doctype=int)
+
+    def test_filter_stream_no_reading(self):
+        stream = None
+        length = None
+        self.assertRaises(falcon.HTTPBadRequest,
+                          utils.filter_stream, stream, length, None)

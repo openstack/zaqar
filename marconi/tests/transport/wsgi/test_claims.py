@@ -42,7 +42,7 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_put(self.queue_path, self.project_id, body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
-        doc = json.dumps([{'body': 239, 'ttl': 30}] * 10)
+        doc = json.dumps([{'body': 239, 'ttl': 300}] * 10)
         self.simulate_post(self.queue_path + '/messages', self.project_id,
                            body=doc, headers={'Client-ID': '30387f00'})
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
@@ -58,13 +58,33 @@ class ClaimsBaseTest(base.TestBase):
                                body=doc)
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+        # Payload exceeded
+        self.simulate_post(self.claims_path, self.project_id,
+                           body='{"ttl": 100, "grace": 60}',
+                           query_string='limit=21')
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Unacceptable TTL or grace
+        for ttl, grace in ((-1, -1), (59, 60), (60, 59),
+                           (60, 43201), (43201, 60)):
+            self.simulate_post(self.claims_path, self.project_id,
+                               body=json.dumps({'ttl': ttl, 'grace': grace}))
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_bad_patch(self):
         self.simulate_post(self.claims_path, self.project_id,
-                           body='{"ttl": 10, "grace": 30}')
+                           body='{"ttl": 100, "grace": 60}')
         href = self.srmock.headers_dict['Location']
 
         for doc in (None, '[', '"crunchy"'):
             self.simulate_patch(href, self.project_id, body=doc)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Unacceptable new TTL
+        for ttl in (-1, 59, 43201):
+            self.simulate_post(self.claims_path, self.project_id,
+                               body=json.dumps({'ttl': ttl}))
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_too_much_metadata(self):
@@ -82,7 +102,7 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_lifecycle(self):
-        doc = '{"ttl": 10, "grace": 30}'
+        doc = '{"ttl": 100, "grace": 60}'
 
         # First, claim some messages
         body = self.simulate_post(self.claims_path, self.project_id, body=doc)
@@ -117,7 +137,7 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           claim_href)
-        self.assertEquals(claim['ttl'], 10)
+        self.assertEquals(claim['ttl'], 100)
 
         # Delete the message and its associated claim
         self.simulate_delete(message_href, self.project_id,
@@ -170,7 +190,7 @@ class ClaimsBaseTest(base.TestBase):
 
     def test_nonexistent(self):
         self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
-                           body='{"ttl": 10, "grace": 30}')
+                           body='{"ttl": 100, "grace": 60}')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
 
@@ -203,7 +223,7 @@ class ClaimsFaultyDriverTests(base.TestBaseFaulty):
     def test_simple(self):
         project_id = '480924'
         claims_path = '/v1/queues/fizbit/claims'
-        doc = '{"ttl": 100, "grace": 30}'
+        doc = '{"ttl": 100, "grace": 60}'
 
         self.simulate_post(claims_path, project_id, body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_503)

@@ -15,8 +15,10 @@
 
 import falcon
 
+from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.transport import utils
+from marconi.transport import validation
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
@@ -37,9 +39,13 @@ class ItemResource(object):
                   {"queue": queue_name, "project": project_id})
 
         try:
+            validation.queue_creation(name=queue_name)
             created = self.queue_controller.create(
                 queue_name,
                 project=project_id)
+
+        except input_exceptions.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -95,7 +101,12 @@ class CollectionResource(object):
         })
 
         try:
+            validation.queue_listing(**kwargs)
             results = self.queue_controller.list(project=project_id, **kwargs)
+
+        except input_exceptions.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Queues could not be listed.')

@@ -16,9 +16,11 @@
 import falcon
 
 from marconi.common import config
+from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import utils
+from marconi.transport import validation
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.transport.wsgi import utils as wsgi_utils
 
@@ -60,6 +62,7 @@ class CollectionResource(object):
 
         # Claim some messages
         try:
+            validation.claim_creation(metadata, **claim_options)
             cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
@@ -70,8 +73,12 @@ class CollectionResource(object):
             # TODO(kgriffs): optimize, along with serialization (below)
             resp_msgs = list(msgs)
 
+        except input_exceptions.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Claim could not be created.')
@@ -155,6 +162,7 @@ class ItemResource(object):
                                              CLAIM_PATCH_SPEC)
 
         try:
+            validation.claim_updating(metadata)
             self.claim_controller.update(queue_name,
                                          claim_id=claim_id,
                                          metadata=metadata,
@@ -162,8 +170,12 @@ class ItemResource(object):
 
             resp.status = falcon.HTTP_204
 
+        except input_exceptions.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Claim could not be updated.')

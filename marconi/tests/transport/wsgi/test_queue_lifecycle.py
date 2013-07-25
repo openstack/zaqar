@@ -84,9 +84,25 @@ class QueueLifecycleBaseTest(base.TestBase):
             self.simulate_get(path + '/metadata', project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+    def test_name_restrictions(self):
+        self.simulate_put('/v1/queues/Nice-Boat_2')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+
+        self.simulate_put('/v1/queues/Nice-Bo@t')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_put('/v1/queues/_' + 'niceboat' * 8)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_no_metadata(self):
         self.simulate_put('/v1/queues/fizbat')
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
+
+        self.simulate_put('/v1/queues/fizbat/metadata')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_put('/v1/queues/fizbat/metadata', body='')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_bad_metadata(self):
         self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
@@ -165,6 +181,10 @@ class QueueLifecycleBaseTest(base.TestBase):
         # List empty
         self.simulate_get('/v1/queues', project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Payload exceeded
+        self.simulate_get('/v1/queues', project_id, query_string='limit=21')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         # Create some
         self.simulate_put('/v1/queues/q1', project_id, body='{"_ttl": 30 }')

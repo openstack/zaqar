@@ -96,18 +96,48 @@ class MessagesBaseTest(base.TestBase):
         actual_ttls = set(m['ttl'] for m in result_doc)
         self.assertFalse(expected_ttls - actual_ttls)
 
+    def test_exceeded_payloads(self):
+        # Get a valid message id
+        path = self.queue_path + '/messages'
+        self._post_messages(path)
+
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+
+        # Posting restriction
+        self._post_messages(path, repeat=23)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Bulk GET restriction
+        query_string = 'ids=' + ','.join([msg_id] * 21)
+        self.simulate_get(path, self.project_id, query_string=query_string)
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Listing restriction
+        self.simulate_get(path, self.project_id,
+                          query_string='limit=21',
+                          headers=self.headers)
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Bulk deletion restriction
+        query_string = 'ids=' + ','.join([msg_id] * 22)
+        self.simulate_delete(path, self.project_id, query_string=query_string)
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_post_single(self):
         sample_messages = [
-            {'body': {'key': 'value'}, 'ttl': 20},
+            {'body': {'key': 'value'}, 'ttl': 200},
         ]
 
         self._test_post(sample_messages)
 
     def test_post_multiple(self):
         sample_messages = [
-            {'body': 239, 'ttl': 10},
-            {'body': {'key': 'value'}, 'ttl': 20},
-            {'body': [1, 3], 'ttl': 30},
+            {'body': 239, 'ttl': 100},
+            {'body': {'key': 'value'}, 'ttl': 200},
+            {'body': [1, 3], 'ttl': 300},
         ]
 
         self._test_post(sample_messages)
@@ -117,15 +147,25 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_post_bad_message(self):
+        messages_path = self.queue_path + '/messages'
+
         for document in (None, '[', '[]', '{}', '.'):
-            self.simulate_post(self.queue_path + '/messages',
+            self.simulate_post(messages_path,
                                body=document,
                                headers=self.headers)
 
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+        # Unacceptable TTL
+        for ttl in (-1, 59, 1209601):
+            self.simulate_post(messages_path,
+                               body=json.dumps([{'ttl': ttl,
+                                                 'body': None}]),
+                               headers=self.headers)
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
     def test_exceeded_message_posting(self):
-        #TODO(zyuan): read `20` from the input validation module
+        # Total (raw request) size
         doc = json.dumps([{'body': "some body", 'ttl': 100}] * 20, indent=4)
         long_doc = doc + (' ' *
                           (self.wsgi_cfg.content_max_length - len(doc) + 1))
@@ -135,6 +175,16 @@ class MessagesBaseTest(base.TestBase):
                            headers=self.headers)
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        # Each message's size
+        for long_body in ('a' * 255,  # +2 string quotes
+                          {'a': 0, 'b': 'x' * 243}):  # w/o whitespaces
+            doc = json.dumps([{'body': long_body, 'ttl': 100}])
+            self.simulate_post(self.queue_path + '/messages',
+                               body=doc,
+                               headers=self.headers)
+
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_unsupported_json(self):
         for document in ('{"overflow": 9223372036854775808}',
@@ -254,7 +304,7 @@ class MessagesBaseTest(base.TestBase):
     def test_no_uuid(self):
         path = self.queue_path + '/messages'
 
-        self.simulate_post(path, '7e7e7e', body='[{"body": 0, "ttl": 0}]')
+        self.simulate_post(path, '7e7e7e', body='[{"body": 0, "ttl": 100}]')
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
@@ -262,7 +312,7 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def _post_messages(self, target, repeat=1):
-        doc = json.dumps([{'body': 239, 'ttl': 30}] * repeat)
+        doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
         self.simulate_post(target, self.project_id, body=doc,
                            headers=self.headers)
 
@@ -275,7 +325,7 @@ class MessagesBaseTest(base.TestBase):
 
 class MessagesSQLiteTests(MessagesBaseTest):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_filename = 'wsgi_sqlite_validation.conf'
 
 
 class MessagesMongoDBTests(MessagesBaseTest):
@@ -296,7 +346,7 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
     def test_simple(self):
         project_id = 'xyz'
         path = '/v1/queues/fizbit/messages'
-        doc = '[{"body": 239, "ttl": 10}]'
+        doc = '[{"body": 239, "ttl": 100}]'
         headers = {
             'Client-ID': '30387f00',
         }
