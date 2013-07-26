@@ -324,13 +324,14 @@ class MessageController(storage.MessageBase):
 
         return utils.HookedCursor(msgs, denormalizer)
 
-    def unclaim(self, claim_id):
+    def unclaim(self, queue_id, claim_id):
         try:
+            qid = utils.to_oid(queue_id)
             cid = utils.to_oid(claim_id)
         except ValueError:
             return
 
-        self._col.update({'c.id': cid},
+        self._col.update({'q': qid, 'c.id': cid},
                          {'$set': {'c': {'id': None, 'e': 0}}},
                          upsert=False, multi=True)
 

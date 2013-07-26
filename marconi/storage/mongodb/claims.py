@@ -235,5 +235,11 @@ class ClaimController(storage.ClaimBase):
 
     @utils.raises_conn_error
     def delete(self, queue, claim_id, project=None):
+        try:
+            qid = self._get_queue_id(queue, project)
+        except exceptions.QueueDoesNotExist:
+            # Fail silently on bad queue/project
+            return
+
         msg_ctrl = self.driver.message_controller
-        msg_ctrl.unclaim(claim_id)
+        msg_ctrl.unclaim(qid, claim_id)
