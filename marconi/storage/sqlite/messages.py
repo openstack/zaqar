@@ -66,8 +66,8 @@ class MessageController(base.MessageBase):
                 'body': content,
             }
 
-    def list(self, queue, project, marker=None,
-             limit=10, echo=False, client_uuid=None):
+    def list(self, queue, project, marker=None, limit=10,
+             echo=False, client_uuid=None, include_claimed=False):
 
         if project is None:
             project = ''
@@ -78,6 +78,7 @@ class MessageController(base.MessageBase):
                   from Messages
                  where ttl > julianday() * 86400.0 - created
                    and qid = ?'''
+
             args = [utils.get_qid(self.driver, queue, project)]
 
             if not echo:
@@ -89,6 +90,12 @@ class MessageController(base.MessageBase):
                 sql += '''
                    and id > ?'''
                 args += [utils.marker_decode(marker)]
+
+            if not include_claimed:
+                sql += '''
+                    and id not in (select msgid
+                                     from Claims join Locked
+                                       on id = cid)'''
 
             sql += '''
                  limit ?'''

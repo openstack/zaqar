@@ -201,10 +201,35 @@ class MessageControllerTest(ControllerBaseTest):
         _insert_fixtures(self.controller, self.queue_name,
                          project=self.project, client_uuid='my_uuid', num=12)
 
-        meta = {'ttl': 70, 'grace': 60}
+        def list_messages(include_claimed=None):
+            kwargs = {
+                'project': self.project,
+                'client_uuid': 'my_uuid',
+                'echo': True,
+            }
 
+            # Properly test default value
+            if include_claimed is not None:
+                kwargs['include_claimed'] = include_claimed
+
+            interaction = self.controller.list(self.queue_name, **kwargs)
+
+            messages = next(interaction)
+            return [msg['id'] for msg in messages]
+
+        messages_before = list_messages(True)
+
+        meta = {'ttl': 70, 'grace': 60}
         another_cid, _ = self.claim_controller.create(self.queue_name, meta,
                                                       project=self.project)
+
+        messages_after = list_messages(True)
+        self.assertEqual(messages_before, messages_after)
+
+        messages_excluding_claimed = list_messages()
+        self.assertNotEqual(messages_before, messages_excluding_claimed)
+        self.assertEqual(2, len(messages_excluding_claimed))
+
         cid, msgs = self.claim_controller.create(self.queue_name, meta,
                                                  project=self.project)
         [msg1, msg2] = msgs
