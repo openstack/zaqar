@@ -72,6 +72,7 @@ class CollectionResource(object):
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
             'echo': req.get_param_as_bool('echo'),
+            'include_claimed': req.get_param_as_bool('include_claimed'),
         })
 
         try:
