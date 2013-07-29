@@ -202,8 +202,7 @@ class ClaimController(storage.ClaimBase):
         expires = now + ttl_delta
 
         if now > expires:
-            msg = _('New ttl will make the claim expires')
-            raise ValueError(msg)
+            raise ValueError('New ttl will make the claim expires')
 
         qid = self._get_queue_id(queue, project)
         msg_ctrl = self.driver.message_controller

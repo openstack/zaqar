@@ -258,7 +258,7 @@ class MessageController(storage.MessageBase):
         }
 
         if fields and not isinstance(fields, (dict, list)):
-            raise TypeError(_('Fields must be an instance of list / dict'))
+            raise TypeError('Fields must be an instance of list / dict')
 
         if not echo and client_uuid:
             query['u'] = {'$ne': client_uuid}
