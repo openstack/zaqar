@@ -61,8 +61,10 @@ class MessageController(storage.MessageBase):
     def __init__(self, driver):
         pass
 
-    def get(self, queue, project=None, message_ids=None,
-            marker=None, echo=False, client_uuid=None):
+    def get(self, queue, message_id, project=None):
+        raise NotImplementedError()
+
+    def bulk_get(self, queue, message_ids, project=None):
         raise NotImplementedError()
 
     def list(self, queue, project=None, marker=None,

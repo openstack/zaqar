@@ -27,7 +27,6 @@ import time
 
 from bson import objectid
 import pymongo.errors
-import six
 
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
@@ -396,10 +395,34 @@ class MessageController(storage.MessageBase):
         yield str(marker_id['next'])
 
     @utils.raises_conn_error
-    def get(self, queue, message_ids, project=None):
-        if isinstance(message_ids, six.string_types):
-            message_ids = [message_ids]
+    def get(self, queue, message_id, project=None):
+        mid = utils.to_oid(message_id)
+        now = timeutils.utcnow()
 
+        # Base query, always check expire time
+        query = {
+            'q': self._get_queue_id(queue, project),
+            'e': {'$gt': now},
+            '_id': mid
+        }
+
+        message = self._col.find_one(query)
+
+        if message is None:
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+
+        oid = message['_id']
+        age = now - utils.oid_utc(oid)
+
+        return {
+            'id': str(oid),
+            'age': age.seconds,
+            'ttl': message['t'],
+            'body': message['b'],
+        }
+
+    @utils.raises_conn_error
+    def bulk_get(self, queue, message_ids, project=None):
         message_ids = [utils.to_oid(id) for id in message_ids]
         now = timeutils.utcnow()
 

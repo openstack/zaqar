@@ -42,9 +42,9 @@ class CollectionResource(object):
     def _get_by_id(self, base_path, project_id, queue_name, ids):
         """Returns one or more messages from the queue by ID."""
         try:
-            messages = self.message_controller.get(
+            messages = self.message_controller.bulk_get(
                 queue_name,
-                ids,
+                message_ids=ids,
                 project=project_id)
 
         except Exception as ex:
@@ -225,19 +225,14 @@ class ItemResource(object):
                    "queue": queue_name,
                    "project": project_id})
         try:
-            messages = self.message_controller.get(
+            message = self.message_controller.get(
                 queue_name,
                 message_id,
                 project=project_id)
 
-            message = next(messages)
-
-        except StopIteration:
-            # Good project_id and queue, but no messages
-            raise falcon.HTTPNotFound()
         except storage_exceptions.DoesNotExist:
-            # This can happen if the queue or project_id is invalid
             raise falcon.HTTPNotFound()
+
         except Exception as ex:
             LOG.exception(ex)
             description = _('Message could not be retrieved.')
