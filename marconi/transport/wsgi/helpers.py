@@ -24,7 +24,7 @@ JSONObject = dict
 """Represents a JSON object in Python."""
 
 JSONArray = list
-"""Represents a JSON array in Phython."""
+"""Represents a JSON array in Python."""
 
 LOG = logging.getLogger(__name__)
 
