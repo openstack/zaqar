@@ -189,7 +189,7 @@ class MessageControllerTest(ControllerBaseTest):
         load_messages(5, self.queue_name, echo=True, project=self.project,
                       marker=next(interaction), client_uuid='my_uuid')
 
-    def test_get_multi_by_id(self):
+    def test_multi_ids(self):
         messages_in = [{'ttl': 120, 'body': 0}, {'ttl': 240, 'body': 1}]
         ids = self.controller.post(self.queue_name, messages_in,
                                    project=self.project,
@@ -200,6 +200,14 @@ class MessageControllerTest(ControllerBaseTest):
 
         for idx, message in enumerate(messages_out):
             self.assertEquals(message['body'], idx)
+
+        self.controller.bulk_delete(self.queue_name, ids,
+                                    project=self.project)
+
+        with testing.expect(StopIteration):
+            result = self.controller.bulk_get(self.queue_name, ids,
+                                              project=self.project)
+            next(result)
 
     def test_claim_effects(self):
         _insert_fixtures(self.controller, self.queue_name,
