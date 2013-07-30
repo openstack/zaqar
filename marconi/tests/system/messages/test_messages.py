@@ -39,7 +39,11 @@ class TestMessages(testtools.TestCase):
     test_000_message_setup.tags = ['smoke', 'positive']
 
     def test_001_message_single_insert(self):
-        """Insert Single Message into the Queue."""
+        """Insert Single Message into the Queue.
+
+        This test also verifies that claimed messages are
+        retuned (or not) depending on the include_claimed flag.
+        """
         doc = msgfnlib.get_message_body(messagecount=1)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
 
@@ -57,6 +61,25 @@ class TestMessages(testtools.TestCase):
         result_body = result.json()['body']
         posted_metadata = doc[0]['body']
         self.assertEqual(result_body, posted_metadata)
+
+        #Post a claim & verify the include_claimed flag.
+        url = self.cfg.base_url + '/queues/messagetestqueue/claims'
+        doc = '{"ttl": 300, "grace": 100}'
+        result = http.post(url, self.header, doc)
+        self.assertEqual(result.status_code, 200)
+
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages' \
+                                  '?include_claimed=true'
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+
+        response_message_body = result.json()["messages"][0]["body"]
+        self.assertEqual(response_message_body, posted_metadata)
+
+        #By default, include_claimed = false
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 204)
 
     test_001_message_single_insert.tags = ['smoke', 'positive']
 
