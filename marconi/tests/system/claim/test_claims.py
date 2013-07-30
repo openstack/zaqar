@@ -227,6 +227,42 @@ class TestClaims(testtools.TestCase):
 
     test_009_claim_release.tags = ['smoke', 'positive']
 
+    def test_010_claim_big_int(self):
+        """Post Claim with big TTL/ Grace.
+
+        The request JSON body will have an integer
+        outside the range -2^63 ~ 2^63-1.
+        """
+        url = self.cfg.base_url + '/queues/claimtestqueue/claims'
+        doc = '{"ttl": 10000000000000000000, "grace": 100}'
+
+        result = http.post(url, self.header, doc)
+        self.assertEqual(result.status_code, 400)
+
+        url = self.cfg.base_url + '/queues/claimtestqueue/claims'
+        doc = '{"ttl": 100, "grace": -10000000000000000000}'
+
+        result = http.post(url, self.header, doc)
+        self.assertEqual(result.status_code, 400)
+
+    test_010_claim_big_int.tags = ['negative']
+
+    def test_011_claim_negative_int(self):
+        """Post Claim with negative TTL/ Grace."""
+        url = self.cfg.base_url + '/queues/claimtestqueue/claims'
+        doc = '{"ttl": -100, "grace": 100}'
+
+        result = http.post(url, self.header, doc)
+        self.assertEqual(result.status_code, 400)
+
+        url = self.cfg.base_url + '/queues/claimtestqueue/claims'
+        doc = '{"ttl": 100, "grace": -100}'
+
+        result = http.post(url, self.header, doc)
+        self.assertEqual(result.status_code, 400)
+
+    test_011_claim_negative_int.tags = ['negative']
+
     def test_999_claim_teardown(self):
         """Delete Queue after Claim Tests."""
         url = self.cfg.base_url + '/queues/claimtestqueue'
