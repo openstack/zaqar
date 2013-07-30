@@ -16,8 +16,6 @@
 import falcon
 
 import marconi.openstack.common.log as logging
-from marconi.storage import exceptions as storage_exceptions
-from marconi import transport
 from marconi.transport import helpers
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
@@ -37,36 +35,10 @@ class ItemResource(object):
         LOG.debug(_("Queue item PUT - queue: %(queue)s, "
                     "project: %(project)s") %
                   {"queue": queue_name, "project": project_id})
-        # TODO(kgriffs): Migrate this check to input validator middleware
-        if req.content_length > transport.MAX_QUEUE_METADATA_SIZE:
-            description = _('Queue metadata size is too large.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
 
-        # Deserialize queue metadata
-        try:
-            metadata = helpers.read_json(req.stream, req.content_length)
-        except helpers.MalformedJSON:
-            description = _('Request body could not be parsed.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Request body could not be read.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        # Metadata must be a JSON object
-        if not isinstance(metadata, dict):
-            description = _('Queue metadata must be an object.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
-
-        # Create or update the queue
         try:
             created = self.queue_controller.create(
                 queue_name,
-                project=project_id)
-
-            self.queue_controller.set_metadata(
-                queue_name,
-                metadata=metadata,
                 project=project_id)
 
         except Exception as ex:
@@ -76,26 +48,6 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
-
-    def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue item GET - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
-
-        try:
-            doc = self.queue_controller.get(queue_name, project=project_id)
-
-        except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound()
-
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _('Queue metadata could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
-
-        else:
-            resp.content_location = req.relative_uri
-            resp.body = helpers.to_json(doc)
 
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(_("Queue item DELETE - queue: %(queue)s, "

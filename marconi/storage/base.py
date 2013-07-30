@@ -100,8 +100,8 @@ class QueueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, name, project=None):
-        """Base method for queue retrieval.
+    def get_metadata(self, name, project=None):
+        """Base method for queue metadata retrieval.
 
         :param name: The queue name
         :param project: Project id

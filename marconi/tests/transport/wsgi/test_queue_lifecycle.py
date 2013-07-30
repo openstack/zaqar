@@ -29,23 +29,36 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     config_filename = None
 
-    def test_simple(self):
+    def test_basics_thoroughly(self):
         path = '/v1/queues/gumshoe'
 
         for project_id in ('480924', 'foo', '', None):
-            # Stats
+            # Stats not found - queue not created yet
             self.simulate_get(path + '/stats', project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+            # Metadata not found - queue not created yet
+            self.simulate_get(path + '/metadata', project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
             # Create
-            doc = '{"messages": {"ttl": 600}}'
-            self.simulate_put(path, project_id, body=doc)
+            self.simulate_put(path, project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
             location = ('Location', '/v1/queues/gumshoe')
             self.assertIn(location, self.srmock.headers)
 
-            result = self.simulate_get(path, project_id)
+            # Get on queues shouldn't work any more
+            self.simulate_get(path, project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_405)
+
+            # Add metadata
+            doc = '{"messages": {"ttl": 600}}'
+            self.simulate_put(path + '/metadata', project_id, body=doc)
+            self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+            # Fetch metadata
+            result = self.simulate_get(path + '/metadata', project_id)
             result_doc = json.loads(result[0])
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
             self.assertEquals(result_doc, json.loads(doc))
@@ -54,70 +67,87 @@ class QueueLifecycleBaseTest(base.TestBase):
             self.simulate_delete(path, project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-            # Get non-existing
-            self.simulate_get(path, project_id)
+            # Get non-existent stats
+            self.simulate_get(path + '/stats', project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+            # Get non-existent metadata
+            self.simulate_get(path + '/metadata', project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_no_metadata(self):
         self.simulate_put('/v1/queues/fizbat')
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
     def test_bad_metadata(self):
+        self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
         for document in ('{', '[]', '.', '  ', ''):
-            self.simulate_put('/v1/queues/fizbat', '7e55e1a7e',
+            self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e',
                               body=document)
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_too_much_metadata(self):
+        self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2) + 1
         doc = doc % ('x' * padding_len)
 
-        self.simulate_put('/v1/queues/fizbat', 'deadbeef', body=doc)
+        self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_way_too_much_metadata(self):
+        self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE * 100
         doc = doc % ('x' * padding_len)
 
-        self.simulate_put('/v1/queues/fizbat', 'deadbeef', body=doc)
+        self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_custom_metadata(self):
+        self.simulate_put('/v1/queues/fizbat', '480924')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+
         # Set
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
         padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2)
         doc = doc % ('x' * padding_len)
-        self.simulate_put('/v1/queues/fizbat', '480924', body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
-
-        # Get
-        result = self.simulate_get('/v1/queues/fizbat', '480924')
-        result_doc = json.loads(result[0])
-        self.assertEquals(result_doc, json.loads(doc))
-
-    def test_update_metadata(self):
-        path = '/v1/queues/xyz'
-        project_id = '480924'
-
-        # Create
-        doc1 = '{"messages": {"ttl": 600}}'
-        self.simulate_put(path, project_id, body=doc1)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
-
-        # Update
-        doc2 = '{"messages": {"ttl": 100}}'
-        self.simulate_put(path, project_id, body=doc2)
+        self.simulate_put('/v1/queues/fizbat/metadata', '480924', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Get
-        result = self.simulate_get(path, project_id)
+        result = self.simulate_get('/v1/queues/fizbat/metadata', '480924')
+        result_doc = json.loads(result[0])
+        self.assertEquals(result_doc, json.loads(doc))
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
+    def test_update_metadata(self):
+        # Create
+        path = '/v1/queues/xyz'
+        project_id = '480924'
+        self.simulate_put(path, project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+
+        # Set meta
+        doc1 = '{"messages": {"ttl": 600}}'
+        self.simulate_put(path + '/metadata', project_id, body=doc1)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Update
+        doc2 = '{"messages": {"ttl": 100}}'
+        self.simulate_put(path + '/metadata', project_id, body=doc2)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Get
+        result = self.simulate_get(path + '/metadata', project_id)
         result_doc = json.loads(result[0])
 
         self.assertEquals(result_doc, json.loads(doc2))
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          path)
+                          path + '/metadata')
 
     def test_list(self):
         project_id = '644079696574693'
@@ -144,10 +174,10 @@ class QueueLifecycleBaseTest(base.TestBase):
                           '/v1/queues?limit=2')
 
         for queue in result_doc['queues']:
-            self.simulate_get(queue['href'], project_id)
+            self.simulate_get(queue['href'] + '/metadata', project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-            self.simulate_get(queue['href'], alt_project_id)
+            self.simulate_get(queue['href'] + '/metadata', alt_project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
             self.assertNotIn('metadata', queue)
@@ -161,7 +191,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         [queue] = result_doc['queues']
-        result = self.simulate_get(queue['href'], project_id)
+        result = self.simulate_get(queue['href'] + '/metadata', project_id)
         result_doc = json.loads(result[0])
         self.assertEquals(result_doc, queue['metadata'])
 
@@ -205,7 +235,7 @@ class QueueFaultyDriverTests(base.TestBaseFaulty):
         location = ('Location', path)
         self.assertNotIn(location, self.srmock.headers)
 
-        result = self.simulate_get(path, '480924')
+        result = self.simulate_get(path + '/metadata', '480924')
         result_doc = json.loads(result[0])
         self.assertEquals(self.srmock.status, falcon.HTTP_503)
         self.assertNotEquals(result_doc, json.loads(doc))

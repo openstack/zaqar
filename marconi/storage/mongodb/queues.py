@@ -108,7 +108,7 @@ class QueueController(storage.QueueBase):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
-    def get(self, name, project=None):
+    def get_metadata(self, name, project=None):
         queue = self._get(name, project)
         return queue.get('m', {})
 

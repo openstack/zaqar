@@ -23,6 +23,7 @@ from marconi.transport import auth
 from marconi.transport.wsgi import claims
 from marconi.transport.wsgi import health
 from marconi.transport.wsgi import messages
+from marconi.transport.wsgi import metadata
 from marconi.transport.wsgi import queues
 from marconi.transport.wsgi import stats
 
@@ -78,6 +79,11 @@ class Driver(transport.DriverBase):
         stats_endpoint = stats.Resource(queue_controller)
         self.app.add_route('/v1/queues/{queue_name}'
                            '/stats', stats_endpoint)
+
+        # Metadata Endpoints
+        metadata_endpoint = metadata.Resource(queue_controller)
+        self.app.add_route('/v1/queues/{queue_name}'
+                           '/metadata', metadata_endpoint)
 
         # Messages Endpoints
         msg_collection = messages.CollectionResource(message_controller)

@@ -76,21 +76,21 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertTrue(created)
 
         # Test Queue retrieval
-        metadata = self.controller.get('test', project=self.project)
+        metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata, {})
 
         # Test Queue Update
         created = self.controller.set_metadata('test', project=self.project,
                                                metadata=dict(meta='test_meta'))
 
-        metadata = self.controller.get('test', project=self.project)
+        metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
         # Touching an existing queue does not affect metadata
         created = self.controller.create('test', project=self.project)
         self.assertFalse(created)
 
-        metadata = self.controller.get('test', project=self.project)
+        metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
         # Test Queue Statistic
@@ -105,7 +105,7 @@ class QueueControllerTest(ControllerBaseTest):
 
         # Test DoesNotExist Exception
         with testing.expect(storage.exceptions.DoesNotExist):
-            self.controller.get('test', project=self.project)
+            self.controller.get_metadata('test', project=self.project)
 
         with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.set_metadata('test', '{}', project=self.project)
