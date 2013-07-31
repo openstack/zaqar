@@ -88,8 +88,8 @@ class MessageController(storage.MessageBase):
         self.claimed_fields = [
             ('q', 1),
             ('c.id', 1),
+            ('k', 1),
             ('c.e', 1),
-            ('_id', -1),
         ]
 
         self._col.ensure_index(self.claimed_fields,
@@ -206,6 +206,10 @@ class MessageController(storage.MessageBase):
                 LOG.warning(_('Queue %s is empty or missing.') % queue_id)
                 return
 
+            # NOTE(flaper87): Can we use k instead of
+            # _id here? The active index will cover
+            # the previous query and the the remove
+            # one.
             query = {
                 'q': queue_id,
                 'e': {'$lte': timeutils.utcnow()},
@@ -271,7 +275,8 @@ class MessageController(storage.MessageBase):
             query['c.e'] = {'$lte': now}
 
         # NOTE(flaper87): Suggest the index to use for this query
-        return self._col.find(query, fields=fields).hint(self.active_fields)
+        return self._col.find(query, fields=fields,
+                              sort=[('k', 1)]).hint(self.active_fields)
 
     #-----------------------------------------------------------------------
     # Interface
@@ -303,7 +308,7 @@ class MessageController(storage.MessageBase):
             # lookup over c.id to use the index
             query['c.id'] = {'$ne': None}
 
-        msgs = self._col.find(query, sort=[('_id', 1)])
+        msgs = self._col.find(query, sort=[('k', 1)])
 
         if limit:
             msgs = msgs.limit(limit)
@@ -370,7 +375,7 @@ class MessageController(storage.MessageBase):
         messages = self._list(qid, marker, echo, client_uuid,
                               include_claimed=include_claimed)
 
-        messages = messages.limit(limit).sort('_id')
+        messages = messages.limit(limit)
         marker_id = {}
 
         now = timeutils.utcnow()

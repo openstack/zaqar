@@ -148,7 +148,7 @@ class ClaimController(storage.ClaimBase):
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
         msgs = msg_ctrl.active(qid, fields={'_id': 1})
-        msgs = msgs.limit(limit).sort('_id')
+        msgs = msgs.limit(limit)
 
         messages = iter([])
 
