@@ -70,14 +70,14 @@ class MessageController(storage.MessageBase):
         # other places.
         #   * q: Mostly everywhere. It must stay at the
         #       beginning of the index.
+        #   * k: Marker and FIFO key (Used mainly for sorting)
         #   * e: Together with q is used for getting a
         #       specific message. (see `get`)
         self.active_fields = [
             ('q', 1),
+            ('k', 1),
             ('e', 1),
             ('c.e', 1),
-            ('k', 1),
-            ('_id', -1),
         ]
 
         self._col.ensure_index(self.active_fields,
