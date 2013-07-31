@@ -72,7 +72,7 @@ class MessageController(storage.MessageBase):
         #       beginning of the index.
         #   * e: Together with q is used for getting a
         #       specific message. (see `get`)
-        active_fields = [
+        self.active_fields = [
             ('q', 1),
             ('e', 1),
             ('c.e', 1),
@@ -80,19 +80,19 @@ class MessageController(storage.MessageBase):
             ('_id', -1),
         ]
 
-        self._col.ensure_index(active_fields,
+        self._col.ensure_index(self.active_fields,
                                name='active',
                                background=True)
 
         # Index used for claims
-        claimed_fields = [
+        self.claimed_fields = [
             ('q', 1),
             ('c.id', 1),
             ('c.e', 1),
             ('_id', -1),
         ]
 
-        self._col.ensure_index(claimed_fields,
+        self._col.ensure_index(self.claimed_fields,
                                name='claimed',
                                background=True)
 
@@ -270,7 +270,8 @@ class MessageController(storage.MessageBase):
             # any claim, or are part of an expired claim.
             query['c.e'] = {'$lte': now}
 
-        return self._col.find(query, fields=fields)
+        # NOTE(flaper87): Suggest the index to use for this query
+        return self._col.find(query, fields=fields).hint(self.active_fields)
 
     #-----------------------------------------------------------------------
     # Interface
