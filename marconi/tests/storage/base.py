@@ -159,9 +159,8 @@ class MessageControllerTest(ControllerBaseTest):
         self.controller.delete(queue_name, created[0], project=self.project)
 
         # Test does not exist
-        messages = self.controller.get(queue_name, message_ids=created,
-                                       project=self.project)
-        self.assertRaises(StopIteration, messages.next)
+        with testing.expect(storage.exceptions.DoesNotExist):
+            self.controller.get(queue_name, created[0], project=self.project)
 
     def test_get_multi(self):
         _insert_fixtures(self.controller, self.queue_name,
@@ -196,8 +195,8 @@ class MessageControllerTest(ControllerBaseTest):
                                    project=self.project,
                                    client_uuid='my_uuid')
 
-        messages_out = self.controller.get(self.queue_name, ids,
-                                           project=self.project)
+        messages_out = self.controller.bulk_get(self.queue_name, ids,
+                                                project=self.project)
 
         for idx, message in enumerate(messages_out):
             self.assertEquals(message['body'], idx)
@@ -250,10 +249,9 @@ class MessageControllerTest(ControllerBaseTest):
                                project=self.project,
                                claim=cid)
 
-        with testing.expect(StopIteration):
-            result = self.controller.get(self.queue_name, msg1['id'],
-                                         project=self.project)
-            next(result)
+        with testing.expect(storage.exceptions.DoesNotExist):
+            self.controller.get(self.queue_name, msg1['id'],
+                                project=self.project)
 
         # Make sure such a deletion is idempotent
         self.controller.delete(self.queue_name, msg1['id'],
@@ -276,11 +274,9 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid='my_uuid')
 
-        with testing.expect(StopIteration):
-            result = self.controller.get(self.queue_name, msgid,
-                                         project=self.project)
-
-            next(result)
+        with testing.expect(storage.exceptions.DoesNotExist):
+            self.controller.get(self.queue_name, msgid,
+                                project=self.project)
 
         countof = self.queue_controller.stats(self.queue_name,
                                               project=self.project)
@@ -304,8 +300,7 @@ class MessageControllerTest(ControllerBaseTest):
             self.controller.delete(queue, bad_message_id, project)
 
         with testing.expect(exceptions.MalformedID):
-            result = self.controller.get(queue, bad_message_id, project)
-            next(result)
+            self.controller.get(queue, bad_message_id, project)
 
     def test_bad_claim_id(self):
         self.queue_controller.create('unused', '480924')

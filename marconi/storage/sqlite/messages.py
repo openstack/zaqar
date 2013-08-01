@@ -14,8 +14,6 @@
 # limitations under the License.
 
 
-import six
-
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
@@ -39,12 +37,32 @@ class MessageController(base.MessageBase):
             )
         ''')
 
-    def get(self, queue, message_ids, project):
+    def get(self, queue, message_id, project):
         if project is None:
             project = ''
 
-        if isinstance(message_ids, six.string_types):
-            message_ids = [message_ids]
+        try:
+            content, ttl, age = self.driver.get('''
+                select content, ttl, julianday() * 86400.0 - created
+                  from Queues as Q join Messages as M
+                    on qid = Q.id
+                 where ttl > julianday() * 86400.0 - created
+                   and M.id = ? and project = ? and name = ?
+            ''', utils.msgid_decode(message_id), project, queue)
+
+            return {
+                'id': message_id,
+                'ttl': ttl,
+                'age': int(age),
+                'body': content,
+            }
+
+        except utils.NoResult:
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+
+    def bulk_get(self, queue, message_ids, project):
+        if project is None:
+            project = ''
 
         message_ids = ["'%s'" % utils.msgid_decode(id) for id in message_ids]
         message_ids = ','.join(message_ids)
