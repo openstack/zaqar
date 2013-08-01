@@ -310,16 +310,10 @@ class MessageController(storage.MessageBase):
         now = timeutils.utcnow()
 
         def denormalizer(msg):
-            oid = msg['_id']
-            age = now - utils.oid_utc(oid)
+            doc = _basic_message(msg, now)
+            doc['claim'] = msg['c']
 
-            return {
-                'id': str(oid),
-                'age': age.seconds,
-                'ttl': msg['t'],
-                'body': msg['b'],
-                'claim': msg['c']
-            }
+            return doc
 
         return utils.HookedCursor(msgs, denormalizer)
 
@@ -381,16 +375,9 @@ class MessageController(storage.MessageBase):
         now = timeutils.utcnow()
 
         def denormalizer(msg):
-            oid = msg['_id']
-            age = now - utils.oid_utc(oid)
             marker_id['next'] = msg['k']
 
-            return {
-                'id': str(oid),
-                'age': age.seconds,
-                'ttl': msg['t'],
-                'body': msg['b'],
-            }
+            return _basic_message(msg, now)
 
         yield utils.HookedCursor(messages, denormalizer)
         yield str(marker_id['next'])
@@ -412,15 +399,7 @@ class MessageController(storage.MessageBase):
         if message is None:
             raise exceptions.MessageDoesNotExist(message_id, queue, project)
 
-        oid = message['_id']
-        age = now - utils.oid_utc(oid)
-
-        return {
-            'id': str(oid),
-            'age': age.seconds,
-            'ttl': message['t'],
-            'body': message['b'],
-        }
+        return _basic_message(message, now)
 
     @utils.raises_conn_error
     def bulk_get(self, queue, message_ids, project=None):
@@ -437,15 +416,7 @@ class MessageController(storage.MessageBase):
         messages = self._col.find(query)
 
         def denormalizer(msg):
-            oid = msg['_id']
-            age = now - utils.oid_utc(oid)
-
-            return {
-                'id': str(oid),
-                'age': age.seconds,
-                'ttl': msg['t'],
-                'body': msg['b'],
-            }
+            return _basic_message(msg, now)
 
         return utils.HookedCursor(messages, denormalizer)
 
@@ -609,3 +580,15 @@ class MessageController(storage.MessageBase):
                 self._col.remove(query, w=0)
         except exceptions.QueueDoesNotExist:
             pass
+
+
+def _basic_message(msg, now):
+    oid = msg['_id']
+    age = now - utils.oid_utc(oid)
+
+    return {
+        'id': str(oid),
+        'age': age.seconds,
+        'ttl': msg['t'],
+        'body': msg['b'],
+    }
