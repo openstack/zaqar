@@ -157,8 +157,7 @@ class MongodbMessageTests(base.MessageControllerTest):
         super(MongodbMessageTests, self).tearDown()
 
     def _count_expired(self, queue, project=None):
-        queue_id = self.queue_controller._get_id(queue, project)
-        return self.controller._count_expired(queue_id)
+        return self.controller._count_expired(queue, project)
 
     def test_indexes(self):
         col = self.controller._col
@@ -172,16 +171,15 @@ class MongodbMessageTests(base.MessageControllerTest):
         iterations = 10
 
         self.queue_controller.create(queue_name)
-        queue_id = self.queue_controller._get_id(queue_name)
 
         seed_marker1 = self.controller._next_marker(queue_name)
         self.assertEqual(seed_marker1, 1, 'First marker is 1')
 
         for i in range(iterations):
             self.controller.post(queue_name, [{'ttl': 60}], 'uuid')
-            marker1 = self.controller._next_marker(queue_id)
-            marker2 = self.controller._next_marker(queue_id)
-            marker3 = self.controller._next_marker(queue_id)
+            marker1 = self.controller._next_marker(queue_name)
+            marker2 = self.controller._next_marker(queue_name)
+            marker3 = self.controller._next_marker(queue_name)
             self.assertEqual(marker1, marker2)
             self.assertEqual(marker2, marker3)
 
@@ -239,8 +237,7 @@ class MongodbMessageTests(base.MessageControllerTest):
         # Sanity-check that the most recent message is the
         # one remaining in the queue.
         queue = random.choice(queue_names)
-        queue_id = self.queue_controller._get_id(queue, project)
-        message = self.driver.db.messages.find_one({'q': queue_id})
+        message = self.driver.db.messages.find_one({'q': queue, 'p': project})
         self.assertEquals(message['k'], messages_per_queue)
 
 

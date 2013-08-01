@@ -55,7 +55,7 @@ class CollectionResource(object):
         # Prepare response
         messages = list(messages)
         if not messages:
-            raise falcon.HTTPNotFound()
+            return None
 
         base_path += '/'
         for each_message in messages:
@@ -200,13 +200,13 @@ class CollectionResource(object):
         ids = req.get_param_as_list('ids')
         if ids is None:
             response = self._get(req, project_id, queue_name)
-
-            if response is None:
-                resp.status = falcon.HTTP_204
-                return
         else:
             base_path = req.path + '/messages'
             response = self._get_by_id(base_path, project_id, queue_name, ids)
+
+        if response is None:
+            resp.status = falcon.HTTP_204
+            return
 
         resp.body = helpers.to_json(response)
 

@@ -74,10 +74,10 @@ class QueueController(storage.QueueBase):
         queue = self._get(name, project, fields=['_id'])
         return queue.get('_id')
 
-    def _get_ids(self):
-        """Returns a generator producing a list of all queue IDs."""
-        cursor = self._col.find({}, fields={'_id': 1})
-        return (doc['_id'] for doc in cursor)
+    def _get_np(self):
+        """Returns a generator producing a list of all queue (n, p)."""
+        cursor = self._col.find({}, fields={'n': 1, 'p': 1})
+        return ((doc['n'], doc['p']) for doc in cursor)
 
     #-----------------------------------------------------------------------
     # Interface
@@ -139,10 +139,10 @@ class QueueController(storage.QueueBase):
 
     @utils.raises_conn_error
     def stats(self, name, project=None):
-        queue_id = self._get_id(name, project)
+        self._get_id(name, project)
         controller = self.driver.message_controller
-        active = controller.active(queue_id)
-        claimed = controller.claimed(queue_id)
+        active = controller.active(name, project=project)
+        claimed = controller.claimed(name, project=project)
 
         return {
             'actions': 0,

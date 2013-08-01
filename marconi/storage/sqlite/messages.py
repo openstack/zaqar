@@ -92,28 +92,29 @@ class MessageController(base.MessageBase):
 
         with self.driver('deferred'):
             sql = '''
-                select id, content, ttl, julianday() * 86400.0 - created
-                  from Messages
-                 where ttl > julianday() * 86400.0 - created
-                   and qid = ?'''
+                select M.id, content, ttl, julianday() * 86400.0 - created
+                  from Queues as Q join Messages as M
+                    on M.qid = Q.id
+                 where M.ttl > julianday() * 86400.0 - created
+                   and Q.name = ? and Q.project = ?'''
 
-            args = [utils.get_qid(self.driver, queue, project)]
+            args = [queue, project]
 
             if not echo:
                 sql += '''
-                   and client != ?'''
+                   and M.client != ?'''
                 args += [client_uuid]
 
             if marker:
                 sql += '''
-                   and id > ?'''
+                   and M.id > ?'''
                 args += [utils.marker_decode(marker)]
 
             if not include_claimed:
                 sql += '''
-                    and id not in (select msgid
-                                     from Claims join Locked
-                                       on id = cid)'''
+                   and M.id not in (select msgid
+                                      from Claims join Locked
+                                        on id = cid)'''
 
             sql += '''
                  limit ?'''
@@ -146,8 +147,8 @@ class MessageController(base.MessageBase):
 
             self.driver.run('''
                 delete from Messages
-                where ttl <= julianday() * 86400.0 - created
-                  and qid = ?''', qid)
+                 where ttl <= julianday() * 86400.0 - created
+                   and qid = ?''', qid)
 
             # executemany() sets lastrowid to None, so no matter we manually
             # generate the IDs or not, we still need to query for it.
