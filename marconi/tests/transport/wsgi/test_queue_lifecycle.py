@@ -22,12 +22,17 @@ import pymongo
 
 from marconi.common import config
 from marconi.tests.transport.wsgi import base
-from marconi import transport
 
 
 class QueueLifecycleBaseTest(base.TestBase):
 
     config_filename = None
+
+    def setUp(self):
+        super(QueueLifecycleBaseTest, self).setUp()
+
+        self.wsgi_cfg = config.namespace(
+            'drivers:transport:wsgi').from_options()
 
     def test_basics_thoroughly(self):
         path = '/v1/queues/gumshoe'
@@ -95,7 +100,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
-        padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2) + 1
+        padding_len = self.wsgi_cfg.metadata_max_length - (len(doc) - 2) + 1
         doc = doc % ('x' * padding_len)
 
         self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
@@ -105,7 +110,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
-        padding_len = transport.MAX_QUEUE_METADATA_SIZE * 100
+        padding_len = self.wsgi_cfg.metadata_max_length * 100
         doc = doc % ('x' * padding_len)
 
         self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
@@ -117,7 +122,7 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Set
         doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
-        padding_len = transport.MAX_QUEUE_METADATA_SIZE - (len(doc) - 2)
+        padding_len = self.wsgi_cfg.metadata_max_length - (len(doc) - 2)
         doc = doc % ('x' * padding_len)
         self.simulate_put('/v1/queues/fizbat/metadata', '480924', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)

@@ -15,6 +15,7 @@
 
 import falcon
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import helpers
@@ -23,6 +24,10 @@ from marconi.transport.wsgi import helpers as wsgi_helpers
 
 
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('drivers:transport:wsgi').from_options(
+    metadata_max_length=64 * 1024
+)
+
 CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
 CLAIM_PATCH_SPEC = (('ttl', int),)
 
@@ -38,9 +43,15 @@ class CollectionResource(object):
         LOG.debug(_("Claims collection POST - queue: %(queue)s, "
                     "project: %(project)s") %
                   {"queue": queue_name, "project": project_id})
+
         # Check for an explicit limit on the # of messages to claim
         limit = req.get_param_as_int('limit')
         claim_options = {} if limit is None else {'limit': limit}
+
+        # Place JSON size restriction before parsing
+        if req.content_length > CFG.metadata_max_length:
+            description = _('Claim metadata size is too large.')
+            raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
@@ -132,6 +143,12 @@ class ItemResource(object):
                   {"queue_name": queue_name,
                    "project_id": project_id,
                    "claim_id": claim_id})
+
+        # Place JSON size restriction before parsing
+        if req.content_length > CFG.metadata_max_length:
+            description = _('Claim metadata size is too large.')
+            raise wsgi_exceptions.HTTPBadRequestBody(description)
+
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,

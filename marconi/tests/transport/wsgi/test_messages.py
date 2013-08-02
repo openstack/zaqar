@@ -18,6 +18,7 @@ import os
 
 import falcon
 
+from marconi.common import config
 from marconi.tests.transport.wsgi import base
 
 
@@ -25,6 +26,9 @@ class MessagesBaseTest(base.TestBase):
 
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
+
+        self.wsgi_cfg = config.namespace(
+            'drivers:transport:wsgi').from_options()
 
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'
@@ -118,6 +122,18 @@ class MessagesBaseTest(base.TestBase):
                                headers=self.headers)
 
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def test_exceeded_message_posting(self):
+        #TODO(zyuan): read `20` from the input validation module
+        doc = json.dumps([{'body': "some body", 'ttl': 100}] * 20, indent=4)
+        long_doc = doc + (' ' *
+                          (self.wsgi_cfg.content_max_length - len(doc) + 1))
+
+        self.simulate_post(self.queue_path + '/messages',
+                           body=long_doc,
+                           headers=self.headers)
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_unsupported_json(self):
         for document in ('{"overflow": 9223372036854775808}',

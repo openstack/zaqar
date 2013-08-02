@@ -29,6 +29,9 @@ class ClaimsBaseTest(base.TestBase):
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
 
+        self.wsgi_cfg = config.namespace(
+            'drivers:transport:wsgi').from_options()
+
         self.project_id = '480924'
         self.queue_path = '/v1/queues/fizbit'
         self.claims_path = self.queue_path + '/claims'
@@ -63,6 +66,20 @@ class ClaimsBaseTest(base.TestBase):
         for doc in (None, '[', '"crunchy"'):
             self.simulate_patch(href, self.project_id, body=doc)
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def test_too_much_metadata(self):
+        doc = '{"ttl": 100, "grace": 60}'
+        long_doc = doc + (' ' *
+                          (self.wsgi_cfg.metadata_max_length - len(doc) + 1))
+
+        self.simulate_post(self.claims_path, self.project_id, body=long_doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_post(self.claims_path, self.project_id, body=doc)
+        href = self.srmock.headers_dict['Location']
+
+        self.simulate_patch(href, self.project_id, body=long_doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_lifecycle(self):
         doc = '{"ttl": 10, "grace": 30}'

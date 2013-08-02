@@ -17,6 +17,7 @@ import itertools
 
 import falcon
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import helpers
@@ -25,6 +26,10 @@ from marconi.transport.wsgi import helpers as wsgi_helpers
 
 
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('drivers:transport:wsgi').from_options(
+    content_max_length=256 * 1024
+)
+
 MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
 
 
@@ -134,6 +139,11 @@ class CollectionResource(object):
                   {"queue": queue_name, "project": project_id})
 
         uuid = req.get_header('Client-ID', required=True)
+
+        # Place JSON size restriction before parsing
+        if req.content_length > CFG.content_max_length:
+            description = _('Message collection size is too large.')
+            raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Pull out just the fields we care about
         messages = wsgi_helpers.filter_stream(

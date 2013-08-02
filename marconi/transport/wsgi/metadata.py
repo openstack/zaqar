@@ -15,14 +15,17 @@
 
 import falcon
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
-from marconi import transport
 from marconi.transport import helpers
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('drivers:transport:wsgi').from_options(
+    metadata_max_length=64 * 1024
+)
 
 
 class Resource(object):
@@ -57,8 +60,8 @@ class Resource(object):
                     "project: %(project)s") %
                   {"queue": queue_name, "project": project_id})
 
-        # TODO(kgriffs): Migrate this check to input validator middleware
-        if req.content_length > transport.MAX_QUEUE_METADATA_SIZE:
+        # Place JSON size restriction before parsing
+        if req.content_length > CFG.metadata_max_length:
             description = _('Queue metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
