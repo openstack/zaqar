@@ -148,13 +148,11 @@ class ClaimController(storage.ClaimBase):
         msgs = msgs.limit(limit)
 
         messages = iter([])
+        ids = [msg['_id'] for msg in msgs]
 
-        # Lets respect the limit
-        # during the count
-        if msgs.count(True) == 0:
+        if len(ids) == 0:
             return (str(oid), messages)
 
-        ids = [msg['_id'] for msg in msgs]
         now = timeutils.utcnow()
 
         # Set claim field for messages in ids
