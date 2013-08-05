@@ -76,3 +76,6 @@ class MessageController(storage.MessageBase):
 
     def delete(self, queue, message_id, project=None, claim=None):
         raise NotImplementedError()
+
+    def bulk_delete(self, queue, message_ids, project=None):
+        raise NotImplementedError()

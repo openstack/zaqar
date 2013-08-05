@@ -211,3 +211,17 @@ class MessageController(base.MessageBase):
 
         if not self.driver.affected:
             raise exceptions.ClaimNotPermitted(utils.msgid_encode(id), claim)
+
+    def bulk_delete(self, queue, message_ids, project):
+        if project is None:
+            project = ''
+
+        message_ids = ','.join(["'%s'" % utils.msgid_decode(id)
+                                for id in message_ids])
+
+        self.driver.run('''
+            delete from Messages
+             where id in (%s)
+               and qid = (select id from Queues
+                           where project = ? and name = ?)
+        ''' % message_ids, project, queue)

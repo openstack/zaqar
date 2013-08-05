@@ -587,6 +587,20 @@ class MessageController(storage.MessageBase):
         except exceptions.QueueDoesNotExist:
             pass
 
+    @utils.raises_conn_error
+    def bulk_delete(self, queue, message_ids, project=None):
+        try:
+            message_ids = [utils.to_oid(id) for id in message_ids]
+            query = {
+                'q': self._get_queue_id(queue, project),
+                '_id': {'$in': message_ids},
+            }
+
+            self._col.remove(query, w=0)
+
+        except exceptions.QueueDoesNotExist:
+            pass
+
 
 def _basic_message(msg, now):
     oid = msg['_id']
