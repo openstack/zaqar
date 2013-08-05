@@ -18,17 +18,19 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 from marconi.tests.system.messages import msgfnlib
 
-import testtools
 import time
 
 
-class TestClaims(testtools.TestCase):
+class TestClaims(functionlib.TestUtils):
     """Tests for Claims."""
 
     def setUp(self):
         super(TestClaims, self).setUp()
         self.cfg = config.Config()
         self.header = functionlib.create_marconi_headers()
+
+        self.headers_response_with_body = set(['location',
+                                               'content-type'])
 
     def test_000_claim_setup(self):
         """Create Queue, Post Messages for Claim Tests."""
@@ -59,6 +61,9 @@ class TestClaims(testtools.TestCase):
         test_result_flag = claimfnlib.verify_claim_msg(
             message_count, result.headers, result.text)
         self.assertEqual(test_result_flag, True)
+
+        response_headers = set(result.headers.keys())
+        self.assertIsSubset(self.headers_response_with_body, response_headers)
 
     test_001_claim_2messages.tags = ['smoke', 'positive']
 

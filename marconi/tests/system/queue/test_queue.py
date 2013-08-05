@@ -13,8 +13,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import testtools
-
 from marconi.tests.system.common import config
 from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
@@ -23,13 +21,17 @@ from marconi.tests.system.queue import queuefnlib
 import json
 
 
-class TestQueue(testtools.TestCase):
+class TestQueue(functionlib.TestUtils):
     """Tests for queue."""
 
     def setUp(self):
         super(TestQueue, self).setUp()
         self.cfg = config.Config()
         self.header = functionlib.create_marconi_headers()
+
+        self.headers_response_empty = set(['location'])
+        self.headers_response_with_body = set(['content-location',
+                                               'content-type'])
 
     def test_001_queue_insert(self):
         """Insert Queue.
@@ -42,9 +44,16 @@ class TestQueue(testtools.TestCase):
 
         self.assertEqual(result.status_code, 201)
 
+        response_headers = set(result.headers.keys())
+        self.assertIsSubset(self.headers_response_empty, response_headers)
+
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
+
         self.assertEqual(result.json(), json.loads(doc))
+
+        response_headers = set(result.headers.keys())
+        self.assertIsSubset(self.headers_response_with_body, response_headers)
 
     test_001_queue_insert.tags = ['smoke', 'positive', 'create_queue']
 
@@ -126,11 +135,11 @@ class TestQueue(testtools.TestCase):
     def test_007_queue_insert_missing_header(self):
         """Insert Queue with missing header field.
 
-        Request has no USER_AGENT & X-Project-Id headers.
+        Request has no Accept header.
         """
         url = self.cfg.base_url + '/queues/missingheader'
         header = functionlib.missing_header_fields()
-        doc = '{"queue": "USER_AGENT header is missing"}'
+        doc = '{"queue": "Accept header is missing"}'
 
         result = http.put(url, header, doc)
         self.assertEqual(result.status_code, 400)
