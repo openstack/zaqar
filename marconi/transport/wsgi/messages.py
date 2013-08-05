@@ -210,6 +210,25 @@ class CollectionResource(object):
 
         resp.body = helpers.to_json(response)
 
+    def on_delete(self, req, resp, project_id, queue_name):
+        # NOTE(zyuan): Attempt to delete the whole message collection
+        # (without an "ids" parameter) is not allowed
+        ids = req.get_param_as_list('ids', required=True)
+
+        try:
+            self.message_controller.bulk_delete(
+                queue_name,
+                message_ids=ids,
+                project=project_id)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = 'Messages could not be deleted.'
+            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+
+        else:
+            resp.status = falcon.HTTP_204
+
 
 class ItemResource(object):
 
