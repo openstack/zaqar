@@ -35,9 +35,8 @@ class TestClaims(functionlib.TestUtils):
     def test_000_claim_setup(self):
         """Create Queue, Post Messages for Claim Tests."""
         url = self.cfg.base_url + '/queues/claimtestqueue'
-        doc = '{"queuemetadata": "message test queue"}'
 
-        result = http.put(url, self.header, doc)
+        result = http.put(url, self.header)
         self.assertEqual(result.status_code, 201)
 
         #Post Messages

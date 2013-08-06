@@ -33,240 +33,265 @@ class TestQueue(functionlib.TestUtils):
         self.headers_response_with_body = set(['content-location',
                                                'content-type'])
 
-    def test_001_queue_insert(self):
-        """Insert Queue.
-
-        Creates Queue, does a get & verifies data.
-        """
+    def test_001_insert_queue(self):
+        """Create Queue."""
         url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = '{"queue": "Apple"}'
-        result = http.put(url, self.header, doc)
 
+        result = http.put(url, self.header)
         self.assertEqual(result.status_code, 201)
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_empty, response_headers)
 
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {})
 
-        self.assertEqual(result.json(), json.loads(doc))
+        http.delete(url, self.header)
 
-        response_headers = set(result.headers.keys())
-        self.assertIsSubset(self.headers_response_with_body, response_headers)
+    test_001_insert_queue.tags = ['smoke', 'positive', 'create_queue']
 
-    test_001_queue_insert.tags = ['smoke', 'positive', 'create_queue']
-
-    def test_002_queue_insert_case_insensitive(self):
+    def test_002_insert_queue_case_insensitive(self):
         """Insert Queue with same name, different case."""
         url = self.cfg.base_url + '/queues/QteStquEue'
-        doc = '{"queue": "Orange"}'
+
+        result = http.put(url, self.header)
+        self.assertEqual(result.status_code, 201)
+
+        http.delete(url, self.header)
+
+    test_002_insert_queue_case_insensitive.tags = ['positive']
+
+    def test_003_insert_queue_empty_json(self):
+        """Update Queue with empty json."""
+        url = self.cfg.base_url + '/queues/emptyjson'
+        doc = '{}'
 
         result = http.put(url, self.header, doc)
         self.assertEqual(result.status_code, 201)
 
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc))
-
         http.delete(url, self.header)
 
-    test_002_queue_insert_case_insensitive.tags = ['positive']
+    test_003_insert_queue_empty_json.tags = ['smoke', 'positive']
 
-    def test_003_queue_update_empty_metadata(self):
-        """Update Queue with empty metadata."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc_original = '{"queue": "Apple"}'
-        doc = ''
-
-        result = http.put(url, self.header, doc)
-        self.assertEqual(result.status_code, 400)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc_original))
-
-    test_003_queue_update_empty_metadata.tags = ['negative']
-
-    def test_004_queue_update_empty_json(self):
-        """Update Queue with empty json."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = '{}'
-
-        result = http.put(url, self.header, doc)
-        self.assertEqual(result.status_code, 204)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc))
-
-    test_004_queue_update_empty_json.tags = ['smoke', 'positive']
-
-    def test_005_queue_insert_invalid_authtoken(self):
+    def test_004_insert_queue_invalid_authtoken(self):
         """Insert Queue with invalid authtoken."""
         url = self.cfg.base_url + '/queues/invalidauthtoken'
         header = functionlib.invalid_auth_token_header()
-        doc = '{"queue": "invalid auth token"}'
 
-        result = http.put(url, header, doc)
+        result = http.put(url, header)
         self.assertEqual(result.status_code, 401)
 
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
+    test_004_insert_queue_invalid_authtoken.tags = ['negative']
 
-    test_005_queue_insert_invalid_authtoken.tags = ['negative']
-
-    def test_006_queue_update_invalid_authtoken(self):
-        """Update Queue with invalid authtoken."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        header = functionlib.invalid_auth_token_header()
-        doc = '{"queue": "invalid auth token"}'
-        doc_original = '{}'
-
-        result = http.put(url, header, doc)
-        self.assertEqual(result.status_code, 401)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc_original))
-
-    test_006_queue_update_invalid_authtoken.tags = ['negative']
-
-    def test_007_queue_insert_missing_header(self):
+    def test_005_insert_queue_missing_header(self):
         """Insert Queue with missing header field.
 
         Request has no Accept header.
         """
-        url = self.cfg.base_url + '/queues/missingheader'
         header = functionlib.missing_header_fields()
-        doc = '{"queue": "Accept header is missing"}'
+
+        url = self.cfg.base_url + '/queues/missingheader'
+        http.put(url, header)
+
+        url = self.cfg.base_url + '/queues/missingheader/metadata'
+        doc = '{"queue": "Missing Header"}'
 
         result = http.put(url, header, doc)
         self.assertEqual(result.status_code, 400)
 
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
+        url = self.cfg.base_url + '/queues/missingheader'
+        http.delete(url, self.header)
 
-    test_007_queue_insert_missing_header.tags = ['negative']
+    test_005_insert_queue_missing_header.tags = ['negative']
 
-    def test_008_queue_insert_toplevel_underscore(self):
-        """Insert Queue with underscore in toplevel field."""
-        url = self.cfg.base_url + '/queues/toplevel'
-        doc = '{"_queue": "Top Level field with _"}'
-
-        result = http.put(url, self.header, doc)
-        self.assertEqual(result.status_code, 400)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
-
-    test_008_queue_insert_toplevel_underscore.tags = ['negative']
-
-    def test_009_queue_insert_header_plaintext(self):
+    def test_006_insert_queue_header_plaintext(self):
         """Insert Queue with 'Accept': 'plain/text'."""
         url = self.cfg.base_url + '/queues/plaintextheader'
         header = functionlib.plain_text_in_header()
-        doc = '{"queue": "text/plain in header"}'
 
-        result = http.put(url, header, doc)
+        result = http.put(url, header)
         self.assertEqual(result.status_code, 406)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
-
-    test_009_queue_insert_header_plaintext.tags = ['negative']
-
-    def test_010_queue_insert_header_asterisk(self):
-        """Insert Queue with 'Accept': '*/*'."""
-        url = self.cfg.base_url + '/queues/asteriskinheader'
-        header = functionlib.asterisk_in_header()
-        doc = '{"queue": "*/* in header"}'
-
-        result = http.put(url, header, doc)
-        self.assertEqual(result.status_code, 201)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
 
         http.delete(url, self.header)
 
-    test_010_queue_insert_header_asterisk.tags = ['positive']
+    test_006_insert_queue_header_plaintext.tags = ['negative']
 
-    def test_011_queue_insert_nonASCII_name(self):
+    def test_007_insert_queue_header_asterisk(self):
+        """Insert Queue with 'Accept': '*/*'."""
+        url = self.cfg.base_url + '/queues/asteriskinheader'
+        header = functionlib.asterisk_in_header()
+
+        result = http.put(url, header)
+        self.assertEqual(result.status_code, 201)
+
+        http.delete(url, self.header)
+
+    test_007_insert_queue_header_asterisk.tags = ['positive']
+
+    def test_008_insert_queue_nonASCII_name(self):
         """Insert Queue with non ASCII name."""
-        url = self.cfg.base_url + '/queues/汉字/漢字'
+        url = self.cfg.base_url + '/queues/汉字漢字'
         doc = '{"queue": "non ASCII name"}'
 
         result = http.put(url, self.header, doc)
         self.assertEqual(result.status_code, 400)
 
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
+    test_008_insert_queue_nonASCII_name.tags = ['negative']
 
-    test_011_queue_insert_nonASCII_name.tags = ['negative']
-
-    def test_012_queue_insert_nonASCII_metadata(self):
-        """Insert Queue with non ASCII name."""
-        url = self.cfg.base_url + '/queues/nonASCIImetadata'
-        doc = '{"汉字": "non ASCII metadata"}'
-
-        result = http.put(url, self.header, doc)
-        self.assertEqual(result.status_code, 400)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
-
-    test_012_queue_insert_nonASCII_metadata.tags = ['negative']
-
-    def test_013_queue_update_metadata_size4095(self):
-        """Updates Queue with metadata_size = 4095."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = functionlib.get_custom_body({"metadatasize": 4095})
-        result = http.put(url, self.header, doc)
-
-        self.assertEqual(result.status_code, 204)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc))
-
-    test_013_queue_update_metadata_size4095.tags = ['positive']
-
-    def test_014_queue_update_metadata_size4096(self):
-        """Updates Queue with metadata_size = 4096."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = functionlib.get_custom_body({"metadatasize": 4096})
-        result = http.put(url, self.header, doc)
-
-        self.assertEqual(result.status_code, 204)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), json.loads(doc))
-
-    test_014_queue_update_metadata_size4096.tags = ['positive']
-
-    def test_015_queue_update_metadata_size4097(self):
-        """Updates Queue with metadata_size = 4097."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = functionlib.get_custom_body({"metadatasize": 4097})
-        result = http.put(url, self.header, doc)
-
-        self.assertEqual(result.status_code, 400)
-
-    test_015_queue_update_metadata_size4097.tags = ['negative']
-
-    def test_016_queue_insert_long_queuename(self):
+    def test_009_insert_queue_long_queuename(self):
         """Insert queue with name > 64 bytes."""
         url = self.cfg.base_url + queuefnlib.get_queue_name()
-        doc = '{"queue": "Longer than allowed queue name"}'
+        result = http.put(url, self.header)
+
+        self.assertEqual(result.status_code, 400)
+
+    test_009_insert_queue_long_queuename.tags = ['negative']
+
+    def test_010_insert_queue_hyphenated_queuename(self):
+        """Insert queue with hyphen in name."""
+        url = self.cfg.base_url + '/queues/hyphen-name'
+        result = http.put(url, self.header)
+
+        self.assertEqual(result.status_code, 201)
+
+        http.delete(url, self.header)
+
+    test_010_insert_queue_hyphenated_queuename.tags = ['positive']
+
+    def test_011_insert_queue_invalid_char(self):
+        """Insert queue with invalid characters in name."""
+        url = self.cfg.base_url + '/queues/@$@^qw)'
+        result = http.put(url, self.header)
+
+        self.assertEqual(result.status_code, 400)
+
+    test_011_insert_queue_invalid_char.tags = ['negative']
+
+    def test_012_insert_queue_with_metadata(self):
+        """Insert queue with a non-empty request body."""
+        url = self.cfg.base_url + '/queues/hasmetadata'
+        doc = '{"queue": "Has Metadata"}'
+        result = http.put(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        url = self.cfg.base_url + '/queues/hasmetadata/metadata'
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {})
+
+        url = self.cfg.base_url + '/queues/hasmetadata'
+        http.delete(url, self.header)
+
+    test_012_insert_queue_with_metadata.tags = ['negative']
+
+    def test_013_queue_metadata_invalid_authtoken(self):
+        """Update Queue with invalid authtoken."""
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
+        header = functionlib.invalid_auth_token_header()
+        doc = '{"queue": "invalid auth token"}'
+
+        result = http.put(url, header, doc)
+        self.assertEqual(result.status_code, 401)
+
+    test_013_queue_metadata_invalid_authtoken.tags = ['negative']
+
+    def test_014_queue_metadata_toplevel_underscore(self):
+        """Insert Queue with underscore in toplevel field."""
+        url = self.cfg.base_url + '/queues/toplevel'
+        result = http.put(url, self.header)
+
+        url = self.cfg.base_url + '/queues/toplevel/metadata'
+        doc = '{"_queue": "Top Level field with _"}'
+
+        result = http.put(url, self.header, doc)
+        self.assertEqual(result.status_code, 204)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), json.loads(doc))
+
+        url = self.cfg.base_url + '/queues/toplevel'
+        http.delete(url, self.header)
+
+    test_014_queue_metadata_toplevel_underscore.tags = ['negative']
+
+    def test_015_queue_insert_nonASCII_metadata(self):
+        """Insert Queue with non ASCII name."""
+        url = self.cfg.base_url + '/queues/nonASCIImetadata'
+        result = http.put(url, self.header)
+
+        url = self.cfg.base_url + '/queues/nonASCIImetadata/metadata'
+        doc = '{"汉字": "non ASCII metadata"}'
+        result = http.put(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 204)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+
+        url = self.cfg.base_url + '/queues/nonASCIImetadata'
+        result = http.delete(url, self.header)
+
+    test_015_queue_insert_nonASCII_metadata.tags = ['negative']
+
+    def test_016_queue_insert_metadata_size65535(self):
+        """Updates Queue with metadata_size = 65535."""
+        url = self.cfg.base_url + '/queues/qtestqueue'
+        result = http.put(url, self.header)
+
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
+        doc = functionlib.get_custom_body({"metadatasize": 65535})
+        result = http.put(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 204)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), json.loads(doc))
+
+    test_016_queue_insert_metadata_size65535.tags = ['positive']
+
+    def test_017_queue_insert_metadata_size65536(self):
+        """Updates Queue with metadata_size = 65536."""
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
+        doc = functionlib.get_custom_body({"metadatasize": 65536})
+        result = http.put(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 204)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), json.loads(doc))
+
+    test_017_queue_insert_metadata_size65536.tags = ['positive']
+
+    def test_018_queue_insert_metadata_size65537(self):
+        """Updates Queue with metadata_size = 65537."""
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
+        doc = functionlib.get_custom_body({"metadatasize": 65537})
         result = http.put(url, self.header, doc)
 
         self.assertEqual(result.status_code, 400)
 
-    test_016_queue_insert_long_queuename.tags = ['negative']
+    test_018_queue_insert_metadata_size65537.tags = ['negative']
 
-    def test_017_queue_stats(self):
+    def test_019_queue_insert_metadata_invalidchar(self):
+        """Update Queues with invalid char in metadata."""
+        url = self.cfg.base_url + '/queues/qtestqueue/metadata'
+        doc = '{"queue": "#$%^&Apple"}'
+        result = http.put(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 204)
+
+        url = self.cfg.base_url + '/queues/qtestqueue'
+        result = http.delete(url, self.header)
+
+    test_019_queue_insert_metadata_invalidchar.tags = ['negative']
+
+    def test_020_queue_stats(self):
         """Insert queue with name > 64 bytes."""
         url = self.cfg.base_url + '/queues/qtestqueue/stats'
         result = http.get(url, self.header)
@@ -277,9 +302,9 @@ class TestQueue(functionlib.TestUtils):
                                                          result.text)
         self.assertEqual(test_result_flag, True)
 
-    test_017_queue_stats.tags = ['smoke', 'positive']
+    test_020_queue_stats.tags = ['smoke', 'positive']
 
-    def test_018_queue_list(self):
+    def test_021_queue_list(self):
         """List Queues."""
         url = self.cfg.base_url + '/queues'
         result = http.get(url, self.header)
@@ -290,9 +315,9 @@ class TestQueue(functionlib.TestUtils):
                                                          result.text)
         self.assertEqual(test_result_flag, True)
 
-    test_018_queue_list.tags = ['smoke', 'positive']
+    test_021_queue_list.tags = ['smoke', 'positive']
 
-    def test_019_queue_list_detailed(self):
+    def test_022_queue_list_detailed(self):
         """List Queues with detailed = True."""
         url = self.cfg.base_url + '/queues?detailed=True'
         result = http.get(url, self.header)
@@ -303,35 +328,16 @@ class TestQueue(functionlib.TestUtils):
                                                          result.text)
         self.assertEqual(test_result_flag, True)
 
-    test_019_queue_list_detailed.tags = ['smoke', 'positive']
+    test_022_queue_list_detailed.tags = ['smoke', 'positive']
 
-    def test_020_queue_insert_metadata_invalidchar(self):
-        """Update Queues with invalid char in metadata."""
-        url = self.cfg.base_url + '/queues/qtestqueue'
-        doc = '{"queue": "#$%^&Apple"}'
-        result = http.put(url, self.header, doc)
-
-        self.assertEqual(result.status_code, 400)
-
-    test_020_queue_insert_metadata_invalidchar.tags = ['negative']
-
-    def test_021_queue_get_nonexisting(self):
-        """Update Queues with invalid char in metadata."""
-        url = self.cfg.base_url + '/queues/nonexistingqueue'
-        result = http.get(url, self.header)
-
-        self.assertEqual(result.status_code, 404)
-
-    test_021_queue_get_nonexisting.tags = ['negative']
-
-    def test_022_check_health(self):
+    def test_023_check_health(self):
         """Test health endpoint."""
         url = self.cfg.base_url + '/health'
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 204)
 
-    test_022_check_health.tags = ['positive']
+    test_023_check_health.tags = ['positive']
 
     def test_999_delete_queue(self):
         """Delete Queue.
@@ -342,8 +348,5 @@ class TestQueue(functionlib.TestUtils):
 
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 404)
 
     test_999_delete_queue.tags = ['smoke']
