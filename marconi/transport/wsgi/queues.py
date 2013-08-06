@@ -49,6 +49,21 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
+    def on_head(self, req, resp, project_id, queue_name):
+        LOG.debug(_("Queue item exists - queue: %(queue)s, "
+                    "project: %(project)s") %
+                  {"queue": queue_name, "project": project_id})
+
+        if self.queue_controller.exists(queue_name,
+                                        project=project_id):
+            resp.status = falcon.HTTP_204
+        else:
+            resp.status = falcon.HTTP_404
+
+        resp.content_location = req.path
+
+    on_get = on_head
+
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(_("Queue item DELETE - queue: %(queue)s, "
                     "project: %(project)s") %

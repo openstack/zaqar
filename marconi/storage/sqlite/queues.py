@@ -95,6 +95,15 @@ class QueueController(base.QueueBase):
 
         return self.driver.affected
 
+    def exists(self, name, project):
+        if project is None:
+            project = ''
+
+        return self.driver.run('''
+            select id from Queues
+             where project = ? and name = ?
+        ''', project, name).fetchone() is not None
+
     def set_metadata(self, name, metadata, project):
         if project is None:
             project = ''

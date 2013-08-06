@@ -44,6 +44,9 @@ class QueueController(storage.QueueBase):
     def create(self, name, project=None):
         raise NotImplementedError()
 
+    def exists(self, name, project=None):
+        raise NotImplementedError()
+
     def set_metadata(self, name, metadata, project=None):
         raise NotImplementedError()
 

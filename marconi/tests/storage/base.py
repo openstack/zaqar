@@ -75,6 +75,9 @@ class QueueControllerTest(ControllerBaseTest):
         created = self.controller.create('test', project=self.project)
         self.assertTrue(created)
 
+        # Test Queue Existence
+        self.assertTrue(self.controller.exists('test', project=self.project))
+
         # Test Queue retrieval
         metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata, {})
@@ -102,6 +105,9 @@ class QueueControllerTest(ControllerBaseTest):
 
         # Test Queue Deletion
         self.controller.delete('test', project=self.project)
+
+        # Test Queue Existence
+        self.assertFalse(self.controller.exists('test', project=self.project))
 
         # Test DoesNotExist Exception
         with testing.expect(storage.exceptions.DoesNotExist):
