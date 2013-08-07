@@ -32,8 +32,7 @@ class TestMessages(functionlib.TestUtils):
     def test_000_message_setup(self):
         """Create Queue for Message Tests."""
         url = self.cfg.base_url + '/queues/messagetestqueue'
-        doc = '{"queuemetadata": "message test queue"}'
-        result = http.put(url, self.header, doc)
+        result = http.put(url, self.header)
 
         self.assertEqual(result.status_code, 201)
 

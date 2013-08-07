@@ -89,7 +89,7 @@ def invalid_auth_token_header():
 
 
 def missing_header_fields():
-    """Returns a header with missing USER_AGENT & X-Project-ID."""
+    """Returns a header with no Accept header."""
     auth_token = get_auth_token()
 
     headers = '{"Host":  "$host","Date":  "DATE",'
