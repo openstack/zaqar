@@ -174,7 +174,54 @@ class TestMessages(functionlib.TestUtils):
 
     test_006_message_delete.tags = ['smoke', 'positive']
 
-    def test_007_message_bulk_insert_60(self):
+    def test_007_message_bulk_delete(self):
+        """Bulk Delete Messages."""
+        doc = msgfnlib.get_message_body(messagecount=10)
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'
+        result = http.post(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        #Delete posted messages
+        location = result.headers['Location']
+        url = self.cfg.base_server + location
+
+        result = http.delete(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+    test_007_message_bulk_delete.tags = ['smoke', 'positive']
+
+    def test_008_message_delete_nonexisting(self):
+        """Delete non-existing Messages."""
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'   \
+                                  '/non-existing'
+        result = http.delete(url, self.header)
+
+        self.assertEqual(result.status_code, 204)
+
+    test_008_message_delete_nonexisting.tags = ['smoke', 'positive']
+
+    def test_009_message_partial_delete(self):
+        """Delete Messages will be partially successful."""
+        doc = msgfnlib.get_message_body(messagecount=3)
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'
+        result = http.post(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        #Delete posted message
+        location = result.headers['Location']
+        url = self.cfg.base_server + location
+        url += ',nonexisting'
+        result = http.delete(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+    test_009_message_partial_delete.tags = ['smoke', 'positive']
+
+    def test_010_message_bulk_insert_60(self):
         """Insert more than max allowed messages.
 
         Marconi allows  a maximum of 50 message per POST.
@@ -185,7 +232,7 @@ class TestMessages(functionlib.TestUtils):
         result = http.post(url, self.header, doc)
         self.assertEqual(result.status_code, 400)
 
-    test_007_message_bulk_insert_60.tags = ['negative']
+    test_010_message_bulk_insert_60.tags = ['negative']
 
     def test_999_message_teardown(self):
         url = self.cfg.base_url + '/queues/messagetestqueue'
