@@ -32,6 +32,7 @@ class ClaimsBaseTest(base.TestBase):
         self.project_id = '480924'
         self.queue_path = '/v1/queues/fizbit'
         self.claims_path = self.queue_path + '/claims'
+        self.messages_path = self.queue_path + '/messages'
 
         doc = '{"_ttl": 60}'
 
@@ -78,6 +79,19 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_post(self.claims_path, self.project_id, body=doc,
                            query_string='limit=3')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Listing messages, by default, won't include claimed
+        body = self.simulate_get(self.messages_path, self.project_id,
+                                 headers={'Client-ID': 'foo'})
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Include claimed messages this time
+        body = self.simulate_get(self.messages_path, self.project_id,
+                                 query_string='include_claimed=true',
+                                 headers={'Client-ID': 'foo'})
+        listed = json.loads(body[0])
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(len(listed['messages']), len(claimed))
 
         # Check the claim's metadata
         body = self.simulate_get(claim_href, self.project_id)
