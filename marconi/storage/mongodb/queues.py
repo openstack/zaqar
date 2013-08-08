@@ -123,6 +123,10 @@ class QueueController(storage.QueueBase):
             return True
 
     @utils.raises_conn_error
+    def exists(self, name, project=None):
+        return self._col.find_one({'p': project, 'n': name}) is not None
+
+    @utils.raises_conn_error
     def set_metadata(self, name, metadata, project=None):
         rst = self._col.update({'p': project, 'n': name},
                                {'$set': {'m': metadata}},

@@ -113,12 +113,23 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def create(self, name, project=None):
-        """Base method for queue creation
+        """Base method for queue creation.
 
         :param name: The queue name
         :param project: Project id
         :returns: True if a queue was created and False
             if it was updated.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, name, project=None):
+        """Base method for testing queue existence.
+
+        :param name: The queue name
+        :param project: Project id
+        :returns: True if a queue exists and False
+            if it does not.
         """
         raise NotImplementedError
 

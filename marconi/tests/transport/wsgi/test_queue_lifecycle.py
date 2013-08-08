@@ -48,9 +48,9 @@ class QueueLifecycleBaseTest(base.TestBase):
             location = ('Location', '/v1/queues/gumshoe')
             self.assertIn(location, self.srmock.headers)
 
-            # Get on queues shouldn't work any more
-            self.simulate_get(path, project_id)
-            self.assertEquals(self.srmock.status, falcon.HTTP_405)
+            # Ensure queue existence
+            self.simulate_head(path, project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
             # Add metadata
             doc = '{"messages": {"ttl": 600}}'
@@ -66,6 +66,10 @@ class QueueLifecycleBaseTest(base.TestBase):
             # Delete
             self.simulate_delete(path, project_id)
             self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+            # Get non-existent queue
+            self.simulate_get(path, project_id)
+            self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
             # Get non-existent stats
             self.simulate_get(path + '/stats', project_id)
