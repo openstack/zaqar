@@ -64,9 +64,6 @@ class ClaimController(storage.ClaimBase):
     def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
 
-        # Check whether the queue exists or not
-        qid = self._get_queue_id(queue, project)
-
         # Base query, always check expire time
         now = timeutils.utcnow()
 
@@ -91,8 +88,9 @@ class ClaimController(storage.ClaimBase):
             # Lets get claim's data
             # from the first message
             # in the iterator
-            messages = messages(msg_ctrl.claimed(qid, cid, now))
-            claim = next(messages)
+            msgs = messages(msg_ctrl.claimed(queue, cid, now,
+                                             project=project))
+            claim = next(msgs)
             claim = {
                 'age': age.seconds,
                 'ttl': claim.pop('t'),
@@ -101,7 +99,7 @@ class ClaimController(storage.ClaimBase):
         except StopIteration:
             raise exceptions.ClaimDoesNotExist(cid, queue, project)
 
-        return (claim, messages)
+        return (claim, msgs)
 
     @utils.raises_conn_error
     def create(self, queue, metadata, project=None, limit=10):
@@ -124,9 +122,8 @@ class ClaimController(storage.ClaimBase):
         """
         msg_ctrl = self.driver.message_controller
 
-        # We don't need the qid here but
-        # we need to verify it exists.
-        qid = self._get_queue_id(queue, project)
+        self._get_queue_id(queue, project)
+
         ttl = metadata['ttl']
         grace = metadata['grace']
         oid = objectid.ObjectId()
@@ -147,7 +144,7 @@ class ClaimController(storage.ClaimBase):
 
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
-        msgs = msg_ctrl.active(qid, fields={'_id': 1})
+        msgs = msg_ctrl.active(queue, fields={'_id': 1}, project=project)
         msgs = msgs.limit(limit)
 
         messages = iter([])
@@ -177,7 +174,8 @@ class ClaimController(storage.ClaimBase):
         # `expires` on messages that would
         # expire before claim.
         new_values = {'e': message_expires, 't': message_ttl}
-        msg_ctrl._col.update({'q': qid,
+        msg_ctrl._col.update({'q': queue,
+                              'p': project,
                               'e': {'$lt': message_expires},
                               'c.id': oid},
                              {'$set': new_values},
@@ -204,9 +202,9 @@ class ClaimController(storage.ClaimBase):
         if now > expires:
             raise ValueError('New ttl will make the claim expires')
 
-        qid = self._get_queue_id(queue, project)
         msg_ctrl = self.driver.message_controller
-        claimed = msg_ctrl.claimed(qid, cid, expires=now, limit=1)
+        claimed = msg_ctrl.claimed(queue, cid, expires=now,
+                                   limit=1, project=project)
 
         try:
             next(claimed)
@@ -219,7 +217,7 @@ class ClaimController(storage.ClaimBase):
             'e': expires,
         }
 
-        msg_ctrl._col.update({'q': qid, 'c.id': cid},
+        msg_ctrl._col.update({'q': queue, 'p': project, 'c.id': cid},
                              {'$set': {'c': meta}},
                              upsert=False, multi=True)
 
@@ -227,7 +225,8 @@ class ClaimController(storage.ClaimBase):
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        msg_ctrl._col.update({'q': qid,
+        msg_ctrl._col.update({'q': queue,
+                              'p': project,
                               'e': {'$lt': expires},
                               'c.id': cid},
                              {'$set': {'e': expires, 't': ttl}},
@@ -235,11 +234,5 @@ class ClaimController(storage.ClaimBase):
 
     @utils.raises_conn_error
     def delete(self, queue, claim_id, project=None):
-        try:
-            qid = self._get_queue_id(queue, project)
-        except exceptions.QueueDoesNotExist:
-            # Fail silently on bad queue/project
-            return
-
         msg_ctrl = self.driver.message_controller
-        msg_ctrl.unclaim(qid, claim_id)
+        msg_ctrl.unclaim(queue, claim_id, project=project)

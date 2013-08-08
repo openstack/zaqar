@@ -160,7 +160,7 @@ class MessagesBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_get(target, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, self.project_id, query_string=params)
@@ -214,7 +214,7 @@ class MessagesBaseTest(base.TestBase):
 
         self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
                           headers=self.headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
     def test_list_with_bad_marker(self):
         path = self.queue_path + '/messages'
