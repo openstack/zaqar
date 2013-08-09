@@ -88,7 +88,7 @@ class CollectionResource(object):
 
             resp.location = req.path + '/' + cid
             resp.body = helpers.to_json(resp_msgs)
-            resp.status = falcon.HTTP_200
+            resp.status = falcon.HTTP_201
         else:
             resp.status = falcon.HTTP_204
 
@@ -117,7 +117,7 @@ class ItemResource(object):
             meta['messages'] = list(msgs)
 
         except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound
+            raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
             description = _('Claim could not be queried.')
@@ -163,7 +163,7 @@ class ItemResource(object):
             resp.status = falcon.HTTP_204
 
         except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound
+            raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
             description = _('Claim could not be updated.')
