@@ -98,6 +98,28 @@ class TestWSGIutils(testtools.TestCase):
         filtered = utils.filter(doc, spec)
         self.assertEqual(filtered, doc)
 
+    def test_no_spec(self):
+        obj = {u'body': {'event': 'start_backup'}, 'ttl': 300}
+        document = json.dumps(obj, ensure_ascii=False)
+        doc_stream = io.StringIO(document)
+
+        filtered = utils.filter_stream(doc_stream, len(document), spec=None)
+        self.assertEqual(filtered[0], obj)
+
+        # NOTE(kgriffs): Ensure default value for *spec* is None
+        doc_stream.seek(0)
+        filtered2 = utils.filter_stream(doc_stream, len(document))
+        self.assertEqual(filtered2, filtered)
+
+    def test_no_spec_array(self):
+        things = [{u'body': {'event': 'start_backup'}, 'ttl': 300}]
+        document = json.dumps(things, ensure_ascii=False)
+        doc_stream = io.StringIO(document)
+
+        filtered = utils.filter_stream(doc_stream, len(document),
+                                       doctype=utils.JSONArray, spec=None)
+        self.assertEqual(filtered, things)
+
     def test_filter_star(self):
         doc = {'ttl': 300, 'body': {'event': 'start_backup'}}
 

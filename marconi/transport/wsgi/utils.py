@@ -30,26 +30,34 @@ LOG = logging.getLogger(__name__)
 
 
 # TODO(kgriffs): Consider moving this to Falcon and/or Oslo
-def filter_stream(stream, len, spec, doctype=JSONObject):
+def filter_stream(stream, len, spec=None, doctype=JSONObject):
     """Reads, deserializes, and validates a document from a stream.
 
     :param stream: file-like object from which to read an object or
         array of objects.
     :param len: number of bytes to read from stream
-    :param spec: iterable describing expected fields, yielding
-        tuples with the form of: (field_name, value_type). Note that
-        value_type may either be a Python type, or the special
-        string '*' to accept any type.
+    :param spec: (Default None) Iterable describing expected fields,
+        yielding tuples with the form of:
+
+            (field_name, value_type).
+
+        Note that value_type may either be a Python type, or the
+        special string '*' to accept any type. If spec is None, the
+        incoming documents will not be validated.
     :param doctype: type of document to expect; must be either
         JSONObject or JSONArray.
     :raises: HTTPBadRequest, HTTPServiceUnavailable
-    :returns: A sanitized, filtered version of the document read
+    :returns: A sanitized, filtered version of the document list read
         from the stream. If the document contains a list of objects,
-        each object will be filtered and yielded in turn. If, on
-        the other hand, the document is expected to contain a
+        each object will be filtered and returned in a new list. If,
+        on the other hand, the document is expected to contain a
         single object, that object will be filtered and returned as
         a single-element iterable.
     """
+
+    if len is None:
+        description = _('Request body can not be empty')
+        raise exceptions.HTTPBadRequestBody(description)
 
     try:
         # TODO(kgriffs): read_json should stream the resulting list
@@ -59,7 +67,7 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
 
     except utils.MalformedJSON as ex:
         LOG.exception(ex)
-        description = _('Body could not be parsed.')
+        description = _('Request body could not be parsed.')
         raise exceptions.HTTPBadRequestBody(description)
 
     except utils.OverflowedJSONInteger as ex:
@@ -77,17 +85,18 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
         if not isinstance(document, JSONObject):
             raise exceptions.HTTPDocumentTypeNotSupported()
 
-        return (filter(document, spec),)
+        return (document,) if spec is None else (filter(document, spec),)
 
     if doctype is JSONArray:
         if not isinstance(document, JSONArray):
             raise exceptions.HTTPDocumentTypeNotSupported()
 
-        # Return as a generator since we plan on doing a
-        # streaming JSON deserializer (see above.git )
-        return (filter(obj, spec) for obj in document)
+        if spec is None:
+            return document
 
-    raise ValueError('doctype not in (JSONObject, JSONArray)')
+        return [filter(obj, spec) for obj in document]
+
+    raise TypeError('doctype must be either a JSONObject or JSONArray')
 
 
 # TODO(kgriffs): Consider moving this to Falcon and/or Oslo

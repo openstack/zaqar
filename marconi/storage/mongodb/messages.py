@@ -21,7 +21,6 @@ Field Mappings:
     letter of their long name.
 """
 
-import collections
 import datetime
 import time
 
@@ -483,17 +482,7 @@ class MessageController(storage.MessageBase):
         # Set the next basis marker for the first attempt.
         next_marker = self._next_marker(queue_name, project)
 
-        # Results are aggregated across all attempts
-        # NOTE(kgriffs): lazy instantiation
-        aggregated_results = None
-
-        # NOTE(kgriffs): This avoids iterating over messages twice,
-        # since pymongo internally will iterate over them all to
-        # encode as bson before submitting to mongod. By using a
-        # generator, we can produce each message only once,
-        # as needed by pymongo. At the same time, each message is
-        # cached in case we need to retry any of them.
-        message_gen = (
+        prepared_messages = [
             {
                 't': message['ttl'],
                 'q': queue_name,
@@ -506,9 +495,11 @@ class MessageController(storage.MessageBase):
             }
 
             for index, message in enumerate(messages)
-        )
+        ]
 
-        prepared_messages, cached_messages = utils.cached_gen(message_gen)
+        # Results are aggregated across all attempts
+        # NOTE(kgriffs): Using lazy instantiation...
+        aggregated_results = None
 
         # Use a retry range for sanity, although we expect
         # to rarely, if ever, reach the maximum number of
@@ -562,13 +553,8 @@ class MessageController(storage.MessageBase):
                 duplicate_marker = utils.dup_marker_from_error(str(ex))
                 failed_index = duplicate_marker - next_marker
 
-                # First time here, convert the deque to a list
-                # to support slicing.
-                if isinstance(cached_messages, collections.deque):
-                    cached_messages = list(cached_messages)
-
                 # Put the successful one's IDs into aggregated_results.
-                succeeded_messages = cached_messages[:failed_index]
+                succeeded_messages = prepared_messages[:failed_index]
                 succeeded_ids = [msg['_id'] for msg in succeeded_messages]
 
                 # Results are aggregated across all attempts
@@ -579,19 +565,18 @@ class MessageController(storage.MessageBase):
 
                 # Retry the remaining messages with a new sequence
                 # of markers.
-                prepared_messages = cached_messages[failed_index:]
+                prepared_messages = prepared_messages[failed_index:]
                 next_marker = self._next_marker(queue_name, project)
                 for index, message in enumerate(prepared_messages):
                     message['k'] = next_marker + index
 
-                # Chill out to avoid thrashing/thundering
+                # Chill out for a moment to mitigate thrashing/thundering
                 self._backoff_sleep(attempt)
 
             except Exception as ex:
                 # TODO(kgriffs): Query the DB to get the last marker that
                 # made it, and extrapolate from there to figure out what
-                # needs to be retried. Definitely retry on AutoReconnect;
-                # other types of errors TBD.
+                # needs to be retried.
 
                 LOG.exception(ex)
                 raise

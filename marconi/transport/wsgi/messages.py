@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
-
 import falcon
 
 from marconi.common import config
@@ -153,15 +151,11 @@ class CollectionResource(object):
             doctype=wsgi_utils.JSONArray)
 
         # Verify that at least one message was provided.
-        try:
-            first_message = next(messages)
-        except StopIteration:
+        # NOTE(kgriffs): This check assumes messages is a
+        # collection (not a generator).
+        if not messages:
             description = _('No messages were provided.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
-
-        # Hack to make message_controller oblivious to the
-        # fact that we just popped the first message.
-        messages = itertools.chain((first_message,), messages)
 
         # Enqueue the messages
         partial = False
