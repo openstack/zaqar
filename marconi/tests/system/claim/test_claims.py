@@ -55,7 +55,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         test_result_flag = claimfnlib.verify_claim_msg(
             message_count, result.headers, result.text)
@@ -76,7 +76,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         test_result_flag = claimfnlib.verify_claim_msg(
             default_message_count, result.headers, result.text)
@@ -91,7 +91,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         test_result_flag = claimfnlib.verify_claim_msg(
             message_count, result.headers, result.text)
@@ -109,7 +109,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         test_result_flag = claimfnlib.verify_claim_msg(
             message_count, result.headers, result.text)
@@ -124,7 +124,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 400}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         #Patch Claim
         claim_location = result.headers['Location']
@@ -147,7 +147,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 60, "grace": 10}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         #Delete Claimed Message & Verify the delete
         test_result_flag = claimfnlib.delete_claimed_msgs(
@@ -163,7 +163,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 1, "grace": 0}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         time.sleep(2)
 
@@ -193,7 +193,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 1, "grace": 0}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         time.sleep(2)
 
@@ -219,7 +219,7 @@ class TestClaims(functionlib.TestUtils):
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         #Extract claim location and construct the claim URL.
         location = result.headers['Location']
