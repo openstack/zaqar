@@ -86,7 +86,7 @@ class ClaimsBaseTest(base.TestBase):
 
         # First, claim some messages
         body = self.simulate_post(self.claims_path, self.project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         claimed = json.loads(body[0])
         claim_href = self.srmock.headers_dict['Location']
