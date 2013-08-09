@@ -29,8 +29,6 @@ It also allows setting of formatting information through conf.
 
 """
 
-import ConfigParser
-import cStringIO
 import inspect
 import itertools
 import logging
@@ -41,8 +39,10 @@ import sys
 import traceback
 
 from oslo.config import cfg
+from six import moves
 
-from marconi.openstack.common.gettextutils import _
+from marconi.openstack.common.gettextutils import _  # noqa
+from marconi.openstack.common import importutils
 from marconi.openstack.common import jsonutils
 from marconi.openstack.common import local
 
@@ -73,7 +73,8 @@ logging_cli_opts = [
     cfg.StrOpt('log-format',
                default=None,
                metavar='FORMAT',
-               help='A logging.Formatter log message format string which may '
+               help='DEPRECATED. '
+                    'A logging.Formatter log message format string which may '
                     'use any of the available logging.LogRecord attributes. '
                     'This option is deprecated.  Please use '
                     'logging_context_format_string and '
@@ -133,6 +134,9 @@ log_opts = [
                     'eventlet.wsgi.server=WARN'
                 ],
                 help='list of logger=LEVEL pairs'),
+    cfg.BoolOpt('publish_errors',
+                default=False,
+                help='publish error events'),
     cfg.BoolOpt('fatal_deprecations',
                 default=False,
                 help='make deprecations fatal'),
@@ -343,7 +347,7 @@ class LogConfigError(Exception):
 def _load_log_config(log_config):
     try:
         logging.config.fileConfig(log_config)
-    except ConfigParser.Error as exc:
+    except moves.configparser.Error as exc:
         raise LogConfigError(log_config, str(exc))
 
 
@@ -412,6 +416,12 @@ def _setup_logging_from_conf():
         streamlog = logging.StreamHandler(sys.stdout)
         log_root.addHandler(streamlog)
 
+    if CONF.publish_errors:
+        handler = importutils.import_object(
+            "marconi.openstack.common.log_handler.PublishErrorsHandler",
+            logging.ERROR)
+        log_root.addHandler(handler)
+
     datefmt = CONF.log_date_format
     for handler in log_root.handlers:
         # NOTE(alaski): CONF.log_format overrides everything currently.  This
@@ -449,10 +459,11 @@ def getLogger(name='unknown', version='unknown'):
 
 
 def getLazyLogger(name='unknown', version='unknown'):
-    """
-    create a pass-through logger that does not create the real logger
+    """Returns lazy logger.
+
+    Creates a pass-through logger that does not create the real logger
     until it is really needed and delegates all calls to the real logger
-    once it is created
+    once it is created.
     """
     return LazyAdapter(name, version)
 
@@ -509,7 +520,7 @@ class ContextFormatter(logging.Formatter):
         if not record:
             return logging.Formatter.formatException(self, exc_info)
 
-        stringbuffer = cStringIO.StringIO()
+        stringbuffer = moves.StringIO()
         traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
                                   None, stringbuffer)
         lines = stringbuffer.getvalue().split('\n')

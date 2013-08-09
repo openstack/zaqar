@@ -1,7 +1,8 @@
 d2to1>=0.2.10,<0.3
 pbr>=0.5.16,<0.6
 
-eventlet>=0.9.12
+babel
+netaddr
 falcon>=0.1.6,<0.1.7
 iso8601>=0.1.4
 msgpack-python
