@@ -339,6 +339,31 @@ class TestQueue(functionlib.TestUtils):
 
     test_023_check_health.tags = ['positive']
 
+    def test_024_check_queue_exists(self):
+        """Checks if queue exists."""
+        url = self.cfg.base_url + '/queues/qtestqueue'
+        http.put(url, self.header)
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+        result = http.head(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+    test_024_check_queue_exists.tags = ['positive']
+
+    def test_025_check_queue_exists(self):
+        """Checks non-existing queue."""
+        url = self.cfg.base_url + '/queues/nonexistingqueue'
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 404)
+
+        result = http.head(url, self.header)
+        self.assertEqual(result.status_code, 404)
+
+    test_025_check_queue_exists.tags = ['negative']
+
     def test_999_delete_queue(self):
         """Delete Queue.
 
