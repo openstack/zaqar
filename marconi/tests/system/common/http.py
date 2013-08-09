@@ -34,6 +34,23 @@ def get(url, header=''):
     return response
 
 
+def head(url, header=''):
+    """Does  http HEAD."""
+    if header:
+        header = json.loads(header)
+    try:
+        response = requests.head(url, headers=header)
+    except requests.ConnectionError as detail:
+        print('ConnectionError: Exception in http.head {}'.format(detail))
+    except requests.HTTPError as detail:
+        print('HTTPError: Exception in http.head {}'.format(detail))
+    except requests.Timeout as detail:
+        print('Timeout: Exception in http.head {}'.format(detail))
+    except requests.TooManyRedirects as detail:
+        print('TooManyRedirects: Exception in http.head {}'.format(detail))
+    return response
+
+
 def post(url, header='', body=''):
     """Does  http POST."""
     if header:
