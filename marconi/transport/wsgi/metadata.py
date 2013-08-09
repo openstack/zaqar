@@ -18,7 +18,7 @@ import falcon
 from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
@@ -52,7 +52,7 @@ class Resource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         resp.content_location = req.path
-        resp.body = helpers.to_json(resp_dict)
+        resp.body = utils.to_json(resp_dict)
         resp.status = falcon.HTTP_200
 
     def on_put(self, req, resp, project_id, queue_name):
@@ -67,8 +67,8 @@ class Resource(object):
 
         # Deserialize queue metadata
         try:
-            metadata = helpers.read_json(req.stream, req.content_length)
-        except helpers.MalformedJSON:
+            metadata = utils.read_json(req.stream, req.content_length)
+        except utils.MalformedJSON:
             description = _('Request body could not be parsed.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
         except Exception as ex:

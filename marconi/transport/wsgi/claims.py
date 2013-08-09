@@ -18,9 +18,9 @@ import falcon
 from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
-from marconi.transport.wsgi import helpers as wsgi_helpers
+from marconi.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -55,8 +55,8 @@ class CollectionResource(object):
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
-                                               CLAIM_POST_SPEC)
+        metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
+                                             CLAIM_POST_SPEC)
 
         # Claim some messages
         try:
@@ -87,7 +87,7 @@ class CollectionResource(object):
                 del msg['id']
 
             resp.location = req.path + '/' + cid
-            resp.body = helpers.to_json(resp_msgs)
+            resp.body = utils.to_json(resp_msgs)
             resp.status = falcon.HTTP_201
         else:
             resp.status = falcon.HTTP_204
@@ -134,7 +134,7 @@ class ItemResource(object):
         del meta['id']
 
         resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(meta)
+        resp.body = utils.to_json(meta)
         resp.status = falcon.HTTP_200
 
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
@@ -151,8 +151,8 @@ class ItemResource(object):
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_helpers.filter_stream(req.stream, req.content_length,
-                                               CLAIM_PATCH_SPEC)
+        metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
+                                             CLAIM_PATCH_SPEC)
 
         try:
             self.claim_controller.update(queue_name,
@@ -188,7 +188,7 @@ class ItemResource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
 
-# TODO(kgriffs): Clean up/optimize and move to wsgi.helpers
+# TODO(kgriffs): Clean up/optimize and move to wsgi.utils
 def _msg_uri_from_claim(base_path, msg_id, claim_id):
     return '/'.join(
         [base_path, 'messages', msg_id]

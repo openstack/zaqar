@@ -20,64 +20,64 @@ import falcon
 import json
 import testtools
 
-from marconi.transport.wsgi import helpers
+from marconi.transport.wsgi import utils
 
 
-class TestWSGIHelpers(testtools.TestCase):
+class TestWSGIutils(testtools.TestCase):
 
     def test_get_checked_field_missing(self):
         doc = {}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack', int)
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 42, int)
+                          utils.get_checked_field, doc, 42, int)
 
         doc = {'openstac': 10}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack', int)
 
     def test_get_checked_field_bad_type(self):
         doc = {'openstack': '10'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack', int)
 
         doc = {'openstack': 10, 'openstack-mq': 'test'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 'openstack', str)
+                          utils.get_checked_field, doc, 'openstack', str)
 
         doc = {'openstack': '[1, 2]'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.get_checked_field, doc, 'openstack', list)
+                          utils.get_checked_field, doc, 'openstack', list)
 
     def test_get_checked_field(self):
         doc = {'hello': 'world', 'teh answer': 42, 'question': []}
 
-        value = helpers.get_checked_field(doc, 'hello', str)
+        value = utils.get_checked_field(doc, 'hello', str)
         self.assertEquals(value, 'world')
 
-        value = helpers.get_checked_field(doc, 'teh answer', int)
+        value = utils.get_checked_field(doc, 'teh answer', int)
         self.assertEquals(value, 42)
 
-        value = helpers.get_checked_field(doc, 'question', list)
+        value = utils.get_checked_field(doc, 'question', list)
         self.assertEquals(value, [])
 
     def test_filter_missing(self):
         doc = {'body': {'event': 'start_backup'}}
         spec = (('tag', dict),)
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter, doc, spec)
+                          utils.filter, doc, spec)
 
     def test_filter_bad_type(self):
         doc = {'ttl': '300', 'bogus': 'yogabbagabba'}
         spec = [('ttl', int)]
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter, doc, spec)
+                          utils.filter, doc, spec)
 
     def test_filter(self):
         doc = {'body': {'event': 'start_backup'}}
@@ -85,24 +85,24 @@ class TestWSGIHelpers(testtools.TestCase):
         def spec():
             yield ('body', dict)
 
-        filtered = helpers.filter(doc, spec())
+        filtered = utils.filter(doc, spec())
         self.assertEqual(filtered, doc)
 
         doc = {'ttl': 300, 'bogus': 'yogabbagabba'}
         spec = [('ttl', int)]
-        filtered = helpers.filter(doc, spec)
+        filtered = utils.filter(doc, spec)
         self.assertEqual(filtered, {'ttl': 300})
 
         doc = {'body': {'event': 'start_backup'}, 'ttl': 300}
         spec = (('body', dict), ('ttl', int))
-        filtered = helpers.filter(doc, spec)
+        filtered = utils.filter(doc, spec)
         self.assertEqual(filtered, doc)
 
     def test_filter_star(self):
         doc = {'ttl': 300, 'body': {'event': 'start_backup'}}
 
         spec = [('body', '*'), ('ttl', '*')]
-        filtered = helpers.filter(doc, spec)
+        filtered = utils.filter(doc, spec)
 
         self.assertEqual(filtered, doc)
 
@@ -112,14 +112,14 @@ class TestWSGIHelpers(testtools.TestCase):
         document = json.dumps(obj, ensure_ascii=False)
         stream = io.StringIO(document)
         spec = [('body', dict), ('id', basestring)]
-        filtered_object, = helpers.filter_stream(stream, len(document), spec)
+        filtered_object, = utils.filter_stream(stream, len(document), spec)
 
         self.assertEqual(filtered_object, obj)
 
         stream.seek(0)
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter_stream, stream, len(document), spec,
-                          doctype=helpers.JSONArray)
+                          utils.filter_stream, stream, len(document), spec,
+                          doctype=utils.JSONArray)
 
     def test_filter_stream_expect_array(self):
         array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
@@ -127,12 +127,12 @@ class TestWSGIHelpers(testtools.TestCase):
         document = json.dumps(array, ensure_ascii=False)
         stream = io.StringIO(document)
         spec = [('body', dict)]
-        filtered_objects = list(helpers.filter_stream(
-            stream, len(document), spec, doctype=helpers.JSONArray))
+        filtered_objects = list(utils.filter_stream(
+            stream, len(document), spec, doctype=utils.JSONArray))
 
         self.assertEqual(filtered_objects, array)
 
         stream.seek(0)
         self.assertRaises(falcon.HTTPBadRequest,
-                          helpers.filter_stream, stream, len(document), spec,
-                          doctype=helpers.JSONObject)
+                          utils.filter_stream, stream, len(document), spec,
+                          doctype=utils.JSONObject)

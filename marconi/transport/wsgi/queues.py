@@ -16,7 +16,7 @@
 import falcon
 
 import marconi.openstack.common.log as logging
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
@@ -88,7 +88,7 @@ class CollectionResource(object):
 
     def on_get(self, req, resp, project_id):
         # TODO(kgriffs): Optimize
-        kwargs = helpers.purge({
+        kwargs = utils.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
             'detailed': req.get_param_as_bool('detailed'),
@@ -125,5 +125,5 @@ class CollectionResource(object):
         }
 
         resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(response_body)
+        resp.body = utils.to_json(response_body)
         resp.status = falcon.HTTP_200

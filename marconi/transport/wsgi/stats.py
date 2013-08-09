@@ -17,7 +17,7 @@ import falcon
 
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 
 
@@ -50,7 +50,7 @@ class Resource(object):
                 del oldest['id']
 
             resp.content_location = req.path
-            resp.body = helpers.to_json(resp_dict)
+            resp.body = utils.to_json(resp_dict)
             resp.status = falcon.HTTP_200
 
         except storage_exceptions.DoesNotExist:

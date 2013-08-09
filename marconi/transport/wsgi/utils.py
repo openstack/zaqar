@@ -16,7 +16,7 @@
 
 import marconi.openstack.common.log as logging
 
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions
 
 
@@ -55,14 +55,14 @@ def filter_stream(stream, len, spec, doctype=JSONObject):
         # TODO(kgriffs): read_json should stream the resulting list
         # of messages, returning a generator rather than buffering
         # everything in memory (bp/streaming-serialization).
-        document = helpers.read_json(stream, len)
+        document = utils.read_json(stream, len)
 
-    except helpers.MalformedJSON as ex:
+    except utils.MalformedJSON as ex:
         LOG.exception(ex)
         description = _('Body could not be parsed.')
         raise exceptions.HTTPBadRequestBody(description)
 
-    except helpers.OverflowedJSONInteger as ex:
+    except utils.OverflowedJSONInteger as ex:
         LOG.exception(ex)
         description = _('JSON contains integer that is too large.')
         raise exceptions.HTTPBadRequestBody(description)

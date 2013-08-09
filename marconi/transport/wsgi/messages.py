@@ -20,9 +20,9 @@ import falcon
 from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
-from marconi.transport import helpers
+from marconi.transport import utils
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
-from marconi.transport.wsgi import helpers as wsgi_helpers
+from marconi.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class CollectionResource(object):
         uuid = req.get_header('Client-ID', required=True)
 
         # TODO(kgriffs): Optimize
-        kwargs = helpers.purge({
+        kwargs = utils.purge({
             'marker': req.get_param('marker'),
             'limit': req.get_param_as_int('limit'),
             'echo': req.get_param_as_bool('echo'),
@@ -146,11 +146,11 @@ class CollectionResource(object):
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Pull out just the fields we care about
-        messages = wsgi_helpers.filter_stream(
+        messages = wsgi_utils.filter_stream(
             req.stream,
             req.content_length,
             MESSAGE_POST_SPEC,
-            doctype=wsgi_helpers.JSONArray)
+            doctype=wsgi_utils.JSONArray)
 
         # Verify that at least one message was provided.
         try:
@@ -199,7 +199,7 @@ class CollectionResource(object):
 
         hrefs = [req.path + '/' + id for id in message_ids]
         body = {'resources': hrefs, 'partial': partial}
-        resp.body = helpers.to_json(body)
+        resp.body = utils.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(_("Messages collection GET - queue: %(queue)s, "
@@ -219,7 +219,7 @@ class CollectionResource(object):
             resp.status = falcon.HTTP_204
             return
 
-        resp.body = helpers.to_json(response)
+        resp.body = utils.to_json(response)
 
     def on_delete(self, req, resp, project_id, queue_name):
         # NOTE(zyuan): Attempt to delete the whole message collection
@@ -273,7 +273,7 @@ class ItemResource(object):
         del message['id']
 
         resp.content_location = req.relative_uri
-        resp.body = helpers.to_json(message)
+        resp.body = utils.to_json(message)
         resp.status = falcon.HTTP_200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
