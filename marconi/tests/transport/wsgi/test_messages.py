@@ -311,6 +311,27 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_get(path, '7e7e7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
+    # NOTE(cpp-cabrera): regression test against bug #1210633
+    def test_when_claim_deleted_then_messages_unclaimed(self):
+        path = self.queue_path
+        self._post_messages(path + '/messages', repeat=5)
+
+        # post claim
+        self.simulate_post(path + '/claims', self.project_id,
+                           body='{"ttl": 100, "grace": 100}')
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        location = self.srmock.headers_dict['Location']
+
+        # release claim
+        self.simulate_delete(location, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # get unclaimed messages
+        self.simulate_get(path + '/messages', self.project_id,
+                          query_string='echo=true',
+                          headers=self.headers)
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
         self.simulate_post(target, self.project_id, body=doc,

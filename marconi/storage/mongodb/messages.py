@@ -373,8 +373,11 @@ class MessageController(storage.MessageBase):
         except ValueError:
             return
 
+        # NOTE(cpp-cabrera):  unclaim by setting the claim ID to None
+        # and the claim expiration time to now
+        now = timeutils.utcnow()
         self._col.update({'q': queue_name, 'p': project, 'c.id': cid},
-                         {'$set': {'c': {'id': None, 'e': 0}}},
+                         {'$set': {'c': {'id': None, 'e': now}}},
                          upsert=False, multi=True)
 
     def remove_expired(self):
