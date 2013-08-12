@@ -20,7 +20,7 @@ from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import utils
-from marconi.transport import validation
+from marconi.transport import validation as validate
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.transport.wsgi import utils as wsgi_utils
 
@@ -62,7 +62,7 @@ class CollectionResource(object):
 
         # Claim some messages
         try:
-            validation.claim_creation(metadata, **claim_options)
+            validate.claim_creation(metadata, **claim_options)
             cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
@@ -162,7 +162,7 @@ class ItemResource(object):
                                              CLAIM_PATCH_SPEC)
 
         try:
-            validation.claim_updating(metadata)
+            validate.claim_updating(metadata)
             self.claim_controller.update(queue_name,
                                          claim_id=claim_id,
                                          metadata=metadata,

@@ -16,9 +16,11 @@
 import falcon
 
 from marconi.common import config
+from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import utils
+from marconi.transport import validation as validate
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.transport.wsgi import utils as wsgi_utils
 
@@ -72,9 +74,16 @@ class Resource(object):
                                              spec=None)
 
         try:
+            validate.queue_content(
+                metadata, check_size=(
+                    validate.CFG.metadata_size_uplimit <
+                    CFG.metadata_max_length))
             self.queue_ctrl.set_metadata(queue_name,
                                          metadata=metadata,
                                          project=project_id)
+
+        except input_exceptions.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
 
         except storage_exceptions.QueueDoesNotExist:
             raise falcon.HTTPNotFound()

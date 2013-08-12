@@ -20,7 +20,7 @@ from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.storage import exceptions as storage_exceptions
 from marconi.transport import utils
-from marconi.transport import validation
+from marconi.transport import validation as validate
 from marconi.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.transport.wsgi import utils as wsgi_utils
 
@@ -47,7 +47,7 @@ class CollectionResource(object):
     def _get_by_id(self, base_path, project_id, queue_name, ids):
         """Returns one or more messages from the queue by ID."""
         try:
-            validation.message_listing(limit=len(ids))
+            validate.message_listing(limit=len(ids))
             messages = self.message_controller.bulk_get(
                 queue_name,
                 message_ids=ids,
@@ -85,7 +85,7 @@ class CollectionResource(object):
         })
 
         try:
-            validation.message_listing(**kwargs)
+            validate.message_listing(**kwargs)
             results = self.message_controller.list(
                 queue_name,
                 project=project_id,
@@ -173,9 +173,9 @@ class CollectionResource(object):
         try:
             # No need to check each message's size if it
             # can not exceed the request size limit
-            validation.message_posting(
+            validate.message_posting(
                 messages, check_size=(
-                    validation.CFG.message_size_uplimit <
+                    validate.CFG.message_size_uplimit <
                     CFG.content_max_length))
             message_ids = self.message_controller.post(
                 queue_name,
@@ -241,7 +241,7 @@ class CollectionResource(object):
         ids = req.get_param_as_list('ids', required=True)
 
         try:
-            validation.message_listing(limit=len(ids))
+            validate.message_listing(limit=len(ids))
             self.message_controller.bulk_delete(
                 queue_name,
                 message_ids=ids,

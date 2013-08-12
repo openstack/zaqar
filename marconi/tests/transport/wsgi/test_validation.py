@@ -1,0 +1,89 @@
+# Copyright (c) 2013 Rackspace, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import json
+
+import falcon
+
+from marconi.tests.transport.wsgi import base
+
+
+class ValidationTest(base.TestBase):
+
+    config_filename = 'wsgi_sqlite_validation.conf'
+
+    def setUp(self):
+        super(ValidationTest, self).setUp()
+
+        self.project_id = '7e55e1a7e'
+        self.queue_path = '/v1/queues/noein'
+
+        self.simulate_put(self.queue_path, self.project_id)
+
+        self.headers = {
+            'Client-ID': '30387f00',
+        }
+
+    def tearDown(self):
+        self.simulate_delete(self.queue_path, self.project_id)
+        super(ValidationTest, self).tearDown()
+
+    def test_metadata_deserialization(self):
+        # Normal case
+        self.simulate_put(self.queue_path + '/metadata',
+                          self.project_id,
+                          body='{"timespace": "Shangri-la"}')
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        # Too long
+        metadata_size_uplimit = 64
+
+        doc_tmpl = '{"Dragon Torc":"%s"}'
+        doc_tmpl_ws = '{ "Dragon Torc" : "%s" }'  # with whitespace
+        envelop_length = len(doc_tmpl % '')
+
+        for tmpl in doc_tmpl, doc_tmpl_ws:
+            doc = tmpl % ('0' * (metadata_size_uplimit - envelop_length + 1))
+            self.simulate_put(self.queue_path + '/metadata',
+                              self.project_id,
+                              body=doc)
+
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def test_message_deserialization(self):
+        # Normal case
+        self.simulate_post(self.queue_path + '/messages',
+                           self.project_id,
+                           body='[{"body": "Dragon Knights", "ttl": 100}]',
+                           headers=self.headers)
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+
+        # Both messages' size are too long
+        message_size_uplimit = 256
+
+        obj = {'a': 0, 'b': ''}
+        envelop_length = len(json.dumps(obj, separators=(',', ':')))
+        obj['b'] = 'x' * (message_size_uplimit - envelop_length + 1)
+
+        for long_body in ('a' * (message_size_uplimit - 2 + 1), obj):
+            doc = json.dumps([{'body': long_body, 'ttl': 100}])
+            self.simulate_post(self.queue_path + '/messages',
+                               self.project_id,
+                               body=doc,
+                               headers=self.headers)
+
+            self.assertEquals(self.srmock.status, falcon.HTTP_400)
