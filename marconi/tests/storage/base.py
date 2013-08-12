@@ -363,15 +363,18 @@ class MessageControllerTest(ControllerBaseTest):
         # more likely just list the messages, not try to
         # guess an ID of an arbitrary message.
 
+        # NOTE(cpp-cabrera): A malformed ID should result in an empty
+        # query. Raising an exception for validating IDs makes the
+        # implementation more verbose instead of taking advantage of
+        # the Maybe/Optional protocol, particularly when dealing with
+        # bulk operations.
         queue = 'foo'
         project = '480924'
         self.queue_controller.create(queue, project)
 
         bad_message_id = 'xyz'
-        with testing.expect(exceptions.MalformedID):
-            self.controller.delete(queue, bad_message_id, project)
-
-        with testing.expect(exceptions.MalformedID):
+        self.controller.delete(queue, bad_message_id, project)
+        with testing.expect(exceptions.MessageDoesNotExist):
             self.controller.get(queue, bad_message_id, project)
 
     def test_bad_claim_id(self):
@@ -382,10 +385,9 @@ class MessageControllerTest(ControllerBaseTest):
                                        client_uuid='unused')
 
         bad_claim_id = '; DROP TABLE queues'
-        with testing.expect(exceptions.MalformedID):
-            self.controller.delete('unused', msgid,
-                                   project='480924',
-                                   claim=bad_claim_id)
+        self.controller.delete('unused', msgid,
+                               project='480924',
+                               claim=bad_claim_id)
 
     def test_bad_marker(self):
         queue = 'foo'

@@ -322,6 +322,25 @@ class MessagesBaseTest(base.TestBase):
                           headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
+    # NOTE(cpp-cabrera): regression test against bug #1203842
+    def test_get_nonexistent_message_404s(self):
+        path = '/v1/queues/notthere'
+
+        self.simulate_get(path + '/messages/a')
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+    def test_get_multiple_invalid_messages_204s(self):
+        path = '/v1/queues/notthere'
+
+        self.simulate_get(path + '/messages', query_string='ids=a,b,c')
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+    def test_delete_multiple_invalid_messages_204s(self):
+        path = '/v1/queues/notthere'
+
+        self.simulate_delete(path + '/messages', query_string='ids=a,b,c')
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
         self.simulate_post(target, self.project_id, body=doc,

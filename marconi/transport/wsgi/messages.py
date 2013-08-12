@@ -12,7 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import falcon
 
 from marconi.common import config
@@ -255,8 +254,7 @@ class CollectionResource(object):
             description = _(u'Messages could not be deleted.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
-        else:
-            resp.status = falcon.HTTP_204
+        resp.status = falcon.HTTP_204
 
 
 class ItemResource(object):

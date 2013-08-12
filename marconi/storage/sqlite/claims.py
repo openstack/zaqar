@@ -47,6 +47,10 @@ class ClaimController(base.ClaimBase):
         if project is None:
             project = ''
 
+        cid = utils.cid_decode(claim_id)
+        if cid is None:
+            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+
         with self.driver('deferred'):
             try:
                 id, ttl, age = self.driver.get('''
@@ -55,7 +59,7 @@ class ClaimController(base.ClaimBase):
                         on Q.id = C.qid
                      where C.ttl > julianday() * 86400.0 - C.created
                        and C.id = ? and project = ? and name = ?
-                ''', utils.cid_decode(claim_id), project, queue)
+                ''', cid, project, queue)
 
                 return (
                     {
@@ -66,7 +70,7 @@ class ClaimController(base.ClaimBase):
                     self.__get(id)
                 )
 
-            except (utils.NoResult, exceptions.MalformedID()):
+            except utils.NoResult:
                 raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
     def create(self, queue, metadata, project, limit=10):
@@ -125,9 +129,8 @@ class ClaimController(base.ClaimBase):
         if project is None:
             project = ''
 
-        try:
-            id = utils.cid_decode(claim_id)
-        except exceptions.MalformedID:
+        id = utils.cid_decode(claim_id)
+        if id is None:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
         with self.driver('deferred'):
@@ -165,9 +168,8 @@ class ClaimController(base.ClaimBase):
         if project is None:
             project = ''
 
-        try:
-            cid = utils.cid_decode(claim_id)
-        except exceptions.MalformedID:
+        cid = utils.cid_decode(claim_id)
+        if cid is None:
             return
 
         self.driver.run('''

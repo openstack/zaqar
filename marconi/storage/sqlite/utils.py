@@ -46,7 +46,7 @@ def msgid_encode(id):
         return hex(id ^ 0x5c693a53)[2:]
 
     except TypeError:
-        raise exceptions.MalformedID()
+        return None
 
 
 def msgid_decode(id):
@@ -54,7 +54,7 @@ def msgid_decode(id):
         return int(id, 16) ^ 0x5c693a53
 
     except ValueError:
-        raise exceptions.MalformedID()
+        return None
 
 
 def marker_encode(id):
@@ -78,7 +78,7 @@ def cid_decode(id):
         return int(id, 16) ^ 0x63c9a59c
 
     except ValueError:
-        raise exceptions.MalformedID()
+        return None
 
 
 def julian_to_unix(julian_sec):

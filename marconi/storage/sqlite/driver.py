@@ -76,7 +76,7 @@ class Driver(storage.DriverBase):
             return next(self.run(sql, *args))
 
         except StopIteration:
-            raise utils.NoResult
+            raise utils.NoResult()
 
     @property
     def affected(self):

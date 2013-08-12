@@ -198,6 +198,26 @@ class ClaimsBaseTest(base.TestBase):
                            body='{"ttl": 100, "grace": 60}')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
+    # NOTE(cpp-cabrera): regression test against bug #1203842
+    def test_get_nonexistent_claim_404s(self):
+        path = '/v1/queues/notthere'
+
+        self.simulate_get(path + '/claims/a')
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+    def test_delete_nonexistent_claim_204s(self):
+        path = '/v1/queues/notthere'
+
+        self.simulate_delete(path + '/claims/a')
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+    def test_patch_nonexistent_claim_404s(self):
+        path = '/v1/queues/notthere'
+
+        patch_data = json.dumps({'ttl': 100})
+        self.simulate_patch(path + '/claims/a', body=patch_data)
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
 
 class ClaimsMongoDBTests(ClaimsBaseTest):
 

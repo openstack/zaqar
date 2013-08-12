@@ -66,11 +66,9 @@ class ClaimController(storage.ClaimBase):
 
         # Base query, always check expire time
         now = timeutils.utcnow()
-
-        try:
-            cid = utils.to_oid(claim_id)
-        except ValueError:
-            raise exceptions.ClaimDoesNotExist()
+        cid = utils.to_oid(claim_id)
+        if cid is None:
+            raise exceptions.ClaimDoesNotExist(queue, project, claim_id)
 
         def messages(msg_iter):
             msg = next(msg_iter)
@@ -188,9 +186,8 @@ class ClaimController(storage.ClaimBase):
 
     @utils.raises_conn_error
     def update(self, queue, claim_id, metadata, project=None):
-        try:
-            cid = utils.to_oid(claim_id)
-        except ValueError:
+        cid = utils.to_oid(claim_id)
+        if cid is None:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
         now = timeutils.utcnow()

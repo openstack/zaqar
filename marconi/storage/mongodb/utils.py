@@ -117,23 +117,22 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
 def to_oid(obj):
     """Creates a new ObjectId based on the input.
 
-    Raises MalformedID when TypeError or berrors.InvalidId
+    Returns None when TypeError or berrors.InvalidId
     is raised by the ObjectID class.
 
     :param obj: Anything that can be passed as an
         input to `objectid.ObjectId`
-
-    :raises: MalformedID
     """
     try:
         return objectid.ObjectId(obj)
     except (TypeError, berrors.InvalidId):
-        msg = u'Invalid oid: %s' % obj
-        raise storage_exceptions.MalformedID(msg)
+        return None
 
 
 def oid_utc(oid):
-    """Converts an ObjectId to a non-tz-aware datetime."""
+    """Converts an ObjectId to a non-tz-aware datetime.
+    :raises: TypeError if oid isn't an ObjectId
+    """
     try:
         return timeutils.normalize_time(oid.generation_time)
     except AttributeError:

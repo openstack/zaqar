@@ -41,6 +41,10 @@ class MessageController(base.MessageBase):
         if project is None:
             project = ''
 
+        mid = utils.msgid_decode(message_id)
+        if mid is None:
+            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+
         try:
             content, ttl, age = self.driver.get('''
                 select content, ttl, julianday() * 86400.0 - created
@@ -48,24 +52,26 @@ class MessageController(base.MessageBase):
                     on qid = Q.id
                  where ttl > julianday() * 86400.0 - created
                    and M.id = ? and project = ? and name = ?
-            ''', utils.msgid_decode(message_id), project, queue)
-
-            return {
-                'id': message_id,
-                'ttl': ttl,
-                'age': int(age),
-                'body': content,
-            }
+                ''', mid, project, queue)
 
         except utils.NoResult:
             raise exceptions.MessageDoesNotExist(message_id, queue, project)
+
+        return {
+            'id': message_id,
+            'ttl': ttl,
+            'age': int(age),
+            'body': content,
+        }
 
     def bulk_get(self, queue, message_ids, project):
         if project is None:
             project = ''
 
-        message_ids = ["'%s'" % utils.msgid_decode(id) for id in message_ids]
-        message_ids = ','.join(message_ids)
+        message_ids = ','.join(
+            ["'%s'" % id for id in
+             map(utils.msgid_decode, message_ids) if id is not None]
+        )
 
         sql = '''
             select M.id, content, ttl, julianday() * 86400.0 - created
@@ -214,6 +220,8 @@ class MessageController(base.MessageBase):
             project = ''
 
         id = utils.msgid_decode(message_id)
+        if id is None:
+            return
 
         if not claim:
             self.driver.run('''
@@ -240,6 +248,10 @@ class MessageController(base.MessageBase):
 
     def __delete_claimed(self, id, claim):
         # Precondition: id exists in a specific queue
+        cid = utils.cid_decode(claim)
+        if cid is None:
+            return
+
         self.driver.run('''
             delete from Messages
              where id = ?
@@ -248,17 +260,19 @@ class MessageController(base.MessageBase):
                               on id = cid
                            where ttl > julianday() * 86400.0 - created
                              and id = ?)
-        ''', id, utils.cid_decode(claim))
+        ''', id, cid)
 
         if not self.driver.affected:
-            raise exceptions.ClaimNotPermitted(utils.msgid_encode(id), claim)
+            raise exceptions.ClaimNotPermitted(id, claim)
 
     def bulk_delete(self, queue, message_ids, project):
         if project is None:
             project = ''
 
-        message_ids = ','.join(["'%s'" % utils.msgid_decode(id)
-                                for id in message_ids])
+        message_ids = ','.join(
+            ["'%s'" % id for id in
+             map(utils.msgid_decode, message_ids) if id]
+        )
 
         self.driver.run('''
             delete from Messages

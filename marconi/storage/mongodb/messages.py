@@ -368,9 +368,11 @@ class MessageController(storage.MessageBase):
         return utils.HookedCursor(msgs, denormalizer)
 
     def unclaim(self, queue_name, claim_id, project=None):
-        try:
-            cid = utils.to_oid(claim_id)
-        except ValueError:
+        cid = utils.to_oid(claim_id)
+
+        # NOTE(cpp-cabrera): early abort - avoid a DB query if we're handling
+        # an invalid ID
+        if cid is None:
             return
 
         # NOTE(cpp-cabrera):  unclaim by setting the claim ID to None
@@ -435,7 +437,15 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def get(self, queue_name, message_id, project=None):
+        """Gets a single message by ID.
+
+        :raises: exceptions.MessageDoesNotExist
+        """
         mid = utils.to_oid(message_id)
+        if mid is None:
+            raise exceptions.MessageDoesNotExist(message_id, queue_name,
+                                                 project)
+
         now = timeutils.utcnow()
 
         query = {
@@ -455,7 +465,10 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def bulk_get(self, queue_name, message_ids, project=None):
-        message_ids = [utils.to_oid(id) for id in message_ids]
+        message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
+        if not message_ids:
+            return ()
+
         now = timeutils.utcnow()
 
         # Base query, always check expire time
@@ -597,50 +610,52 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def delete(self, queue_name, message_id, project=None, claim=None):
-        try:
-            mid = utils.to_oid(message_id)
+        # NOTE(cpp-cabrera): return early - this is an invalid message
+        # id so we won't be able to find it any way
+        mid = utils.to_oid(message_id)
+        if mid is None:
+            return
 
-            query = {
-                'q': queue_name,
-                'p': project,
-                '_id': mid
-            }
+        query = {
+            'q': queue_name,
+            'p': project,
+            '_id': mid
+        }
 
-            if claim:
-                now = timeutils.utcnow()
-                query['e'] = {'$gt': now}
-                message = self._col.find_one(query)
+        if claim:
+            # NOTE(cpp-cabrera): return early - the user gaves us an
+            # invalid claim id and that renders the rest of this
+            # request moot
+            cid = utils.to_oid(claim)
+            if cid is None:
+                return
 
-                if message is None:
-                    return
+            now = timeutils.utcnow()
+            query['e'] = {'$gt': now}
+            message = self._col.find_one(query)
 
-                cid = utils.to_oid(claim)
+            if message is None:
+                return None
 
-                if not ('c' in message and
-                        message['c']['id'] == cid and
-                        message['c']['e'] > now):
-                    raise exceptions.ClaimNotPermitted(message_id, claim)
+            if not ('c' in message and
+                    message['c']['id'] == cid and
+                    message['c']['e'] > now):
+                raise exceptions.ClaimNotPermitted(message_id, claim)
 
-                self._col.remove(query['_id'], w=0)
-            else:
-                self._col.remove(query, w=0)
-        except exceptions.QueueDoesNotExist:
-            pass
+            self._col.remove(query['_id'], w=0)
+        else:
+            self._col.remove(query, w=0)
 
     @utils.raises_conn_error
     def bulk_delete(self, queue_name, message_ids, project=None):
-        try:
-            message_ids = [utils.to_oid(id) for id in message_ids]
-            query = {
-                'q': queue_name,
-                'p': project,
-                '_id': {'$in': message_ids},
-            }
+        message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
+        query = {
+            'q': queue_name,
+            'p': project,
+            '_id': {'$in': message_ids},
+        }
 
-            self._col.remove(query, w=0)
-
-        except exceptions.QueueDoesNotExist:
-            pass
+        self._col.remove(query, w=0)
 
 
 def _basic_message(msg, now):
