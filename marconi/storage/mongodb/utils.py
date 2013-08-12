@@ -28,7 +28,7 @@ from marconi.openstack.common import timeutils
 from marconi.storage import exceptions as storage_exceptions
 
 
-DUP_MARKER_REGEX = re.compile(r'\$queue_marker\s+dup key: { : [^:]+: (\d)+')
+DUP_MARKER_REGEX = re.compile(r'\$queue_marker.*?:\s(\d+)')
 
 LOG = logging.getLogger(__name__)
 
@@ -42,13 +42,13 @@ def dup_marker_from_error(error_message):
     :raises: marconi.common.exceptions.PatternNotFound
     :returns: extracted marker as an integer
     """
-    match = DUP_MARKER_REGEX.search(error_message)
-    if match is None:
+    match = DUP_MARKER_REGEX.findall(error_message)
+    if not match:
         description = ('Error message could not be parsed: %s' %
                        error_message)
         raise exceptions.PatternNotFound(description)
 
-    return int(match.groups()[0])
+    return int(match[-1])
 
 
 def cached_gen(iterable):
