@@ -6,9 +6,12 @@ netaddr
 falcon>=0.1.6,<0.1.7
 iso8601>=0.1.4
 msgpack-python
-oslo.config>=1.1.0
 pymongo
 python-keystoneclient
 simplejson
 WebOb
 stevedore>=0.9
+
+
+-f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
+oslo.config>=1.2.0a3
