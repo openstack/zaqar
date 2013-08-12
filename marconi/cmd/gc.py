@@ -39,8 +39,8 @@ def run():
     """
 
     try:
-        info = _('Starting marconi-gc')
-        print(info + _('. Use CTRL+C to exit...\n'))
+        info = _(u'Starting marconi-gc')
+        print(info + _(u'. Use CTRL+C to exit...\n'))
         LOG.info(info)
 
         boot = bootstrap.Bootstrap(cli_args=sys.argv[1:])
@@ -57,7 +57,5 @@ def run():
             time.sleep(gc_interval)
 
     except NotImplementedError as ex:
-        print('The configured storage driver does not support GC.\n')
-
+        print(_(u'The configured storage driver does not support GC.\n'))
         LOG.exception(ex)
-        print('')

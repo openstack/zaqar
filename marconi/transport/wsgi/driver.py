@@ -43,11 +43,11 @@ LOG = logging.getLogger(__name__)
 def _check_media_type(req, resp, params):
     if not req.client_accepts('application/json'):
         raise falcon.HTTPNotAcceptable(
-            '''
+            u'''
 Endpoint only serves `application/json`; specify client-side
 media type support with the "Accept" header.''',
-            href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html",
-            href_text='"14.1 Accept", Hypertext Transfer Protocol -- HTTP/1.1')
+            href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
+            href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
 
 
 def _extract_project_id(req, resp, params):
@@ -121,7 +121,7 @@ class Driver(transport.DriverBase):
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
 
-        msg = _('Serving on host %(bind)s:%(port)s')
+        msg = _(u'Serving on host %(bind)s:%(port)s')
         msg %= {'bind': WSGI_CFG.bind, 'port': WSGI_CFG.port}
         LOG.info(msg)
 

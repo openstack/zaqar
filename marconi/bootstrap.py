@@ -43,7 +43,7 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        LOG.debug(_('Loading Storage Driver'))
+        LOG.debug(_(u'Loading Storage Driver'))
         try:
             mgr = driver.DriverManager('marconi.storage',
                                        CFG.storage,
@@ -55,7 +55,7 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def transport(self):
-        LOG.debug(_('Loading Transport Driver'))
+        LOG.debug(_(u'Loading Transport Driver'))
         try:
             mgr = driver.DriverManager('marconi.transport',
                                        CFG.transport,

@@ -34,9 +34,9 @@ class ItemResource(object):
         self.message_controller = message_controller
 
     def on_put(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue item PUT - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Queue item PUT - queue: %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         try:
             validation.queue_creation(name=queue_name)
@@ -49,16 +49,16 @@ class ItemResource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Queue could not be created.')
+            description = _(u'Queue could not be created.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
     def on_head(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue item exists - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Queue item exists - queue: %(queue)s, '
+                    'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         if self.queue_controller.exists(queue_name,
                                         project=project_id):
@@ -71,15 +71,15 @@ class ItemResource(object):
     on_get = on_head
 
     def on_delete(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue item DELETE - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Queue item DELETE - queue: %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
         try:
             self.queue_controller.delete(queue_name, project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Queue could not be deleted.')
+            description = _(u'Queue could not be deleted.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -109,7 +109,7 @@ class CollectionResource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Queues could not be listed.')
+            description = _(u'Queues could not be listed.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Buffer list of queues

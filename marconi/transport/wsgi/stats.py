@@ -58,5 +58,5 @@ class Resource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Queue stats could not be read.')
+            description = _(u'Queue stats could not be read.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)

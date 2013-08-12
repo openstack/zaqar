@@ -19,8 +19,8 @@ import falcon
 class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
     """Wraps falcon.HTTPServiceUnavailable with Marconi messaging."""
 
-    TITLE = _('Service temporarily unavailable')
-    DESCRIPTION = ('Please try again in a few seconds.')
+    TITLE = _(u'Service temporarily unavailable')
+    DESCRIPTION = (u'Please try again in a few seconds.')
 
     def __init__(self, description, retry_after=30):
         description = description + ' ' + self.DESCRIPTION
@@ -31,7 +31,7 @@ class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
 class HTTPBadRequestBody(falcon.HTTPBadRequest):
     """Wraps falcon.HTTPBadRequest with a contextual title."""
 
-    TITLE = _('Invalid request body')
+    TITLE = _(u'Invalid request body')
 
     def __init__(self, description):
         super(HTTPBadRequestBody, self).__init__(self.TITLE, description)
@@ -40,7 +40,7 @@ class HTTPBadRequestBody(falcon.HTTPBadRequest):
 class HTTPDocumentTypeNotSupported(HTTPBadRequestBody):
     """Wraps HTTPBadRequestBody with a standard description."""
 
-    DESCRIPTION = ('Document type not supported.')
+    DESCRIPTION = _(u'Document type not supported.')
 
     def __init__(self):
         super(HTTPDocumentTypeNotSupported, self).__init__(self.DESCRIPTION)

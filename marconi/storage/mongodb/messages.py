@@ -208,7 +208,7 @@ class MessageController(storage.MessageBase):
 
             if head is None:
                 # Assume queue was just deleted via a parallel request
-                LOG.warning(_('Queue %s is empty or missing.') % queue_name)
+                LOG.warning(_(u'Queue %s is empty or missing.') % queue_name)
                 return
 
             # NOTE(flaper87): Can we use k instead of
@@ -257,8 +257,8 @@ class MessageController(storage.MessageBase):
         """
 
         if sort not in (1, -1):
-            raise ValueError('sort must be either 1 (ascending) '
-                             'or -1 (descending)')
+            raise ValueError(u'sort must be either 1 (ascending) '
+                             u'or -1 (descending)')
 
         now = timeutils.utcnow()
 
@@ -273,7 +273,7 @@ class MessageController(storage.MessageBase):
         }
 
         if fields and not isinstance(fields, (dict, list)):
-            raise TypeError('Fields must be an instance of list / dict')
+            raise TypeError(u'Fields must be an instance of list / dict')
 
         if not echo and client_uuid is not None:
             query['u'] = {'$ne': client_uuid}
@@ -519,9 +519,9 @@ class MessageController(storage.MessageBase):
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
-                    message = _('%(attempts)d attempt(s) required to post '
-                                '%(num_messages)d messages to queue '
-                                '%(queue_name)s and project %(project)s')
+                    message = _(u'%(attempts)d attempt(s) required to post '
+                                u'%(num_messages)d messages to queue '
+                                u'%(queue_name)s and project %(project)s')
                     message %= dict(queue_name=queue_name, attempts=attempt+1,
                                     num_messages=len(ids), project=project)
 
@@ -539,8 +539,9 @@ class MessageController(storage.MessageBase):
                 #
                 # TODO(kgriffs): Add transaction ID to help match up loglines
                 if attempt == 0:
-                    message = _('First attempt failed while adding messages '
-                                'to queue %s for current request') % queue_name
+                    message = _(u'First attempt failed while '
+                                u'adding messages to queue %s '
+                                u'for current request') % queue_name
 
                     LOG.debug(message)
 
@@ -584,8 +585,8 @@ class MessageController(storage.MessageBase):
                 LOG.exception(ex)
                 raise
 
-        message = _('Hit maximum number of attempts (%(max)s) for queue '
-                    '%(id)s in project %(project)s')
+        message = _(u'Hit maximum number of attempts (%(max)s) for queue '
+                    u'%(id)s in project %(project)s')
         message %= dict(max=options.CFG.max_attempts, id=queue_name,
                         project=project)
 

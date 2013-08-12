@@ -197,4 +197,4 @@ def _make_opt(name, default):
     try:
         return deduction[type(default)](name, help=help, default=default)
     except KeyError:
-        raise cfg.Error('unrecognized option type')
+        raise cfg.Error(u'unrecognized option type')

@@ -39,7 +39,7 @@ class KeystoneAuth(object):
     @classmethod
     def install(cls, app, conf):
         """Install Auth check on application."""
-        LOG.debug(_("Installing Keystone's auth protocol"))
+        LOG.debug(_(u"Installing Keystone's auth protocol"))
         cls._register_opts(conf)
         conf = dict(conf.get(cls.OPT_GROUP_NAME))
         return auth_token.AuthProtocol(app, conf=conf)

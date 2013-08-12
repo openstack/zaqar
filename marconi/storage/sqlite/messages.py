@@ -99,8 +99,8 @@ class MessageController(base.MessageBase):
                  limit 1'''
 
             if sort not in (1, -1):
-                raise ValueError('sort must be either 1 (ascending) '
-                                 'or -1 (descending)')
+                raise ValueError(u'sort must be either 1 (ascending) '
+                                 u'or -1 (descending)')
 
             sql = sql % ('DESC' if sort == -1 else 'ASC')
 

@@ -36,9 +36,9 @@ class Resource(object):
         self.queue_ctrl = queue_controller
 
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue metadata GET - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Queue metadata GET - queue: %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         try:
             resp_dict = self.queue_ctrl.get_metadata(queue_name,
@@ -49,7 +49,7 @@ class Resource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Queue metadata could not be retrieved.')
+            description = _(u'Queue metadata could not be retrieved.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         resp.content_location = req.path
@@ -57,13 +57,13 @@ class Resource(object):
         resp.status = falcon.HTTP_200
 
     def on_put(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Queue metadata PUT - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Queue metadata PUT - queue: %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         # Place JSON size restriction before parsing
         if req.content_length > CFG.metadata_max_length:
-            description = _('Queue metadata size is too large.')
+            description = _(u'Queue metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Deserialize queue metadata
@@ -81,7 +81,7 @@ class Resource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Metadata could not be updated.')
+            description = _(u'Metadata could not be updated.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204

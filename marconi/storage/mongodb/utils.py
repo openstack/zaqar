@@ -44,7 +44,7 @@ def dup_marker_from_error(error_message):
     """
     match = DUP_MARKER_REGEX.findall(error_message)
     if not match:
-        description = ('Error message could not be parsed: %s' %
+        description = (u'Error message could not be parsed: %s' %
                        error_message)
         raise exceptions.PatternNotFound(description)
 
@@ -96,16 +96,16 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
         the ratio attempt / max_attempts, with optional jitter.
     """
     if max_attempts < 0:
-        raise ValueError('max_attempts must be >= 0')
+        raise ValueError(u'max_attempts must be >= 0')
 
     if max_sleep < 0:
-        raise ValueError('max_sleep must be >= 0')
+        raise ValueError(u'max_sleep must be >= 0')
 
     if max_jitter < 0:
-        raise ValueError('max_jitter must be >= 0')
+        raise ValueError(u'max_jitter must be >= 0')
 
     if not (0 <= attempt < max_attempts):
-        raise ValueError('attempt value is out of range')
+        raise ValueError(u'attempt value is out of range')
 
     ratio = float(attempt) / float(max_attempts)
     backoff_sec = ratio * max_sleep
@@ -128,7 +128,7 @@ def to_oid(obj):
     try:
         return objectid.ObjectId(obj)
     except (TypeError, berrors.InvalidId):
-        msg = 'Invalid oid: %s' % obj
+        msg = u'Invalid oid: %s' % obj
         raise storage_exceptions.MalformedID(msg)
 
 
@@ -137,7 +137,7 @@ def oid_utc(oid):
     try:
         return timeutils.normalize_time(oid.generation_time)
     except AttributeError:
-        raise TypeError('Expected ObjectId and got %s' % type(oid))
+        raise TypeError(u'Expected ObjectId and got %s' % type(oid))
 
 
 def stat_message(message, now):
@@ -166,7 +166,7 @@ def raises_conn_error(func):
             return func(*args, **kwargs)
         except errors.ConnectionFailure:
             # NOTE(flaper87): Raise the error
-            msg = "ConnectionFailure caught"
+            msg = u'ConnectionFailure caught'
             LOG.error(msg)
             raise storage_exceptions.ConnectionError(msg)
 

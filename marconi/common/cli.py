@@ -72,7 +72,7 @@ def runnable(func):
             PROJECT_CFG.load(args=sys.argv[1:])
             func()
         except KeyboardInterrupt:
-            LOG.info('Terminating')
+            LOG.info(_(u'Terminating'))
         except Exception as ex:
             _fail(1, ex)
 

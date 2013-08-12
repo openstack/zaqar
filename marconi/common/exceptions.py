@@ -15,7 +15,7 @@
 
 
 class InvalidDriver(Exception):
-    pass
+    """A driver was not found or loaded."""
 
 
 class PatternNotFound(Exception):

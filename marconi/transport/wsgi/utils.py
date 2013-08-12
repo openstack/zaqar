@@ -56,7 +56,7 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
     """
 
     if len is None:
-        description = _('Request body can not be empty')
+        description = _(u'Request body can not be empty')
         raise exceptions.HTTPBadRequestBody(description)
 
     try:
@@ -67,18 +67,18 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
 
     except utils.MalformedJSON as ex:
         LOG.exception(ex)
-        description = _('Request body could not be parsed.')
+        description = _(u'Request body could not be parsed.')
         raise exceptions.HTTPBadRequestBody(description)
 
     except utils.OverflowedJSONInteger as ex:
         LOG.exception(ex)
-        description = _('JSON contains integer that is too large.')
+        description = _(u'JSON contains integer that is too large.')
         raise exceptions.HTTPBadRequestBody(description)
 
     except Exception as ex:
         # Error while reading from the network/server
         LOG.exception(ex)
-        description = _('Request body could not be read.')
+        description = _(u'Request body could not be read.')
         raise exceptions.HTTPServiceUnavailable(description)
 
     if doctype is JSONObject:
@@ -144,12 +144,12 @@ def get_checked_field(document, name, value_type):
     try:
         value = document[name]
     except KeyError:
-        description = _('Missing "{name}" field.').format(name=name)
+        description = _(u'Missing "{name}" field.').format(name=name)
         raise exceptions.HTTPBadRequestBody(description)
 
     if value_type == '*' or isinstance(value, value_type):
         return value
 
-    description = _('The value of the "{name}" field must be a {vtype}.')
+    description = _(u'The value of the "{name}" field must be a {vtype}.')
     description = description.format(name=name, vtype=value_type.__name__)
     raise exceptions.HTTPBadRequestBody(description)

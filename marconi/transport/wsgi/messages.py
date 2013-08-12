@@ -58,7 +58,7 @@ class CollectionResource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Message could not be retrieved.')
+            description = _(u'Message could not be retrieved.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -103,19 +103,19 @@ class CollectionResource(object):
             raise falcon.HTTPNotFound()
 
         except storage_exceptions.MalformedMarker:
-            title = _('Invalid query string parameter')
-            description = _('The value for the query string '
-                            'parameter "marker" could not be '
-                            'parsed. We recommend using the '
-                            '"next" URI from a previous '
-                            'request directly, rather than '
-                            'constructing the URI manually. ')
+            title = _(u'Invalid query string parameter')
+            description = _(u'The value for the query string '
+                            u'parameter "marker" could not be '
+                            u'parsed. We recommend using the '
+                            u'"next" URI from a previous '
+                            u'request directly, rather than '
+                            u'constructing the URI manually. ')
 
             raise falcon.HTTPBadRequest(title, description)
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Messages could not be listed.')
+            description = _(u'Messages could not be listed.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         if not messages:
@@ -142,15 +142,15 @@ class CollectionResource(object):
     #-----------------------------------------------------------------------
 
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Messages collection POST - queue:  %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Messages collection POST - queue:  %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         uuid = req.get_header('Client-ID', required=True)
 
         # Place JSON size restriction before parsing
         if req.content_length > CFG.content_max_length:
-            description = _('Message collection size is too large.')
+            description = _(u'Message collection size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Pull out just the fields we care about
@@ -164,7 +164,7 @@ class CollectionResource(object):
         # NOTE(kgriffs): This check assumes messages is a
         # collection (not a generator).
         if not messages:
-            description = _('No messages were provided.')
+            description = _(u'No messages were provided.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
         # Enqueue the messages
@@ -197,12 +197,12 @@ class CollectionResource(object):
             if not message_ids:
                 # TODO(kgriffs): Include error code that is different
                 # from the code used in the generic case, below.
-                description = _('No messages could be enqueued.')
+                description = _(u'No messages could be enqueued.')
                 raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Messages could not be enqueued.')
+            description = _(u'Messages could not be enqueued.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Prepare the response
@@ -216,9 +216,9 @@ class CollectionResource(object):
         resp.body = utils.to_json(body)
 
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(_("Messages collection GET - queue: %(queue)s, "
-                    "project: %(project)s") %
-                  {"queue": queue_name, "project": project_id})
+        LOG.debug(_(u'Messages collection GET - queue: %(queue)s, '
+                    u'project: %(project)s') %
+                  {'queue': queue_name, 'project': project_id})
 
         resp.content_location = req.relative_uri
 
@@ -252,7 +252,7 @@ class CollectionResource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = 'Messages could not be deleted.'
+            description = _(u'Messages could not be deleted.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         else:
@@ -267,11 +267,11 @@ class ItemResource(object):
         self.message_controller = message_controller
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
-        LOG.debug(_("Messages item GET - message: %(message)s, "
-                    "queue: %(queue)s, project: %(project)s") %
-                  {"message": message_id,
-                   "queue": queue_name,
-                   "project": project_id})
+        LOG.debug(_(u'Messages item GET - message: %(message)s, '
+                    u'queue: %(queue)s, project: %(project)s') %
+                  {'message': message_id,
+                   'queue': queue_name,
+                   'project': project_id})
         try:
             message = self.message_controller.get(
                 queue_name,
@@ -283,7 +283,7 @@ class ItemResource(object):
 
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Message could not be retrieved.')
+            description = _(u'Message could not be retrieved.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -295,11 +295,11 @@ class ItemResource(object):
         resp.status = falcon.HTTP_200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
-        LOG.debug(_("Messages item DELETE - message: %(message)s, "
-                    "queue: %(queue)s, project: %(project)s") %
-                  {"message": message_id,
-                   "queue": queue_name,
-                   "project": project_id})
+        LOG.debug(_(u'Messages item DELETE - message: %(message)s, '
+                    u'queue: %(queue)s, project: %(project)s') %
+                  {'message': message_id,
+                   'queue': queue_name,
+                   'project': project_id})
         try:
             self.message_controller.delete(
                 queue_name,
@@ -309,13 +309,13 @@ class ItemResource(object):
 
         except storage_exceptions.NotPermitted as ex:
             LOG.exception(ex)
-            title = _('Invalid claim')
-            description = _('The specified claim either does not '
-                            'exist or has expired.')
+            title = _(u'Invalid claim')
+            description = _(u'The specified claim either does not '
+                            u'exist or has expired.')
             raise falcon.HTTPForbidden(title, description)
         except Exception as ex:
             LOG.exception(ex)
-            description = _('Message could not be deleted.')
+            description = _(u'Message could not be deleted.')
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Alles guete
