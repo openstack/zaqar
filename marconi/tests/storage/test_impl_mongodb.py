@@ -37,14 +37,14 @@ class MongodbUtilsTest(testing.TestBase):
     def test_dup_marker_from_error(self):
         error_message = ('E11000 duplicate key error index: '
                          'marconi.messages.$queue_marker  dup key: '
-                         '{ : ObjectId("51adff46b100eb85d8a93a2d"), : 3 }')
+                         '{ : "queue", : "project", : 3 }')
 
         marker = utils.dup_marker_from_error(error_message)
         self.assertEquals(marker, 3)
 
         error_message = ('E11000 duplicate key error index: '
                          'marconi.messages.$x_y  dup key: '
-                         '{ : ObjectId("51adff46b100eb85d8a93a2d"), : 3 }')
+                         '{ : "queue", : "project", : 3 }')
 
         self.assertRaises(exceptions.PatternNotFound,
                           utils.dup_marker_from_error, error_message)
