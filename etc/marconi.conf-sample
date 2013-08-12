@@ -1,23 +1,23 @@
 [DEFAULT]
 # Show more verbose log output (sets INFO log level output)
-#verbose = False
+;verbose = False
 
 # Show debugging output in logs (sets DEBUG log level output)
-#debug = False
+;debug = False
 
 # Log to this file!
 log_file = /var/log/marconi/server.log
 
-; auth_strategy = 
+;auth_strategy = 
 
 # ================= Syslog Options ============================
 
 # Send logs to syslog (/dev/log) instead of to file specified
 # by `log_file`
-#use_syslog = False
+;use_syslog = False
 
 # Facility to use. If unset defaults to LOG_USER.
-#syslog_log_facility = LOG_LOCAL0
+;syslog_log_facility = LOG_LOCAL0
 
 
 [drivers]
@@ -27,8 +27,13 @@ transport = wsgi
 storage = mongodb
 
 [drivers:transport:wsgi]
-bind = 0.0.0.0
-port = 8888
+;bind = 0.0.0.0
+;port = 8888
+
+# Maximum Content-Length allowed for metadata updating and
+# message posting.
+;metadata_max_length = 65536
+;content_max_length = 262144
 
 ;[drivers:transport:zmq]
 ;port = 9999
@@ -51,7 +56,7 @@ database = marconi
 ;max_retry_jitter = 0.005
 
 # Frequency of message garbage collections, in seconds
-;gc_interval = 5 * 60
+;gc_interval = 300
 
 # Threshold of number of expired messages to reach in a given
 # queue, before performing the GC. Useful for reducing frequent
@@ -63,3 +68,19 @@ database = marconi
 # files will be.
 ;gc_threshold = 1000
 
+[limits:transport]
+# The maximum number of queue records per page when listing queues
+;queue_payload_uplimit = 20
+# The maximum number of messages in a message posting, maximum
+# number of messages per page when listing or claiming messages,
+# and maximum number of messages involved in a bulk operation.
+;message_payload_uplimit = 20
+# Expiration limits; the minimal values are all 60 (seconds)
+;message_ttl_max = 1209600
+;claim_ttl_max = 43200
+;claim_grace_max = 43200
+
+# Maximum compact-JSON (without whitespace) size in bytes allowed
+# for each metadata body and each message body
+;metadata_size_uplimit = 65536
+;message_size_uplimit = 262144
