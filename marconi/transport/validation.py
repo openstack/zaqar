@@ -21,9 +21,9 @@ from marconi.common import config
 from marconi.common import exceptions
 
 OPTIONS = {
-    'queue_payload_uplimit': 20,
+    'queue_paging_uplimit': 20,
     'metadata_size_uplimit': 64 * 1024,
-    'message_payload_uplimit': 20,
+    'message_paging_uplimit': 20,
     'message_size_uplimit': 256 * 1024,
     'message_ttl_max': 1209600,
     'claim_ttl_max': 43200,
@@ -61,10 +61,10 @@ def queue_listing(limit=None, **kwargs):
     :raises: ValidationFailed if the limit is exceeded
     """
 
-    if limit is not None and not (0 < limit <= CFG.queue_payload_uplimit):
+    if limit is not None and not (0 < limit <= CFG.queue_paging_uplimit):
         raise exceptions.ValidationFailed(
-            'queue payload count not in (0, %d]' %
-            CFG.queue_payload_uplimit)
+            'queue paging count not in (0, %d]' %
+            CFG.queue_paging_uplimit)
 
 
 def queue_content(metadata, check_size):
@@ -123,10 +123,10 @@ def message_listing(limit=None, **kwargs):
     :raises: ValidationFailed if the limit is exceeded
     """
 
-    if limit is not None and not (0 < limit <= CFG.message_payload_uplimit):
+    if limit is not None and not (0 < limit <= CFG.message_paging_uplimit):
         raise exceptions.ValidationFailed(
-            'message payload count not in (0, %d]' %
-            CFG.message_payload_uplimit)
+            'message paging count not in (0, %d]' %
+            CFG.message_paging_uplimit)
 
 
 def claim_creation(metadata, **kwargs):

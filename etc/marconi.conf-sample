@@ -70,11 +70,11 @@ database = marconi
 
 [limits:transport]
 # The maximum number of queue records per page when listing queues
-;queue_payload_uplimit = 20
+;queue_paging_uplimit = 20
 # The maximum number of messages in a message posting, maximum
 # number of messages per page when listing or claiming messages,
 # and maximum number of messages involved in a bulk operation.
-;message_payload_uplimit = 20
+;message_paging_uplimit = 20
 # Expiration limits; the minimal values are all 60 (seconds)
 ;message_ttl_max = 1209600
 ;claim_ttl_max = 43200
