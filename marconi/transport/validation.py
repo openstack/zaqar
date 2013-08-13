@@ -22,6 +22,7 @@ from marconi.common import exceptions
 
 OPTIONS = {
     'queue_payload_uplimit': 20,
+    'metadata_size_uplimit': 64 * 1024,
     'message_payload_uplimit': 20,
     'message_size_uplimit': 256 * 1024,
     'message_ttl_max': 1209600,
@@ -66,6 +67,22 @@ def queue_listing(limit=None, **kwargs):
             CFG.queue_payload_uplimit)
 
 
+def queue_content(metadata, check_size):
+    """Restrictions on queue metadata.
+
+    :param metadata: Metadata as a Python dict
+    :param check_size: Whether this size checking is required
+    :raises: ValidationFailed if the metadata is oversize.
+    """
+
+    if check_size:
+        length = _compact_json_length(metadata)
+        if length > CFG.metadata_size_uplimit:
+            raise exceptions.ValidationFailed(
+                'queue metadata larger than %d bytes' %
+                CFG.metadata_size_uplimit)
+
+
 def message_posting(messages, check_size=True):
     """Restrictions on a list of messages.
 
@@ -91,12 +108,7 @@ def message_content(message, check_size):
             CFG.message_ttl_max)
 
     if check_size:
-        # UTF-8 encoded, without whitespace
-        # TODO(zyuan): Replace this redundent re-serialization
-        # with a sizing-only parser.
-        body_length = len(json.dumps(message['body'],
-                                     ensure_ascii=False,
-                                     separators=(',', ':')))
+        body_length = _compact_json_length(message['body'])
         if body_length > CFG.message_size_uplimit:
             raise exceptions.ValidationFailed(
                 'message body larger than %d bytes' %
@@ -147,3 +159,12 @@ def claim_updating(metadata):
         raise exceptions.ValidationFailed(
             'claim TTL not in [60, %d]' %
             CFG.claim_ttl_max)
+
+
+def _compact_json_length(obj):
+    # UTF-8 encoded, without whitespace
+    # TODO(zyuan): Replace this redundent re-serialization
+    # with a sizing-only parser.
+    return len(json.dumps(obj,
+                          ensure_ascii=False,
+                          separators=(',', ':')))

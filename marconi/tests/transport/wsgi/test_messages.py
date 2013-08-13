@@ -176,16 +176,6 @@ class MessagesBaseTest(base.TestBase):
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-        # Each message's size
-        for long_body in ('a' * 255,  # +2 string quotes
-                          {'a': 0, 'b': 'x' * 243}):  # w/o whitespaces
-            doc = json.dumps([{'body': long_body, 'ttl': 100}])
-            self.simulate_post(self.queue_path + '/messages',
-                               body=doc,
-                               headers=self.headers)
-
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
     def test_unsupported_json(self):
         for document in ('{"overflow": 9223372036854775808}',
                          '{"underflow": -9223372036854775809}'):
@@ -346,7 +336,7 @@ class MessagesBaseTest(base.TestBase):
 
 class MessagesSQLiteTests(MessagesBaseTest):
 
-    config_filename = 'wsgi_sqlite_validation.conf'
+    config_filename = 'wsgi_sqlite.conf'
 
 
 class MessagesMongoDBTests(MessagesBaseTest):
