@@ -341,10 +341,21 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_delete(path + '/messages', query_string='ids=a,b,c')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
+    def test_delete_message_with_invalid_claim_doesnt_delete_message(self):
+        path = self.queue_path
+        resp = self._post_messages(path + '/messages', 1)
+        location = json.loads(resp[0])['resources'][0]
+
+        self.simulate_delete(location, query_string='claim_id=invalid')
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_get(location, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
-        self.simulate_post(target, self.project_id, body=doc,
-                           headers=self.headers)
+        return self.simulate_post(target, self.project_id, body=doc,
+                                  headers=self.headers)
 
     def _get_msg_id(self, headers):
         return self._get_msg_ids(headers)[0]
