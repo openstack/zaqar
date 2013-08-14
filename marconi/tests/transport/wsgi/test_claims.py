@@ -21,6 +21,7 @@ import pymongo
 import falcon
 
 from marconi.common import config
+from marconi.openstack.common import timeutils
 from marconi.tests.transport.wsgi import base
 
 
@@ -154,15 +155,19 @@ class ClaimsBaseTest(base.TestBase):
 
         # Update the claim
         new_claim_ttl = '{"ttl": 60}'
+        creation = timeutils.utcnow()
         self.simulate_patch(claim_href, self.project_id, body=new_claim_ttl)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Get the claimed messages (again)
         body = self.simulate_get(claim_href, self.project_id)
+        query = timeutils.utcnow()
         claim = json.loads(body[0])
         message_href, params = claim['messages'][0]['href'].split('?')
 
         self.assertEquals(claim['ttl'], 60)
+        estimated_age = timeutils.delta_seconds(creation, query)
+        self.assertTrue(estimated_age > claim['age'])
 
         # Delete the claim
         self.simulate_delete(claim['href'], 'bad_id')
