@@ -16,7 +16,7 @@ Running the System Tests
 #. System tests require the `requests` package. Run
    the following to install it: ::
 
-     pip install -r tools/system-test-requires
+     pip install -r system-test-requirements.txt
 
 #. cd to the marconi/tests/system directory
 
