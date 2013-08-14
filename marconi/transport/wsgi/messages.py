@@ -75,13 +75,14 @@ class CollectionResource(object):
     def _get(self, req, project_id, queue_name):
         uuid = req.get_header('Client-ID', required=True)
 
-        # TODO(kgriffs): Optimize
-        kwargs = utils.purge({
-            'marker': req.get_param('marker'),
-            'limit': req.get_param_as_int('limit'),
-            'echo': req.get_param_as_bool('echo'),
-            'include_claimed': req.get_param_as_bool('include_claimed'),
-        })
+        kwargs = {}
+
+        # NOTE(kgriffs): This syntax ensures that
+        # we don't clobber default values with None.
+        req.get_param('marker', store=kwargs)
+        req.get_param_as_int('limit', store=kwargs)
+        req.get_param_as_bool('echo', store=kwargs)
+        req.get_param_as_bool('include_claimed', store=kwargs)
 
         try:
             validate.message_listing(**kwargs)

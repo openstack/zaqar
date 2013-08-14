@@ -93,12 +93,14 @@ class CollectionResource(object):
         self.queue_controller = queue_controller
 
     def on_get(self, req, resp, project_id):
-        # TODO(kgriffs): Optimize
-        kwargs = utils.purge({
-            'marker': req.get_param('marker'),
-            'limit': req.get_param_as_int('limit'),
-            'detailed': req.get_param_as_bool('detailed'),
-        })
+
+        kwargs = {}
+
+        # NOTE(kgriffs): This syntax ensures that
+        # we don't clobber default values with None.
+        req.get_param('marker', store=kwargs)
+        req.get_param_as_int('limit', store=kwargs)
+        req.get_param_as_bool('detailed', store=kwargs)
 
         try:
             validate.queue_listing(**kwargs)

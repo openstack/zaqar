@@ -54,11 +54,3 @@ def to_json(obj):
     :param obj: a JSON-serializable object
     """
     return json.dumps(obj, ensure_ascii=False)
-
-
-def purge(src):
-    """Returns a copy of a dict, excluding any keys set to `None`.
-
-    :param src: a dictionary-like object to copy
-    """
-    return dict([(k, v) for k, v in src.items() if v is not None])
