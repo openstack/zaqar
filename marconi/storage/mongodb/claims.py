@@ -72,8 +72,6 @@ class ClaimController(storage.ClaimBase):
         except ValueError:
             raise exceptions.ClaimDoesNotExist()
 
-        age = timeutils.delta_seconds(utils.oid_utc(cid), now)
-
         def messages(msg_iter):
             msg = next(msg_iter)
             yield msg.pop('claim')
@@ -91,6 +89,10 @@ class ClaimController(storage.ClaimBase):
             msgs = messages(msg_ctrl.claimed(queue, cid, now,
                                              project=project))
             claim = next(msgs)
+
+            update_time = claim['e'] - datetime.timedelta(seconds=claim['t'])
+            age = timeutils.delta_seconds(update_time, now)
+
             claim = {
                 'age': int(age),
                 'ttl': claim.pop('t'),
