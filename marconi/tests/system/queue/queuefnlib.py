@@ -39,15 +39,16 @@ def verify_queue_stats(*get_response):
     keys_in_body = body.keys()
     keys_in_body.sort()
 
-    if (keys_in_body == ['actions', 'messages']):
+    if (keys_in_body == ['messages']):
         stats = body['messages']
         keys_in_stats = stats.keys()
         keys_in_stats.sort()
-        if (keys_in_stats == ['claimed', 'free']):
+        if (keys_in_stats == ['claimed', 'free', 'total']):
             try:
                 int(stats['claimed'])
                 int(stats['free'])
-            except Exception:
+                int(stats['total'])
+            except ValueError:
                 test_result_flag = False
         else:
             test_result_flag = False

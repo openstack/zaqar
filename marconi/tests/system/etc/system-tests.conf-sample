@@ -13,3 +13,12 @@ marconi_version = v1
 host = marconi.test.com
 useragent = systemtests
 project_id = 123456
+
+[marconi_config]
+queue_paging_uplimit = 20
+message_paging_uplimit = 20
+message_ttl_max = 1209600
+claim_ttl_max = 43200
+claim_grace_max = 43200
+metadata_size_uplimit = 65536
+message_size_uplimit = 262144

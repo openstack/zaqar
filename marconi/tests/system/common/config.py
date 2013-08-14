@@ -72,3 +72,31 @@ class Config(object):
     @property
     def project_id(self):
         return self.parser.get('header_values', 'project_id')
+
+    @property
+    def queue_paging_uplimit(self):
+        return int(self.parser.get('marconi_config', 'queue_paging_uplimit'))
+
+    @property
+    def message_paging_uplimit(self):
+        return int(self.parser.get('marconi_config', 'message_paging_uplimit'))
+
+    @property
+    def message_ttl_max(self):
+        return int(self.parser.get('marconi_config', 'message_ttl_max'))
+
+    @property
+    def claim_ttl_max(self):
+        return int(self.parser.get('marconi_config', 'claim_ttl_max'))
+
+    @property
+    def claim_grace_max(self):
+        return int(self.parser.get('marconi_config', 'claim_grace_max'))
+
+    @property
+    def metadata_size_uplimit(self):
+        return self.parser.get('marconi_config', 'metadata_size_uplimit')
+
+    @property
+    def message_size_uplimit(self):
+        return self.parser.get('marconi_config', 'message_size_uplimit')

@@ -17,8 +17,12 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 from marconi.tests.system.messages import msgfnlib
 
+import ddt
 
+
+@ddt.ddt
 class TestMessages(functionlib.TestUtils):
+
     """Tests for Messages."""
 
     def setUp(self):
@@ -69,10 +73,10 @@ class TestMessages(functionlib.TestUtils):
         url = self.cfg.base_url + '/queues/messagetestqueue/claims'
         doc = '{"ttl": 300, "grace": 100}'
         result = http.post(url, self.header, doc)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 201)
 
         url = self.cfg.base_url + '/queues/messagetestqueue/messages' \
-                                  '?include_claimed=true'
+                                  '?include_claimed=true&echo=true'
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
 
@@ -88,11 +92,10 @@ class TestMessages(functionlib.TestUtils):
 
     def test_002_message_bulk_insert(self):
         """Bulk Insert Messages into the Queue."""
-        message_count = 30
+        message_count = 10
         doc = msgfnlib.get_message_body(messagecount=message_count)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
         result = http.post(url, self.header, doc)
-
         self.assertEqual(result.status_code, 201)
 
         #GET on posted messages
@@ -144,17 +147,7 @@ class TestMessages(functionlib.TestUtils):
 
     test_004_message_get_limit_5.tags = ['smoke', 'positive']
 
-    def test_005_message_get_echo_false(self):
-        """Get Messages with echo=false."""
-        url = self.cfg.base_url + \
-            '/queues/messagetestqueue/messages?echo=false'
-
-        result = http.get(url, self.header)
-        self.assertEqual(result.status_code, 204)
-
-    test_005_message_get_echo_false.tags = ['smoke', 'positive']
-
-    def test_006_message_delete(self):
+    def test_005_message_delete(self):
         """Delete Message."""
         doc = msgfnlib.get_message_body(messagecount=1)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
@@ -172,9 +165,9 @@ class TestMessages(functionlib.TestUtils):
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 404)
 
-    test_006_message_delete.tags = ['smoke', 'positive']
+    test_005_message_delete.tags = ['smoke', 'positive']
 
-    def test_007_message_bulk_delete(self):
+    def test_006_message_bulk_delete(self):
         """Bulk Delete Messages."""
         doc = msgfnlib.get_message_body(messagecount=10)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
@@ -192,9 +185,9 @@ class TestMessages(functionlib.TestUtils):
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 204)
 
-    test_007_message_bulk_delete.tags = ['smoke', 'positive']
+    test_006_message_bulk_delete.tags = ['smoke', 'positive']
 
-    def test_008_message_delete_nonexisting(self):
+    def test_007_message_delete_nonexisting(self):
         """Delete non-existing Messages."""
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'   \
                                   '/non-existing'
@@ -202,9 +195,9 @@ class TestMessages(functionlib.TestUtils):
 
         self.assertEqual(result.status_code, 204)
 
-    test_008_message_delete_nonexisting.tags = ['smoke', 'positive']
+    test_007_message_delete_nonexisting.tags = ['negative']
 
-    def test_009_message_partial_delete(self):
+    def test_008_message_partial_delete(self):
         """Delete Messages will be partially successful."""
         doc = msgfnlib.get_message_body(messagecount=3)
         url = self.cfg.base_url + '/queues/messagetestqueue/messages'
@@ -219,7 +212,24 @@ class TestMessages(functionlib.TestUtils):
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
 
-    test_009_message_partial_delete.tags = ['smoke', 'positive']
+    test_008_message_partial_delete.tags = ['negative']
+
+    def test_009_message_partial_get(self):
+        """Get Messages will be partially successful."""
+        doc = msgfnlib.get_message_body(messagecount=3)
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'
+        result = http.post(url, self.header, doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        #Get posted message and a nonexisting message
+        location = result.headers['Location']
+        url = self.cfg.base_server + location
+        url += ',nonexisting'
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 200)
+
+    test_009_message_partial_get.tags = ['negative']
 
     def test_010_message_bulk_insert_60(self):
         """Insert more than max allowed messages.
@@ -233,6 +243,59 @@ class TestMessages(functionlib.TestUtils):
         self.assertEqual(result.status_code, 400)
 
     test_010_message_bulk_insert_60.tags = ['negative']
+
+    @ddt.data(10000000000000000000, -100, 0, 30, -10000000000000000000)
+    def test_011_message_get_invalid_limit(self, limit):
+        """Get Messages with invalid value for limit.
+
+        Allowed values for limit are 0 < limit <= 20(configurable).
+        """
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages?limit=' \
+            + str(limit)
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 400)
+
+    test_011_message_get_invalid_limit.tags = ['negative']
+
+    def test_012_message_bulk_delete(self):
+        """Delete more messages than allowed in a single request.
+
+        By default, max messages that can be deleted in a single
+        request is 20.
+        """
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages?ids=' \
+            + ','.join(str(i) for i in
+                       range(self.cfg.message_paging_uplimit + 1))
+        result = http.delete(url, self.header)
+
+        self.assertEqual(result.status_code, 400)
+
+    test_012_message_bulk_delete.tags = ['negative']
+
+    def test_013_message_bulk_get(self):
+        """GET more messages by id than allowed in a single request.
+
+        By default, max messages that can be fetched in a single
+        request is 20.
+        """
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages?ids=' \
+            + ','.join(str(i) for i in
+                       range(self.cfg.message_paging_uplimit + 1))
+        result = http.get(url, self.header)
+
+        self.assertEqual(result.status_code, 400)
+
+    test_013_message_bulk_get.tags = ['negative']
+
+    def test_014_get_messages_malformed_marker(self):
+        """Get messages with non-existing marker."""
+        url = self.cfg.base_url + '/queues/messagetestqueue/messages'  \
+            '?marker=invalid'
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+    test_014_get_messages_malformed_marker.tags = ['negative']
 
     def test_999_message_teardown(self):
         url = self.cfg.base_url + '/queues/messagetestqueue'
