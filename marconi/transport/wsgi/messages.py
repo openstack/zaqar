@@ -102,17 +102,6 @@ class CollectionResource(object):
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
 
-        except storage_exceptions.MalformedMarker:
-            title = _(u'Invalid query string parameter')
-            description = _(u'The value for the query string '
-                            u'parameter "marker" could not be '
-                            u'parsed. We recommend using the '
-                            u'"next" URI from a previous '
-                            u'request directly, rather than '
-                            u'constructing the URI manually. ')
-
-            raise falcon.HTTPBadRequest(title, description)
-
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Messages could not be listed.')

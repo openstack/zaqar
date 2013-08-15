@@ -355,49 +355,41 @@ class MessageControllerTest(ControllerBaseTest):
         self.assertEquals(countof['messages']['free'], 0)
 
     def test_bad_id(self):
-        # A malformed ID should result in an error. This
-        # doesn't hurt anything, since an attacker could just
-        # read the source code anyway to find out how IDs are
-        # implemented. Plus, if someone is just trying to
-        # get a message that they don't own, they would
-        # more likely just list the messages, not try to
-        # guess an ID of an arbitrary message.
-
         # NOTE(cpp-cabrera): A malformed ID should result in an empty
         # query. Raising an exception for validating IDs makes the
         # implementation more verbose instead of taking advantage of
         # the Maybe/Optional protocol, particularly when dealing with
         # bulk operations.
-        queue = 'foo'
-        project = '480924'
-        self.queue_controller.create(queue, project)
-
         bad_message_id = 'xyz'
-        self.controller.delete(queue, bad_message_id, project)
+        self.controller.delete(self.queue_name,
+                               bad_message_id,
+                               project=self.project)
+
         with testing.expect(exceptions.MessageDoesNotExist):
-            self.controller.get(queue, bad_message_id, project)
+            self.controller.get(self.queue_name,
+                                bad_message_id,
+                                project=self.project)
 
     def test_bad_claim_id(self):
-        self.queue_controller.create('unused', '480924')
-        [msgid] = self.controller.post('unused',
+        [msgid] = self.controller.post(self.queue_name,
                                        [{'body': {}, 'ttl': 10}],
-                                       project='480924',
-                                       client_uuid='unused')
+                                       project=self.project,
+                                       client_uuid='my_uuid')
 
         bad_claim_id = '; DROP TABLE queues'
-        self.controller.delete('unused', msgid,
-                               project='480924',
+        self.controller.delete(self.queue_name,
+                               msgid,
+                               project=self.project,
                                claim=bad_claim_id)
 
     def test_bad_marker(self):
-        queue = 'foo'
-        project = '480924'
-        self.queue_controller.create(queue, project)
-
         bad_marker = 'xyz'
-        func = self.controller.list
-        results = func(queue, project, marker=bad_marker)
-        self.assertRaises(exceptions.MalformedMarker, results.next)
+        interaction = self.controller.list(self.queue_name,
+                                           project=self.project,
+                                           marker=bad_marker)
+        messages = list(next(interaction))
+
+        self.assertEquals(messages, [])
 
 
 class ClaimControllerTest(ControllerBaseTest):
@@ -552,12 +544,20 @@ class ClaimControllerTest(ControllerBaseTest):
     def test_illformed_id(self):
         # any ill-formed IDs should be regarded as non-existing ones.
 
-        self.queue_controller.create('unused', '480924')
-        self.controller.delete('unused', 'illformed', '480924')
+        self.controller.delete(self.queue_name,
+                               'illformed',
+                               project=self.project)
 
         with testing.expect(exceptions.DoesNotExist):
-            self.controller.update('unused', 'illformed',
-                                   {'ttl': 40}, '480924')
+            self.controller.get(self.queue_name,
+                                'illformed',
+                                project=self.project)
+
+        with testing.expect(exceptions.DoesNotExist):
+            self.controller.update(self.queue_name,
+                                   'illformed',
+                                   {'ttl': 40},
+                                   project=self.project)
 
 
 def _insert_fixtures(controller, queue_name, project=None,

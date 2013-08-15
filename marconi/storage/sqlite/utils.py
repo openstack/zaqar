@@ -66,7 +66,7 @@ def marker_decode(id):
         return int(id, 8) ^ 0x3c96a355
 
     except ValueError:
-        raise exceptions.MalformedMarker()
+        return None
 
 
 def cid_encode(id):
