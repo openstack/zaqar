@@ -246,7 +246,7 @@ class MessageController(storage.MessageBase):
         :param marker: Message marker from which to start iterating
         :param echo: Whether to return messages that match client_uuid
         :param client_uuid: UUID for the client that originated this request
-        :param fields: Fields to include in emmitted documents
+        :param fields: Fields to include in emmitted documents as a dict
         :param include_claimed: Whether to include claimed messages,
             not just active ones
         :param sort: (Default 1) Sort order for the listing. Pass 1 for
@@ -272,10 +272,7 @@ class MessageController(storage.MessageBase):
             'e': {'$gt': now},
         }
 
-        if fields and not isinstance(fields, (dict, list)):
-            raise TypeError(u'Fields must be an instance of list / dict')
-
-        if not echo and client_uuid is not None:
+        if not echo:
             query['u'] = {'$ne': client_uuid}
 
         if marker:
@@ -339,7 +336,7 @@ class MessageController(storage.MessageBase):
         return self._list(queue_name, marker, echo, client_uuid,
                           fields, include_claimed=False, project=project)
 
-    def claimed(self, queue_name, claim_id=None,
+    def claimed(self, queue_name, claim_id,
                 expires=None, limit=None, project=None):
         query = {
             'c.id': claim_id,
@@ -347,10 +344,6 @@ class MessageController(storage.MessageBase):
             'q': queue_name,
             'p': project,
         }
-
-        if not claim_id:
-            # lookup over c.id to use the index
-            query['c.id'] = {'$ne': None}
 
         msgs = self._col.find(query, sort=[('k', 1)])
 

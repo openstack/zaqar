@@ -42,11 +42,7 @@ def get_qid(driver, queue, project):
 # come with no special functionalities.
 
 def msgid_encode(id):
-    try:
-        return hex(id ^ 0x5c693a53)[2:]
-
-    except TypeError:
-        return None
+    return hex(id ^ 0x5c693a53)[2:]
 
 
 def msgid_decode(id):
