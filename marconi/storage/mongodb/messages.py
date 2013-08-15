@@ -221,7 +221,7 @@ class MessageController(storage.MessageBase):
                 '_id': {'$ne': head['_id']}
             }
 
-            self._col.remove(query)
+            self._col.remove(query, w=0)
 
     def _purge_queue(self, queue, project=None):
         """Removes all messages from the queue.
