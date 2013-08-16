@@ -18,6 +18,7 @@ import os
 
 import pymongo
 
+import ddt
 import falcon
 
 from marconi.common import config
@@ -25,6 +26,7 @@ from marconi.openstack.common import timeutils
 from marconi.tests.transport.wsgi import base
 
 
+@ddt.ddt
 class ClaimsBaseTest(base.TestBase):
 
     def setUp(self):
@@ -53,40 +55,43 @@ class ClaimsBaseTest(base.TestBase):
 
         super(ClaimsBaseTest, self).tearDown()
 
-    def test_bad_claim(self):
-        for doc in (None, '[', '[]', '{}', '.', '"fail"'):
-            self.simulate_post(self.claims_path, self.project_id,
-                               body=doc)
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+    @ddt.data(None, '[', '[]', '{}', '.', '"fail"')
+    def test_bad_claim(self, doc):
+        self.simulate_post(self.claims_path, self.project_id, body=doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-        # Payload exceeded
+        href = self._get_a_claim()
+
+        self.simulate_patch(href, self.project_id, body=doc)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def test_exceeded_claim(self):
         self.simulate_post(self.claims_path, self.project_id,
                            body='{"ttl": 100, "grace": 60}',
                            query_string='limit=21')
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-        # Unacceptable TTL or grace
-        for ttl, grace in ((-1, -1), (59, 60), (60, 59),
-                           (60, 43201), (43201, 60)):
-            self.simulate_post(self.claims_path, self.project_id,
-                               body=json.dumps({'ttl': ttl, 'grace': grace}))
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
-
-    def test_bad_patch(self):
+    @ddt.data((-1, -1), (59, 60), (60, 59), (60, 43201), (43201, 60))
+    def test_unacceptable_ttl_or_grace(self, (ttl, grace)):
         self.simulate_post(self.claims_path, self.project_id,
-                           body='{"ttl": 100, "grace": 60}')
-        href = self.srmock.headers_dict['Location']
+                           body=json.dumps({'ttl': ttl, 'grace': grace}))
 
-        for doc in (None, '[', '"crunchy"'):
-            self.simulate_patch(href, self.project_id, body=doc)
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-        # Unacceptable new TTL
-        for ttl in (-1, 59, 43201):
-            self.simulate_post(self.claims_path, self.project_id,
-                               body=json.dumps({'ttl': ttl}))
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+    @ddt.data(-1, 59, 43201)
+    def test_unacceptable_new_ttl(self, ttl):
+        href = self._get_a_claim()
+
+        self.simulate_patch(href, self.project_id,
+                            body=json.dumps({'ttl': ttl}))
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def _get_a_claim(self):
+        doc = '{"ttl": 100, "grace": 60}'
+        self.simulate_post(self.claims_path, self.project_id, body=doc)
+        return self.srmock.headers_dict['Location']
 
     def test_too_much_metadata(self):
         doc = '{"ttl": 100, "grace": 60}'
@@ -200,22 +205,16 @@ class ClaimsBaseTest(base.TestBase):
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_claim_404s(self):
-        path = '/v1/queues/notthere'
-
-        self.simulate_get(path + '/claims/a')
+        self.simulate_get(self.claims_path + '/a')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
     def test_delete_nonexistent_claim_204s(self):
-        path = '/v1/queues/notthere'
-
-        self.simulate_delete(path + '/claims/a')
+        self.simulate_delete(self.claims_path + '/a')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
     def test_patch_nonexistent_claim_404s(self):
-        path = '/v1/queues/notthere'
-
         patch_data = json.dumps({'ttl': 100})
-        self.simulate_patch(path + '/claims/a', body=patch_data)
+        self.simulate_patch(self.claims_path + '/a', body=patch_data)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
 
