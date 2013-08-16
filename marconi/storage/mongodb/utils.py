@@ -163,10 +163,10 @@ def raises_conn_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except errors.ConnectionFailure:
+        except errors.ConnectionFailure as ex:
             # NOTE(flaper87): Raise the error
+            LOG.exception(ex)
             msg = u'ConnectionFailure caught'
-            LOG.error(msg)
             raise storage_exceptions.ConnectionError(msg)
 
     return wrapper
