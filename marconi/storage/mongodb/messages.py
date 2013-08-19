@@ -417,7 +417,7 @@ class MessageController(storage.MessageBase):
             try:
                 marker = int(marker)
             except ValueError:
-                raise exceptions.MalformedMarker()
+                yield iter([])
 
         messages = self._list(queue_name, marker, echo, client_uuid,
                               include_claimed=include_claimed, project=project)
@@ -467,7 +467,7 @@ class MessageController(storage.MessageBase):
     def bulk_get(self, queue_name, message_ids, project=None):
         message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
         if not message_ids:
-            return ()
+            return iter([])
 
         now = timeutils.utcnow()
 

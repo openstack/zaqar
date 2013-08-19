@@ -289,7 +289,7 @@ class MessagesBaseTest(base.TestBase):
                           query_string=query_string,
                           headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_no_uuid(self):
         path = self.queue_path + '/messages'

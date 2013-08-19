@@ -34,14 +34,6 @@ class Conflict(Exception):
     """
 
 
-class MalformedID(ValueError):
-    """ID was malformed."""
-
-
-class MalformedMarker(ValueError):
-    """Pagination marker was malformed."""
-
-
 class MessageConflict(Conflict):
 
     def __init__(self, queue, project, message_ids):
