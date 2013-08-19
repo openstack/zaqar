@@ -139,4 +139,4 @@ class CollectionResource(object):
 
         resp.content_location = req.relative_uri
         resp.body = utils.to_json(response_body)
-        resp.status = falcon.HTTP_200
+        # status defaults to 200

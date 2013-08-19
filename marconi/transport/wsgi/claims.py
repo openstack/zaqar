@@ -142,7 +142,7 @@ class ItemResource(object):
 
         resp.content_location = req.relative_uri
         resp.body = utils.to_json(meta)
-        resp.status = falcon.HTTP_200
+        # status defaults to 200
 
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
         LOG.debug(_(u'Claim Item PATCH - claim: %(claim_id)s, '

@@ -149,13 +149,6 @@ class CollectionResource(object):
             MESSAGE_POST_SPEC,
             doctype=wsgi_utils.JSONArray)
 
-        # Verify that at least one message was provided.
-        # NOTE(kgriffs): This check assumes messages is a
-        # collection (not a generator).
-        if not messages:
-            description = _(u'No messages were provided.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
-
         # Enqueue the messages
         partial = False
 
@@ -195,14 +188,13 @@ class CollectionResource(object):
             raise wsgi_exceptions.HTTPServiceUnavailable(description)
 
         # Prepare the response
-        resp.status = falcon.HTTP_201
-
         ids_value = ','.join(message_ids)
         resp.location = req.path + '?ids=' + ids_value
 
         hrefs = [req.path + '/' + id for id in message_ids]
         body = {'resources': hrefs, 'partial': partial}
         resp.body = utils.to_json(body)
+        resp.status = falcon.HTTP_201
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Messages collection GET - queue: %(queue)s, '
@@ -223,6 +215,7 @@ class CollectionResource(object):
             return
 
         resp.body = utils.to_json(response)
+        # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name):
         # NOTE(zyuan): Attempt to delete the whole message collection
@@ -280,7 +273,7 @@ class ItemResource(object):
 
         resp.content_location = req.relative_uri
         resp.body = utils.to_json(message)
-        resp.status = falcon.HTTP_200
+        # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
         LOG.debug(_(u'Messages item DELETE - message: %(message)s, '

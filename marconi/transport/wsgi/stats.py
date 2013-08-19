@@ -51,7 +51,7 @@ class Resource(object):
 
             resp.content_location = req.path
             resp.body = utils.to_json(resp_dict)
-            resp.status = falcon.HTTP_200
+            # status defaults to 200
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()

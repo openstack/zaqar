@@ -16,8 +16,6 @@
 
 import json
 
-import falcon
-
 DOC_ROOT = 'http://docs.openstack-marconi.org'
 """Root URL for documents refered to in the home document."""
 
@@ -156,4 +154,4 @@ class V1Resource(object):
 
         resp.content_type = 'application/json-home'
         resp.cache_control = ['max-age=86400']
-        resp.status = falcon.HTTP_200
+        # status defaults to 200
