@@ -1,6 +1,5 @@
 [auth]
-auth_on = true
-#auth endpoint - url to get the auth token 
+auth_on = false
 url = https://identity.xxx.xxxx.com/v2.0/tokens
 username = user
 password = secret
