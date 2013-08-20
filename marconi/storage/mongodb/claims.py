@@ -25,14 +25,17 @@ import datetime
 
 from bson import objectid
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi import storage
 from marconi.storage import exceptions
 from marconi.storage.mongodb import utils
 
-
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('limits:storage').from_options(
+    default_message_paging=10,
+)
 
 
 class ClaimController(storage.ClaimBase):
@@ -98,7 +101,7 @@ class ClaimController(storage.ClaimBase):
         return (claim, msgs)
 
     @utils.raises_conn_error
-    def create(self, queue, metadata, project=None, limit=10):
+    def create(self, queue, metadata, project=None, limit=None):
         """Creates a claim.
 
         This implementation was done in a best-effort fashion.
@@ -117,6 +120,9 @@ class ClaimController(storage.ClaimBase):
         time being, to execute an update on a limited number of records.
         """
         msg_ctrl = self.driver.message_controller
+
+        if limit is None:
+            limit = CFG.default_message_paging
 
         ttl = metadata['ttl']
         grace = metadata['grace']

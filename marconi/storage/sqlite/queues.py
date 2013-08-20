@@ -14,9 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from marconi.common import config
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
+
+CFG = config.namespace('limits:storage').from_options(
+    default_queue_paging=10,
+)
 
 
 class QueueController(base.QueueBase):
@@ -36,10 +41,13 @@ class QueueController(base.QueueBase):
         ''')
 
     def list(self, project, marker=None,
-             limit=10, detailed=False):
+             limit=None, detailed=False):
 
         if project is None:
             project = ''
+
+        if limit is None:
+            limit = CFG.default_queue_paging
 
         sql = (('''
             select name from Queues''' if not detailed
@@ -166,6 +174,3 @@ class QueueController(base.QueueBase):
                 message_stats['newest'] = utils.stat_message(newest)
 
             return {'messages': message_stats}
-
-    def actions(self, name, project, marker=None, limit=10):
-        raise NotImplementedError

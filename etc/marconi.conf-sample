@@ -84,3 +84,9 @@ database = marconi
 # for each metadata body and each message body
 ;metadata_size_uplimit = 65536
 ;message_size_uplimit = 262144
+
+[limits:storage]
+# The default number of queue records per page when listing queues
+;default_queue_paging = 10
+# The default number of messages per page when listing or claiming messages
+;default_message_paging = 10

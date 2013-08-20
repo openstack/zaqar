@@ -13,10 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from marconi.common import config
 from marconi.openstack.common import timeutils
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
+
+CFG = config.namespace('limits:storage').from_options(
+    default_message_paging=10,
+)
 
 
 class MessageController(base.MessageBase):
@@ -130,8 +135,11 @@ class MessageController(base.MessageBase):
                 'body': content,
             }
 
-    def list(self, queue, project, marker=None, limit=10,
+    def list(self, queue, project, marker=None, limit=None,
              echo=False, client_uuid=None, include_claimed=False):
+
+        if limit is None:
+            limit = CFG.default_message_paging
 
         if project is None:
             project = ''

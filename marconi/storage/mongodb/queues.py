@@ -23,6 +23,7 @@ Field Mappings:
 
 import pymongo.errors
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi import storage
@@ -30,6 +31,9 @@ from marconi.storage import exceptions
 from marconi.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('limits:storage').from_options(
+    default_queue_paging=10,
+)
 
 
 class QueueController(storage.QueueBase):
@@ -77,7 +81,11 @@ class QueueController(storage.QueueBase):
     #-----------------------------------------------------------------------
 
     def list(self, project=None, marker=None,
-             limit=10, detailed=False):
+             limit=None, detailed=False):
+
+        if limit is None:
+            limit = CFG.default_queue_paging
+
         query = {'p': project}
         if marker:
             query['n'] = {'$gt': marker}
@@ -161,7 +169,3 @@ class QueueController(storage.QueueBase):
             message_stats['newest'] = utils.stat_message(newest, now)
 
         return {'messages': message_stats}
-
-    @utils.raises_conn_error
-    def actions(self, name, project=None, marker=None, limit=10):
-        raise NotImplementedError

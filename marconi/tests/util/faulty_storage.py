@@ -56,9 +56,6 @@ class QueueController(storage.QueueBase):
     def stats(self, name, project=None):
         raise NotImplementedError()
 
-    def actions(self, name, project=None, marker=None, limit=10):
-        raise NotImplementedError()
-
 
 class MessageController(storage.MessageBase):
     def __init__(self, driver):

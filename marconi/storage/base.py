@@ -90,7 +90,8 @@ class QueueBase(ControllerBase):
 
         :param project: Project id
         :param marker: The last queue name
-        :param limit: (Default 10) Max number
+        :param limit: (Default 10, configurable) Max number
+            queues to return.
         :param detailed: Whether metadata is included
         :param include_claimed: Whether to list claimed messages
 
@@ -164,18 +165,6 @@ class QueueBase(ControllerBase):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def actions(self, name, project=None, marker=None, limit=10):
-        """Base method for queue actions.
-
-        :param name: Queue name
-        :param project: Project id
-        :param marker: Tail identifier
-        :param limit: (Default 10) Max number
-            of messages to retrieve.
-        """
-        raise NotImplementedError
-
 
 class MessageBase(ControllerBase):
     """This class is responsible for managing message CRUD."""
@@ -191,7 +180,7 @@ class MessageBase(ControllerBase):
             message from.
         :param project: Project id
         :param marker: Tail identifier
-        :param limit: (Default 10) specifies up to 100
+        :param limit: (Default 10, configurable) Max number
             messages to return.
         :param echo: (Default False) Boolean expressing whether
             or not this client should receive its own messages.
@@ -302,7 +291,7 @@ class ClaimBase(ControllerBase):
         :param metadata: Claim's parameters
             to be stored.
         :param project: Project id
-        :param limit: (Default 10) Max number
+        :param limit: (Default 10, configurable) Max number
             of messages to claim.
 
         :returns: (Claim ID, claimed messages)

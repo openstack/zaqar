@@ -26,6 +26,7 @@ import time
 
 import pymongo.errors
 
+from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi import storage
@@ -34,6 +35,9 @@ from marconi.storage.mongodb import options
 from marconi.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
+CFG = config.namespace('limits:storage').from_options(
+    default_message_paging=10,
+)
 
 
 class MessageController(storage.MessageBase):
@@ -397,8 +401,11 @@ class MessageController(storage.MessageBase):
         for name, project in self._queue_controller._get_np():
             self._remove_expired(name, project)
 
-    def list(self, queue_name, project=None, marker=None, limit=10,
+    def list(self, queue_name, project=None, marker=None, limit=None,
              echo=False, client_uuid=None, include_claimed=False):
+
+        if limit is None:
+            limit = CFG.default_message_paging
 
         if marker is not None:
             try:

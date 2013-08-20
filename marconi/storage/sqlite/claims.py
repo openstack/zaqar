@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from marconi.common import config
 from marconi.storage import base
 from marconi.storage import exceptions
 from marconi.storage.sqlite import utils
+
+CFG = config.namespace('limits:storage').from_options(
+    default_message_paging=10,
+)
 
 
 class ClaimController(base.ClaimBase):
@@ -73,9 +78,13 @@ class ClaimController(base.ClaimBase):
             except utils.NoResult:
                 raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
-    def create(self, queue, metadata, project, limit=10):
+    def create(self, queue, metadata, project, limit=None):
+
         if project is None:
             project = ''
+
+        if limit is None:
+            limit = CFG.default_message_paging
 
         with self.driver('immediate'):
             try:
