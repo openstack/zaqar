@@ -56,10 +56,6 @@ class ClaimController(storage.ClaimBase):
     the claim id and it's expiration timestamp.
     """
 
-    def _get_queue_id(self, queue, project):
-        queue_controller = self.driver.queue_controller
-        return queue_controller._get_id(queue, project)
-
     @utils.raises_conn_error
     def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
@@ -122,7 +118,8 @@ class ClaimController(storage.ClaimBase):
         """
         msg_ctrl = self.driver.message_controller
 
-        self._get_queue_id(queue, project)
+        if not self.driver.queue_controller.exists(queue, project):
+            raise exceptions.QueueDoesNotExist(queue, project)
 
         ttl = metadata['ttl']
         grace = metadata['grace']

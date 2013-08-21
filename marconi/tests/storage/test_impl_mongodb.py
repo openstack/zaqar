@@ -122,13 +122,12 @@ class MongodbQueueTests(base.QueueControllerTest):
     def test_messages_purged(self):
         queue_name = 'test'
         self.controller.create(queue_name)
-        qid = self.controller._get_id(queue_name)
         self.message_controller.post(queue_name,
                                      [{'ttl': 60}],
                                      1234)
         self.controller.delete(queue_name)
         col = self.message_controller._col
-        self.assertEqual(col.find({'q': qid}).count(), 0)
+        self.assertEqual(col.find({'q': queue_name}).count(), 0)
 
     def test_raises_connection_error(self):
 

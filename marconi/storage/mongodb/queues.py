@@ -67,14 +67,6 @@ class QueueController(storage.QueueBase):
 
         return queue
 
-    def _get_id(self, name, project=None):
-        """Just like the `get` method, but only returns the queue's id
-
-        :returns: Queue's `ObjectId`
-        """
-        queue = self._get(name, project, fields=['_id'])
-        return queue.get('_id')
-
     def _get_np(self):
         """Returns a generator producing a list of all queue (n, p)."""
         cursor = self._col.find({}, fields={'n': 1, 'p': 1})
