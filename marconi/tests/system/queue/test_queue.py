@@ -18,9 +18,11 @@ from marconi.tests.system.common import functionlib
 from marconi.tests.system.common import http
 from marconi.tests.system.queue import queuefnlib
 
+import ddt
 import json
 
 
+@ddt.ddt
 class TestQueue(functionlib.TestUtils):
     """Tests for queue."""
 
@@ -84,27 +86,6 @@ class TestQueue(functionlib.TestUtils):
         self.assertEqual(result.status_code, 401)
 
     test_004_insert_queue_invalid_authtoken.tags = ['negative']
-
-    def test_005_insert_queue_missing_header(self):
-        """Insert Queue with missing header field.
-
-        Request has no Accept header.
-        """
-        header = functionlib.missing_header_fields()
-
-        url = self.cfg.base_url + '/queues/missingheader'
-        http.put(url, header)
-
-        url = self.cfg.base_url + '/queues/missingheader/metadata'
-        doc = '{"queue": "Missing Header"}'
-
-        result = http.put(url, header, doc)
-        self.assertEqual(result.status_code, 400)
-
-        url = self.cfg.base_url + '/queues/missingheader'
-        http.delete(url, self.header)
-
-    test_005_insert_queue_missing_header.tags = ['negative']
 
     def test_006_insert_queue_header_plaintext(self):
         """Insert Queue with 'Accept': 'plain/text'."""
@@ -287,7 +268,6 @@ class TestQueue(functionlib.TestUtils):
         self.assertEqual(result.status_code, 204)
 
         url = self.cfg.base_url + '/queues/qtestqueue'
-        result = http.delete(url, self.header)
 
     test_019_queue_insert_metadata_invalidchar.tags = ['negative']
 
@@ -330,16 +310,26 @@ class TestQueue(functionlib.TestUtils):
 
     test_022_queue_list_detailed.tags = ['smoke', 'positive']
 
-    def test_023_check_health(self):
+    @ddt.data(0, -1, 30)
+    def test_023_queue_list_invalid_limit(self, limit):
+        """List Queues with a limit value that is not allowed."""
+        url = self.cfg.base_url + '/queues?limit=' + str(limit)
+        result = http.get(url, self.header)
+
+        self.assertEqual(result.status_code, 400)
+
+    test_023_queue_list_invalid_limit.tags = ['negative']
+
+    def test_024_check_health(self):
         """Test health endpoint."""
         url = self.cfg.base_url + '/health'
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 204)
 
-    test_023_check_health.tags = ['positive']
+    test_024_check_health.tags = ['positive']
 
-    def test_024_check_queue_exists(self):
+    def test_025_check_queue_exists(self):
         """Checks if queue exists."""
         url = self.cfg.base_url + '/queues/qtestqueue'
         http.put(url, self.header)
@@ -350,9 +340,9 @@ class TestQueue(functionlib.TestUtils):
         result = http.head(url, self.header)
         self.assertEqual(result.status_code, 204)
 
-    test_024_check_queue_exists.tags = ['positive']
+    test_025_check_queue_exists.tags = ['positive']
 
-    def test_025_check_queue_exists(self):
+    def test_026_check_queue_exists(self):
         """Checks non-existing queue."""
         url = self.cfg.base_url + '/queues/nonexistingqueue'
 
@@ -362,7 +352,16 @@ class TestQueue(functionlib.TestUtils):
         result = http.head(url, self.header)
         self.assertEqual(result.status_code, 404)
 
-    test_025_check_queue_exists.tags = ['negative']
+    test_026_check_queue_exists.tags = ['negative']
+
+    def test_026_get_queue_malformed_marker(self):
+        """Checks non-existing queue."""
+        url = self.cfg.base_url + '/queues/qtestqueue?marker=invalid'
+
+        result = http.get(url, self.header)
+        self.assertEqual(result.status_code, 204)
+
+    test_026_get_queue_malformed_marker.tags = ['negative']
 
     def test_999_delete_queue(self):
         """Delete Queue.

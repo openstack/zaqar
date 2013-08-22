@@ -88,18 +88,6 @@ def invalid_auth_token_header():
                               user_agent=CFG.user_agent)
 
 
-def missing_header_fields():
-    """Returns a header with no Accept header."""
-    auth_token = get_auth_token()
-
-    headers = '{"Host":  "$host","Date":  "DATE",'
-    headers += '"Accept-Encoding":  "gzip",'
-    headers += '"X-Auth-Token":  "$token"}'
-    headers = string.Template(headers)
-
-    return headers.substitute(host=CFG.host, token=auth_token)
-
-
 def plain_text_in_header():
     """Returns headers to be used for all Marconi requests."""
     auth_token = get_auth_token()
