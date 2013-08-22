@@ -290,10 +290,11 @@ class ItemResource(object):
 
         except storage_exceptions.NotPermitted as ex:
             LOG.exception(ex)
-            title = _(u'Invalid claim')
-            description = _(u'The specified claim either does not '
-                            u'exist or has expired.')
+            title = _(u'Unable to delete')
+            description = _(u'This message is claimed; it cannot be '
+                            u'deleted without a valid claim_id.')
             raise falcon.HTTPForbidden(title, description)
+
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Message could not be deleted.')

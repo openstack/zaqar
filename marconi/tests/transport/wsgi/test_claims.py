@@ -145,6 +145,10 @@ class ClaimsBaseTest(base.TestBase):
                           claim_href)
         self.assertEquals(claim['ttl'], 100)
 
+        # Try to delete the message without submitting a claim_id
+        self.simulate_delete(message_href, self.project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_403)
+
         # Delete the message and its associated claim
         self.simulate_delete(message_href, self.project_id,
                              query_string=params)

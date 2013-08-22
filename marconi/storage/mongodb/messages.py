@@ -609,29 +609,32 @@ class MessageController(storage.MessageBase):
             '_id': mid
         }
 
-        if claim:
-            # NOTE(cpp-cabrera): return early - the user gaves us an
-            # invalid claim id and that renders the rest of this
-            # request moot
-            cid = utils.to_oid(claim)
-            if cid is None:
-                return
+        # NOTE(cpp-cabrera): return early - the user gaves us an
+        # invalid claim id and that renders the rest of this
+        # request moot
+        cid = utils.to_oid(claim)
+        if cid is None:
+            return
 
-            now = timeutils.utcnow()
-            query['e'] = {'$gt': now}
-            message = self._col.find_one(query)
+        now = timeutils.utcnow()
+        query['e'] = {'$gt': now}
+        message = self._col.find_one(query)
 
-            if message is None:
-                return None
+        if message is None:
+            return
 
-            if not ('c' in message and
-                    message['c']['id'] == cid and
-                    message['c']['e'] > now):
-                raise exceptions.ClaimNotPermitted(message_id, claim)
+        is_claimed = (message['c']['id'] is not None and
+                      message['c']['e'] > now)
 
-            self._col.remove(query['_id'], w=0)
+        if claim is None:
+            if is_claimed:
+                raise exceptions.MessageIsClaimed(message_id)
+
         else:
-            self._col.remove(query, w=0)
+            if message['c']['id'] != cid:
+                raise exceptions.MessageIsClaimedBy(message_id, claim)
+
+        self._col.remove(query['_id'], w=0)
 
     @utils.raises_conn_error
     def bulk_delete(self, queue_name, message_ids, project=None):

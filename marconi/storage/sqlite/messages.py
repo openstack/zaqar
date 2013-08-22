@@ -223,15 +223,6 @@ class MessageController(base.MessageBase):
         if id is None:
             return
 
-        if not claim:
-            self.driver.run('''
-                delete from Messages
-                 where id = ?
-                   and qid = (select id from Queues
-                               where project = ? and name = ?)
-            ''', id, project, queue)
-            return
-
         with self.driver('immediate'):
             message_exists, = self.driver.get('''
                 select count(M.id)
@@ -244,7 +235,23 @@ class MessageController(base.MessageBase):
             if not message_exists:
                 return
 
-            self.__delete_claimed(id, claim)
+            if claim is None:
+                self.__delete_unclaimed(id)
+            else:
+                self.__delete_claimed(id, claim)
+
+    def __delete_unclaimed(self, id):
+        self.driver.run('''
+            delete from Messages
+             where id = ?
+               and not exists (select *
+                                 from Claims join Locked
+                                   on id = cid
+                                where ttl > julianday() * 86400.0 - created)
+        ''', id)
+
+        if not self.driver.affected:
+            raise exceptions.MessageIsClaimed(id)
 
     def __delete_claimed(self, id, claim):
         # Precondition: id exists in a specific queue
@@ -263,7 +270,7 @@ class MessageController(base.MessageBase):
         ''', id, cid)
 
         if not self.driver.affected:
-            raise exceptions.ClaimNotPermitted(id, claim)
+            raise exceptions.MessageIsClaimedBy(id, claim)
 
     def bulk_delete(self, queue, message_ids, project):
         if project is None:
