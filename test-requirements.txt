@@ -3,6 +3,7 @@ mock
 distribute>=0.6.24
 
 # Unit testing
+ddt
 discover
 fixtures
 python-subunit

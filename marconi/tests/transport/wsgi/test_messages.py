@@ -16,6 +16,7 @@
 import json
 import os
 
+import ddt
 import falcon
 from testtools import matchers
 
@@ -23,6 +24,7 @@ from marconi.common import config
 from marconi.tests.transport.wsgi import base
 
 
+@ddt.ddt
 class MessagesBaseTest(base.TestBase):
 
     def setUp(self):
@@ -33,6 +35,7 @@ class MessagesBaseTest(base.TestBase):
 
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'
+        self.messages_path = self.queue_path + '/messages'
 
         doc = '{"_ttl": 60}'
         self.simulate_put(self.queue_path, self.project_id, body=doc)
@@ -48,8 +51,7 @@ class MessagesBaseTest(base.TestBase):
     def _test_post(self, sample_messages):
         sample_doc = json.dumps(sample_messages)
 
-        messages_path = self.queue_path + '/messages'
-        result = self.simulate_post(messages_path, self.project_id,
+        result = self.simulate_post(self.messages_path, self.project_id,
                                     body=sample_doc, headers=self.headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
@@ -58,7 +60,7 @@ class MessagesBaseTest(base.TestBase):
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
         self.assertEquals(len(msg_ids), len(sample_messages))
 
-        expected_resources = [unicode(messages_path + '/' + id)
+        expected_resources = [unicode(self.messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEquals(expected_resources, result_doc['resources'])
         self.assertFalse(result_doc['partial'])
@@ -69,7 +71,7 @@ class MessagesBaseTest(base.TestBase):
 
         # Test GET on the message resource directly
         for msg_id in msg_ids:
-            message_uri = messages_path + '/' + msg_id
+            message_uri = self.messages_path + '/' + msg_id
 
             # Wrong project ID
             self.simulate_get(message_uri, '777777')
@@ -87,7 +89,7 @@ class MessagesBaseTest(base.TestBase):
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)
-        result = self.simulate_get(messages_path, self.project_id,
+        result = self.simulate_get(self.messages_path, self.project_id,
                                    query_string=query_string)
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
@@ -98,23 +100,22 @@ class MessagesBaseTest(base.TestBase):
 
     def test_exceeded_payloads(self):
         # Get a valid message id
-        path = self.queue_path + '/messages'
-        self._post_messages(path)
-
+        self._post_messages(self.messages_path)
         msg_id = self._get_msg_id(self.srmock.headers_dict)
 
         # Posting restriction
-        self._post_messages(path, repeat=23)
+        self._post_messages(self.messages_path, repeat=23)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         # Bulk GET restriction
         query_string = 'ids=' + ','.join([msg_id] * 21)
-        self.simulate_get(path, self.project_id, query_string=query_string)
+        self.simulate_get(self.messages_path, self.project_id,
+                          query_string=query_string)
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         # Listing restriction
-        self.simulate_get(path, self.project_id,
+        self.simulate_get(self.messages_path, self.project_id,
                           query_string='limit=21',
                           headers=self.headers)
 
@@ -122,7 +123,8 @@ class MessagesBaseTest(base.TestBase):
 
         # Bulk deletion restriction
         query_string = 'ids=' + ','.join([msg_id] * 22)
-        self.simulate_delete(path, self.project_id, query_string=query_string)
+        self.simulate_delete(self.messages_path, self.project_id,
+                             query_string=query_string)
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
@@ -146,23 +148,22 @@ class MessagesBaseTest(base.TestBase):
         self._post_messages('/v1/queues/nonexistent/messages')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-    def test_post_bad_message(self):
-        messages_path = self.queue_path + '/messages'
+    @ddt.data(None, '[', '[]', '{}', '.')
+    def test_post_bad_message(self, document):
+        self.simulate_post(self.queue_path + '/messages',
+                           body=document,
+                           headers=self.headers)
 
-        for document in (None, '[', '[]', '{}', '.'):
-            self.simulate_post(messages_path,
-                               body=document,
-                               headers=self.headers)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+    @ddt.data(-1, 59, 1209601)
+    def test_unacceptable_ttl(self, ttl):
+        self.simulate_post(self.queue_path + '/messages',
+                           body=json.dumps([{'ttl': ttl,
+                                             'body': None}]),
+                           headers=self.headers)
 
-        # Unacceptable TTL
-        for ttl in (-1, 59, 1209601):
-            self.simulate_post(messages_path,
-                               body=json.dumps([{'ttl': ttl,
-                                                 'body': None}]),
-                               headers=self.headers)
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_exceeded_message_posting(self):
         # Total (raw request) size
@@ -176,32 +177,31 @@ class MessagesBaseTest(base.TestBase):
 
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-    def test_unsupported_json(self):
-        for document in ('{"overflow": 9223372036854775808}',
-                         '{"underflow": -9223372036854775809}'):
-            self.simulate_post(self.queue_path + '/messages',
-                               body=document,
-                               headers=self.headers)
+    @ddt.data('{"overflow": 9223372036854775808}',
+              '{"underflow": -9223372036854775809}')
+    def test_unsupported_json(self, document):
+        self.simulate_post(self.queue_path + '/messages',
+                           body=document,
+                           headers=self.headers)
 
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_delete(self):
-        path = self.queue_path + '/messages'
-        self._post_messages(path)
-
+        self._post_messages(self.messages_path)
         msg_id = self._get_msg_id(self.srmock.headers_dict)
+        target = self.messages_path + '/' + msg_id
 
-        self.simulate_get(path + '/' + msg_id, self.project_id)
+        self.simulate_get(target, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 
-        self.simulate_delete(path + '/' + msg_id, self.project_id)
+        self.simulate_delete(target, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
-        self.simulate_get(path + '/' + msg_id, self.project_id)
+        self.simulate_get(target, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
         # Safe to delete non-existing ones
-        self.simulate_delete(path + '/' + msg_id, self.project_id)
+        self.simulate_delete(target, self.project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
     def test_bulk_delete(self):

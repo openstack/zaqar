@@ -13,35 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ddt
 import falcon
 from falcon import testing
 
 from marconi.tests.transport.wsgi import base
 
 
+@ddt.ddt
 class TestWSGIMediaType(base.TestBase):
 
     config_filename = 'wsgi_sqlite.conf'
 
-    def test_json_only_endpoints(self):
+    @ddt.data(
+        ('GET', '/v1/queues'),
+        ('GET', '/v1/queues/nonexistent/metadata'),
+        ('GET', '/v1/queues/nonexistent/stats'),
+        ('POST', '/v1/queues/nonexistent/messages'),
+        ('GET', '/v1/queues/nonexistent/messages/deadbeaf'),
+        ('POST', '/v1/queues/nonexistent/claims'),
+        ('GET', '/v1/queues/nonexistent/claims/0ad'),
+        ('GET', '/v1/health'),
+    )
+    def test_json_only_endpoints(self, (method, endpoint)):
         headers = {'Client-ID': '30387f00',
                    'Accept': 'application/xml'}
 
-        endpoints = [
-            ('GET', '/v1/queues'),
-            ('GET', '/v1/queues/nonexistent/metadata'),
-            ('GET', '/v1/queues/nonexistent/stats'),
-            ('POST', '/v1/queues/nonexistent/messages'),
-            ('GET', '/v1/queues/nonexistent/messages/deadbeaf'),
-            ('POST', '/v1/queues/nonexistent/claims'),
-            ('GET', '/v1/queues/nonexistent/claims/0ad'),
-            ('GET', '/v1/health'),
-        ]
+        env = testing.create_environ(endpoint,
+                                     method=method,
+                                     headers=headers)
 
-        for method, endpoint in endpoints:
-            env = testing.create_environ(endpoint,
-                                         method=method,
-                                         headers=headers)
-
-            self.app(env, self.srmock)
-            self.assertEquals(self.srmock.status, falcon.HTTP_406)
+        self.app(env, self.srmock)
+        self.assertEquals(self.srmock.status, falcon.HTTP_406)
