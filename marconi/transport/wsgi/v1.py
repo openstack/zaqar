@@ -16,32 +16,18 @@
 
 import json
 
-DOC_ROOT = 'http://docs.openstack-marconi.org'
-"""Root URL for documents refered to in the home document."""
-
-
 # NOTE(kgriffs): http://tools.ietf.org/html/draft-nottingham-json-home-03
 JSON_HOME = {
     'resources': {
         #------------------------------------------------------------------
-        # Diagnostics
-        #------------------------------------------------------------------
-        DOC_ROOT + '/rel/health': {
-            'href': '/health',
-            'hints': {
-                'allow': ['GET', 'HEAD'],
-            },
-        },
-
-        #------------------------------------------------------------------
         # Queues
         #------------------------------------------------------------------
-        DOC_ROOT + '/rel/queues': {
+        'rel/queues': {
             'href-template': '/queues{?marker,limit,detailed}',
             'href-vars': {
-                'marker': DOC_ROOT + '/param/marker',
-                'limit': DOC_ROOT + '/param/queue_limit',
-                'detailed': DOC_ROOT + '/param/detailed',
+                'marker': 'param/marker',
+                'limit': 'param/queue_limit',
+                'detailed': 'param/detailed',
             },
             'hints': {
                 'allow': ['GET'],
@@ -50,10 +36,10 @@ JSON_HOME = {
                 },
             },
         },
-        DOC_ROOT + '/rel/queue': {
+        'rel/queue': {
             'href-template': '/queues/{queue_name}',
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
+                'queue_name': 'param/queue_name',
             },
             'hints': {
                 'allow': ['PUT', 'DELETE'],
@@ -62,10 +48,10 @@ JSON_HOME = {
                 },
             },
         },
-        DOC_ROOT + '/rel/queue-metadata': {
+        'rel/queue-metadata': {
             'href-template': '/queues/{queue_name}/metadata',
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
+                'queue_name': 'param/queue_name',
             },
             'hints': {
                 'allow': ['GET', 'PUT'],
@@ -74,10 +60,10 @@ JSON_HOME = {
                 },
             },
         },
-        DOC_ROOT + '/rel/queue-stats': {
+        'rel/queue-stats': {
             'href-template': '/queues/{queue_name}/stats',
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
+                'queue_name': 'param/queue_name',
             },
             'hints': {
                 'allow': ['GET'],
@@ -90,15 +76,15 @@ JSON_HOME = {
         #------------------------------------------------------------------
         # Messages
         #------------------------------------------------------------------
-        DOC_ROOT + '/rel/messages': {
+        'rel/messages': {
             'href-template': ('/queues/{queue_name}/messages'
                               '{?marker,limit,echo,include_claimed}'),
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
-                'marker': DOC_ROOT + '/param/marker',
-                'limit': DOC_ROOT + '/param/messages_limit',
-                'echo': DOC_ROOT + '/param/echo',
-                'include_claimed': DOC_ROOT + '/param/include_claimed',
+                'queue_name': 'param/queue_name',
+                'marker': 'param/marker',
+                'limit': 'param/messages_limit',
+                'echo': 'param/echo',
+                'include_claimed': 'param/include_claimed',
             },
             'hints': {
                 'allow': ['GET'],
@@ -107,10 +93,10 @@ JSON_HOME = {
                 },
             },
         },
-        DOC_ROOT + '/rel/post-messages': {
+        'rel/post-messages': {
             'href-template': '/v1/queues/{queue_name}/messages',
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
+                'queue_name': 'param/queue_name',
             },
             'hints': {
                 'allow': ['POST'],
@@ -124,11 +110,11 @@ JSON_HOME = {
         #------------------------------------------------------------------
         # Claims
         #------------------------------------------------------------------
-        DOC_ROOT + '/rel/claim': {
+        'rel/claim': {
             'href-template': '/v1/queues/{queue_name}/claims{?limit}',
             'href-vars': {
-                'queue_name': DOC_ROOT + '/param/queue_name',
-                'limit': DOC_ROOT + '/param/claim_limit',
+                'queue_name': 'param/queue_name',
+                'limit': 'param/claim_limit',
             },
             'hints': {
                 'allow': ['POST'],
