@@ -8,6 +8,7 @@ iso8601>=0.1.4
 msgpack-python
 pymongo
 python-keystoneclient
+python-memcached
 simplejson
 WebOb
 stevedore>=0.9
