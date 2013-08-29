@@ -34,8 +34,10 @@ import falcon
 import redis
 
 from marconi.proxy.resources import catalogue
+from marconi.proxy.resources import health
 from marconi.proxy.resources import partitions
 from marconi.proxy.resources import queues
+from marconi.proxy.resources import v1
 
 app = falcon.API()
 client = redis.StrictRedis()
@@ -57,3 +59,9 @@ app.add_route('/v1/queues',
               queues.Listing(client))
 app.add_route('/v1/queues/{queue}',
               queues.Resource(client))
+
+# NOTE(cpp-cabrera): Marconi forwarded routes
+app.add_route('/v1',
+              v1.Resource(client))
+app.add_route('/v1/health',
+              health.Resource(client))
