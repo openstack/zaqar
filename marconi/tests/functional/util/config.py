@@ -21,11 +21,11 @@ import uuid
 class Config(object):
     def __init__(self, config_path=None):
         if config_path is None:
-            if os.path.exists('/etc/marconi/system-tests.conf'):
-                config_path = '/etc/marconi/system-tests.conf'
+            if os.path.exists('/etc/marconi/functional-tests.conf'):
+                config_path = '/etc/marconi/functional-tests.conf'
             else:
                 config_path = os.path.expanduser('~/.marconi'
-                                                 '/system-tests.conf')
+                                                 '/functional-tests.conf')
         self.parser = ConfigParser.SafeConfigParser()
         self.parser.read(config_path)
 

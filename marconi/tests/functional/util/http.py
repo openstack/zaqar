@@ -12,15 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import json
 import requests
 
 
 def get(url, header=''):
     """Does  http GET."""
-    if header:
-        header = json.loads(header)
     try:
         response = requests.get(url, headers=header)
     except requests.ConnectionError as detail:
@@ -36,8 +32,6 @@ def get(url, header=''):
 
 def head(url, header=''):
     """Does  http HEAD."""
-    if header:
-        header = json.loads(header)
     try:
         response = requests.head(url, headers=header)
     except requests.ConnectionError as detail:
@@ -53,8 +47,6 @@ def head(url, header=''):
 
 def post(url, header='', body=''):
     """Does  http POST."""
-    if header:
-        header = json.loads(header)
     body = str(body)
     body = body.replace("'", '"')
     try:
@@ -73,9 +65,6 @@ def post(url, header='', body=''):
 def put(url, header='', body=''):
     """Does  http PUT."""
     response = None
-    if header:
-        header = json.loads(header)
-
     try:
         response = requests.put(url, headers=header, data=body)
     except requests.ConnectionError as detail:
@@ -92,9 +81,6 @@ def put(url, header='', body=''):
 def delete(url, header=''):
     """Does  http DELETE."""
     response = None
-    if header:
-        header = json.loads(header)
-
     try:
         response = requests.delete(url, headers=header)
     except requests.ConnectionError as detail:
@@ -111,9 +97,6 @@ def delete(url, header=''):
 def patch(url, header='', body=''):
     """Does  http PATCH."""
     response = None
-    if header:
-        header = json.loads(header)
-
     try:
         response = requests.patch(url, headers=header, data=body)
     except requests.ConnectionError as detail:
