@@ -34,7 +34,9 @@ import falcon
 import redis
 
 from marconi.proxy.resources import catalogue
+from marconi.proxy.resources import forward
 from marconi.proxy.resources import health
+from marconi.proxy.resources import metadata
 from marconi.proxy.resources import partitions
 from marconi.proxy.resources import queues
 from marconi.proxy.resources import v1
@@ -65,3 +67,15 @@ app.add_route('/v1',
               v1.Resource(client))
 app.add_route('/v1/health',
               health.Resource(client))
+app.add_route('/v1/queues/{queue}/claims',
+              forward.ClaimCreate(client))
+app.add_route('/v1/queues/{queue}/claims/{cid}',
+              forward.Claim(client))
+app.add_route('/v1/queues/{queue}/messages',
+              forward.MessageBulk(client))
+app.add_route('/v1/queues/{queue}/messages/{mid}',
+              forward.Message(client))
+app.add_route('/v1/queues/{queue}/stats',
+              forward.Stats(client))
+app.add_route('/v1/queues/{queue}/metadata',
+              metadata.Resource(client))
