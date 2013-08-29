@@ -150,16 +150,15 @@ class QueueController(storage.QueueBase):
             'total': total,
         }
 
-        if total != 0:
-            try:
-                oldest = controller.first(name, project=project, sort=1)
-                newest = controller.first(name, project=project, sort=-1)
-            except exceptions.QueueIsEmpty:
-                pass
-            else:
-                now = timeutils.utcnow()
-                message_stats['oldest'] = utils.stat_message(oldest, now)
-                message_stats['newest'] = utils.stat_message(newest, now)
+        try:
+            oldest = controller.first(name, project=project, sort=1)
+            newest = controller.first(name, project=project, sort=-1)
+        except exceptions.QueueIsEmpty:
+            pass
+        else:
+            now = timeutils.utcnow()
+            message_stats['oldest'] = utils.stat_message(oldest, now)
+            message_stats['newest'] = utils.stat_message(newest, now)
 
         return {'messages': message_stats}
 

@@ -155,17 +155,15 @@ class QueueController(base.QueueBase):
                 'total': total,
             }
 
-            if total != 0:
+            try:
                 message_controller = self.driver.message_controller
-
-                try:
-                    oldest = message_controller.first(name, project, sort=1)
-                    newest = message_controller.first(name, project, sort=-1)
-                except exceptions.QueueIsEmpty:
-                    pass
-                else:
-                    message_stats['oldest'] = utils.stat_message(oldest)
-                    message_stats['newest'] = utils.stat_message(newest)
+                oldest = message_controller.first(name, project, sort=1)
+                newest = message_controller.first(name, project, sort=-1)
+            except exceptions.QueueIsEmpty:
+                pass
+            else:
+                message_stats['oldest'] = utils.stat_message(oldest)
+                message_stats['newest'] = utils.stat_message(newest)
 
             return {'messages': message_stats}
 

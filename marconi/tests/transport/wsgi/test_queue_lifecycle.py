@@ -70,6 +70,10 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(result_doc, json.loads(doc))
 
+        # Stats empty queue
+        self.simulate_get(path + '/stats', project_id)
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
         # Delete
         self.simulate_delete(path, project_id)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
