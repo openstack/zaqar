@@ -11,3 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied.
 # See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+
+tests_dir = os.path.abspath(os.path.dirname(__file__))
+os.environ.setdefault("MARCONI_TESTS_DIR", tests_dir)
+
+if "MARCONI_TESTS_CONFIGS_DIR" not in os.environ:
+    os.environ["MARCONI_TESTS_CONFIGS_DIR"] = os.path.join(tests_dir, "etc")

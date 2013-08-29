@@ -21,9 +21,9 @@ import pymongo
 import ddt
 import falcon
 
+import base  # noqa
 from marconi.common import config
 from marconi.openstack.common import timeutils
-from marconi.tests.transport.wsgi import base
 
 
 @ddt.ddt

@@ -17,7 +17,7 @@ import ddt
 import falcon
 from falcon import testing
 
-from marconi.tests.transport.wsgi import base
+import base  # noqa
 
 
 @ddt.ddt

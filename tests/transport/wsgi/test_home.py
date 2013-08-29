@@ -18,7 +18,7 @@ import json
 
 import falcon
 
-from marconi.tests.transport.wsgi import base
+import base  # noqa
 
 
 class TestHomeDocument(base.TestBase):

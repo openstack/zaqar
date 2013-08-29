@@ -12,7 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marconi.tests.functional.util import base
+from marconi.tests.functional.util import base  # noqa
 from marconi.tests.functional.util import config
 from marconi.tests.functional.util import helpers
 from marconi.tests.functional.util import http
