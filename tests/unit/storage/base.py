@@ -349,12 +349,17 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid='my_uuid')
 
+        [msgid] = self.controller.post(self.queue_name, messages,
+                                       project=self.project,
+                                       client_uuid='my_uuid')
+
         with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msgid,
                                 project=self.project)
 
         countof = self.queue_controller.stats(self.queue_name,
                                               project=self.project)
+
         self.assertEquals(countof['messages']['free'], 0)
 
     def test_bad_id(self):

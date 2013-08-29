@@ -42,16 +42,6 @@ OPTIONS = {
 
     # Frequency of message garbage collections, in seconds
     'gc_interval': 5 * 60,
-
-    # Threshold of number of expired messages to reach in a given
-    # queue, before performing the GC. Useful for reducing frequent
-    # locks on the DB for non-busy queues, or for worker queues
-    # which process jobs quickly enough to keep the number of in-
-    # flight messages low.
-    #
-    # Note: The higher this number, the larger the memory-mapped DB
-    # files will be.
-    'gc_threshold': 1000,
 }
 
 CFG = config.namespace('drivers:storage:mongodb').from_options(**OPTIONS)

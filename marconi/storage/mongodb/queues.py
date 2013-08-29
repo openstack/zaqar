@@ -149,8 +149,8 @@ class QueueController(storage.QueueBase):
 
         controller = self.driver.message_controller
 
-        active = controller.active(name, project=project).count()
-        total = controller.count(name, project=project)
+        active = controller.count(name, project=project, include_claimed=False)
+        total = controller.count(name, project=project, include_claimed=True)
 
         message_stats = {
             'claimed': total - active,

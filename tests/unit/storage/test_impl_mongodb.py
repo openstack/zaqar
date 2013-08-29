@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import random
 import time
 
 import mock
@@ -165,6 +164,7 @@ class MongodbMessageTests(base.MessageControllerTest):
         self.assertIn('active', indexes)
         self.assertIn('claimed', indexes)
         self.assertIn('queue_marker', indexes)
+        self.assertIn('counting', indexes)
 
     def test_next_marker(self):
         queue_name = 'marker_test'
@@ -188,10 +188,7 @@ class MongodbMessageTests(base.MessageControllerTest):
     def test_remove_expired(self):
         num_projects = 10
         num_queues = 10
-        total_queues = num_projects * num_queues
-        gc_threshold = mongodb_options.CFG.gc_threshold
-        messages_per_queue = gc_threshold
-        nogc_messages_per_queue = gc_threshold - 1
+        messages_per_queue = 100
 
         projects = ['gc-test-project-{0}'.format(i)
                     for i in range(num_projects)]
@@ -206,41 +203,21 @@ class MongodbMessageTests(base.MessageControllerTest):
                 self.queue_controller.create(queue, project)
                 self.controller.post(queue, messages, client_uuid, project)
 
-        # Add one that should not be gc'd due to being under threshold
-        self.queue_controller.create('nogc-test', 'nogc-test-project')
-        nogc_messages = [{'ttl': 0, 'body': str(i)}
-                         for i in range(nogc_messages_per_queue)]
-        self.controller.post('nogc-test', nogc_messages,
-                             client_uuid, 'nogc-test-project')
-
-        total_expired = sum(
-            self._count_expired(queue, project)
-            for queue in queue_names
-            for project in projects)
-
-        self.assertEquals(total_expired, total_queues * messages_per_queue)
         self.controller.remove_expired()
 
-        # Make sure the messages in this queue were not gc'd since
-        # the count was under the threshold.
-        self.assertEquals(
-            self._count_expired('nogc-test', 'nogc-test-project'),
-            len(nogc_messages))
+        for project in projects:
+            for queue in queue_names:
+                query = {'q': queue, 'p': project}
 
-        total_expired = sum(
-            self._count_expired(queue, project)
-            for queue in queue_names
-            for project in projects)
+                cursor = self.driver.db.messages.find(query)
+                count = cursor.count()
 
-        # Expect that the most recent message for each queue
-        # will not be removed.
-        self.assertEquals(total_expired, total_queues)
+                # Expect that the most recent message for each queue
+                # will not be removed.
+                self.assertEquals(count, 1)
 
-        # Sanity-check that the most recent message is the
-        # one remaining in the queue.
-        queue = random.choice(queue_names)
-        message = self.driver.db.messages.find_one({'q': queue, 'p': project})
-        self.assertEquals(message['k'], messages_per_queue)
+                message = next(cursor)
+                self.assertEquals(message['k'], messages_per_queue)
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'
