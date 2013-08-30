@@ -18,25 +18,27 @@ from marconi.tests.functional.util import http
 import json
 import random
 import string
+import uuid
 
 
 CFG = config.Config()
 
 
-def get_keystone_token():
+def get_keystone_token(conf):
     """Gets Keystone Auth token."""
     req_json = {
         'auth': {
             'passwordCredentials': {
-                'username': CFG.username,
-                'password': CFG.password
+                'username': conf.auth.username,
+                'password': conf.auth.password
             },
         },
     }
 
     header = {"Content-Type": "application/json",
               "Accept": "application/json"}
-    url = CFG.auth_url
+
+    url = conf.auth.url
 
     response = http.post(url=url, header=header, body=req_json)
     response_body = json.loads(response.text)
@@ -46,17 +48,19 @@ def get_keystone_token():
     return auth_token
 
 
-def create_marconi_headers():
+def create_marconi_headers(conf):
     """Returns headers to be used for all Marconi requests."""
-    auth_token = get_keystone_token()
 
-    headers = {"Host": CFG.host,
-               "User-Agent": CFG.user_agent,
+    headers = {"Host": conf.headers.host,
+               "User-Agent": conf.headers.user_agent,
                "Accept": "application/json",
-               "X-Project-ID": CFG.project_id,
-               "X-Auth-Token": auth_token,
-               "Client-ID": CFG.uuid
+               "X-Project-ID": conf.headers.project_id,
+               "Client-ID": str(uuid.uuid1())
                }
+
+    if conf.auth.auth_on:
+        auth_token = get_keystone_token(conf)
+        headers["X-Auth-Token"] = auth_token
 
     return headers
 

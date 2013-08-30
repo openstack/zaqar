@@ -40,7 +40,8 @@ class TestBase(testtools.TestCase):
         stderr = self.useFixture(fixtures.StringStream('stderr')).stream
         self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
-    def conf_path(self, filename):
+    @classmethod
+    def conf_path(cls, filename):
         """Returns the full path to the specified Marconi conf file.
 
         :param filename: Name of the conf file to find (e.g.,
@@ -48,7 +49,8 @@ class TestBase(testtools.TestCase):
         """
         return os.path.join(os.environ["MARCONI_TESTS_CONFIGS_DIR"], filename)
 
-    def load_conf(self, filename):
+    @classmethod
+    def load_conf(cls, filename):
         """Loads `filename` configuration file.
 
         :param filename: Name of the conf file to find (e.g.,
@@ -56,7 +58,7 @@ class TestBase(testtools.TestCase):
 
         :returns: Project's config object.
         """
-        CFG.load(filename=self.conf_path(filename))
+        CFG.load(filename=cls.conf_path(filename))
         return CFG
 
     def _my_dir(self):

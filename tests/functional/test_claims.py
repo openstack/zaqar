@@ -12,14 +12,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marconi.tests.functional import base  # noqa
-from marconi.tests.functional import config
-from marconi.tests.functional import helpers
-from marconi.tests.functional import http
 
 import ddt
 import json
 import uuid
+
+from marconi.tests.functional import base
+from marconi.tests.functional import config
+from marconi.tests.functional import helpers
+from marconi.tests.functional import http
 
 
 @ddt.ddt
@@ -28,17 +29,23 @@ class TestClaims(base.FunctionalTestBase):
 
     @classmethod
     def setUpClass(cls):
-        """Create Queue, Post Messages for Claim Tests."""
-        cls.cfg = config.Config()
-        cls.header = helpers.create_marconi_headers()
+        cls.cfg = config.load_config()
+        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
+        cls.limits = cls.mconf['limits:transport']
 
+        cls.header = helpers.create_marconi_headers(cls.cfg)
         cls.headers_response_with_body = set(['location',
                                               'content-type'])
 
     def setUp(self):
         super(TestClaims, self).setUp()
 
-        self.queue_url = self.cfg.base_url + '/queues/{}'.format(uuid.uuid1())
+        self.queue = uuid.uuid1()
+        self.queue_url = ("%(url)s/%(version)s/queues/%(queue)s" %
+                          {'url': self.cfg.marconi.url,
+                           'version': self.cfg.marconi.version,
+                           'queue': self.queue})
+
         http.put(self.queue_url, self.header)
 
         self.claim_url = self.queue_url + '/claims'
@@ -46,7 +53,7 @@ class TestClaims(base.FunctionalTestBase):
         #Post Messages
         url = self.queue_url + '/messages'
         doc = helpers.get_message_body(messagecount=
-                                       self.cfg.message_paging_uplimit)
+                                       self.limits.message_paging_uplimit)
         for i in range(25):
             http.post(url, self.header, doc)
 
@@ -80,7 +87,7 @@ class TestClaims(base.FunctionalTestBase):
         result = http.post(url, self.header, doc)
         location = result.headers['Location']
 
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
 
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
@@ -93,7 +100,7 @@ class TestClaims(base.FunctionalTestBase):
         Marconi allows a maximum of 20 messages per claim.
         """
         url = self.claim_url + '?limit=' + \
-            str(self.cfg.message_paging_uplimit + 1)
+            str(self.limits.message_paging_uplimit + 1)
         doc = '{"ttl": 300, "grace": 100}'
 
         result = http.post(url, self.header, doc)
@@ -111,7 +118,7 @@ class TestClaims(base.FunctionalTestBase):
 
         #Patch Claim
         claim_location = result.headers['Location']
-        url = self.cfg.base_server + claim_location
+        url = self.cfg.marconi.url + claim_location
         doc_updated = '{"ttl": 300}'
 
         result = http.patch(url, self.header, doc_updated)
@@ -134,7 +141,7 @@ class TestClaims(base.FunctionalTestBase):
 
         href_list = [result.json()[i]['href']
                      for i in range(len(result.json()))]
-        url_list = [self.cfg.base_server + href
+        url_list = [self.cfg.marconi.url + href
                     for href in href_list]
 
         #Delete Claimed Messages
@@ -153,7 +160,7 @@ class TestClaims(base.FunctionalTestBase):
 
         #Extract claim location and construct the claim URL.
         location = result.headers['Location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
 
         #Release Claim.
         result = http.delete(url, self.header)
@@ -220,7 +227,7 @@ class TestClaims(base.FunctionalTestBase):
 
         #Extract claim location and construct the claim URL.
         location = result.headers['Location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
 
         #Patch Claim.
         doc = {"ttl": ttl}

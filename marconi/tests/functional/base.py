@@ -12,10 +12,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import testtools
+
+from marconi import tests as testing
+# NOTE(flaper87): This is necessary to register,
+# wsgi configs and won't be permanent. It'll be
+# refactored as part of the work for this blueprint
+from marconi.transport import wsgi  # noqa
 
 
-class FunctionalTestBase(testtools.TestCase):
+class FunctionalTestBase(testing.TestBase):
 
     def assertIsSubset(self, required_values, actual_values):
         """Checks if a list is subset of another.
