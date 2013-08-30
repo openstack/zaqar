@@ -201,7 +201,7 @@ class ClaimsBaseTest(base.TestBase):
     def test_nonexistent(self):
         self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
                            body='{"ttl": 100, "grace": 60}')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_claim_404s(self):

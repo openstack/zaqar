@@ -76,9 +76,6 @@ class CollectionResource(object):
         except input_exceptions.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
 
-        except storage_exceptions.DoesNotExist:
-            raise falcon.HTTPNotFound()
-
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be created.')
