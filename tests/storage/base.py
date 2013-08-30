@@ -20,7 +20,7 @@ from testtools import matchers
 from marconi.openstack.common import timeutils
 from marconi import storage
 from marconi.storage import exceptions
-from marconi.tests import util as testing
+from marconi import tests as testing
 
 
 class ControllerBaseTest(testing.TestBase):

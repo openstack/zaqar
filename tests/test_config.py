@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from marconi.common import config
-from marconi.tests import util as testing
+from marconi import tests as testing
 
 
 PROJECT_CONFIG = config.project()

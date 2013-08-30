@@ -14,3 +14,9 @@
 # limitations under the License.
 
 """Marconi Unit-ish Tests"""
+
+from marconi.tests import base
+from marconi.tests import helpers
+
+TestBase = base.TestBase
+expect = helpers.expect
