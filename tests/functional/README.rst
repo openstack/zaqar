@@ -6,15 +6,37 @@ words, the API calls attempt to simulate an actual user. Unlike unit tests,
 the functional tests do not use mockendpoints.
 
 
-Running the Functional Tests
-------------------------
+Running functional tests (With Tox)
+-----------------------------------
+
+#. Setup a Marconi server. Refer to the Marconi `README`_ on
+   how to run Marconi locally, or simply use an existing server.
+
+#. Change `$MARCONI_TESTS_CONFIGS_DIR/functional-tests.conf` and
+   set `run_tests` to True.
+
+#. Run tests. ::
+
+   $ tox
+
+#. Filter tests. ::
+
+   $ tox -- --tests tests.functional.test_messages
+
+#. Run tests for specific environments. ::
+
+   $ tox -epy27,pep8
+
+Running the Functional Tests (Without Tox)
+------------------------------------------
 
 #. Setup a Marconi server. Refer to the Marconi `README`_ on
    how to run Marconi locally, or simply use an existing server.
 
 #. Install functional tests dependencies. ::
 
-     pip install -r functional-test-requirements.txt
+     pip install -r requirements.txt
+     pip install -r test-requirements.txt
 
 #. cd to the marconi/tests/functional directory
 

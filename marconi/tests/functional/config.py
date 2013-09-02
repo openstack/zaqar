@@ -17,6 +17,9 @@ import os
 
 from oslo.config import cfg
 
+_DEFAULT = [
+    cfg.BoolOpt("run_tests", default=False),
+]
 
 _AUTH_OPTIONS = [
     cfg.BoolOpt("auth_on", default=False),
@@ -42,6 +45,7 @@ _HEADERS_OPTIONS = [
 
 def load_config():
     conf = cfg.ConfigOpts()
+    conf.register_opts(_DEFAULT)
     conf.register_opts(_AUTH_OPTIONS, group="auth")
     conf.register_opts(_MARCONI_OPTIONS, group="marconi")
     conf.register_opts(_HEADERS_OPTIONS, group="headers")

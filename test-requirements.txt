@@ -10,6 +10,9 @@ python-subunit
 testrepository
 testtools
 
+# Functional Tests
+requests
+
 # Test runner
 nose
 nose-exclude

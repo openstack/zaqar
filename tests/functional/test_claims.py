@@ -18,7 +18,6 @@ import json
 import uuid
 
 from marconi.tests.functional import base
-from marconi.tests.functional import config
 from marconi.tests.functional import helpers
 from marconi.tests.functional import http
 
@@ -26,16 +25,6 @@ from marconi.tests.functional import http
 @ddt.ddt
 class TestClaims(base.FunctionalTestBase):
     """Tests for Claims."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.cfg = config.load_config()
-        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
-        cls.limits = cls.mconf['limits:transport']
-
-        cls.header = helpers.create_marconi_headers(cls.cfg)
-        cls.headers_response_with_body = set(['location',
-                                              'content-type'])
 
     def setUp(self):
         super(TestClaims, self).setUp()

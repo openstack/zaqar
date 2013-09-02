@@ -16,25 +16,13 @@ import ddt
 import uuid
 
 from marconi.tests.functional import base  # noqa
-from marconi.tests.functional import config
 from marconi.tests.functional import helpers
 from marconi.tests.functional import http
 
 
 @ddt.ddt
 class TestMessages(base.FunctionalTestBase):
-
     """Tests for Messages."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.cfg = config.load_config()
-        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
-        cls.limits = cls.mconf['limits:transport']
-
-        cls.header = helpers.create_marconi_headers(cls.cfg)
-        cls.headers_response_with_body = set(['location',
-                                              'content-type'])
 
     def setUp(self):
         super(TestMessages, self).setUp()

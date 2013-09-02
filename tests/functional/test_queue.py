@@ -19,8 +19,6 @@ import json
 import uuid
 
 from marconi.tests.functional import base  # noqa
-from marconi.tests.functional import config
-from marconi.tests.functional import helpers
 from marconi.tests.functional import http
 
 
@@ -29,19 +27,12 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     """Tests for Insert queue."""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.cfg = config.load_config()
-        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
-        cls.limits = cls.mconf['limits:transport']
+    def setUp(self):
+        super(TestInsertQueue, self).setUp()
+        self.base_url = '%s/%s' % (self.cfg.marconi.url,
+                                   self.cfg.marconi.version)
 
-        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
-                                  cls.cfg.marconi.version)
-
-        cls.header = helpers.create_marconi_headers(cls.cfg)
-        cls.headers_response_empty = set(['location'])
-        cls.headers_response_with_body = set(['content-location',
-                                              'content-type'])
+        self.headers_response_empty = set(['location'])
 
     @ddt.data('qtestqueue', 'TESTqueue', 'hyphen-name', '_undersore',
               'i' * 64)
@@ -143,20 +134,11 @@ class TestQueueMetaData(base.FunctionalTestBase):
 
     """Tests for queue metadata."""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.cfg = config.load_config()
-        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
-        cls.limits = cls.mconf['limits:transport']
-
-        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
-                                  cls.cfg.marconi.version)
-        cls.header = helpers.create_marconi_headers(cls.cfg)
-        cls.headers_response_with_body = set(['location',
-                                              'content-type'])
-
     def setUp(self):
         super(TestQueueMetaData, self).setUp()
+
+        self.base_url = '%s/%s' % (self.cfg.marconi.url,
+                                   self.cfg.marconi.version)
 
         self.queue_url = self.base_url + '/queues/{}'.format(uuid.uuid1())
         http.put(self.queue_url, self.header)
@@ -200,32 +182,11 @@ class TestQueueMetaData(base.FunctionalTestBase):
 @ddt.ddt
 class TestQueueMisc(base.FunctionalTestBase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.cfg = config.load_config()
-        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
-        cls.limits = cls.mconf['limits:transport']
-
-        cls.header = helpers.create_marconi_headers(cls.cfg)
-        cls.headers_response_empty = set(['location'])
-        cls.headers_response_with_body = set(['content-location',
-                                              'content-type'])
-
-        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
-                                  cls.cfg.marconi.version)
-
     def setUp(self):
         super(TestQueueMisc, self).setUp()
 
-        self.queue = uuid.uuid1()
-        self.queue_url = ("%(url)s/%(version)s/queues/%(queue)s" %
-                          {'url': self.cfg.marconi.url,
-                           'version': self.cfg.marconi.version,
-                           'queue': self.queue})
-
-        url = self.queue_url + '/metadata'
-        metadata = {"queue_metadata": "TEST METADATA"}
-        http.put(url, self.header, json.dumps(metadata))
+        self.base_url = '%s/%s' % (self.cfg.marconi.url,
+                                   self.cfg.marconi.version)
 
     def test_list_queues(self):
         """List Queues."""

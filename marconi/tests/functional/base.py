@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from marconi import tests as testing
+from marconi.tests.functional import config
+from marconi.tests.functional import helpers
 # NOTE(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
 # refactored as part of the work for this blueprint
@@ -21,6 +23,25 @@ from marconi.transport import wsgi  # noqa
 
 
 class FunctionalTestBase(testing.TestBase):
+
+    def setUp(self):
+        super(FunctionalTestBase, self).setUp()
+
+        # NOTE(flaper87): Config can't be a class
+        # attribute because it may be necessary to
+        # modify it at runtime which will affect
+        # other instances running instances.
+        self.cfg = config.load_config()
+
+        if not self.cfg.run_tests:
+            self.skipTest("Functional tests disabled")
+
+        self.mconf = self.load_conf(self.cfg.marconi.config).conf
+        self.limits = self.mconf['limits:transport']
+
+        self.header = helpers.create_marconi_headers(self.cfg)
+        self.headers_response_with_body = set(['location',
+                                              'content-type'])
 
     def assertIsSubset(self, required_values, actual_values):
         """Checks if a list is subset of another.
