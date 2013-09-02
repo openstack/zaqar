@@ -134,7 +134,7 @@ class QueueControllerTest(ControllerBaseTest):
         # NOTE(kgriffs): Ensure "now" is different enough
         # for the next comparison to work.
         timeutils.set_time_override()
-        timeutils.advance_time_seconds(10)
+        timeutils.advance_time_seconds(60)
 
         for message_stat in (oldest, newest):
             created_iso = message_stat['created']
@@ -143,6 +143,8 @@ class QueueControllerTest(ControllerBaseTest):
                             matchers.LessThan(timeutils.utcnow()))
 
             self.assertIn('id', message_stat)
+
+        timeutils.clear_time_override()
 
         self.assertThat(oldest['created'],
                         matchers.LessThan(newest['created']))

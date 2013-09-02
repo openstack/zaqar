@@ -12,12 +12,13 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marconi.tests.functional import http
 
 import json
 import random
 import string
 import uuid
+
+from marconi.tests.functional import http
 
 
 def get_keystone_token(conf):

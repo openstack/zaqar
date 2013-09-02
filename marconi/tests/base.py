@@ -40,6 +40,9 @@ class TestBase(testtools.TestCase):
         stderr = self.useFixture(fixtures.StringStream('stderr')).stream
         self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
+    def tearDown(self):
+        super(TestBase, self).tearDown()
+
     @classmethod
     def conf_path(cls, filename):
         """Returns the full path to the specified Marconi conf file.
@@ -47,6 +50,10 @@ class TestBase(testtools.TestCase):
         :param filename: Name of the conf file to find (e.g.,
                          'wsgi_memory.conf')
         """
+
+        if os.path.exists(filename):
+            return filename
+
         return os.path.join(os.environ["MARCONI_TESTS_CONFIGS_DIR"], filename)
 
     @classmethod
@@ -60,6 +67,21 @@ class TestBase(testtools.TestCase):
         """
         CFG.load(filename=cls.conf_path(filename))
         return CFG
+
+    def config(self, group=None, **kw):
+        """Override some configuration values.
+
+        The keyword arguments are the names of configuration options to
+        override and their values.
+
+        If a group argument is supplied, the overrides are applied to
+        the specified configuration option group.
+
+        All overrides are automatically cleared at the end of the current
+        test by the tearDown() method.
+        """
+        for k, v in kw.iteritems():
+            self.conf.set_override(k, v, group)
 
     def _my_dir(self):
         return os.path.abspath(os.path.dirname(__file__))

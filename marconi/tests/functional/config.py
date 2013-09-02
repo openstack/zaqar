@@ -18,7 +18,7 @@ import os
 from oslo.config import cfg
 
 _DEFAULT = [
-    cfg.BoolOpt("run_tests", default=False),
+    cfg.BoolOpt("run_tests", default=True),
 ]
 
 _AUTH_OPTIONS = [
@@ -30,6 +30,7 @@ _AUTH_OPTIONS = [
 
 
 _MARCONI_OPTIONS = [
+    cfg.BoolOpt("run_server", default=True),
     cfg.StrOpt("url", default="http://127.0.0.1:8888"),
     cfg.StrOpt("version", default="v1"),
     cfg.StrOpt("config", default="functional-marconi.conf"),

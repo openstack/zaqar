@@ -26,6 +26,8 @@ from marconi.tests.functional import http
 class TestClaims(base.FunctionalTestBase):
     """Tests for Claims."""
 
+    server_class = base.MarconiServer
+
     def setUp(self):
         super(TestClaims, self).setUp()
 

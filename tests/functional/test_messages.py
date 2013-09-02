@@ -24,6 +24,8 @@ from marconi.tests.functional import http
 class TestMessages(base.FunctionalTestBase):
     """Tests for Messages."""
 
+    server_class = base.MarconiServer
+
     def setUp(self):
         super(TestMessages, self).setUp()
 
