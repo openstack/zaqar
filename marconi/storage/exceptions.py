@@ -84,6 +84,13 @@ class MessageDoesNotExist(DoesNotExist):
         super(MessageDoesNotExist, self).__init__(msg)
 
 
+class MessageIsClaimed(NotPermitted):
+
+    def __init__(self, mid):
+        msg = (u'Message %(mid)s is claimed' % dict(mid=mid))
+        super(MessageIsClaimed, self).__init__(msg)
+
+
 class ClaimDoesNotExist(DoesNotExist):
 
     def __init__(self, cid, queue, project):
@@ -93,9 +100,9 @@ class ClaimDoesNotExist(DoesNotExist):
         super(ClaimDoesNotExist, self).__init__(msg)
 
 
-class ClaimNotPermitted(NotPermitted):
+class MessageIsClaimedBy(NotPermitted):
 
     def __init__(self, mid, cid):
         msg = (u'Message %(mid)s is not claimed by %(cid)s' %
                dict(cid=cid, mid=mid))
-        super(ClaimNotPermitted, self).__init__(msg)
+        super(MessageIsClaimedBy, self).__init__(msg)
