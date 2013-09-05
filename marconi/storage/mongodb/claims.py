@@ -174,6 +174,12 @@ class ClaimController(storage.ClaimBase):
                              upsert=False, multi=True)
 
         if updated != 0:
+            # NOTE(kgriffs): This extra step is necessary because
+            # in between having gotten a list of active messages
+            # and updating them, some of them may have been
+            # claimed by a parallel request. Therefore, we need
+            # to find out which messages were actually tagged
+            # with the claim ID successfully.
             claim, messages = self.get(queue, oid, project=project)
 
         return (str(oid), messages)
