@@ -78,7 +78,10 @@ class ClaimController(base.ClaimBase):
             project = ''
 
         with self.driver('immediate'):
-            qid = utils.get_qid(self.driver, queue, project)
+            try:
+                qid = utils.get_qid(self.driver, queue, project)
+            except exceptions.QueueDoesNotExist:
+                return None, iter([])
 
             # Clean up all expired claims in this queue
 

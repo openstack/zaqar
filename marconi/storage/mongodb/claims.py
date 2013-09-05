@@ -118,9 +118,6 @@ class ClaimController(storage.ClaimBase):
         """
         msg_ctrl = self.driver.message_controller
 
-        if not self.driver.queue_controller.exists(queue, project):
-            raise exceptions.QueueDoesNotExist(queue, project)
-
         ttl = metadata['ttl']
         grace = metadata['grace']
         oid = objectid.ObjectId()
@@ -148,7 +145,7 @@ class ClaimController(storage.ClaimBase):
         ids = [msg['_id'] for msg in msgs]
 
         if len(ids) == 0:
-            return (str(oid), messages)
+            return (None, messages)
 
         now = timeutils.utcnow()
 
