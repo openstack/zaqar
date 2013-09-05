@@ -42,7 +42,7 @@ JSON_HOME = {
                 'queue_name': 'param/queue_name',
             },
             'hints': {
-                'allow': ['PUT', 'DELETE'],
+                'allow': ['GET', 'HEAD', 'PUT', 'DELETE'],
                 'formats': {
                     'application/json': {},
                 },
