@@ -21,6 +21,7 @@ from marconi import bootstrap
 from marconi import tests as testing
 from marconi.tests.functional import config
 from marconi.tests.functional import helpers
+from marconi.tests.functional import http
 # NOTE(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
 # refactored as part of the work for this blueprint
@@ -56,6 +57,11 @@ class FunctionalTestBase(testing.TestBase):
         self.header = helpers.create_marconi_headers(self.cfg)
         self.headers_response_with_body = set(['location',
                                                'content-type'])
+
+        # NOTE(flaper87): Create client
+        # for this test unit.
+        self.client = http.Client()
+        self.client.set_headers(self.header)
 
     @classmethod
     def tearDownClass(cls):

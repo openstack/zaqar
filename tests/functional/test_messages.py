@@ -17,7 +17,6 @@ import uuid
 
 from marconi.tests.functional import base  # noqa
 from marconi.tests.functional import helpers
-from marconi.tests.functional import http
 
 
 @ddt.ddt
@@ -35,9 +34,10 @@ class TestMessages(base.FunctionalTestBase):
                            'version': self.cfg.marconi.version,
                            'queue': self.queue})
 
-        http.put(self.queue_url, self.header)
+        self.client.put(self.queue_url)
 
         self.message_url = self.queue_url + '/messages'
+        self.client.set_base_url(self.message_url)
 
     def test_message_single_insert(self):
         """Insert Single Message into the Queue.
@@ -47,7 +47,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         doc = helpers.get_message_body(messagecount=1)
 
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
         response_headers = set(result.headers.keys())
@@ -57,7 +57,7 @@ class TestMessages(base.FunctionalTestBase):
         href = result.json()['resources'][0]
         url = self.cfg.marconi.url + href
 
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
         # Compare message metadata
@@ -67,19 +67,20 @@ class TestMessages(base.FunctionalTestBase):
 
         # Post a claim & verify the include_claimed flag.
         url = self.queue_url + '/claims'
-        doc = '{"ttl": 300, "grace": 100}'
-        result = http.post(url, self.header, doc)
+        doc = {"ttl": 300, "grace": 100}
+        result = self.client.post(url, data=doc)
         self.assertEqual(result.status_code, 201)
 
-        url = self.message_url + '?include_claimed=true&echo=true'
-        result = http.get(url, self.header)
+        params = {'include_claimed': True,
+                  'echo': True}
+        result = self.client.get(params=params)
         self.assertEqual(result.status_code, 200)
 
         response_message_body = result.json()["messages"][0]["body"]
         self.assertEqual(response_message_body, posted_metadata)
 
         # By default, include_claimed = false
-        result = http.get(self.message_url, self.header)
+        result = self.client.get(self.message_url)
         self.assertEqual(result.status_code, 204)
 
     test_message_single_insert.tags = ['smoke', 'positive']
@@ -89,13 +90,13 @@ class TestMessages(base.FunctionalTestBase):
         message_count = 10
         doc = helpers.get_message_body(messagecount=message_count)
 
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
         # GET on posted messages
         location = result.headers['location']
         url = self.cfg.marconi.url + location
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
         # Compare message metadata
@@ -111,24 +112,23 @@ class TestMessages(base.FunctionalTestBase):
 
     test_message_bulk_insert.tags = ['smoke', 'positive']
 
-    @ddt.data('', '&limit=5')
-    def test_get_message(self, url_param):
+    @ddt.data({}, {'limit': 5})
+    def test_get_message(self, params):
         """Get Messages."""
-        if url_param:
-            expected_msg_count = int(url_param.split('&limit=')[1])
-        else:
-            expected_msg_count = 10
+
+        expected_msg_count = params.get('limit', 10)
 
         # Test Setup
         doc = helpers.get_message_body(messagecount=20)
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
-        url = self.message_url + '?echo=True' + url_param
+        url = ''
+        params['echo'] = True
 
         #Follow the hrefs & perform GET, till the end of messages i.e. http 204
         while result.status_code in [201, 200]:
-            result = http.get(url, self.header)
+            result = self.client.get(url, params=params)
             self.assertIn(result.status_code, [200, 204])
 
             if result.status_code == 200:
@@ -146,17 +146,17 @@ class TestMessages(base.FunctionalTestBase):
         """Delete Message."""
         # Test Setup
         doc = helpers.get_message_body(messagecount=1)
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
         # Delete posted message
         href = result.json()['resources'][0]
         url = self.cfg.marconi.url + href
 
-        result = http.delete(url, self.header)
+        result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
 
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 404)
 
     test_message_delete.tags = ['smoke', 'positive']
@@ -164,7 +164,7 @@ class TestMessages(base.FunctionalTestBase):
     def test_message_bulk_delete(self):
         """Bulk Delete Messages."""
         doc = helpers.get_message_body(messagecount=10)
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
 
@@ -172,18 +172,17 @@ class TestMessages(base.FunctionalTestBase):
         location = result.headers['Location']
         url = self.cfg.marconi.url + location
 
-        result = http.delete(url, self.header)
+        result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
 
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 204)
 
     test_message_bulk_delete.tags = ['smoke', 'positive']
 
     def test_message_delete_nonexisting(self):
         """Delete non-existing Messages."""
-        url = self.message_url + '/non-existing'
-        result = http.delete(url, self.header)
+        result = self.client.delete('/non-existing')
 
         self.assertEqual(result.status_code, 204)
 
@@ -192,7 +191,7 @@ class TestMessages(base.FunctionalTestBase):
     def test_message_partial_delete(self):
         """Delete Messages will be partially successful."""
         doc = helpers.get_message_body(messagecount=3)
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
 
@@ -200,7 +199,7 @@ class TestMessages(base.FunctionalTestBase):
         location = result.headers['Location']
         url = self.cfg.marconi.url + location
         url += ',nonexisting'
-        result = http.delete(url, self.header)
+        result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
 
     test_message_partial_delete.tags = ['negative']
@@ -208,7 +207,7 @@ class TestMessages(base.FunctionalTestBase):
     def test_message_partial_get(self):
         """Get Messages will be partially successful."""
         doc = helpers.get_message_body(messagecount=3)
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
 
@@ -216,7 +215,7 @@ class TestMessages(base.FunctionalTestBase):
         location = result.headers['Location']
         url = self.cfg.marconi.url + location
         url += ',nonexisting'
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
     test_message_partial_get.tags = ['negative']
@@ -228,7 +227,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         doc = helpers.get_message_body(messagecount=60)
 
-        result = http.post(self.message_url, self.header, doc)
+        result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 400)
 
     test_message_bulk_insert_60.tags = ['negative']
@@ -239,8 +238,8 @@ class TestMessages(base.FunctionalTestBase):
 
         Allowed values for limit are 0 < limit <= 20(configurable).
         """
-        url = self.message_url + '?limit=' + str(limit)
-        result = http.get(url, self.header)
+        params = {'limit': limit}
+        result = self.client.get(params=params)
         self.assertEqual(result.status_code, 400)
 
     test_message_get_invalid_limit.tags = ['negative']
@@ -254,7 +253,7 @@ class TestMessages(base.FunctionalTestBase):
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
                        range(self.limits.message_paging_uplimit + 1))
-        result = http.delete(url, self.header)
+        result = self.client.delete(url)
 
         self.assertEqual(result.status_code, 400)
 
@@ -269,7 +268,7 @@ class TestMessages(base.FunctionalTestBase):
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
                        range(self.limits.message_paging_uplimit + 1))
-        result = http.get(url, self.header)
+        result = self.client.get(url)
 
         self.assertEqual(result.status_code, 400)
 
@@ -279,11 +278,11 @@ class TestMessages(base.FunctionalTestBase):
         """Get messages with non-existing marker."""
         url = self.message_url + '?marker=invalid'
 
-        result = http.get(url, self.header)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 204)
 
     test_get_messages_malformed_marker.tags = ['negative']
 
     def tearDown(self):
         super(TestMessages, self).tearDown()
-        http.delete(self.queue_url, self.header)
+        self.client.delete(self.queue_url)

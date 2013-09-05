@@ -12,99 +12,74 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import functools
+import json
+
 import requests
 
 
-def get(url, header=''):
-    """Does  http GET."""
-    try:
-        response = requests.get(url, headers=header)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.get {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.get {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.get {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.get {}'.format(detail))
-    return response
+class Client(object):
 
+    def __init__(self):
+        self.base_url = None
+        self.session = requests.session()
 
-def head(url, header=''):
-    """Does  http HEAD."""
-    try:
-        response = requests.head(url, headers=header)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.head {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.head {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.head {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.head {}'.format(detail))
-    return response
+    def set_base_url(self, base_url):
+        self.base_url = base_url
 
+    def set_headers(self, headers):
+        self.session.headers.update(headers)
 
-def post(url, header='', body=''):
-    """Does  http POST."""
-    body = str(body)
-    body = body.replace("'", '"')
-    try:
-        response = requests.post(url, headers=header, data=body)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.post {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.post {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.post {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.post {}'.format(detail))
-    return response
+    def _build_url(method):
 
+        @functools.wraps(method)
+        def wrapper(self, url='', **kwargs):
 
-def put(url, header='', body=''):
-    """Does  http PUT."""
-    response = None
-    try:
-        response = requests.put(url, headers=header, data=body)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.put {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.put {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.put {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.put {}'.format(detail))
-    return response
+            if not url.startswith("http"):
+                if not self.base_url:
+                    raise RuntimeError("Base url not set")
+                url = self.base_url + url or ''
 
+            return method(self, url, **kwargs)
+        return wrapper
 
-def delete(url, header=''):
-    """Does  http DELETE."""
-    response = None
-    try:
-        response = requests.delete(url, headers=header)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.delete {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.delete {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.delete {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.delete {}'.format(detail))
-    return response
+    @_build_url
+    def get(self, url=None, **kwargs):
+        """Does  http GET."""
+        return self.session.get(url, **kwargs)
 
+    @_build_url
+    def head(self, url=None, **kwargs):
+        """Does  http HEAD."""
+        return self.session.head(url, **kwargs)
 
-def patch(url, header='', body=''):
-    """Does  http PATCH."""
-    response = None
-    try:
-        response = requests.patch(url, headers=header, data=body)
-    except requests.ConnectionError as detail:
-        print('ConnectionError: Exception in http.patch {}'.format(detail))
-    except requests.HTTPError as detail:
-        print('HTTPError: Exception in http.patch {}'.format(detail))
-    except requests.Timeout as detail:
-        print('Timeout: Exception in http.patch {}'.format(detail))
-    except requests.TooManyRedirects as detail:
-        print('TooManyRedirects: Exception in http.patch {}'.format(detail))
-    return response
+    @_build_url
+    def post(self, url=None, **kwargs):
+        """Does  http POST."""
+
+        if "data" in kwargs:
+            kwargs['data'] = json.dumps(kwargs["data"])
+
+        return self.session.post(url, **kwargs)
+
+    @_build_url
+    def put(self, url=None, **kwargs):
+        """Does  http PUT."""
+
+        if "data" in kwargs:
+            kwargs['data'] = json.dumps(kwargs["data"])
+
+        return self.session.put(url, **kwargs)
+
+    @_build_url
+    def delete(self, url=None, **kwargs):
+        """Does  http DELETE."""
+        return self.session.delete(url, **kwargs)
+
+    @_build_url
+    def patch(self, url=None, **kwargs):
+        """Does  http PATCH."""
+        if "data" in kwargs:
+            kwargs['data'] = json.dumps(kwargs["data"])
+        return self.session.patch(url, **kwargs)
