@@ -21,7 +21,7 @@ Running functional tests (With Tox)
 
 #. Filter tests. ::
 
-   $ tox -- --tests tests.functional.test_messages
+   $ tox -- --tests tests.functional.wsgi.v1.test_messages
 
 #. Run tests for specific environments. ::
 
