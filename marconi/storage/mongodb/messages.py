@@ -25,6 +25,7 @@ import datetime
 import time
 
 import pymongo.errors
+import pymongo.read_preferences
 
 from marconi.common import config
 import marconi.openstack.common.log as logging
@@ -343,7 +344,12 @@ class MessageController(storage.MessageBase):
             'p': project,
         }
 
-        msgs = self._col.find(query, sort=[('k', 1)])
+        # NOTE(kgriffs): Claimed messages bust be queried from
+        # the primary to avoid a race condition caused by the
+        # multi-phased "create claim" algorithm.
+        preference = pymongo.read_preferences.ReadPreference.PRIMARY
+        msgs = self._col.find(query, sort=[('k', 1)],
+                              read_preference=preference)
 
         if limit:
             msgs = msgs.limit(limit)
