@@ -13,15 +13,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marconi.tests.functional import base  # noqa
-from marconi.tests.functional import config
-from marconi.tests.functional import helpers
-from marconi.tests.functional import http
-
 import copy
 import ddt
 import json
 import uuid
+
+from marconi.tests.functional import base  # noqa
+from marconi.tests.functional import config
+from marconi.tests.functional import helpers
+from marconi.tests.functional import http
 
 
 @ddt.ddt
@@ -31,9 +31,14 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.cfg = config.Config()
-        cls.header = helpers.create_marconi_headers()
+        cls.cfg = config.load_config()
+        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
+        cls.limits = cls.mconf['limits:transport']
 
+        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
+                                  cls.cfg.marconi.version)
+
+        cls.header = helpers.create_marconi_headers(cls.cfg)
         cls.headers_response_empty = set(['location'])
         cls.headers_response_with_body = set(['content-location',
                                               'content-type'])
@@ -42,7 +47,7 @@ class TestInsertQueue(base.FunctionalTestBase):
               'i' * 64)
     def test_insert_queue(self, queue_name):
         """Create Queue."""
-        self.url = self.cfg.base_url + '/queues/' + queue_name
+        self.url = self.base_url + '/queues/' + queue_name
 
         result = http.put(self.url, self.header)
         self.assertEqual(result.status_code, 201)
@@ -60,7 +65,7 @@ class TestInsertQueue(base.FunctionalTestBase):
     @ddt.data('汉字漢字', '@$@^qw', 'i' * 65)
     def test_insert_queue_invalid_name(self, queue_name):
         """Create Queue."""
-        self.url = self.cfg.base_url + '/queues/' + queue_name
+        self.url = self.base_url + '/queues/' + queue_name
 
         result = http.put(self.url, self.header)
         self.assertEqual(result.status_code, 400)
@@ -73,7 +78,14 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     def test_insert_queue_invalid_authtoken(self):
         """Insert Queue with invalid authtoken."""
-        self.url = self.cfg.base_url + '/queues/invalidauthtoken'
+
+        # NOTE(flaper87): Currently, tearDown
+        # depends on this attribute. Needs to
+        # be fixed.
+        self.url = self.base_url + '/queues/invalidauthtoken'
+
+        if not self.cfg.auth.auth_on:
+            self.skipTest("Auth is not on!")
 
         header = copy.copy(self.header)
         header["X-Auth-Token"] = 'invalid'
@@ -85,7 +97,7 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     def test_insert_queue_header_plaintext(self):
         """Insert Queue with 'Accept': 'plain/text'."""
-        self.url = self.cfg.base_url + '/queues/plaintextheader'
+        self.url = self.base_url + '/queues/plaintextheader'
         header = copy.copy(self.header)
         header["Accept"] = 'plain/text'
 
@@ -96,7 +108,7 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     def test_insert_queue_header_asterisk(self):
         """Insert Queue with 'Accept': '*/*'."""
-        self.url = self.cfg.base_url + '/queues/asteriskinheader'
+        self.url = self.base_url + '/queues/asteriskinheader'
         header = copy.copy(self.header)
         header["Accept"] = '*/*'
 
@@ -107,13 +119,13 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     def test_insert_queue_with_metadata(self):
         """Insert queue with a non-empty request body."""
-        self.url = self.cfg.base_url + '/queues/hasmetadata'
+        self.url = self.base_url + '/queues/hasmetadata'
         doc = '{"queue": "Has Metadata"}'
         result = http.put(self.url, self.header, doc)
 
         self.assertEqual(result.status_code, 201)
 
-        self.url = self.cfg.base_url + '/queues/hasmetadata/metadata'
+        self.url = self.base_url + '/queues/hasmetadata/metadata'
         result = http.get(self.url, self.header)
 
         self.assertEqual(result.status_code, 200)
@@ -133,16 +145,20 @@ class TestQueueMetaData(base.FunctionalTestBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.cfg = config.Config()
-        cls.header = helpers.create_marconi_headers()
+        cls.cfg = config.load_config()
+        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
+        cls.limits = cls.mconf['limits:transport']
 
+        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
+                                  cls.cfg.marconi.version)
+        cls.header = helpers.create_marconi_headers(cls.cfg)
         cls.headers_response_with_body = set(['location',
                                               'content-type'])
 
     def setUp(self):
         super(TestQueueMetaData, self).setUp()
 
-        self.queue_url = self.cfg.base_url + '/queues/{}'.format(uuid.uuid1())
+        self.queue_url = self.base_url + '/queues/{}'.format(uuid.uuid1())
         http.put(self.queue_url, self.header)
 
         self.queue_metadata_url = self.queue_url + '/metadata'
@@ -186,23 +202,34 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.cfg = config.Config()
-        cls.header = helpers.create_marconi_headers()
+        cls.cfg = config.load_config()
+        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
+        cls.limits = cls.mconf['limits:transport']
 
+        cls.header = helpers.create_marconi_headers(cls.cfg)
         cls.headers_response_empty = set(['location'])
         cls.headers_response_with_body = set(['content-location',
                                               'content-type'])
 
-        cls.queue_url = cls.cfg.base_url + '/queues/{}'.format(uuid.uuid1())
-        http.put(cls.queue_url, cls.header)
+        cls.base_url = '%s/%s' % (cls.cfg.marconi.url,
+                                  cls.cfg.marconi.version)
 
-        url = cls.queue_url + '/metadata'
+    def setUp(self):
+        super(TestQueueMisc, self).setUp()
+
+        self.queue = uuid.uuid1()
+        self.queue_url = ("%(url)s/%(version)s/queues/%(queue)s" %
+                          {'url': self.cfg.marconi.url,
+                           'version': self.cfg.marconi.version,
+                           'queue': self.queue})
+
+        url = self.queue_url + '/metadata'
         metadata = {"queue_metadata": "TEST METADATA"}
-        http.put(url, cls.header, json.dumps(metadata))
+        http.put(url, self.header, json.dumps(metadata))
 
     def test_list_queues(self):
         """List Queues."""
-        url = self.cfg.base_url + '/queues'
+        url = self.base_url + '/queues'
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 200)
@@ -216,7 +243,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_list_queues_detailed(self):
         """List Queues with detailed = True."""
-        url = self.cfg.base_url + '/queues?detailed=True'
+        url = self.base_url + '/queues?detailed=True'
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 200)
@@ -231,7 +258,7 @@ class TestQueueMisc(base.FunctionalTestBase):
     @ddt.data(0, -1, 30)
     def test_list_queue_invalid_limit(self, limit):
         """List Queues with a limit value that is not allowed."""
-        url = self.cfg.base_url + '/queues?limit=' + str(limit)
+        url = self.base_url + '/queues?limit=' + str(limit)
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 400)
@@ -240,7 +267,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_check_health(self):
         """Test health endpoint."""
-        url = self.cfg.base_url + '/health'
+        url = self.base_url + '/health'
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 204)
@@ -249,7 +276,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_check_queue_exists(self):
         """Checks if queue exists."""
-        url = self.cfg.base_url + '/queues/testqueue'
+        url = self.base_url + '/queues/testqueue'
         http.put(url, self.header)
 
         result = http.get(url, self.header)
@@ -262,7 +289,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_check_queue_exists_negative(self):
         """Checks non-existing queue."""
-        url = self.cfg.base_url + '/queues/nonexistingqueue'
+        url = self.base_url + '/queues/nonexistingqueue'
 
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 404)
@@ -274,7 +301,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_get_queue_malformed_marker(self):
         """List queues with invalid marker."""
-        url = self.cfg.base_url + '/queues?marker=invalid'
+        url = self.base_url + '/queues?marker=invalid'
 
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 204)
@@ -284,5 +311,5 @@ class TestQueueMisc(base.FunctionalTestBase):
     @classmethod
     def tearDownClass(cls):
         """Delete Queue."""
-        url = cls.cfg.base_url + '/queues/testqueue'
+        url = cls.base_url + '/queues/testqueue'
         http.delete(url, cls.header)

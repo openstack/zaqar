@@ -29,12 +29,11 @@ Running the Functional Tests
 #. If leaving keystone auth enabled, update system-tests.conf with a
    valid set of credentials.
 
-#. Now, to run the sytem tests, simply use the nosetests commands, 
-   from the marconi/tests/functional directory. e.g.:
+#. Now, to run the sytem tests, simply use the nosetests commands, e.g.:
 
     Run all test suites: ::
 
-        nosetests -v
+        nosetests --tests tests.functional -v
 
 Adding New Tests
 ----------------

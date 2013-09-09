@@ -12,13 +12,13 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import ddt
+import uuid
+
 from marconi.tests.functional import base  # noqa
 from marconi.tests.functional import config
 from marconi.tests.functional import helpers
 from marconi.tests.functional import http
-
-import ddt
-import uuid
 
 
 @ddt.ddt
@@ -28,16 +28,23 @@ class TestMessages(base.FunctionalTestBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.cfg = config.Config()
-        cls.header = helpers.create_marconi_headers()
+        cls.cfg = config.load_config()
+        cls.mconf = cls.load_conf(cls.cfg.marconi.config).conf
+        cls.limits = cls.mconf['limits:transport']
 
+        cls.header = helpers.create_marconi_headers(cls.cfg)
         cls.headers_response_with_body = set(['location',
                                               'content-type'])
 
     def setUp(self):
         super(TestMessages, self).setUp()
 
-        self.queue_url = self.cfg.base_url + '/queues/{}'.format(uuid.uuid1())
+        self.queue = uuid.uuid1()
+        self.queue_url = ("%(url)s/%(version)s/queues/%(queue)s" %
+                          {'url': self.cfg.marconi.url,
+                           'version': self.cfg.marconi.version,
+                           'queue': self.queue})
+
         http.put(self.queue_url, self.header)
 
         self.message_url = self.queue_url + '/messages'
@@ -58,7 +65,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # GET on posted message
         href = result.json()['resources'][0]
-        url = self.cfg.base_server + href
+        url = self.cfg.marconi.url + href
 
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
@@ -97,7 +104,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # GET on posted messages
         location = result.headers['location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
 
@@ -139,7 +146,7 @@ class TestMessages(base.FunctionalTestBase):
                 self.assertMessageCount(actual_msg_count, expected_msg_count)
 
                 href = result.json()['links'][0]['href']
-                url = self.cfg.base_server + href
+                url = self.cfg.marconi.url + href
 
         self.assertEqual(result.status_code, 204)
 
@@ -154,7 +161,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # Delete posted message
         href = result.json()['resources'][0]
-        url = self.cfg.base_server + href
+        url = self.cfg.marconi.url + href
 
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
@@ -173,7 +180,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # Delete posted messages
         location = result.headers['Location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
 
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
@@ -201,7 +208,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # Delete posted message
         location = result.headers['Location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
         url += ',nonexisting'
         result = http.delete(url, self.header)
         self.assertEqual(result.status_code, 204)
@@ -217,7 +224,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # Get posted message and a nonexisting message
         location = result.headers['Location']
-        url = self.cfg.base_server + location
+        url = self.cfg.marconi.url + location
         url += ',nonexisting'
         result = http.get(url, self.header)
         self.assertEqual(result.status_code, 200)
@@ -256,7 +263,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
-                       range(self.cfg.message_paging_uplimit + 1))
+                       range(self.limits.message_paging_uplimit + 1))
         result = http.delete(url, self.header)
 
         self.assertEqual(result.status_code, 400)
@@ -271,7 +278,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
-                       range(self.cfg.message_paging_uplimit + 1))
+                       range(self.limits.message_paging_uplimit + 1))
         result = http.get(url, self.header)
 
         self.assertEqual(result.status_code, 400)

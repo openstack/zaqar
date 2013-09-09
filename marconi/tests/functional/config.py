@@ -13,90 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ConfigParser
 import os
-import uuid
+
+from oslo.config import cfg
 
 
-class Config(object):
-    def __init__(self, config_path=None):
-        if config_path is None:
-            if os.path.exists('/etc/marconi/functional-tests.conf'):
-                config_path = '/etc/marconi/functional-tests.conf'
-            else:
-                config_path = os.path.expanduser('~/.marconi'
-                                                 '/functional-tests.conf')
-        self.parser = ConfigParser.SafeConfigParser()
-        self.parser.read(config_path)
+_AUTH_OPTIONS = [
+    cfg.BoolOpt("auth_on", default=False),
+    cfg.StrOpt("url", default="https://127.0.0.1:5000/v2.0/tokens"),
+    cfg.StrOpt("username", default=None),
+    cfg.StrOpt("password", default=None),
+]
 
-    @property
-    def auth_enabled(self):
-        return self.parser.getboolean('auth', 'auth_on')
 
-    @property
-    def username(self):
-        return self.parser.get('auth', 'username')
+_MARCONI_OPTIONS = [
+    cfg.StrOpt("url", default="http://127.0.0.1:8888"),
+    cfg.StrOpt("version", default="v1"),
+    cfg.StrOpt("config", default="functional-marconi.conf"),
+]
 
-    @property
-    def password(self):
-        return self.parser.get('auth', 'password')
 
-    @property
-    def auth_url(self):
-        return self.parser.get('auth', 'url')
+_HEADERS_OPTIONS = [
+    cfg.StrOpt("host", default="example.com"),
+    cfg.StrOpt("user_agent", default="FunctionalTests"),
+    cfg.StrOpt("project_id", default="123456"),
+]
 
-    @property
-    def base_server(self):
-        return self.parser.get('marconi_env', 'marconi_url')
 
-    @property
-    def marconi_version(self):
-        return self.parser.get('marconi_env', 'marconi_version')
-
-    @property
-    def base_url(self):
-        return (self.base_server + '/' + self.marconi_version)
-
-    @property
-    def uuid(self):
-        return str(uuid.uuid1())
-
-    @property
-    def user_agent(self):
-        return self.parser.get('header_values', 'useragent')
-
-    @property
-    def host(self):
-        return self.parser.get('header_values', 'host')
-
-    @property
-    def project_id(self):
-        return self.parser.get('header_values', 'project_id')
-
-    @property
-    def queue_paging_uplimit(self):
-        return int(self.parser.get('marconi_config', 'queue_paging_uplimit'))
-
-    @property
-    def message_paging_uplimit(self):
-        return int(self.parser.get('marconi_config', 'message_paging_uplimit'))
-
-    @property
-    def message_ttl_max(self):
-        return int(self.parser.get('marconi_config', 'message_ttl_max'))
-
-    @property
-    def claim_ttl_max(self):
-        return int(self.parser.get('marconi_config', 'claim_ttl_max'))
-
-    @property
-    def claim_grace_max(self):
-        return int(self.parser.get('marconi_config', 'claim_grace_max'))
-
-    @property
-    def metadata_size_uplimit(self):
-        return self.parser.get('marconi_config', 'metadata_size_uplimit')
-
-    @property
-    def message_size_uplimit(self):
-        return self.parser.get('marconi_config', 'message_size_uplimit')
+def load_config():
+    conf = cfg.ConfigOpts()
+    conf.register_opts(_AUTH_OPTIONS, group="auth")
+    conf.register_opts(_MARCONI_OPTIONS, group="marconi")
+    conf.register_opts(_HEADERS_OPTIONS, group="headers")
+    conf_path = os.path.join(os.environ["MARCONI_TESTS_CONFIGS_DIR"],
+                             "functional-tests.conf")
+    conf(args=[], default_config_files=[conf_path])
+    return conf
