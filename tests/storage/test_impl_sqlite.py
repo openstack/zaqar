@@ -16,7 +16,8 @@
 from marconi import storage
 from marconi.storage import sqlite
 from marconi.storage.sqlite import controllers
-from marconi.tests.storage import base
+
+import base  # noqa
 
 
 class SQliteQueueTests(base.QueueControllerTest):

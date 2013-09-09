@@ -28,8 +28,9 @@ from marconi.storage import mongodb
 from marconi.storage.mongodb import controllers
 from marconi.storage.mongodb import options as mongodb_options
 from marconi.storage.mongodb import utils
-from marconi.tests.storage import base
 from marconi.tests import util as testing
+
+import base  # noqa  # noqa
 
 
 class MongodbUtilsTest(testing.TestBase):

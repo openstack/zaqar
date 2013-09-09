@@ -18,7 +18,7 @@ import falcon
 from falcon import testing
 from keystoneclient.middleware import auth_token
 
-from marconi.tests.transport.wsgi import base
+import base  # noqa
 
 
 class TestWSGIAuth(base.TestBase):

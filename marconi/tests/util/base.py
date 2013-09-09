@@ -46,9 +46,7 @@ class TestBase(testtools.TestCase):
         :param filename: Name of the conf file to find (e.g.,
                          'wsgi_memory.conf')
         """
-
-        parent = os.path.dirname(self._my_dir())
-        return os.path.join(parent, 'etc', filename)
+        return os.path.join(os.environ["MARCONI_TESTS_CONFIGS_DIR"], filename)
 
     def load_conf(self, filename):
         """Loads `filename` configuration file.

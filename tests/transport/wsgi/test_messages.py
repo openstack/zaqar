@@ -20,8 +20,8 @@ import ddt
 import falcon
 from testtools import matchers
 
+import base  # noqa
 from marconi.common import config
-from marconi.tests.transport.wsgi import base
 
 
 @ddt.ddt
