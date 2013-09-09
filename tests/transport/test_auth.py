@@ -17,11 +17,11 @@
 from oslo.config import cfg
 
 from marconi.common import config
-from marconi.tests import util
+from marconi import tests as testing
 from marconi.transport import auth
 
 
-class TestTransportAuth(util.TestBase):
+class TestTransportAuth(testing.TestBase):
 
     def setUp(self):
         super(TestTransportAuth, self).setUp()

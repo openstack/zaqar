@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from falcon import testing
+from falcon import testing as ftest
 
 import marconi
-from marconi.tests import util
-from marconi.tests.util import faulty_storage
+from marconi import tests as testing
+from marconi.tests import faulty_storage
 
 
-class TestBase(util.TestBase):
+class TestBase(testing.TestBase):
 
     config_filename = None
 
@@ -35,7 +35,7 @@ class TestBase(util.TestBase):
         boot = marconi.Bootstrap(conf_file)
 
         self.app = boot.transport.app
-        self.srmock = testing.StartResponseMock()
+        self.srmock = ftest.StartResponseMock()
 
     def simulate_request(self, path, project_id=None, **kwargs):
         """Simulate a request.
@@ -55,7 +55,7 @@ class TestBase(util.TestBase):
             headers['X-Project-ID'] = project_id
             kwargs['headers'] = headers
 
-        return self.app(testing.create_environ(path=path, **kwargs),
+        return self.app(ftest.create_environ(path=path, **kwargs),
                         self.srmock)
 
     def simulate_get(self, *args, **kwargs):

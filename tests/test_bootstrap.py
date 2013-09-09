@@ -18,7 +18,7 @@ from oslo.config import cfg
 import marconi
 from marconi.common import exceptions
 from marconi.storage import sqlite
-from marconi.tests.util import base
+from marconi.tests import base
 from marconi.transport import wsgi
 
 

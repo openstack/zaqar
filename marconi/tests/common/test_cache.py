@@ -16,7 +16,7 @@
 
 import traceback
 
-from marconi.tests import util as testing
+from marconi import tests as testing
 
 
 class TestCache(testing.TestBase):
