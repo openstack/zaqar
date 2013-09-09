@@ -14,12 +14,14 @@
 # limitations under the License.
 
 import collections
+import datetime
 import functools
 import random
 import re
 
 from bson import errors as berrors
 from bson import objectid
+from bson import tz_util
 from pymongo import errors
 
 from marconi.common import exceptions
@@ -29,6 +31,10 @@ from marconi.storage import exceptions as storage_exceptions
 
 
 DUP_MARKER_REGEX = re.compile(r'\$queue_marker.*?:\s(\d+)')
+
+# BSON ObjectId gives TZ-aware datetime, so we generate a
+# TZ-aware UNIX epoch for convenience.
+EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)
 
 LOG = logging.getLogger(__name__)
 
@@ -118,7 +124,7 @@ def to_oid(obj):
     """Creates a new ObjectId based on the input.
 
     Returns None when TypeError or berrors.InvalidId
-    is raised by the ObjectID class.
+    is raised by the ObjectId class.
 
     :param obj: Anything that can be passed as an
         input to `objectid.ObjectId`
@@ -129,12 +135,12 @@ def to_oid(obj):
         return None
 
 
-def oid_utc(oid):
-    """Converts an ObjectId to a non-tz-aware datetime.
+def oid_ts(oid):
+    """Converts an ObjectId to a UNIX timestamp.
     :raises: TypeError if oid isn't an ObjectId
     """
     try:
-        return timeutils.normalize_time(oid.generation_time)
+        return timeutils.delta_seconds(EPOCH, oid.generation_time)
     except AttributeError:
         raise TypeError(u'Expected ObjectId and got %s' % type(oid))
 
@@ -142,13 +148,13 @@ def oid_utc(oid):
 def stat_message(message, now):
     """Creates a stat document from the given message, relative to now."""
     oid = message['_id']
-    created = oid_utc(oid)
-    age = timeutils.delta_seconds(created, now)
+    created = oid_ts(oid)
+    age = created - now
 
     return {
         'id': str(oid),
         'age': int(age),
-        'created': timeutils.isotime(created),
+        'created': timeutils.iso8601_from_timestamp(created),
     }
 
 

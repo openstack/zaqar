@@ -21,8 +21,6 @@ Field Mappings:
     letter of their long name.
 """
 
-import datetime
-
 from bson import objectid
 
 from marconi.common import config
@@ -64,7 +62,7 @@ class ClaimController(storage.ClaimBase):
         msg_ctrl = self.driver.message_controller
 
         # Base query, always check expire time
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
         cid = utils.to_oid(claim_id)
         if cid is None:
             raise exceptions.ClaimDoesNotExist(queue, project, claim_id)
@@ -87,8 +85,8 @@ class ClaimController(storage.ClaimBase):
                                              project=project))
             claim = next(msgs)
 
-            update_time = claim['e'] - datetime.timedelta(seconds=claim['t'])
-            age = timeutils.delta_seconds(update_time, now)
+            update_time = claim['e'] - claim['t']
+            age = update_time - now
 
             claim = {
                 'age': int(age),
@@ -128,12 +126,10 @@ class ClaimController(storage.ClaimBase):
         grace = metadata['grace']
         oid = objectid.ObjectId()
 
-        now = timeutils.utcnow()
-        ttl_delta = datetime.timedelta(seconds=ttl)
-        claim_expires = now + ttl_delta
+        now = timeutils.utcnow_ts()
+        claim_expires = now + ttl
 
-        grace_delta = datetime.timedelta(seconds=grace)
-        message_expires = claim_expires + grace_delta
+        message_expires = claim_expires + grace
         message_ttl = ttl + grace
 
         meta = {
@@ -153,7 +149,7 @@ class ClaimController(storage.ClaimBase):
         if len(ids) == 0:
             return (None, messages)
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         # Set claim field for messages in ids
         updated = msg_ctrl._col.update({'_id': {'$in': ids},
@@ -196,11 +192,9 @@ class ClaimController(storage.ClaimBase):
         if cid is None:
             raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
         ttl = int(metadata.get('ttl', 60))
-        ttl_delta = datetime.timedelta(seconds=ttl)
-
-        expires = now + ttl_delta
+        expires = now + ttl
 
         msg_ctrl = self.driver.message_controller
         claimed = msg_ctrl.claimed(queue, cid, expires=now,

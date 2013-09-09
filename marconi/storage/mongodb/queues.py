@@ -164,7 +164,7 @@ class QueueController(storage.QueueBase):
         except exceptions.QueueIsEmpty:
             pass
         else:
-            now = timeutils.utcnow()
+            now = timeutils.utcnow_ts()
             message_stats['oldest'] = utils.stat_message(oldest, now)
             message_stats['newest'] = utils.stat_message(newest, now)
 

@@ -21,7 +21,6 @@ Field Mappings:
     letter of their long name.
 """
 
-import datetime
 import time
 
 import pymongo.errors
@@ -208,7 +207,7 @@ class MessageController(storage.MessageBase):
             'p': project,
             'q': queue_name,
             'k': {'$ne': head['k']},
-            'e': {'$lte': timeutils.utcnow()},
+            'e': {'$lte': timeutils.utcnow_ts()},
         }
 
         self._col.remove(query, w=0)
@@ -261,7 +260,7 @@ class MessageController(storage.MessageBase):
             raise ValueError(u'sort must be either 1 (ascending) '
                              u'or -1 (descending)')
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         query = {
             # Messages must belong to this
@@ -312,12 +311,12 @@ class MessageController(storage.MessageBase):
             'q': queue_name,
 
             # The messages can not be expired
-            'e': {'$gt': timeutils.utcnow()},
+            'e': {'$gt': timeutils.utcnow_ts()},
         }
 
         if not include_claimed:
             # Exclude messages that are claimed
-            query['c.e'] = {'$lte': timeutils.utcnow()}
+            query['c.e'] = {'$lte': timeutils.utcnow_ts()}
 
         return self._col.find(query).hint(COUNTING_INDEX_FIELDS).count()
 
@@ -362,7 +361,7 @@ class MessageController(storage.MessageBase):
             'p': project,
             'q': queue_name,
             'c.id': claim_id,
-            'c.e': {'$gt': expires or timeutils.utcnow()},
+            'c.e': {'$gt': expires or timeutils.utcnow_ts()},
         }
 
         # NOTE(kgriffs): Claimed messages bust be queried from
@@ -375,7 +374,7 @@ class MessageController(storage.MessageBase):
         if limit is not None:
             msgs = msgs.limit(limit)
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         def denormalizer(msg):
             doc = _basic_message(msg, now)
@@ -395,7 +394,7 @@ class MessageController(storage.MessageBase):
 
         # NOTE(cpp-cabrera):  unclaim by setting the claim ID to None
         # and the claim expiration time to now
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
         self._col.update({'p': project, 'q': queue_name, 'c.id': cid},
                          {'$set': {'c': {'id': None, 'e': now}}},
                          upsert=False, multi=True)
@@ -443,7 +442,7 @@ class MessageController(storage.MessageBase):
 
         marker_id = {}
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         def denormalizer(msg):
             marker_id['next'] = msg['k']
@@ -464,7 +463,7 @@ class MessageController(storage.MessageBase):
             raise exceptions.MessageDoesNotExist(message_id, queue_name,
                                                  project)
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         query = {
             '_id': mid,
@@ -487,7 +486,7 @@ class MessageController(storage.MessageBase):
         if not message_ids:
             return iter([])
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         # Base query, always check expire time
         query = {
@@ -508,7 +507,7 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def post(self, queue_name, messages, client_uuid, project=None):
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
 
         if not self._queue_controller.exists(queue_name, project):
             raise exceptions.QueueDoesNotExist(queue_name, project)
@@ -521,7 +520,7 @@ class MessageController(storage.MessageBase):
                 't': message['ttl'],
                 'q': queue_name,
                 'p': project,
-                'e': now + datetime.timedelta(seconds=message['ttl']),
+                'e': now + message['ttl'],
                 'u': client_uuid,
                 'c': {'id': None, 'e': now},
                 'b': message['body'] if 'body' in message else {},
@@ -647,7 +646,7 @@ class MessageController(storage.MessageBase):
         if cid is None:
             return
 
-        now = timeutils.utcnow()
+        now = timeutils.utcnow_ts()
         query['e'] = {'$gt': now}
         message = self._col.find_one(query)
 
@@ -681,7 +680,7 @@ class MessageController(storage.MessageBase):
 
 def _basic_message(msg, now):
     oid = msg['_id']
-    age = timeutils.delta_seconds(utils.oid_utc(oid), now)
+    age = utils.oid_ts(oid) - now
 
     return {
         'id': str(oid),
