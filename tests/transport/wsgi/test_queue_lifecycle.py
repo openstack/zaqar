@@ -122,9 +122,9 @@ class QueueLifecycleBaseTest(base.TestBase):
     def test_too_much_metadata(self):
         self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
-        doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
-        padding_len = self.wsgi_cfg.metadata_max_length - (len(doc) - 2) + 1
-        doc = doc % ('x' * padding_len)
+        doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
+        padding_len = self.wsgi_cfg.metadata_max_length - (len(doc) - 10) + 1
+        doc = doc.format(pad='x' * padding_len)
 
         self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
@@ -132,9 +132,9 @@ class QueueLifecycleBaseTest(base.TestBase):
     def test_way_too_much_metadata(self):
         self.simulate_put('/v1/queues/fizbat', '7e55e1a7e')
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
-        doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
+        doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
         padding_len = self.wsgi_cfg.metadata_max_length * 100
-        doc = doc % ('x' * padding_len)
+        doc = doc.format(pad='x' * padding_len)
 
         self.simulate_put('/v1/queues/fizbat/metadata', '7e55e1a7e', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
@@ -144,9 +144,9 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
         # Set
-        doc = '{"messages": {"ttl": 600}, "padding": "%s"}'
+        doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
         padding_len = self.wsgi_cfg.metadata_max_length - (len(doc) - 2)
-        doc = doc % ('x' * padding_len)
+        doc = doc.format(pad='x' * padding_len)
         self.simulate_put('/v1/queues/fizbat/metadata', '480924', body=doc)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 

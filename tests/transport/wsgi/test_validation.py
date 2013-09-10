@@ -51,12 +51,13 @@ class ValidationTest(base.TestBase):
         # Too long
         metadata_size_uplimit = 64
 
-        doc_tmpl = '{"Dragon Torc":"%s"}'
-        doc_tmpl_ws = '{ "Dragon Torc" : "%s" }'  # with whitespace
-        envelop_length = len(doc_tmpl % '')
+        doc_tmpl = '{{"Dragon Torc":"{0}"}}'
+        doc_tmpl_ws = '{{ "Dragon Torc" : "{0}" }}'  # with whitespace
+        envelop_length = len(doc_tmpl.format(''))
 
         for tmpl in doc_tmpl, doc_tmpl_ws:
-            doc = tmpl % ('0' * (metadata_size_uplimit - envelop_length + 1))
+            gen = '0' * (metadata_size_uplimit - envelop_length + 1)
+            doc = tmpl.format(gen)
             self.simulate_put(self.queue_path + '/metadata',
                               self.project_id,
                               body=doc)

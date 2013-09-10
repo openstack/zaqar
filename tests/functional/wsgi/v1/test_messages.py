@@ -29,10 +29,10 @@ class TestMessages(base.FunctionalTestBase):
         super(TestMessages, self).setUp()
 
         self.queue = uuid.uuid1()
-        self.queue_url = ("%(url)s/%(version)s/queues/%(queue)s" %
-                          {'url': self.cfg.marconi.url,
-                           'version': self.cfg.marconi.version,
-                           'queue': self.queue})
+        self.queue_url = ("{url}/{version}/queues/{queue}".format(
+                          url=self.cfg.marconi.url,
+                          version=self.cfg.marconi.version,
+                          queue=self.queue))
 
         self.client.put(self.queue_url)
 

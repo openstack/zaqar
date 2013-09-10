@@ -193,8 +193,10 @@ class MongodbMessageTests(base.MessageControllerTest):
         messages_per_queue = gc_threshold
         nogc_messages_per_queue = gc_threshold - 1
 
-        projects = ['gc-test-project-%s' % i for i in range(num_projects)]
-        queue_names = ['gc-test-%s' % i for i in range(num_queues)]
+        projects = ['gc-test-project-{0}'.format(i)
+                    for i in range(num_projects)]
+
+        queue_names = ['gc-test-{0}'.format(i) for i in range(num_queues)]
         client_uuid = 'b623c53c-cf75-11e2-84e1-a1187188419e'
         messages = [{'ttl': 0, 'body': str(i)}
                     for i in range(messages_per_queue)]

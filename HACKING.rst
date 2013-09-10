@@ -62,8 +62,8 @@ Example::
 
           if width == 0 and height == 0 and (color == 'red' or
                                              emphasis is None):
-              raise ValueError("I don't think so -- values are %s, %s" %
-                               (width, height))
+              raise ValueError("I don't think so -- values are {0}, {1}".format(
+                               width, height))
 
           msg = ('this is a very long string that goes on and on and on and'
                  'on and on and on...')
@@ -232,7 +232,7 @@ template string then do the replacement.
 
 Example::
 
-    msg = _("Missing parameter: %s") % ("flavor",)
+    msg = _("Missing parameter: {0}").format("flavor",)
     LOG.error(msg)
 
 If you have multiple variables to place in the string, use keyword parameters.
@@ -240,8 +240,8 @@ This helps our translators reorder parameters when needed.
 
 Example::
 
-    msg = _("The server with id %(s_id)s has no key %(m_key)s")
-    LOG.error(msg % {"s_id": "1234", "m_key": "imageId"})
+    msg = _("The server with id {s_id} has no key {m_key}")
+    LOG.error(msg.format(s_id=1234", m_key=imageId"))
 
 
 Creating Unit Tests

@@ -28,8 +28,8 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     def setUp(self):
         super(TestInsertQueue, self).setUp()
-        self.base_url = '%s/%s' % (self.cfg.marconi.url,
-                                   self.cfg.marconi.version)
+        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+                                         self.cfg.marconi.version)
 
         self.headers_response_empty = set(['location'])
         self.client.set_base_url(self.base_url)
@@ -138,8 +138,8 @@ class TestQueueMetaData(base.FunctionalTestBase):
     def setUp(self):
         super(TestQueueMetaData, self).setUp()
 
-        self.base_url = '%s/%s' % (self.cfg.marconi.url,
-                                   self.cfg.marconi.version)
+        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+                                         self.cfg.marconi.version)
 
         self.queue_url = self.base_url + '/queues/{0}'.format(uuid.uuid1())
         self.client.put(self.queue_url)
@@ -187,8 +187,8 @@ class TestQueueMisc(base.FunctionalTestBase):
     def setUp(self):
         super(TestQueueMisc, self).setUp()
 
-        self.base_url = '%s/%s' % (self.cfg.marconi.url,
-                                   self.cfg.marconi.version)
+        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+                                         self.cfg.marconi.version)
 
         self.client.set_base_url(self.base_url)
 

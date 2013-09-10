@@ -36,8 +36,9 @@ class ControllerBaseTest(testing.TestBase):
             self.skipTest('No driver class specified')
 
         if not issubclass(self.controller_class, self.controller_base_class):
-            self.skipTest('%s is not an instance of %s. Tests not supported' %
-                          (self.controller_class, self.controller_base_class))
+            self.skipTest('{0} is not an instance of {1}. '
+                          'Tests not supported'.format(
+                          self.controller_class, self.controller_base_class))
 
         self.driver = self.driver_class()
         self.controller = self.controller_class(self.driver)
@@ -570,7 +571,7 @@ def _insert_fixtures(controller, queue_name, project=None,
             yield {
                 'ttl': ttl,
                 'body': {
-                    'event': 'Event number %s' % n
+                    'event': 'Event number {0}'.format(n)
                 }}
 
     controller.post(queue_name, messages(),
