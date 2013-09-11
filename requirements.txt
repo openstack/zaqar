@@ -14,5 +14,5 @@ WebOb
 stevedore>=0.9
 
 
--f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
-oslo.config>=1.2.0a3
+-f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a4.tar.gz#egg=oslo.config-1.2.0a4
+oslo.config>=1.2.0a4
