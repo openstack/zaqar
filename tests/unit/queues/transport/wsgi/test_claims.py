@@ -16,8 +16,6 @@
 import json
 import os
 
-import pymongo
-
 import ddt
 import falcon
 from testtools import matchers
@@ -236,13 +234,20 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
     def setUp(self):
         if not os.environ.get('MONGODB_TEST_LIVE'):
             self.skipTest('No MongoDB instance running')
+
         super(ClaimsMongoDBTests, self).setUp()
 
         self.cfg = config.namespace('drivers:storage:mongodb').from_options()
 
     def tearDown(self):
-        conn = pymongo.MongoClient(self.cfg.uri)
-        conn.drop_database(self.cfg.database)
+        storage = self.boot.storage
+        connection = storage.connection
+
+        connection.drop_database(storage.queues_database)
+
+        for db in storage.message_databases:
+            connection.drop_database(db)
+
         super(ClaimsMongoDBTests, self).tearDown()
 
 

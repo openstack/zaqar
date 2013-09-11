@@ -86,8 +86,11 @@ class MongodbDriverTest(testing.TestBase):
 
     def test_db_instance(self):
         driver = mongodb.Driver()
-        db = driver.db
-        self.assertEquals(db.name, mongodb_options.CFG.database)
+
+        databases = driver.message_databases + [driver.queues_database]
+        for db in databases:
+            self.assertThat(db.name, matchers.StartsWith(
+                mongodb_options.CFG.database))
 
 
 class MongodbQueueTests(base.QueueControllerTest):
@@ -103,13 +106,16 @@ class MongodbQueueTests(base.QueueControllerTest):
         self.load_conf('wsgi_mongodb.conf')
 
     def tearDown(self):
-        self.controller._col.drop()
-        self.message_controller._col.drop()
+        self.controller._collection.drop()
+
+        for collection in self.message_controller._collections:
+            collection.drop()
+
         super(MongodbQueueTests, self).tearDown()
 
     def test_indexes(self):
-        col = self.controller._col
-        indexes = col.index_information()
+        collection = self.controller._collection
+        indexes = collection.index_information()
         self.assertIn('p_q_1', indexes)
 
     def test_messages_purged(self):
@@ -119,8 +125,8 @@ class MongodbQueueTests(base.QueueControllerTest):
                                      [{'ttl': 60}],
                                      1234)
         self.controller.delete(queue_name)
-        col = self.message_controller._col
-        self.assertEqual(col.find({'q': queue_name}).count(), 0)
+        for collection in self.message_controller._collections:
+            self.assertEqual(collection.find({'q': queue_name}).count(), 0)
 
     def test_raises_connection_error(self):
 
@@ -148,17 +154,19 @@ class MongodbMessageTests(base.MessageControllerTest):
         self.load_conf('wsgi_mongodb.conf')
 
     def tearDown(self):
-        self.controller._col.drop()
-        self.queue_controller._col.drop()
+        self.queue_controller._collection.drop()
+        for collection in self.controller._collections:
+            collection.drop()
+
         super(MongodbMessageTests, self).tearDown()
 
     def test_indexes(self):
-        col = self.controller._col
-        indexes = col.index_information()
-        self.assertIn('active', indexes)
-        self.assertIn('claimed', indexes)
-        self.assertIn('queue_marker', indexes)
-        self.assertIn('counting', indexes)
+        for collection in self.controller._collections:
+            indexes = collection.index_information()
+            self.assertIn('active', indexes)
+            self.assertIn('claimed', indexes)
+            self.assertIn('queue_marker', indexes)
+            self.assertIn('counting', indexes)
 
     def test_message_counter(self):
         queue_name = 'marker_test'
@@ -270,6 +278,7 @@ class MongodbMessageTests(base.MessageControllerTest):
 
         interaction = self.controller.list(queue_name, client_uuid=uuid,
                                            echo=True)
+
         actual_messages = list(next(interaction))
         self.assertEquals(len(actual_messages), len(expected_messages))
         actual_ids = [m['body']['backupId'] for m in actual_messages]
@@ -303,8 +312,10 @@ class MongodbClaimTests(base.ClaimControllerTest):
         self.load_conf('wsgi_mongodb.conf')
 
     def tearDown(self):
-        self.message_controller._col.drop()
-        self.queue_controller._col.drop()
+        for collection in self.message_controller._collections:
+            collection.drop()
+
+        self.queue_controller._collection.drop()
         super(MongodbClaimTests, self).tearDown()
 
     def test_claim_doesnt_exist(self):

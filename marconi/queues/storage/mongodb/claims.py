@@ -165,21 +165,23 @@ class ClaimController(storage.ClaimBase):
         # to the current time when the message is
         # posted. There is no need to check whether
         # 'c' exists or 'c.id' is None.
-        updated = msg_ctrl._col.update({'_id': {'$in': ids},
-                                        'c.e': {'$lte': now}},
-                                       {'$set': {'c': meta}}, upsert=False,
-                                       multi=True)['n']
+        collection = msg_ctrl._collection(queue, project)
+        updated = collection.update({'_id': {'$in': ids},
+                                     'c.e': {'$lte': now}},
+                                    {'$set': {'c': meta}},
+                                    upsert=False,
+                                    multi=True)['n']
 
         # NOTE(flaper87): Dirty hack!
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
         new_values = {'e': message_expiration, 't': message_ttl}
-        msg_ctrl._col.update({'p_q': utils.scope_queue_name(queue, project),
-                              'e': {'$lt': message_expiration},
-                              'c.id': oid},
-                             {'$set': new_values},
-                             upsert=False, multi=True)
+        collection.update({'p_q': utils.scope_queue_name(queue, project),
+                           'e': {'$lt': message_expiration},
+                           'c.id': oid},
+                          {'$set': new_values},
+                          upsert=False, multi=True)
 
         if updated != 0:
             # NOTE(kgriffs): This extra step is necessary because
@@ -218,21 +220,22 @@ class ClaimController(storage.ClaimBase):
         }
 
         # TODO(kgriffs): Create methods for these so we don't interact
-        # with msg_ctrl._col directly (loose coupling)?
+        # with the messages collection directly (loose coupling)
         scope = utils.scope_queue_name(queue, project)
-        msg_ctrl._col.update({'p_q': scope, 'c.id': cid},
-                             {'$set': {'c': meta}},
-                             upsert=False, multi=True)
+        collection = msg_ctrl._collection(queue, project)
+        collection.update({'p_q': scope, 'c.id': cid},
+                          {'$set': {'c': meta}},
+                          upsert=False, multi=True)
 
         # NOTE(flaper87): Dirty hack!
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        msg_ctrl._col.update({'p_q': scope,
-                              'e': {'$lt': expires},
-                              'c.id': cid},
-                             {'$set': {'e': expires, 't': ttl}},
-                             upsert=False, multi=True)
+        collection.update({'p_q': scope,
+                           'e': {'$lt': expires},
+                           'c.id': cid},
+                          {'$set': {'e': expires, 't': ttl}},
+                          upsert=False, multi=True)
 
     @utils.raises_conn_error
     def delete(self, queue, claim_id, project=None):

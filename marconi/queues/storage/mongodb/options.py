@@ -18,14 +18,21 @@
 
 from marconi.common import config
 
+
+# TODO(kgriffs): Expose documentation to oslo.config
 OPTIONS = {
     # Connection string
     'uri': None,
 
-    # Database name
-    # TODO(kgriffs): Consider local sharding across DBs to mitigate
-    # per-DB locking latency.
+    # Database name. Will be postfixed with partition identifiers.
     'database': 'marconi',
+
+    # Number of databases across which to partition message data,
+    # in order to reduce writer lock %. DO NOT change this setting
+    # after initial deployment. It MUST remain static. Also,
+    # you should not need a large number of partitions to improve
+    # performance, esp. if deploying MongoDB on SSD storage.
+    'partitions': 2,
 
     # Maximum number of times to retry a failed operation. Currently
     # only used for retrying a message post.
@@ -39,9 +46,6 @@ OPTIONS = {
     # order to decrease probability that parallel requests will retry
     # at the same instant.
     'max_retry_jitter': 0.005,
-
-    # Frequency of message garbage collections, in seconds
-    'gc_interval': 5 * 60,
 }
 
 CFG = config.namespace('drivers:storage:mongodb').from_options(**OPTIONS)

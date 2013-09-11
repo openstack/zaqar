@@ -61,22 +61,22 @@ class QueueController(storage.QueueBase):
     def __init__(self, *args, **kwargs):
         super(QueueController, self).__init__(*args, **kwargs)
 
-        self._col = self.driver.db['queues']
+        self._collection = self.driver.queues_database.queues
 
         # NOTE(flaper87): This creates a unique index for
         # project and name. Using project as the prefix
         # allows for querying by project and project+name.
         # This is also useful for retrieving the queues list for
         # a specific project, for example. Order matters!
-        self._col.ensure_index([('p_q', 1)], unique=True)
+        self._collection.ensure_index([('p_q', 1)], unique=True)
 
     #-----------------------------------------------------------------------
     # Helpers
     #-----------------------------------------------------------------------
 
     def _get(self, name, project=None, fields={'m': 1, '_id': 0}):
-        queue = self._col.find_one(_get_scoped_query(name, project),
-                                   fields=fields)
+        queue = self._collection.find_one(_get_scoped_query(name, project),
+                                          fields=fields)
         if queue is None:
             raise exceptions.QueueDoesNotExist(name, project)
 
@@ -104,8 +104,8 @@ class QueueController(storage.QueueBase):
         :returns: current message counter as an integer
         """
 
-        doc = self._col.find_one(_get_scoped_query(name, project),
-                                 fields={'c.v': 1, '_id': 0})
+        doc = self._collection.find_one(_get_scoped_query(name, project),
+                                        fields={'c.v': 1, '_id': 0})
 
         if doc is None:
             raise exceptions.QueueDoesNotExist(name, project)
@@ -138,8 +138,9 @@ class QueueController(storage.QueueBase):
 
         while True:
             try:
-                doc = self._col.find_and_modify(query, update, new=True,
-                                                fields={'c.v': 1, '_id': 0})
+                doc = self._collection.find_and_modify(
+                    query, update, new=True, fields={'c.v': 1, '_id': 0})
+
                 break
             except pymongo.errors.AutoReconnect as ex:
                 LOG.exception(ex)
@@ -195,7 +196,7 @@ class QueueController(storage.QueueBase):
         if detailed:
             fields['m'] = 1
 
-        cursor = self._col.find(query, fields=fields)
+        cursor = self._collection.find(query, fields=fields)
         cursor = cursor.limit(limit).sort('p_q')
         marker_name = {}
 
@@ -222,8 +223,9 @@ class QueueController(storage.QueueBase):
             # "modified at" timestamp.
             counter = {'v': 1, 't': 0}
 
-            self._col.insert({'p_q': utils.scope_queue_name(name, project),
-                              'm': {}, 'c': counter})
+            scoped_name = utils.scope_queue_name(name, project)
+            self._collection.insert({'p_q': scoped_name, 'm': {},
+                                     'c': counter})
 
         except pymongo.errors.DuplicateKeyError:
             return False
@@ -232,14 +234,15 @@ class QueueController(storage.QueueBase):
 
     @utils.raises_conn_error
     def exists(self, name, project=None):
-        return self._col.find_one(_get_scoped_query(name, project)) is not None
+        query = _get_scoped_query(name, project)
+        return self._collection.find_one(query) is not None
 
     @utils.raises_conn_error
     def set_metadata(self, name, metadata, project=None):
-        rst = self._col.update(_get_scoped_query(name, project),
-                               {'$set': {'m': metadata}},
-                               multi=False,
-                               manipulate=False)
+        rst = self._collection.update(_get_scoped_query(name, project),
+                                      {'$set': {'m': metadata}},
+                                      multi=False,
+                                      manipulate=False)
 
         if not rst['updatedExisting']:
             raise exceptions.QueueDoesNotExist(name, project)
@@ -247,7 +250,7 @@ class QueueController(storage.QueueBase):
     @utils.raises_conn_error
     def delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
-        self._col.remove(_get_scoped_query(name, project))
+        self._collection.remove(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
     def stats(self, name, project=None):
