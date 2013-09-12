@@ -12,7 +12,7 @@ python-memcached
 simplejson
 WebOb
 stevedore>=0.9
-
+six>=1.4.1  # NOTE(cpp-cabrera): needed for add_metaclass
 
 -f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a4.tar.gz#egg=oslo.config-1.2.0a4
 oslo.config>=1.2.0a4
