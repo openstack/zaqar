@@ -9,6 +9,7 @@ msgpack-python
 pymongo
 python-keystoneclient
 python-memcached
+redis
 simplejson
 WebOb
 stevedore>=0.9
