@@ -54,13 +54,18 @@ class FunctionalTestBase(testing.TestBase):
         self.mconf = self.load_conf(self.cfg.marconi.config).conf
         self.limits = self.mconf['limits:transport']
 
-        self.header = helpers.create_marconi_headers(self.cfg)
-        self.headers_response_with_body = set(['location',
-                                               'content-type'])
-
         # NOTE(flaper87): Create client
         # for this test unit.
         self.client = http.Client()
+        self.header = helpers.create_marconi_headers(self.cfg)
+
+        if self.cfg.auth.auth_on:
+            auth_token = helpers.get_keystone_token(self.cfg, self.client)
+            self.headers["X-Auth-Token"] = auth_token
+
+        self.headers_response_with_body = set(['location',
+                                               'content-type'])
+
         self.client.set_headers(self.header)
 
     @classmethod

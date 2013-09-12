@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import random
 import string
 import uuid
 
-from marconi.tests.functional import http
 
-
-def get_keystone_token(conf):
+def get_keystone_token(conf, client):
     """Gets Keystone Auth token."""
-    req_json = {
+    body = {
         'auth': {
             'passwordCredentials': {
                 'username': conf.auth.username,
@@ -35,14 +32,12 @@ def get_keystone_token(conf):
     header = {"Content-Type": "application/json",
               "Accept": "application/json"}
 
-    url = conf.auth.url
+    response = client.post(url=conf.auth.url,
+                           headers=header,
+                           data=body)
 
-    response = http.post(url=url, header=header, body=req_json)
-    response_body = json.loads(response.text)
-
-    auth_token = response_body['access']['token']['id']
-
-    return auth_token
+    response_body = response.json()
+    return response_body['access']['token']['id']
 
 
 def create_marconi_headers(conf):
@@ -54,10 +49,6 @@ def create_marconi_headers(conf):
                "X-Project-ID": conf.headers.project_id,
                "Client-ID": str(uuid.uuid1())
                }
-
-    if conf.auth.auth_on:
-        auth_token = get_keystone_token(conf)
-        headers["X-Auth-Token"] = auth_token
 
     return headers
 
