@@ -31,28 +31,29 @@ class Driver(storage.DriverBase):
     def __init__(self):
         # Lazy instantiation
         self._database = None
+        self._connection = None
+
+    def _connect(self):
+        if options.CFG.uri and 'replicaSet' in options.CFG.uri:
+            self._connection = pymongo.MongoReplicaSetClient(options.CFG.uri)
+        else:
+            self._connection = pymongo.MongoClient(options.CFG.uri)
 
     @property
     def db(self):
         """Property for lazy instantiation of mongodb's database."""
         if self._database is None:
-            if options.CFG.uri and 'replicaSet' in options.CFG.uri:
-                conn = pymongo.MongoReplicaSetClient(options.CFG.uri)
-            else:
-                conn = pymongo.MongoClient(options.CFG.uri)
-
-            self._database = conn[options.CFG.database]
+            self._database = self.connection[options.CFG.database]
 
         return self._database
 
-    def gc(self):
-        LOG.info(_(u'Performing garbage collection.'))
+    @property
+    def connection(self):
+        """Property for lazy instantiation of mongodb's client connection."""
+        if self._connection is None:
+            self._connect()
 
-        try:
-            self.message_controller.remove_expired()
-        except pymongo.errors.ConnectionFailure as ex:
-            # Better luck next time...
-            LOG.exception(ex)
+        return self._connection
 
     @property
     def gc_interval(self):

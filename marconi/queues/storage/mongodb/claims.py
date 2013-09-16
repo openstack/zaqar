@@ -21,6 +21,8 @@ Field Mappings:
     letter of their long name.
 """
 
+import datetime
+
 from bson import objectid
 
 from marconi.common import config
@@ -129,8 +131,9 @@ class ClaimController(storage.ClaimBase):
         now = timeutils.utcnow_ts()
         claim_expires = now + ttl
 
-        message_expires = claim_expires + grace
         message_ttl = ttl + grace
+        message_expiration = datetime.datetime.utcfromtimestamp(
+            claim_expires + grace)
 
         meta = {
             'id': oid,
@@ -171,10 +174,10 @@ class ClaimController(storage.ClaimBase):
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        new_values = {'e': message_expires, 't': message_ttl}
+        new_values = {'e': message_expiration, 't': message_ttl}
         msg_ctrl._col.update({'q': queue,
                               'p': project,
-                              'e': {'$lt': message_expires},
+                              'e': {'$lt': message_expiration},
                               'c.id': oid},
                              {'$set': new_values},
                              upsert=False, multi=True)

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import time
 
 from testtools import matchers
@@ -43,6 +44,10 @@ class ControllerBaseTest(testing.TestBase):
         self.driver = self.driver_class()
         self.controller = self.controller_class(self.driver)
 
+    def tearDown(self):
+        timeutils.clear_time_override()
+        super(ControllerBaseTest, self).tearDown()
+
 
 class QueueControllerTest(ControllerBaseTest):
     """Queue Controller base tests."""
@@ -52,10 +57,6 @@ class QueueControllerTest(ControllerBaseTest):
         super(QueueControllerTest, self).setUp()
         self.message_controller = self.driver.message_controller
         self.claim_controller = self.driver.claim_controller
-
-    def tearDown(self):
-        timeutils.clear_time_override()
-        super(QueueControllerTest, self).tearDown()
 
     def test_list(self):
         num = 15
@@ -132,20 +133,17 @@ class QueueControllerTest(ControllerBaseTest):
 
         self.assertNotEqual(oldest, newest)
 
-        # NOTE(kgriffs): Ensure "now" is different enough
+        # NOTE(kgriffs): Ensure is different enough
         # for the next comparison to work.
-        timeutils.set_time_override()
-        timeutils.advance_time_seconds(60)
+        soon = timeutils.utcnow() + datetime.timedelta(seconds=60)
 
         for message_stat in (oldest, newest):
             created_iso = message_stat['created']
             created = timeutils.parse_isotime(created_iso)
             self.assertThat(timeutils.normalize_time(created),
-                            matchers.LessThan(timeutils.utcnow()))
+                            matchers.LessThan(soon))
 
             self.assertIn('id', message_stat)
-
-        timeutils.clear_time_override()
 
         self.assertThat(oldest['created'],
                         matchers.LessThan(newest['created']))
@@ -187,6 +185,9 @@ class MessageControllerTest(ControllerBaseTest):
     """
     queue_name = 'test_queue'
     controller_base_class = storage.MessageBase
+
+    # Specifies how often expired messages are purged, in sec.
+    gc_interval = 0
 
     def setUp(self):
         super(MessageControllerTest, self).setUp()
@@ -342,7 +343,8 @@ class MessageControllerTest(ControllerBaseTest):
                                    project=self.project,
                                    claim=cid)
 
-    def test_expired_message(self):
+    @testing.is_slow(condition=lambda self: self.gc_interval != 0)
+    def test_expired_messages(self):
         messages = [{'body': 3.14, 'ttl': 0}]
 
         [msgid] = self.controller.post(self.queue_name, messages,
@@ -353,14 +355,16 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid='my_uuid')
 
+        time.sleep(self.gc_interval)
+
         with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get(self.queue_name, msgid,
                                 project=self.project)
 
-        countof = self.queue_controller.stats(self.queue_name,
-                                              project=self.project)
+        stats = self.queue_controller.stats(self.queue_name,
+                                            project=self.project)
 
-        self.assertEquals(countof['messages']['free'], 0)
+        self.assertEquals(stats['messages']['free'], 0)
 
     def test_bad_id(self):
         # NOTE(cpp-cabrera): A malformed ID should result in an empty

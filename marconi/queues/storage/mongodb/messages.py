@@ -21,6 +21,7 @@ Field Mappings:
     letter of their long name.
 """
 
+import datetime
 import time
 
 import pymongo.errors
@@ -39,8 +40,24 @@ CFG = config.namespace('limits:storage').from_options(
     default_message_paging=10,
 )
 
+# NOTE(kgriffs): This value, in seconds, should be at least less than the
+# minimum allowed TTL for messages (60 seconds). Make it 45 to allow for
+# some fudge room.
+MAX_RETRY_POST_DURATION = 45
+
+# NOTE(kgriffs): It is extremely unlikely that all workers would somehow hang
+# for more than 5 seconds, without a single one being able to succeed in
+# posting some messages and incrementing the counter, thus allowing the other
+# producers to succeed in turn.
+COUNTER_STALL_WINDOW = 5
+
 # For hinting
 ID_INDEX_FIELDS = [('_id', 1)]
+
+# For removing expired messages
+TTL_INDEX_FIELDS = [
+    ('e', 1)
+]
 
 # NOTE(kgriffs): This index is for listing messages, usually
 # filtering out claimed ones.
@@ -67,11 +84,11 @@ CLAIMED_INDEX_FIELDS = [
     ('c.e', 1),
 ]
 
-# Index used for _next_marker() and also to ensure uniqueness.
+# Index used to ensure uniqueness.
 MARKER_INDEX_FIELDS = [
     ('p', 1),
     ('q', 1),
-    ('k', -1)
+    ('k', 1)
 ]
 
 
@@ -94,7 +111,7 @@ class MessageController(storage.MessageBase):
 
         # Cache for convenience and performance (avoids extra lookups and
         # recreating the range for every request.)
-        self._queue_controller = self.driver.queue_controller
+        self._queue_ctrl = self.driver.queue_controller
         self._db = self.driver.db
         self._retry_range = range(options.CFG.max_attempts)
 
@@ -110,6 +127,11 @@ class MessageController(storage.MessageBase):
 
     def _ensure_indexes(self):
         """Ensures that all indexes are created."""
+
+        self._col.ensure_index(TTL_INDEX_FIELDS,
+                               name='ttl',
+                               expireAfterSeconds=0,
+                               background=True)
 
         self._col.ensure_index(ACTIVE_INDEX_FIELDS,
                                name='active',
@@ -135,36 +157,6 @@ class MessageController(storage.MessageBase):
                                unique=True,
                                background=True)
 
-    def _next_marker(self, queue_name, project=None):
-        """Retrieves the next message marker for a given queue.
-
-        This helper is used to generate monotonic pagination
-        markers that are saved as part of the message
-        document. Simply taking the max of the current message
-        markers works, since Marconi always leaves the most recent
-        message in the queue (new queues always return 1).
-
-        Note 1: Markers are scoped per-queue and so are *not*
-            globally unique or globally ordered.
-
-        Note 2: If two or more requests to this method are made
-            in parallel, this method will return the same
-            marker. This is done intentionally so that the caller
-            can detect a parallel message post, allowing it to
-            mitigate race conditions between producer and
-            observer clients.
-
-        :param queue_name: Determines the scope for the marker
-        :param project: Queue's project
-        :returns: next message marker as an integer
-        """
-
-        document = self._col.find_one({'p': project, 'q': queue_name},
-                                      sort=[('k', -1)],
-                                      fields={'k': 1, '_id': 0})
-
-        return 1 if document is None else (document['k'] + 1)
-
     def _backoff_sleep(self, attempt):
         """Sleep between retries using a jitter algorithm.
 
@@ -179,38 +171,6 @@ class MessageController(storage.MessageBase):
                                           options.CFG.max_retry_jitter)
 
         time.sleep(seconds)
-
-    def _remove_expired(self, queue_name, project):
-        """Removes all expired messages except for the most recent
-        in each queue.
-
-        This method is used in lieu of mongo's TTL index since we
-        must always leave at least one message in the queue for
-        calculating the next marker.
-
-        :param queue_name: name for the queue from which to remove
-            expired messages
-        :param project: Project queue_name belong's too
-        """
-
-        # Get the message with the highest marker, and leave
-        # it in the queue
-        head = self._col.find_one({'p': project, 'q': queue_name},
-                                  sort=[('k', -1)], fields={'k': 1})
-
-        if head is None:
-            # Assume queue was just deleted via a parallel request
-            LOG.debug(_(u'Queue %s is empty or missing.') % queue_name)
-            return
-
-        query = {
-            'p': project,
-            'q': queue_name,
-            'k': {'$ne': head['k']},
-            'e': {'$lte': timeutils.utcnow_ts()},
-        }
-
-        self._col.remove(query, w=0)
 
     def _purge_queue(self, queue_name, project=None):
         """Removes all messages from the queue.
@@ -267,9 +227,6 @@ class MessageController(storage.MessageBase):
             # queue and project
             'p': project,
             'q': queue_name,
-
-            # The messages cannot be expired
-            'e': {'$gt': now},
         }
 
         if not echo:
@@ -309,9 +266,6 @@ class MessageController(storage.MessageBase):
             # Messages must belong to this queue
             'p': project,
             'q': queue_name,
-
-            # The messages can not be expired
-            'e': {'$gt': timeutils.utcnow_ts()},
         }
 
         if not include_claimed:
@@ -399,31 +353,6 @@ class MessageController(storage.MessageBase):
                          {'$set': {'c': {'id': None, 'e': now}}},
                          upsert=False, multi=True)
 
-    def remove_expired(self):
-        """Removes all expired messages except for the most recent
-        in each queue.
-
-        This method is used in lieu of mongo's TTL index since we
-        must always leave at least one message in the queue for
-        calculating the next marker.
-
-        Warning: This method is expensive, since it must perform
-        separate queries for each queue, due to the requirement that
-        it must leave at least one message in each queue, and it
-        is impractical to send a huge list of _id's to filter out
-        in a single call. That being said, this is somewhat mitigated
-        by the fact that remove() is run on each queue seperately,
-        thereby reducing the duration that any given lock is held.
-        """
-
-        # TODO(kgriffs): Optimize first by batching the .removes, second
-        # by setting a 'last inserted ID' in the queue collection for
-        # each message inserted (TBD, may cause problematic side-effect),
-        # and third, by changing the marker algorithm such that it no
-        # longer depends on retaining the last message in the queue!
-        for name, project in self._queue_controller._get_np():
-            self._remove_expired(name, project)
-
     def list(self, queue_name, project=None, marker=None, limit=None,
              echo=False, client_uuid=None, include_claimed=False):
 
@@ -469,7 +398,6 @@ class MessageController(storage.MessageBase):
             '_id': mid,
             'p': project,
             'q': queue_name,
-            'e': {'$gt': now}
         }
 
         message = list(self._col.find(query).limit(1).hint(ID_INDEX_FIELDS))
@@ -493,7 +421,6 @@ class MessageController(storage.MessageBase):
             '_id': {'$in': message_ids},
             'p': project,
             'q': queue_name,
-            'e': {'$gt': now},
         }
 
         # NOTE(flaper87): Should this query
@@ -508,19 +435,20 @@ class MessageController(storage.MessageBase):
     @utils.raises_conn_error
     def post(self, queue_name, messages, client_uuid, project=None):
         now = timeutils.utcnow_ts()
+        now_dt = datetime.datetime.utcfromtimestamp(now)
 
-        if not self._queue_controller.exists(queue_name, project):
+        if not self._queue_ctrl.exists(queue_name, project):
             raise exceptions.QueueDoesNotExist(queue_name, project)
 
         # Set the next basis marker for the first attempt.
-        next_marker = self._next_marker(queue_name, project)
+        next_marker = self._queue_ctrl._get_counter(queue_name, project)
 
         prepared_messages = [
             {
                 't': message['ttl'],
                 'q': queue_name,
                 'p': project,
-                'e': now + message['ttl'],
+                'e': now_dt + datetime.timedelta(seconds=message['ttl']),
                 'u': client_uuid,
                 'c': {'id': None, 'e': now},
                 'b': message['body'] if 'body' in message else {},
@@ -530,37 +458,46 @@ class MessageController(storage.MessageBase):
             for index, message in enumerate(messages)
         ]
 
-        # Results are aggregated across all attempts
-        # NOTE(kgriffs): Using lazy instantiation...
-        aggregated_results = None
-
         # Use a retry range for sanity, although we expect
         # to rarely, if ever, reach the maximum number of
         # retries.
+        #
+        # NOTE(kgriffs): With the default configuration (100 ms
+        # max sleep, 1000 max attempts), the max stall time
+        # before the operation is abandoned is 49.95 seconds.
         for attempt in self._retry_range:
             try:
                 ids = self._col.insert(prepared_messages)
-
-                # NOTE(kgriffs): Only use aggregated results if we must,
-                # which saves some cycles on the happy path.
-                if aggregated_results:
-                    aggregated_results.extend(ids)
-                    ids = aggregated_results
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
                     message = _(u'%(attempts)d attempt(s) required to post '
                                 u'%(num_messages)d messages to queue '
-                                u'%(queue_name)s and project %(project)s')
-                    message %= dict(queue_name=queue_name, attempts=attempt+1,
+                                u'"%(queue)s" under project %(project)s')
+                    message %= dict(queue=queue_name, attempts=attempt+1,
                                     num_messages=len(ids), project=project)
 
                     LOG.debug(message)
+
+                # Update the counter in preparation for the next batch
+                #
+                # NOTE(kgriffs): Due to the unique index on the messages
+                # collection, competing inserts will fail as a whole,
+                # and keep retrying until the counter is incremented
+                # such that the competing marker's will start at a
+                # unique number, 1 past the max of the messages just
+                # inserted above.
+                self._queue_ctrl._inc_counter(queue_name, project,
+                                              amount=len(ids))
 
                 return map(str, ids)
 
             except pymongo.errors.DuplicateKeyError as ex:
                 # Try again with the remaining messages
+
+                # TODO(kgriffs): Record stats of how often retries happen,
+                # and how many attempts, on average, are required to insert
+                # messages.
 
                 # NOTE(kgriffs): This can be used in conjunction with the
                 # log line, above, that is emitted after all messages have
@@ -570,42 +507,75 @@ class MessageController(storage.MessageBase):
                 # TODO(kgriffs): Add transaction ID to help match up loglines
                 if attempt == 0:
                     message = _(u'First attempt failed while '
-                                u'adding messages to queue %s '
-                                u'for current request') % queue_name
+                                u'adding messages to queue '
+                                u'"%(queue)s" under project %(project)s')
+                    message %= dict(queue=queue_name, project=project)
 
                     LOG.debug(message)
 
-                # TODO(kgriffs): Record stats of how often retries happen,
-                # and how many attempts, on average, are required to insert
-                # messages.
+                # NOTE(kgriffs): Never retry past the point that competing
+                # messages expire and are GC'd, since once they are gone,
+                # the unique index no longer protects us from getting out
+                # of order, which could cause an observer to miss this
+                # message. The code below provides a sanity-check to ensure
+                # this situation can not happen.
+                elapsed = timeutils.utcnow_ts() - now
+                if elapsed > MAX_RETRY_POST_DURATION:
+                    message = _(u'Exceeded maximum retry duration for queue '
+                                u'"%(queue)s" under project %(project)s')
+                    message %= dict(queue=queue_name, project=project)
 
-                # NOTE(kgriffs): Slice prepared_messages. We have to interpret
-                # the error message to get the duplicate key, which gives
-                # us the marker that had a dupe, allowing us to extrapolate
-                # how many messages were consumed, since markers are monotonic
-                # counters.
-                duplicate_marker = utils.dup_marker_from_error(str(ex))
-                failed_index = duplicate_marker - next_marker
-
-                # Put the successful one's IDs into aggregated_results.
-                succeeded_messages = prepared_messages[:failed_index]
-                succeeded_ids = [msg['_id'] for msg in succeeded_messages]
-
-                # Results are aggregated across all attempts
-                if aggregated_results is None:
-                    aggregated_results = succeeded_ids
-                else:
-                    aggregated_results.extend(succeeded_ids)
-
-                # Retry the remaining messages with a new sequence
-                # of markers.
-                prepared_messages = prepared_messages[failed_index:]
-                next_marker = self._next_marker(queue_name, project)
-                for index, message in enumerate(prepared_messages):
-                    message['k'] = next_marker + index
+                    LOG.warning(message)
+                    break
 
                 # Chill out for a moment to mitigate thrashing/thundering
                 self._backoff_sleep(attempt)
+
+                # NOTE(kgriffs): Perhaps we failed because a worker crashed
+                # after inserting messages, but before incrementing the
+                # counter; that would cause all future requests to stall,
+                # since they would keep getting the same base marker that is
+                # conflicting with existing messages, until the messages that
+                # "won" expire, at which time we would end up reusing markers,
+                # and that could make some messages invisible to an observer
+                # that is querying with a marker that is large than the ones
+                # being reused.
+                #
+                # To mitigate this, we apply a heuristic to determine whether
+                # a counter has stalled. We attempt to increment the counter,
+                # but only if it hasn't been updated for a few seconds, which
+                # should mean that nobody is left to update it!
+                #
+                # Note that we increment one at a time until the logjam is
+                # broken, since we don't know how many messages were posted
+                # by the worker before it crashed.
+                next_marker = self._queue_ctrl._inc_counter(
+                    queue_name, project, window=COUNTER_STALL_WINDOW)
+
+                # Retry the entire batch with a new sequence of markers.
+                #
+                # NOTE(kgriffs): Due to the unique index, and how
+                # MongoDB works with batch requests, we will never
+                # end up with a partially-successful update. The first
+                # document in the batch will fail to insert, and the
+                # remainder of the documents will not be attempted.
+                if next_marker is None:
+                    # NOTE(kgriffs): Usually we will end up here, since
+                    # it should be rare that a counter becomes stalled.
+                    next_marker = self._queue_ctrl._get_counter(
+                        queue_name, project)
+                else:
+                    message = (u'Detected a stalled message counter for '
+                               u'queue "%(queue)s" under project %(project)s. '
+                               u'The counter was incremented to %(value)d.')
+                    message %= dict(queue=queue_name,
+                                    project=project,
+                                    value=next_marker)
+
+                    LOG.warning(message)
+
+                for index, message in enumerate(prepared_messages):
+                    message['k'] = next_marker + index
 
             except Exception as ex:
                 # TODO(kgriffs): Query the DB to get the last marker that
@@ -616,13 +586,13 @@ class MessageController(storage.MessageBase):
                 raise
 
         message = _(u'Hit maximum number of attempts (%(max)s) for queue '
-                    u'%(id)s in project %(project)s')
-        message %= dict(max=options.CFG.max_attempts, id=queue_name,
+                    u'"%(queue)s" under project %(project)s')
+        message %= dict(max=options.CFG.max_attempts, queue=queue_name,
                         project=project)
 
         LOG.warning(message)
 
-        succeeded_ids = map(str, aggregated_results)
+        succeeded_ids = []
         raise exceptions.MessageConflict(queue_name, project, succeeded_ids)
 
     @utils.raises_conn_error
@@ -647,7 +617,6 @@ class MessageController(storage.MessageBase):
             return
 
         now = timeutils.utcnow_ts()
-        query['e'] = {'$gt': now}
         message = self._col.find_one(query)
 
         if message is None:

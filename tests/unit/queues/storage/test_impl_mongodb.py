@@ -21,8 +21,9 @@ from pymongo import cursor
 import pymongo.errors
 from testtools import matchers
 
-from marconi.common import exceptions
+from marconi.openstack.common import timeutils
 from marconi.queues import storage
+from marconi.queues.storage import exceptions
 from marconi.queues.storage import mongodb
 from marconi.queues.storage.mongodb import controllers
 from marconi.queues.storage.mongodb import options as mongodb_options
@@ -32,28 +33,6 @@ from marconi.tests.queues.storage import base
 
 
 class MongodbUtilsTest(testing.TestBase):
-
-    def test_dup_marker_from_error(self):
-        error_message = ('E11000 duplicate key error index: '
-                         'marconi.messages.$queue_marker  dup key: '
-                         '{ : "queue", : "project", : 3 }')
-
-        marker = utils.dup_marker_from_error(error_message)
-        self.assertEquals(marker, 3)
-
-        error_message = ('E11000 duplicate key error index: '
-                         'marconi.messages.$x_y  dup key: '
-                         '{ : "queue", : "project", : 3 }')
-
-        self.assertRaises(exceptions.PatternNotFound,
-                          utils.dup_marker_from_error, error_message)
-
-        error_message = ('E11000 duplicate key error index: '
-                         'marconi.messages.$queue_marker  dup key: '
-                         '{ : ObjectId("51adff46b100eb85d8a93a2d") }')
-
-        self.assertRaises(exceptions.PatternNotFound,
-                          utils.dup_marker_from_error, error_message)
 
     def test_calculate_backoff(self):
         sec = utils.calculate_backoff(0, 10, 2, 0)
@@ -111,6 +90,7 @@ class MongodbQueueTests(base.QueueControllerTest):
 
     def tearDown(self):
         self.controller._col.drop()
+        self.message_controller._col.drop()
         super(MongodbQueueTests, self).tearDown()
 
     def test_indexes(self):
@@ -143,6 +123,9 @@ class MongodbMessageTests(base.MessageControllerTest):
     driver_class = mongodb.Driver
     controller_class = controllers.MessageController
 
+    # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
+    gc_interval = 60
+
     def setUp(self):
         if not os.environ.get('MONGODB_TEST_LIVE'):
             self.skipTest('No MongoDB instance running')
@@ -152,10 +135,8 @@ class MongodbMessageTests(base.MessageControllerTest):
 
     def tearDown(self):
         self.controller._col.drop()
+        self.queue_controller._col.drop()
         super(MongodbMessageTests, self).tearDown()
-
-    def _count_expired(self, queue, project=None):
-        return self.controller._count_expired(queue, project)
 
     def test_indexes(self):
         col = self.controller._col
@@ -165,58 +146,121 @@ class MongodbMessageTests(base.MessageControllerTest):
         self.assertIn('queue_marker', indexes)
         self.assertIn('counting', indexes)
 
-    def test_next_marker(self):
+    def test_message_counter(self):
         queue_name = 'marker_test'
         iterations = 10
 
         self.queue_controller.create(queue_name)
 
-        seed_marker1 = self.controller._next_marker(queue_name)
+        seed_marker1 = self.queue_controller._get_counter(queue_name)
         self.assertEqual(seed_marker1, 1, 'First marker is 1')
 
         for i in range(iterations):
             self.controller.post(queue_name, [{'ttl': 60}], 'uuid')
-            marker1 = self.controller._next_marker(queue_name)
-            marker2 = self.controller._next_marker(queue_name)
-            marker3 = self.controller._next_marker(queue_name)
+
+            marker1 = self.queue_controller._get_counter(queue_name)
+            marker2 = self.queue_controller._get_counter(queue_name)
+            marker3 = self.queue_controller._get_counter(queue_name)
+
             self.assertEqual(marker1, marker2)
             self.assertEqual(marker2, marker3)
-
             self.assertEqual(marker1, i + 2)
 
-    def test_remove_expired(self):
-        num_projects = 10
-        num_queues = 10
-        messages_per_queue = 100
+        new_value = self.queue_controller._inc_counter(queue_name)
+        self.assertIsNotNone(new_value)
 
-        projects = ['gc-test-project-{0}'.format(i)
-                    for i in range(num_projects)]
+        value_before = self.queue_controller._get_counter(queue_name)
+        new_value = self.queue_controller._inc_counter(queue_name)
+        self.assertIsNotNone(new_value)
+        value_after = self.queue_controller._get_counter(queue_name)
+        self.assertEquals(value_after, value_before + 1)
 
-        queue_names = ['gc-test-{0}'.format(i) for i in range(num_queues)]
-        client_uuid = 'b623c53c-cf75-11e2-84e1-a1187188419e'
-        messages = [{'ttl': 0, 'body': str(i)}
-                    for i in range(messages_per_queue)]
+        value_before = value_after
+        new_value = self.queue_controller._inc_counter(queue_name, amount=7)
+        value_after = self.queue_controller._get_counter(queue_name)
+        self.assertEquals(value_after, value_before + 7)
+        self.assertEquals(value_after, new_value)
 
-        for project in projects:
-            for queue in queue_names:
-                self.queue_controller.create(queue, project)
-                self.controller.post(queue, messages, client_uuid, project)
+        reference_value = value_after
 
-        self.controller.remove_expired()
+        unchanged = self.queue_controller._inc_counter(queue_name, window=10)
+        self.assertIsNone(unchanged)
 
-        for project in projects:
-            for queue in queue_names:
-                query = {'q': queue, 'p': project}
+        # TODO(kgriffs): Pass utcnow to work around bug
+        # in set_time_override until we merge the fix in
+        # from upstream.
+        timeutils.set_time_override(timeutils.utcnow())
 
-                cursor = self.driver.db.messages.find(query)
-                count = cursor.count()
+        timeutils.advance_time_seconds(10)
+        changed = self.queue_controller._inc_counter(queue_name, window=5)
+        self.assertEquals(changed, reference_value + 1)
+        timeutils.clear_time_override()
 
-                # Expect that the most recent message for each queue
-                # will not be removed.
-                self.assertEquals(count, 1)
+    def test_race_condition_on_post(self):
+        queue_name = 'marker_test'
+        self.queue_controller.create(queue_name)
 
-                message = next(cursor)
-                self.assertEquals(message['k'], messages_per_queue)
+        expected_messages = [
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'd378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'e378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+        ]
+
+        uuid = '97b64000-2526-11e3-b088-d85c1300734c'
+
+        # NOTE(kgriffs): Patch _inc_counter so it is a noop, so that
+        # the second time we post, we will get a collision. This simulates
+        # what happens when we have parallel requests and the "winning"
+        # requests hasn't gotten around to calling _inc_counter before the
+        # "losing" request attempts to insert it's batch of messages.
+        with mock.patch.object(mongodb.queues.QueueController,
+                               '_inc_counter', autospec=True) as method:
+
+            method.return_value = 2
+            messages = expected_messages[:1]
+            created = list(self.controller.post(queue_name, messages, uuid))
+            self.assertEquals(len(created), 1)
+
+            # Force infinite retries
+            if testing.RUN_SLOW_TESTS:
+                method.return_value = None
+
+                with testing.expect(exceptions.MessageConflict):
+                    self.controller.post(queue_name, messages, uuid)
+
+        created = list(self.controller.post(queue_name,
+                                            expected_messages[1:],
+                                            uuid))
+
+        self.assertEquals(len(created), 2)
+
+        expected_ids = [m['body']['backupId'] for m in expected_messages]
+
+        interaction = self.controller.list(queue_name, client_uuid=uuid,
+                                           echo=True)
+        actual_messages = list(next(interaction))
+        self.assertEquals(len(actual_messages), len(expected_messages))
+        actual_ids = [m['body']['backupId'] for m in actual_messages]
+
+        self.assertEquals(actual_ids, expected_ids)
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'
@@ -243,6 +287,11 @@ class MongodbClaimTests(base.ClaimControllerTest):
 
         super(MongodbClaimTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
+
+    def tearDown(self):
+        self.message_controller._col.drop()
+        self.queue_controller._col.drop()
+        super(MongodbClaimTests, self).tearDown()
 
     def test_claim_doesnt_exist(self):
         """Verifies that operations fail on expired/missing claims.

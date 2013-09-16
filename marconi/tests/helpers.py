@@ -14,9 +14,13 @@
 # limitations under the License.
 
 import contextlib
+import functools
+import os
 import uuid
 
 import six
+
+SKIP_SLOW_TESTS = os.environ.get('MARCONI_TEST_SLOW') is None
 
 
 @contextlib.contextmanager
@@ -120,3 +124,30 @@ def entries(controller, count):
 
     for p, q, _, _ in spec:
         controller.delete(p, q)
+
+
+def is_slow(condition=lambda self: True):
+    """Decorator to flag slow tests.
+
+    Slow tests will be skipped if MARCONI_TEST_SLOW is set, and
+    condition(self) returns True.
+
+    :param condition: Function that returns True IFF the test will be slow;
+        useful for child classes which may modify the behavior of a test
+        such that it may or may not be slow.
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self):
+            if SKIP_SLOW_TESTS and condition(self):
+                msg = ('Skipping slow test. Set MARCONI_TEST_SLOW '
+                       'to enable slow tests.')
+
+                self.skipTest(msg)
+
+            func(self)
+
+        return wrapper
+
+    return decorator

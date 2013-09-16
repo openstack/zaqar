@@ -17,44 +17,21 @@ import collections
 import datetime
 import functools
 import random
-import re
 
 from bson import errors as berrors
 from bson import objectid
 from bson import tz_util
 from pymongo import errors
 
-from marconi.common import exceptions
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import exceptions as storage_exceptions
-
-
-DUP_MARKER_REGEX = re.compile(r'\$queue_marker.*?:\s(\d+)')
 
 # BSON ObjectId gives TZ-aware datetime, so we generate a
 # TZ-aware UNIX epoch for convenience.
 EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)
 
 LOG = logging.getLogger(__name__)
-
-
-def dup_marker_from_error(error_message):
-    """Extracts the duplicate marker from a MongoDB error string.
-
-    :param error_message: raw error message string returned
-        by mongod on a duplicate key error.
-
-    :raises: marconi.common.exceptions.PatternNotFound
-    :returns: extracted marker as an integer
-    """
-    match = DUP_MARKER_REGEX.findall(error_message)
-    if not match:
-        description = (u'Error message could not be parsed: %s' %
-                       error_message)
-        raise exceptions.PatternNotFound(description)
-
-    return int(match[-1])
 
 
 def cached_gen(iterable):

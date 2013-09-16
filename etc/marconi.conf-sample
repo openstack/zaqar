@@ -8,7 +8,7 @@
 # Log to this file!
 log_file = /var/log/marconi/server.log
 
-;auth_strategy = 
+;auth_strategy =
 
 # ================= Syslog Options ============================
 
@@ -58,19 +58,6 @@ database = marconi
 # order to decrease probability that parallel requests will retry
 # at the same instant.
 ;max_retry_jitter = 0.005
-
-# Frequency of message garbage collections, in seconds
-;gc_interval = 300
-
-# Threshold of number of expired messages to reach in a given
-# queue, before performing the GC. Useful for reducing frequent
-# locks on the DB for non-busy queues, or for worker queues
-# which process jobs quickly enough to keep the number of in-
-# flight messages low.
-#
-# Note: The higher this number, the larger the memory-mapped DB
-# files will be.
-;gc_threshold = 1000
 
 [drivers:proxy:storage:mongodb]
 uri = mongodb://localhost:27017

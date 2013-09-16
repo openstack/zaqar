@@ -40,13 +40,20 @@ class QueueController(storage.QueueBase):
     """Implements queue resource operations using MongoDB.
 
     Queues:
-        Name         Field
-        ------------------
-        name        ->   n
-        project     ->   p
-        counter     ->   c
-        metadata    ->   m
 
+        Name          Field
+        -------------------
+        name         ->   n
+        project      ->   p
+        msg counter  ->   c
+        metadata     ->   m
+
+    Message Counter:
+
+        Name          Field
+        -------------------
+        value        ->   v
+        modified ts  ->   t
     """
 
     def __init__(self, *args, **kwargs):
@@ -75,6 +82,89 @@ class QueueController(storage.QueueBase):
         """Returns a generator producing a list of all queue (n, p)."""
         cursor = self._col.find({}, fields={'n': 1, 'p': 1})
         return ((doc['n'], doc['p']) for doc in cursor)
+
+    def _get_counter(self, name, project=None):
+        """Retrieves the current message counter value for a given queue.
+
+        This helper is used to generate monotonic pagination
+        markers that are saved as part of the message
+        document.
+
+        Note 1: Markers are scoped per-queue and so are *not*
+            globally unique or globally ordered.
+
+        Note 2: If two or more requests to this method are made
+            in parallel, this method will return the same counter
+            value. This is done intentionally so that the caller
+            can detect a parallel message post, allowing it to
+            mitigate race conditions between producer and
+            observer clients.
+
+        :param name: Name of the queue to which the counter is scoped
+        :param project: Queue's project
+        :returns: current message counter as an integer
+        """
+
+        doc = self._col.find_one({'p': project, 'n': name},
+                                 fields={'c.v': 1, '_id': 0})
+
+        if doc is None:
+            raise exceptions.QueueDoesNotExist(name, project)
+
+        return doc['c']['v']
+
+    def _inc_counter(self, name, project=None, amount=1, window=None):
+        """Increments the message counter and returns the new value.
+
+        :param name: Name of the queue to which the counter is scoped
+        :param project: Queue's project name
+        :param amount: (Default 1) Amount by which to increment the counter
+        :param window: (Default None) A time window, in seconds, that
+            must have elapsed since the counter was last updated, in
+            order to increment the counter.
+
+        :returns: Updated message counter value, or None if window
+            was specified, and the counter has already been updated
+            within the specified time period.
+
+        :raises: storage.exceptions.QueueDoesNotExist
+        """
+        now = timeutils.utcnow_ts()
+
+        update = {'$inc': {'c.v': amount}, '$set': {'c.t': now}}
+        query = {'p': project, 'n': name}
+        if window is not None:
+            threshold = now - window
+            query['c.t'] = {'$lt': threshold}
+
+        while True:
+            try:
+                doc = self._col.find_and_modify(query, update, new=True,
+                                                fields={'c.v': 1, '_id': 0})
+                break
+            except pymongo.errors.AutoReconnect as ex:
+                LOG.exception(ex)
+
+        if doc is None:
+            if window is None:
+                # NOTE(kgriffs): Since we did not filter by a time window,
+                # the queue should have been found and updated. Perhaps
+                # the queue has been deleted?
+                message = _(u'Failed to increment the message '
+                            u'counter for queue %(name)s and '
+                            u'project %(project)s')
+                message %= dict(name=name, project=project)
+
+                LOG.warning(message)
+
+                raise exceptions.QueueDoesNotExist(name, project)
+
+            # NOTE(kgriffs): Assume the queue existed, but the counter
+            # was recently updated, causing the range query on 'c.t' to
+            # exclude the record.
+            return None
+
+        return doc['c']['v']
 
     #-----------------------------------------------------------------------
     # Interface
@@ -116,7 +206,12 @@ class QueueController(storage.QueueBase):
     @utils.raises_conn_error
     def create(self, name, project=None):
         try:
-            self._col.insert({'p': project, 'n': name, 'm': {}, 'c': 1})
+            # NOTE(kgriffs): Start counting at 1, and assume the first
+            # message ever posted will succeed and set t to a UNIX
+            # "modified at" timestamp.
+            counter = {'v': 1, 't': 0}
+
+            self._col.insert({'p': project, 'n': name, 'm': {}, 'c': counter})
 
         except pymongo.errors.DuplicateKeyError:
             return False

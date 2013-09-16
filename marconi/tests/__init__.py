@@ -18,5 +18,9 @@
 from marconi.tests import base
 from marconi.tests import helpers
 
-TestBase = base.TestBase
+SKIP_SLOW_TESTS = helpers.SKIP_SLOW_TESTS
+RUN_SLOW_TESTS = not SKIP_SLOW_TESTS
+
 expect = helpers.expect
+is_slow = helpers.is_slow
+TestBase = base.TestBase
