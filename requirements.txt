@@ -3,7 +3,7 @@ pbr>=0.5.16,<0.6
 
 babel
 netaddr
-falcon>=0.1.6,<0.1.7
+falcon>=0.1.6,<0.1.8
 iso8601>=0.1.4
 msgpack-python
 pymongo
