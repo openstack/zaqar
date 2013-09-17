@@ -18,8 +18,8 @@ import time
 from testtools import matchers
 
 from marconi.openstack.common import timeutils
-from marconi import storage
-from marconi.storage import exceptions
+from marconi.queues import storage
+from marconi.queues.storage import exceptions
 from marconi import tests as testing
 
 

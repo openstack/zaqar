@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-from marconi import storage
+from marconi.queues import storage
 
 
 class Driver(storage.DriverBase):

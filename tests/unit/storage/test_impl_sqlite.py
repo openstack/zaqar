@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi import storage
-from marconi.storage import sqlite
-from marconi.storage.sqlite import controllers
+from marconi.queues import storage
+from marconi.queues.storage import sqlite
+from marconi.queues.storage.sqlite import controllers
 
 import base  # noqa
 

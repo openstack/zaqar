@@ -22,11 +22,11 @@ import pymongo.errors
 from testtools import matchers
 
 from marconi.common import exceptions
-from marconi import storage
-from marconi.storage import mongodb
-from marconi.storage.mongodb import controllers
-from marconi.storage.mongodb import options as mongodb_options
-from marconi.storage.mongodb import utils
+from marconi.queues import storage
+from marconi.queues.storage import mongodb
+from marconi.queues.storage.mongodb import controllers
+from marconi.queues.storage.mongodb import options as mongodb_options
+from marconi.queues.storage.mongodb import utils
 from marconi import tests as testing
 
 import base  # noqa  # noqa

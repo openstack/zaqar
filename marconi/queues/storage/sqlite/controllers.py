@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -10,21 +10,16 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied.
+#
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Import guard.  No module level import during the setup procedure.
-try:
-    if __MARCONI_SETUP__:  # NOQA
-        import sys as _sys
-        _sys.stderr.write('Running from marconi source directory.\n')
-        del _sys
-except NameError:
-    import gettext
-    gettext.install('marconi', unicode=1)
-    import marconi.queues.bootstrap
-    Bootstrap = marconi.queues.bootstrap.Bootstrap
+"""Exports SQLite driver controllers."""
 
-import marconi.version
+from marconi.queues.storage.sqlite import claims
+from marconi.queues.storage.sqlite import messages
+from marconi.queues.storage.sqlite import queues
 
-__version__ = marconi.version.version_info.cached_version_string()
+ClaimController = claims.ClaimController
+MessageController = messages.MessageController
+QueueController = queues.QueueController

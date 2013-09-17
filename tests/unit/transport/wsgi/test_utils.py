@@ -20,7 +20,7 @@ import falcon
 import json
 import testtools
 
-from marconi.transport.wsgi import utils
+from marconi.queues.transport.wsgi import utils
 
 
 class TestWSGIutils(testtools.TestCase):

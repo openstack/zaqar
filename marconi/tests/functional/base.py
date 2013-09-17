@@ -17,15 +17,15 @@
 import abc
 import multiprocessing
 
-from marconi import bootstrap
+from marconi.queues import bootstrap
+# NOTE(flaper87): This is necessary to register,
+# wsgi configs and won't be permanent. It'll be
+# refactored as part of the work for this blueprint
+from marconi.queues.transport import wsgi  # noqa
 from marconi import tests as testing
 from marconi.tests.functional import config
 from marconi.tests.functional import helpers
 from marconi.tests.functional import http
-# NOTE(flaper87): This is necessary to register,
-# wsgi configs and won't be permanent. It'll be
-# refactored as part of the work for this blueprint
-from marconi.transport import wsgi  # noqa
 
 
 class FunctionalTestBase(testing.TestBase):

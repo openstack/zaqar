@@ -15,11 +15,11 @@
 
 from oslo.config import cfg
 
-import marconi
 from marconi.common import exceptions
-from marconi.storage import sqlite
+import marconi.queues
+from marconi.queues.storage import sqlite
+from marconi.queues.transport import wsgi
 from marconi.tests import base
-from marconi.transport import wsgi
 
 
 class TestBootstrap(base.TestBase):

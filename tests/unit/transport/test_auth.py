@@ -17,8 +17,8 @@
 from oslo.config import cfg
 
 from marconi.common import config
+from marconi.queues.transport import auth
 from marconi import tests as testing
-from marconi.transport import auth
 
 
 class TestTransportAuth(testing.TestBase):

@@ -16,7 +16,7 @@
 
 from falcon import testing as ftest
 
-import marconi
+import marconi.queues
 from marconi import tests as testing
 from marconi.tests import faulty_storage
 
