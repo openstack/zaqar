@@ -15,8 +15,8 @@
 
 import sys
 
-from marconi import bootstrap
 from marconi.common import cli
+from marconi.queues import bootstrap
 
 
 @cli.runnable

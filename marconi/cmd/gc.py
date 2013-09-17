@@ -18,10 +18,10 @@ import random
 import sys
 import time
 
-from marconi import bootstrap
 from marconi.common import cli
 from marconi.common import config
 from marconi.openstack.common import log as logging
+from marconi.queues import bootstrap
 
 PROJECT_CFG = config.project('marconi')
 LOG = logging.getLogger(__name__)
