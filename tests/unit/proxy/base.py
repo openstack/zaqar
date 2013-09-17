@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import multiprocessing
 import os
+from wsgiref import simple_server
 
 from falcon import testing as ftest
 
@@ -32,3 +34,13 @@ class TestBase(base.TestBase):
 
         self.app = app.app
         self.srmock = ftest.StartResponseMock()
+
+
+def make_app_daemon(host, port, app):
+    httpd = simple_server.make_server(host, port, app)
+    process = multiprocessing.Process(target=httpd.serve_forever,
+                                      name='marconi_' + str(port))
+    process.daemon = True
+    process.start()
+
+    return process
