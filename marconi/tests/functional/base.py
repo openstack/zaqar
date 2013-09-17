@@ -61,7 +61,7 @@ class FunctionalTestBase(testing.TestBase):
 
         if self.cfg.auth.auth_on:
             auth_token = helpers.get_keystone_token(self.cfg, self.client)
-            self.headers["X-Auth-Token"] = auth_token
+            self.header["X-Auth-Token"] = auth_token
 
         self.headers_response_with_body = set(['location',
                                                'content-type'])
