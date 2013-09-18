@@ -119,7 +119,8 @@ class TestMessages(base.FunctionalTestBase):
         expected_msg_count = params.get('limit', 10)
 
         # Test Setup
-        doc = helpers.get_message_body(messagecount=20)
+        doc = helpers.get_message_body(messagecount=
+                                       self.limits.message_paging_uplimit)
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 

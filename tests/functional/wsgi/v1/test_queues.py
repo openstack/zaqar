@@ -39,6 +39,7 @@ class TestInsertQueue(base.FunctionalTestBase):
     def test_insert_queue(self, queue_name):
         """Create Queue."""
         self.url = self.base_url + '/queues/' + queue_name
+        self.addCleanup(self.client.delete, self.url)
 
         result = self.client.put(self.url)
         self.assertEqual(result.status_code, 201)
@@ -57,7 +58,9 @@ class TestInsertQueue(base.FunctionalTestBase):
     def test_insert_queue_invalid_name(self, queue_name):
         """Create Queue."""
         self.url = self.base_url + '/queues/' + queue_name
-        self.skipTest("Test fails, needs fix")
+        if queue_name == '汉字漢字':
+            self.skipTest("Test fails, needs fix: bug# 1208873")
+        self.addCleanup(self.client.delete, self.url)
 
         result = self.client.put(self.url)
         self.assertEqual(result.status_code, 400)
@@ -75,6 +78,7 @@ class TestInsertQueue(base.FunctionalTestBase):
         # depends on this attribute. Needs to
         # be fixed.
         self.url = self.base_url + '/queues/invalidauthtoken'
+        self.addCleanup(self.client.delete, self.url)
 
         if not self.cfg.auth.auth_on:
             self.skipTest("Auth is not on!")
@@ -82,7 +86,7 @@ class TestInsertQueue(base.FunctionalTestBase):
         header = copy.copy(self.header)
         header["X-Auth-Token"] = 'invalid'
 
-        result = self.client.put(self.url, header)
+        result = self.client.put(self.url, headers=header)
         self.assertEqual(result.status_code, 401)
 
     test_insert_queue_invalid_authtoken.tags = ['negative']
@@ -113,6 +117,7 @@ class TestInsertQueue(base.FunctionalTestBase):
         """Insert queue with a non-empty request body."""
         self.url = self.base_url + '/queues/hasmetadata'
         doc = {"queue": "Has Metadata"}
+        self.addCleanup(self.client.delete, self.url)
         result = self.client.put(self.url, data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -155,13 +160,14 @@ class TestQueueMetaData(base.FunctionalTestBase):
               )
     def test_insert_queue_metadata(self, doc):
         """Insert Queue with empty json."""
-        self.skipTest("Test fails, needs fix")
         result = self.client.put(data=doc)
         self.assertEqual(result.status_code, 204)
 
         result = self.client.get()
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), doc)
+
+        doc_decoded = dict((k.decode('utf-8'), v) for k, v in doc.iteritems())
+        self.assertEqual(result.json(), doc_decoded)
 
     test_insert_queue_metadata.tags = ['smoke', 'positive']
 
@@ -261,9 +267,8 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_get_queue_malformed_marker(self):
         """List queues with invalid marker."""
-        self.skipTest("Test fails, needs fix")
 
-        url = self.base_url + '/queues?marker=invalid'
+        url = self.base_url + '/queues?marker=zzz'
         result = self.client.get(url)
         self.assertEqual(result.status_code, 204)
 
