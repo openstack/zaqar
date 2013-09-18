@@ -39,14 +39,16 @@ CFG = config.namespace('limits:storage').from_options(
 class QueueController(storage.QueueBase):
     """Implements queue resource operations using MongoDB.
 
+    Queues are scoped by project, which is prefixed to the
+    queue name.
+
     Queues:
 
-        Name          Field
-        -------------------
-        name         ->   n
-        project      ->   p
-        msg counter  ->   c
-        metadata     ->   m
+        Name            Field
+        ---------------------
+        name         ->   p_q
+        msg counter  ->     c
+        metadata     ->     m
 
     Message Counter:
 
@@ -60,28 +62,25 @@ class QueueController(storage.QueueBase):
         super(QueueController, self).__init__(*args, **kwargs)
 
         self._col = self.driver.db['queues']
-        # NOTE(flaper87): This creates a unique compound index for
-        # project and name. Using project as the first field of the
-        # index allows for querying by project and project+name.
+
+        # NOTE(flaper87): This creates a unique index for
+        # project and name. Using project as the prefix
+        # allows for querying by project and project+name.
         # This is also useful for retrieving the queues list for
-        # as specific project, for example. Order Matters!
-        self._col.ensure_index([('p', 1), ('n', 1)], unique=True)
+        # a specific project, for example. Order matters!
+        self._col.ensure_index([('p_q', 1)], unique=True)
 
     #-----------------------------------------------------------------------
     # Helpers
     #-----------------------------------------------------------------------
 
     def _get(self, name, project=None, fields={'m': 1, '_id': 0}):
-        queue = self._col.find_one({'p': project, 'n': name}, fields=fields)
+        queue = self._col.find_one(_get_scoped_query(name, project),
+                                   fields=fields)
         if queue is None:
             raise exceptions.QueueDoesNotExist(name, project)
 
         return queue
-
-    def _get_np(self):
-        """Returns a generator producing a list of all queue (n, p)."""
-        cursor = self._col.find({}, fields={'n': 1, 'p': 1})
-        return ((doc['n'], doc['p']) for doc in cursor)
 
     def _get_counter(self, name, project=None):
         """Retrieves the current message counter value for a given queue.
@@ -105,7 +104,7 @@ class QueueController(storage.QueueBase):
         :returns: current message counter as an integer
         """
 
-        doc = self._col.find_one({'p': project, 'n': name},
+        doc = self._col.find_one(_get_scoped_query(name, project),
                                  fields={'c.v': 1, '_id': 0})
 
         if doc is None:
@@ -132,7 +131,7 @@ class QueueController(storage.QueueBase):
         now = timeutils.utcnow_ts()
 
         update = {'$inc': {'c.v': amount}, '$set': {'c.t': now}}
-        query = {'p': project, 'n': name}
+        query = _get_scoped_query(name, project)
         if window is not None:
             threshold = now - window
             query['c.t'] = {'$lt': threshold}
@@ -176,20 +175,32 @@ class QueueController(storage.QueueBase):
         if limit is None:
             limit = CFG.default_queue_paging
 
-        query = {'p': project}
-        if marker:
-            query['n'] = {'$gt': marker}
+        query = {}
+        scoped_name = utils.scope_queue_name(marker, project)
 
-        fields = {'n': 1, '_id': 0}
+        if not scoped_name.startswith('/'):
+            # NOTE(kgriffs): scoped queue, e.g., 'project-id/queue-name'
+            query['p_q'] = {'$gt': scoped_name}
+        elif scoped_name == '/':
+            # NOTE(kgriffs): list global queues, but exclude scoped ones
+            query['p_q'] = {'$regex': '^/'}
+        else:
+            # NOTE(kgriffs): unscoped queue, e.g., '/my-global-queue'
+            query['$and'] = [
+                {'p_q':  {'$regex': '^/'}},
+                {'p_q':  {'$gt': scoped_name}},
+            ]
+
+        fields = {'p_q': 1, '_id': 0}
         if detailed:
             fields['m'] = 1
 
         cursor = self._col.find(query, fields=fields)
-        cursor = cursor.limit(limit).sort('n')
+        cursor = cursor.limit(limit).sort('p_q')
         marker_name = {}
 
         def normalizer(record):
-            queue = {'name': record['n']}
+            queue = {'name': utils.descope_queue_name(record['p_q'])}
             marker_name['next'] = queue['name']
             if detailed:
                 queue['metadata'] = record['m']
@@ -211,7 +222,8 @@ class QueueController(storage.QueueBase):
             # "modified at" timestamp.
             counter = {'v': 1, 't': 0}
 
-            self._col.insert({'p': project, 'n': name, 'm': {}, 'c': counter})
+            self._col.insert({'p_q': utils.scope_queue_name(name, project),
+                              'm': {}, 'c': counter})
 
         except pymongo.errors.DuplicateKeyError:
             return False
@@ -220,11 +232,11 @@ class QueueController(storage.QueueBase):
 
     @utils.raises_conn_error
     def exists(self, name, project=None):
-        return self._col.find_one({'p': project, 'n': name}) is not None
+        return self._col.find_one(_get_scoped_query(name, project)) is not None
 
     @utils.raises_conn_error
     def set_metadata(self, name, metadata, project=None):
-        rst = self._col.update({'p': project, 'n': name},
+        rst = self._col.update(_get_scoped_query(name, project),
                                {'$set': {'m': metadata}},
                                multi=False,
                                manipulate=False)
@@ -235,7 +247,7 @@ class QueueController(storage.QueueBase):
     @utils.raises_conn_error
     def delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
-        self._col.remove({'p': project, 'n': name})
+        self._col.remove(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
     def stats(self, name, project=None):
@@ -264,3 +276,7 @@ class QueueController(storage.QueueBase):
             message_stats['newest'] = utils.stat_message(newest, now)
 
         return {'messages': message_stats}
+
+
+def _get_scoped_query(name, project):
+    return {'p_q': utils.scope_queue_name(name, project)}

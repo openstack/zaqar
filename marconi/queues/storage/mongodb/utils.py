@@ -135,6 +135,41 @@ def stat_message(message, now):
     }
 
 
+def normalize_none_str(string_or_none):
+    """Returns '' IFF given value is None, passthrough otherwise.
+
+    This function normalizes None to the empty string to facilitate
+    string concatenation when a variable could be None.
+    """
+    return '' if string_or_none is None else string_or_none
+
+
+def scope_queue_name(queue=None, project=None):
+    """Returns a scoped name for a queue based on project and queue.
+
+    If only the project name is specified, a scope signifying "all queues"
+    for that project is returned. If neither queue nor project are
+    specified, a scope for "all global queues" is returned, which
+    is to be interpreted as excluding queues scoped by project.
+
+    :returns: '{project}/{queue}' if project and queue are given,
+        '{project}/' if ONLY project is given, '/{queue}' if ONLY
+        queue is given, and '/' if neither are given.
+    """
+
+    # NOTE(kgriffs): Concatenation is faster than format, and
+    # put project first since it is guaranteed to be unique.
+    return normalize_none_str(project) + '/' + normalize_none_str(queue)
+
+
+def descope_queue_name(scoped_name):
+    """Returns the unscoped queue name, given a fully-scoped name."""
+
+    # NOTE(kgriffs): scoped_name can be either '/', '/global-queue-name',
+    # or 'project-id/queue-name'.
+    return scoped_name.partition('/')[2] or None
+
+
 def raises_conn_error(func):
     """Handles mongodb ConnectionFailure error
 

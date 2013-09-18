@@ -34,6 +34,20 @@ from marconi.tests.queues.storage import base
 
 class MongodbUtilsTest(testing.TestBase):
 
+    def test_scope_queue_name(self):
+        self.assertEquals(utils.scope_queue_name('my-q'), '/my-q')
+        self.assertEquals(utils.scope_queue_name('my-q', None), '/my-q')
+        self.assertEquals(utils.scope_queue_name('my-q', '123'), '123/my-q')
+
+        self.assertEquals(utils.scope_queue_name(None), '/')
+        self.assertEquals(utils.scope_queue_name(None, '123'), '123/')
+
+    def test_descope_queue_name(self):
+        self.assertEquals(utils.descope_queue_name('/'), None)
+        self.assertEquals(utils.descope_queue_name('/some-pig'), 'some-pig')
+        self.assertEquals(utils.descope_queue_name('radiant/some-pig'),
+                          'some-pig')
+
     def test_calculate_backoff(self):
         sec = utils.calculate_backoff(0, 10, 2, 0)
         self.assertEquals(sec, 0)
@@ -96,7 +110,7 @@ class MongodbQueueTests(base.QueueControllerTest):
     def test_indexes(self):
         col = self.controller._col
         indexes = col.index_information()
-        self.assertIn('p_1_n_1', indexes)
+        self.assertIn('p_q_1', indexes)
 
     def test_messages_purged(self):
         queue_name = 'test'

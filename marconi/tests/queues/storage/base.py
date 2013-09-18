@@ -16,6 +16,7 @@
 import datetime
 import time
 
+import ddt
 from testtools import matchers
 
 from marconi.openstack.common import timeutils
@@ -49,6 +50,7 @@ class ControllerBaseTest(testing.TestBase):
         super(ControllerBaseTest, self).tearDown()
 
 
+@ddt.ddt
 class QueueControllerTest(ControllerBaseTest):
     """Queue Controller base tests."""
     controller_base_class = storage.QueueBase
@@ -58,12 +60,19 @@ class QueueControllerTest(ControllerBaseTest):
         self.message_controller = self.driver.message_controller
         self.claim_controller = self.driver.claim_controller
 
-    def test_list(self):
+    @ddt.data(None, ControllerBaseTest.project)
+    def test_list(self, project):
+        # NOTE(kgriffs): Ensure we mix global and scoped queues
+        # in order to verify that queue records are exluded that
+        # are not at the same level.
+        project_alt = self.project if project is None else None
+
         num = 15
         for queue in xrange(num):
-            self.controller.create(queue, project=self.project)
+            self.controller.create(str(queue), project=project)
+            self.controller.create(str(queue), project=project_alt)
 
-        interaction = self.controller.list(project=self.project,
+        interaction = self.controller.list(project=project,
                                            detailed=True)
         queues = list(next(interaction))
 
@@ -72,7 +81,7 @@ class QueueControllerTest(ControllerBaseTest):
                                   'metadata' in queue, queues)), True)
         self.assertEquals(len(queues), 10)
 
-        interaction = self.controller.list(project=self.project,
+        interaction = self.controller.list(project=project,
                                            marker=next(interaction))
         queues = list(next(interaction))
 
@@ -82,18 +91,23 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertEquals(len(queues), 5)
 
     def test_queue_lifecycle(self):
-        # Test Queue Creation
+        # Test queue creation
         created = self.controller.create('test', project=self.project)
         self.assertTrue(created)
 
-        # Test Queue Existence
+        # Test queue existence
         self.assertTrue(self.controller.exists('test', project=self.project))
 
-        # Test Queue retrieval
+        # Test queue retrieval
+        interaction = self.controller.list(project=self.project)
+        queue = list(next(interaction))[0]
+        self.assertEquals(queue['name'], 'test')
+
+        # Test queue metadata retrieval
         metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata, {})
 
-        # Test Queue Update
+        # Test queue update
         created = self.controller.set_metadata('test', project=self.project,
                                                metadata=dict(meta='test_meta'))
 
@@ -107,7 +121,7 @@ class QueueControllerTest(ControllerBaseTest):
         metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
-        # Test Queue Statistic
+        # Test queue statistic
         _insert_fixtures(self.message_controller, 'test',
                          project=self.project, client_uuid='my_uuid',
                          num=6)
@@ -148,13 +162,13 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertThat(oldest['created'],
                         matchers.LessThan(newest['created']))
 
-        # Test Queue Deletion
+        # Test queue deletion
         self.controller.delete('test', project=self.project)
 
-        # Test Queue Existence
+        # Test queue existence
         self.assertFalse(self.controller.exists('test', project=self.project))
 
-        # Test DoesNotExist Exception
+        # Test DoesNotExist exception
         with testing.expect(storage.exceptions.DoesNotExist):
             self.controller.get_metadata('test', project=self.project)
 

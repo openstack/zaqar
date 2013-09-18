@@ -56,29 +56,26 @@ ID_INDEX_FIELDS = [('_id', 1)]
 
 # For removing expired messages
 TTL_INDEX_FIELDS = [
-    ('e', 1)
+    ('e', 1),
 ]
 
 # NOTE(kgriffs): This index is for listing messages, usually
 # filtering out claimed ones.
 ACTIVE_INDEX_FIELDS = [
-    ('p', 1),  # Project will to be unique, so put first
-    ('q', 1),  # May not be unique, since user names it
+    ('p_q', 1),  # Project will to be unique, so put first
     ('k', 1),  # Used for sorting and paging, must come before range queries
     ('c.e', 1),  # Used for filtering out claimed messages
 ]
 
 # For counting
 COUNTING_INDEX_FIELDS = [
-    ('p', 1),  # Project will to be unique, so put first
-    ('q', 1),  # May not be unique, since user names it
+    ('p_q', 1),  # Project will to be unique, so put first
     ('c.e', 1),  # Used for filtering out claimed messages
 ]
 
 # Index used for claims
 CLAIMED_INDEX_FIELDS = [
-    ('p', 1),
-    ('q', 1),
+    ('p_q', 1),
     ('c.id', 1),
     ('k', 1),
     ('c.e', 1),
@@ -86,24 +83,25 @@ CLAIMED_INDEX_FIELDS = [
 
 # Index used to ensure uniqueness.
 MARKER_INDEX_FIELDS = [
-    ('p', 1),
-    ('q', 1),
-    ('k', 1)
+    ('p_q', 1),
+    ('k', 1),
 ]
 
 
 class MessageController(storage.MessageBase):
     """Implements message resource operations using MongoDB.
 
+    Messages are scoped by project + queue.
+
     Messages:
         Name        Field
         -----------------
-        queue_name ->   q
-        expires    ->   e
-        ttl        ->   t
-        uuid       ->   u
-        claim      ->   c
-        marker     ->   k
+        scope    ->   p_q
+        expires  ->     e
+        ttl      ->     t
+        uuid     ->     u
+        claim    ->     c
+        marker   ->     k
     """
 
     def __init__(self, *args, **kwargs):
@@ -184,7 +182,8 @@ class MessageController(storage.MessageBase):
         :param queue_name: name of the queue to purge
         :param project: ID of the project to which the queue belongs
         """
-        self._col.remove({'p': project, 'q': queue_name}, w=0)
+        scope = utils.scope_queue_name(queue_name, project)
+        self._col.remove({'p_q': scope}, w=0)
 
     def _list(self, queue_name, project=None, marker=None,
               echo=False, client_uuid=None, fields=None,
@@ -225,8 +224,7 @@ class MessageController(storage.MessageBase):
         query = {
             # Messages must belong to this
             # queue and project
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         if not echo:
@@ -264,8 +262,7 @@ class MessageController(storage.MessageBase):
         """
         query = {
             # Messages must belong to this queue
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         if not include_claimed:
@@ -312,8 +309,7 @@ class MessageController(storage.MessageBase):
             claim_id = {'$ne': None}
 
         query = {
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
             'c.id': claim_id,
             'c.e': {'$gt': expires or timeutils.utcnow_ts()},
         }
@@ -349,7 +345,8 @@ class MessageController(storage.MessageBase):
         # NOTE(cpp-cabrera):  unclaim by setting the claim ID to None
         # and the claim expiration time to now
         now = timeutils.utcnow_ts()
-        self._col.update({'p': project, 'q': queue_name, 'c.id': cid},
+        scope = utils.scope_queue_name(queue_name, project)
+        self._col.update({'p_q': scope, 'c.id': cid},
                          {'$set': {'c': {'id': None, 'e': now}}},
                          upsert=False, multi=True)
 
@@ -396,8 +393,7 @@ class MessageController(storage.MessageBase):
 
         query = {
             '_id': mid,
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         message = list(self._col.find(query).limit(1).hint(ID_INDEX_FIELDS))
@@ -419,8 +415,7 @@ class MessageController(storage.MessageBase):
         # Base query, always check expire time
         query = {
             '_id': {'$in': message_ids},
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         # NOTE(flaper87): Should this query
@@ -446,8 +441,7 @@ class MessageController(storage.MessageBase):
         prepared_messages = [
             {
                 't': message['ttl'],
-                'q': queue_name,
-                'p': project,
+                'p_q': utils.scope_queue_name(queue_name, project),
                 'e': now_dt + datetime.timedelta(seconds=message['ttl']),
                 'u': client_uuid,
                 'c': {'id': None, 'e': now},
@@ -605,8 +599,7 @@ class MessageController(storage.MessageBase):
 
         query = {
             '_id': mid,
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         # NOTE(cpp-cabrera): return early - the user gaves us an
@@ -640,8 +633,7 @@ class MessageController(storage.MessageBase):
         message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
         query = {
             '_id': {'$in': message_ids},
-            'p': project,
-            'q': queue_name,
+            'p_q': utils.scope_queue_name(queue_name, project),
         }
 
         self._col.remove(query, w=0)

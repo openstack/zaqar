@@ -175,8 +175,7 @@ class ClaimController(storage.ClaimBase):
         # `expires` on messages that would
         # expire before claim.
         new_values = {'e': message_expiration, 't': message_ttl}
-        msg_ctrl._col.update({'q': queue,
-                              'p': project,
+        msg_ctrl._col.update({'p_q': utils.scope_queue_name(queue, project),
                               'e': {'$lt': message_expiration},
                               'c.id': oid},
                              {'$set': new_values},
@@ -218,7 +217,10 @@ class ClaimController(storage.ClaimBase):
             'e': expires,
         }
 
-        msg_ctrl._col.update({'q': queue, 'p': project, 'c.id': cid},
+        # TODO(kgriffs): Create methods for these so we don't interact
+        # with msg_ctrl._col directly (loose coupling)?
+        scope = utils.scope_queue_name(queue, project)
+        msg_ctrl._col.update({'p_q': scope, 'c.id': cid},
                              {'$set': {'c': meta}},
                              upsert=False, multi=True)
 
@@ -226,8 +228,7 @@ class ClaimController(storage.ClaimBase):
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        msg_ctrl._col.update({'q': queue,
-                              'p': project,
+        msg_ctrl._col.update({'p_q': scope,
                               'e': {'$lt': expires},
                               'c.id': cid},
                              {'$set': {'e': expires, 't': ttl}},
