@@ -104,7 +104,7 @@ Example::
 
   import marconi.common
   from marconi import test
-  import marconi.transport
+  import marconi.queues.transport
 
 
 More Import Examples
@@ -112,11 +112,11 @@ More Import Examples
 
 **INCORRECT** ::
 
-  import marconi.transport.wsgi as wsgi
+  import marconi.queues.transport.wsgi as wsgi
 
 **CORRECT** ::
 
-  from marconi.transport import wsgi
+  from marconi.queues.transport import wsgi
 
 Docstrings
 ----------
