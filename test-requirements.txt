@@ -1,22 +1,21 @@
+# Metrics and style
+hacking>=0.5.6,<0.8
+
 # Packaging
-mock
-distribute>=0.6.24
+mock>=1.0
 
 # Unit testing
-ddt
+ddt>=0.4.0
 discover
-fixtures
+fixtures>=0.3.14
 python-subunit
-testrepository
-testtools
+testrepository>=0.0.17
+testtools>=0.9.32
 
 # Functional Tests
-requests
+requests>=1.1
 
 # Test runner
 nose
 nose-exclude
-openstack.nose_plugin
-
-# Metrics and style
-hacking
+openstack.nose_plugin>=0.7
