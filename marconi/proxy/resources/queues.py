@@ -31,9 +31,8 @@ import collections
 import json
 
 import falcon
-import msgpack
-import requests
 
+from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
 from marconi.proxy.utils import node
@@ -43,15 +42,14 @@ class Listing(object):
     """Responsible for constructing a valid marconi queue listing
     from the content stored in the catalogue.
     """
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, catalogue_controller):
+        self._catalogue = catalogue_controller
 
+    #TODO(cpp-cabrera): consider revisiting this implementation
+    #                   to use concurrent requests + merge/sort
+    #                   for great impl./data DRYness
     def on_get(self, request, response):
         project = helpers.get_project(request)
-        key = 'qs.%s' % project
-        if not self.client.exists(key):
-            response.status = falcon.HTTP_204
-            return
 
         kwargs = {}
         request.get_param('marker', store=kwargs)
@@ -59,22 +57,19 @@ class Listing(object):
         request.get_param_as_bool('detailed', store=kwargs)
 
         resp = collections.defaultdict(list)
-        for q in sorted(self.client.lrange(key, 0, -1)):
-            queue = q.decode('utf8')
-            if queue < kwargs.get('marker', 0):
+        for q in self._catalogue.list(project):
+            queue = q['name']
+            if queue < kwargs.get('marker', ''):
                 continue
             entry = {
                 'href': request.path + '/' + queue,
                 'name': queue
             }
             if kwargs.get('detailed', None):
-                qkey = 'q.%s.%s' % (project, queue)
-                data = self.client.hget(qkey, 'm')
-                metadata = msgpack.loads(data)
-                entry['metadata'] = metadata
+                entry['metadata'] = queue['metadata']
             resp['queues'].append(entry)
             kwargs['marker'] = queue
-            if len(resp['queues']) == kwargs.get('limit', None):
+            if len(resp['queues']) == kwargs.get('limit', 0):
                 break
 
         if not resp:
@@ -91,59 +86,59 @@ class Listing(object):
 
 
 class Resource(object):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, partitions_controller, catalogue_controller):
+        self._partitions = partitions_controller
+        self._catalogue = catalogue_controller
 
-    def _make_key(self, request, queue):
-        project = helpers.get_project(request)
-        return 'q.%s.%s' % (project, queue)
+    def _rr(self, project, queue):
+        """Returns the next host to use for a request."""
+        partition = None
+        try:
+            partition = self._catalogue.get(project, queue)['partition']
+        except exceptions.EntryNotFound:
+            raise falcon.HTTPNotFound()
+
+        return self._partitions.select(partition)
 
     def on_get(self, request, response, queue):
-        key = self._make_key(request, queue)
-        if not self.client.exists(key):
-            raise falcon.HTTPNotFound()
+        project = helpers.get_project(request)
+        host = self._rr(project, queue)
+        resp = helpers.forward(host, request)
 
-        h, n = self.client.hmget(key, ['h', 'n'])
-        if not (h and n):
-            raise falcon.HTTPNotFound()
-
-        resp = helpers.forward(self.client, request, queue)
         response.set_headers(resp.headers)
         response.status = http.status(resp.status_code)
         response.body = resp.content
 
     def on_put(self, request, response, queue):
-        key = self._make_key(request, queue)
         project = helpers.get_project(request)
-        if self.client.exists(key):
+        if self._catalogue.exists(project, queue):
             response.status = falcon.HTTP_204
             return
 
-        partition = node.weighted_select(self.client)
-        host = node.round_robin(self.client, partition)
-        url = '{host}/v1/queues/{queue}'.format(host=host, queue=queue)
-        resp = requests.put(url, headers=request._headers)
+        partition = node.weighted_select(self._partitions.list())
+        if partition is None:
+            raise falcon.HTTPBadRequest(
+                "No partitions registered",
+                "Register partitions before continuing"
+            )
+        host = partition['hosts'][0]
+        resp = helpers.forward(host, request)
 
         # NOTE(cpp-cabrera): only catalogue a queue if a request is good
         if resp.ok:
-            self.client.hmset(key, {
-                'h': host,
-                'n': queue
-            })
-            self.client.rpush('qs.%s' % project, queue)
+            self._catalogue.insert(project, queue, partition['name'], host)
 
         response.status = http.status(resp.status_code)
         response.body = resp.content
 
     def on_delete(self, request, response, queue):
-        key = self._make_key(request, queue)
-
         project = helpers.get_project(request)
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
+        host = self._rr(project, queue)
+        resp = helpers.forward(host, request)
 
         # avoid deleting a queue if the request is bad
-        if not resp.ok:
-            self.client.hdel(key, queue)
-            self.client.lrem('qs.%s' % project, 1, queue)
+        if resp.ok:
+            self._catalogue.delete(project, queue)
+
+        response.set_headers(resp.headers)
+        response.status = http.status(resp.status_code)

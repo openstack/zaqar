@@ -12,10 +12,9 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""health: returns the health information for this proxy."""
-import falcon
+"""Memory Proxy Storage Driver for Marconi"""
 
+from marconi.proxy.storage.memory import driver
 
-class Resource(object):
-    def on_get(self, request, response):
-        response.status = falcon.HTTP_204
+# Hoist classes into package namespace
+Driver = driver.Driver

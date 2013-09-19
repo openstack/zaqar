@@ -12,10 +12,21 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""health: returns the health information for this proxy."""
-import falcon
+"""round_robin: Implements round-robin selection for partition hosts."""
+import itertools
 
 
-class Resource(object):
-    def on_get(self, request, response):
-        response.status = falcon.HTTP_204
+class Selector(object):
+    def __init__(self):
+        self._index = {}
+
+    def next(self, name, hosts):
+        """Round robin selection of hosts
+
+        :param name: str - name to associate this list with
+        :param hosts: [a] - list of things to round robin. In the context
+                            of Marconi, this is a list of URLs.
+        """
+        if name not in self._index:
+            self._index[name] = itertools.cycle(hosts)
+        return next(self._index[name])

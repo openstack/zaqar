@@ -13,18 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """v1: queries the first node in the first partition for a homedoc."""
-import requests
+import falcon
 
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
 
 
 class Resource(object):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, partitions_controller):
+        self._partitions = partitions_controller
 
     def on_get(self, request, response):
-        node = helpers.get_first_host(self.client)
-        resp = requests.get(node + '/v1')
+        partition = None
+        try:
+            partition = next(self._partitions.list())
+        except StopIteration:
+            raise falcon.HTTPServiceUnavailable(
+                "No partitions found",
+                "Register some partitions",
+                retry_after=120
+            )
+
+        host = partition['hosts'][0]
+        resp = helpers.forward(host, request)
         response.status = http.status(resp.status_code)
         response.body = resp.content

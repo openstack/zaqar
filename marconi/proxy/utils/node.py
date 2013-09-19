@@ -15,49 +15,32 @@
 """node: utilities for implementing partition and node selections."""
 import random
 
-import msgpack
 
-
-def weighted_select(client):
+def weighted_select(partitions):
     """Select a partition from all the partitions registered using a weighted
     selection algorithm.
 
-    :raises: RuntimeError if no partitions are registered
+    :param partitions: gen({'name': ..., 'weight': ..., 'hosts': ...}, ...)
+    :return: (name, hosts)
     """
     acc = 0
     lookup = []
 
     # TODO(cpp-cabrera): the lookup table can be constructed once each time
-    #                    an entry is added/removed to/from the catalogue,
+    #                    an entry is added to/removed from the catalogue,
     #                    rather than each time a queue is created.
     # construct the (partition, weight) lookup table
-    for p in client.lrange('ps', 0, -1):
-        key = 'p.%s' % p.decode('utf8')
-        w = client.hget(key, 'w')
-        acc += int(w)
-        lookup.append((p.decode('utf8'), acc))
+    for p in partitions:
+        acc += p['weight']
+        lookup.append((p, acc))
+
+    if not lookup:
+        return None
 
     # select a partition from the lookup table
     selector = random.randint(0, acc - 1)
     last = 0
     for p, w in lookup:
-        weight = int(w)
-        if selector >= last and selector < weight:
+        if last <= selector < w:
             return p
-        last = weight
-
-    raise RuntimeError('No partition could be selected - are any registered?')
-
-
-def round_robin(client, partition):
-    """Select a node in this partition and update the round robin index.
-
-    :returns: the address of a given node
-    :side-effect: updates the current index in the storage node for
-    this partition
-    """
-    n, c = client.hmget('p.%s' % partition, ['n', 'c'])
-    nodes = [entry.decode('utf8') for entry in msgpack.loads(n)]
-    current = int(c)
-    client.hset('p.%s' % partition, 'c', (current + 1) % len(nodes))
-    return nodes[current]
+        last = w

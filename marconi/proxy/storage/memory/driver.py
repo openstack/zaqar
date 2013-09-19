@@ -12,10 +12,23 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""health: returns the health information for this proxy."""
-import falcon
+from marconi.proxy.storage import base
+from marconi.proxy.storage.memory import controllers
 
 
-class Resource(object):
-    def on_get(self, request, response):
-        response.status = falcon.HTTP_204
+class Driver(base.DriverBase):
+
+    def __init__(self):
+        self._db = {}
+
+    @property
+    def db(self):
+        return self._db
+
+    @property
+    def partitions_controller(self):
+        return controllers.PartitionsController(self)
+
+    @property
+    def catalogue_controller(self):
+        return controllers.CatalogueController(self)

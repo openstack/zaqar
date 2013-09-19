@@ -15,39 +15,48 @@
 """metadata: adds queue metadata to the catalogue and forwards to
 marconi queue metadata requests.
 """
-import falcon
-import msgpack
-import requests
+import io
+import json
 
+import falcon
+
+from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
 
 
 class Resource(object):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, partitions_controller, catalogue_controller):
+        self._partitions = partitions_controller
+        self._catalogue = catalogue_controller
 
-    def _make_key(self, request, queue):
+    def _forward(self, request, response, queue):
         project = helpers.get_project(request)
-        return 'q.%s.%s' % (project, queue)
 
-    def on_get(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-    def on_put(self, request, response, queue):
-        key = self._make_key(request, queue)
-        if not self.client.exists(key):
+        partition = None
+        try:
+            partition = self._catalogue.get(project, queue)['partition']
+        except exceptions.EntryNotFound:
             raise falcon.HTTPNotFound()
 
-        resp = helpers.forward(self.client, request, queue)
+        host = self._partitions.select(partition)
+        resp = helpers.forward(host, request)
         response.status = http.status(resp.status_code)
         response.body = resp.content
 
+        return resp
+
+    def on_get(self, request, response, queue):
+        self._forward(request, response, queue)
+
+    def on_put(self, request, response, queue):
+        project = helpers.get_project(request)
+        data = request.stream.read()
+
+        # NOTE(cpp-cabrera): This is a hack to preserve the metadata
+        request.stream = io.BytesIO(data)
+        resp = self._forward(request, response, queue)
+
         if resp.ok:
-            project = helpers.get_project(request)
-            host = helpers.get_host_by_project_and_queue(self.client,
-                                                         project, queue)
-            resp = requests.get(host + '/v1/queues/%s/metadata' % queue)
-            self.client.hset(key, 'm', msgpack.dumps(resp.json()))
+            self._catalogue.update_metadata(project, queue,
+                                            json.loads(data))

@@ -31,7 +31,6 @@ Running:
 - gunicorn marconi.proxy.app:app
 """
 import falcon
-import redis
 
 from marconi.proxy.resources import catalogue
 from marconi.proxy.resources import forward
@@ -41,41 +40,49 @@ from marconi.proxy.resources import partitions
 from marconi.proxy.resources import queues
 from marconi.proxy.resources import v1
 
+# TODO(cpp-cabrera): migrate to oslo.config/stevedore
+#                    to stop hard coding the driver
+from marconi.proxy.storage.memory import driver as memory_driver
+
+
 app = falcon.API()
-client = redis.StrictRedis()
+driver = memory_driver.Driver()
+catalogue_driver = driver.catalogue_controller
+partitions_driver = driver.partitions_controller
 
 # TODO(cpp-cabrera): don't encode API version in routes -
 #                    let's handle this elsewhere
+# TODO(cpp-cabrera): bring in controllers based on config
 # NOTE(cpp-cabrera): Proxy-specific routes
 app.add_route('/v1/partitions',
-              partitions.Listing(client))
+              partitions.Listing(partitions_driver))
 app.add_route('/v1/partitions/{partition}',
-              partitions.Resource(client))
+              partitions.Resource(partitions_driver))
 app.add_route('/v1/catalogue',
-              catalogue.Listing(client))
+              catalogue.Listing(catalogue_driver))
 app.add_route('/v1/catalogue/{queue}',
-              catalogue.Resource(client))
+              catalogue.Resource(catalogue_driver))
 
 # NOTE(cpp-cabrera): queue handling routes
 app.add_route('/v1/queues',
-              queues.Listing(client))
+              queues.Listing(catalogue_driver))
 app.add_route('/v1/queues/{queue}',
-              queues.Resource(client))
+              queues.Resource(partitions_driver, catalogue_driver))
 
 # NOTE(cpp-cabrera): Marconi forwarded routes
 app.add_route('/v1',
-              v1.Resource(client))
+              v1.Resource(partitions_driver))
 app.add_route('/v1/health',
-              health.Resource(client))
+              health.Resource())
 app.add_route('/v1/queues/{queue}/claims',
-              forward.ClaimCreate(client))
+              forward.ClaimCreate(partitions_driver, catalogue_driver))
 app.add_route('/v1/queues/{queue}/claims/{cid}',
-              forward.Claim(client))
+              forward.Claim(partitions_driver, catalogue_driver))
 app.add_route('/v1/queues/{queue}/messages',
-              forward.MessageBulk(client))
+              forward.MessageBulk(partitions_driver, catalogue_driver))
 app.add_route('/v1/queues/{queue}/messages/{mid}',
-              forward.Message(client))
+              forward.Message(partitions_driver, catalogue_driver))
 app.add_route('/v1/queues/{queue}/stats',
-              forward.Stats(client))
+              forward.Stats(partitions_driver, catalogue_driver))
 app.add_route('/v1/queues/{queue}/metadata',
-              metadata.Resource(client))
+              metadata.Resource(partitions_driver, catalogue_driver))

@@ -21,42 +21,35 @@ following fields are required:
 {
     "name": String,
     "weight": Integer,
-    "nodes": [HTTP_EndPoints(:Port), ...]
-}
-
-In storage, a partition entry looks like:
-
-{
-    "p.{name}": {"n": ByteString, "w": ByteString, "n": MsgPack}
-}
-
-Storage also maintains a list of partitions as:
-{
-    "ps": [{name}, {name}, {name}, ...]
+    "hosts": [HTTP_EndPoints(:Port), ...]
 }
 """
 import json
 
 import falcon
-import msgpack
+
+from marconi.proxy.storage import exceptions
 
 
 class Listing(object):
     """A listing of all partitions registered."""
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, partitions_controller):
+        self._ctrl = partitions_controller
 
     def on_get(self, request, response):
-        partitions = self.client.lrange('ps', 0, -1)
+        """Returns a partition listing as a JSON object:
+
+        {
+            "name": {"weight": 100, "hosts": [""]},
+            "..."
+        }
+
+        :returns: HTTP | [200, 204]
+        """
         resp = {}
-        for p in partitions:
-            key = 'p.%s' % p.decode('utf8')
-            n, w = self.client.hmget(key, ['n', 'w'])
-            if not all([n, w]):
-                continue
-            resp[p.decode('utf8')] = {'weight': int(w),
-                                      'nodes': [node.decode('utf8') for node
-                                                in msgpack.loads(n)]}
+        for p in self._ctrl.list():
+            resp[p['name']] = {'weight': int(p['weight']),
+                               'hosts': p['hosts']}
 
         if not resp:
             response.status = falcon.HTTP_204
@@ -68,19 +61,26 @@ class Listing(object):
 
 class Resource(object):
     """A means to interact with individual partitions."""
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, partitions_controller):
+        self._ctrl = partitions_controller
 
     def on_get(self, request, response, partition):
-        n, w = self.client.hmget('p.%s' % partition, ['n', 'w'])
+        """Returns a JSON object for a single partition entry:
 
-        if not all([n, w]):  # ensure all the data was returned correctly
+        {"weight": 100, "hosts": [""]}
+
+        :returns: HTTP | [200, 404]
+        """
+        data = None
+        try:
+            data = self._ctrl.get(partition)
+        except exceptions.PartitionNotFound:
             raise falcon.HTTPNotFound()
 
-        nodes, weight = msgpack.loads(n), int(w)
+        hosts, weight = data['hosts'], data['weight']
         response.body = json.dumps({
-            'nodes': [node.decode('utf8') for node in nodes],
-            'weight': weight,
+            'hosts': data['hosts'],
+            'weight': data['weight'],
         }, ensure_ascii=False)
 
     def _validate_put(self, data):
@@ -89,23 +89,22 @@ class Resource(object):
                 'Invalid metadata', 'Define a partition as a dict'
             )
 
-        if 'nodes' not in data:
+        if 'hosts' not in data:
             raise falcon.HTTPBadRequest(
-                'Missing nodes list', 'Provide a list of nodes'
+                'Missing hosts list', 'Provide a list of hosts'
             )
 
-        if not data['nodes']:
+        if not data['hosts']:
             raise falcon.HTTPBadRequest(
-                'Empty nodes list', 'Nodes list cannot be empty'
+                'Empty hosts list', 'Hosts list cannot be empty'
             )
 
-        if not isinstance(data['nodes'], list):
+        if not isinstance(data['hosts'], list):
             raise falcon.HTTPBadRequest(
-                'Invalid nodes', 'Nodes must be a list of URLs'
+                'Invalid hosts', 'Hosts must be a list of URLs'
             )
 
         # TODO(cpp-cabrera): check [str]
-
         if 'weight' not in data:
             raise falcon.HTTPBadRequest(
                 'Missing weight',
@@ -118,13 +117,18 @@ class Resource(object):
             )
 
     def on_put(self, request, response, partition):
+        """Creates a new partition. Expects the following input:
+
+        {"weight": 100, "hosts": [""]}
+
+        :returns: HTTP | [201, 204]
+        """
         if partition.startswith('_'):
             raise falcon.HTTPBadRequest(
                 'Reserved name', '_names are reserved for internal use'
             )
 
-        key = 'p.%s' % partition
-        if self.client.exists(key):
+        if self._ctrl.exists(partition):
             response.status = falcon.HTTP_204
             return
 
@@ -136,13 +140,15 @@ class Resource(object):
             )
 
         self._validate_put(data)
-        self.client.hmset(key, {'n': msgpack.dumps(data['nodes']),
-                                'w': data['weight'],
-                                'c': 0})
-        self.client.rpush('ps', partition)
+        self._ctrl.create(partition,
+                          weight=data['weight'],
+                          hosts=data['hosts'])
         response.status = falcon.HTTP_201
 
     def on_delete(self, request, response, partition):
-        self.client.delete('p.%s' % partition)
-        self.client.lrem('ps', 1, partition)
+        """Removes an existing partition.
+
+        :returns: HTTP | 204
+        """
+        self._ctrl.delete(partition)
         response.status = falcon.HTTP_204

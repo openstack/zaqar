@@ -15,96 +15,81 @@
 """forward: a resource for each marconi route where the desired result
 is to just pass along a request to marconi.
 """
+import falcon
+
+from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
 
 
-# TODO(cpp-cabrera): Replace these with falcon.set_default_route
-#                    once that lands for DRYer forwarding
+class ForwardMixin(object):
+    """Implements falcon-compatible forwarding for resources."""
+
+    def __init__(self, partitions_controller, catalogue_controller,
+                 methods):
+        """Initializes a forwarding resource.
+
+        :param partitions_controller: talks to partitions storage
+        :param catalogue_controller: talks to catalogue storage
+        :param methods: [str] - allowed methods, e.g., ['get', 'post']
+        """
+        self._catalogue = catalogue_controller
+        self._partitions = partitions_controller
+        for method in methods:
+            setattr(self, 'on_' + method, self.forward)
+
+    def forward(self, request, response, queue, **kwargs):
+        project = helpers.get_project(request)
+
+        # find the partition, round-robin the host
+        partition = None
+        try:
+            partition = self._catalogue.get(project, queue)['partition']
+        except exceptions.EntryNotFound:
+            raise falcon.HTTPNotFound()
+        host = self._partitions.select(partition)
+
+        # send the request, update the response
+        resp = helpers.forward(host, request)
+        response.status = http.status(resp.status_code)
+        response.body = resp.content
 
 
-class ClaimCreate(object):
+class ClaimCreate(ForwardMixin):
     """Handler for the endpoint to post claims."""
-    def __init__(self, client):
-        self.client = client
-
-    def on_post(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
+    def __init__(self, partitions_controller, catalogue_controller):
+        super(ClaimCreate, self).__init__(
+            partitions_controller, catalogue_controller,
+            methods=['post'])
 
 
-class Claim(object):
+class Claim(ForwardMixin):
     """Handler for dealing with claims directly."""
-    def __init__(self, client):
-        self.client = client
-
-    def _forward_claim(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-    def on_patch(self, request, response, queue, cid):
-        self._forward_claim(request, response, queue)
-
-    def on_delete(self, request, response, queue, cid):
-        self._forward_claim(request, response, queue)
-
-    def on_get(self, request, response, queue, cid):
-        self._forward_claim(request, response, queue)
+    def __init__(self, partitions_controller, catalogue_controller):
+        super(Claim, self).__init__(
+            partitions_controller, catalogue_controller,
+            methods=['patch', 'delete', 'get'])
 
 
-class MessageBulk(object):
+class MessageBulk(ForwardMixin):
     """Handler for bulk message operations."""
-    def __init__(self, client):
-        self.client = client
-
-    def _forward_message(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-    def on_get(self, request, response, queue):
-        self._forward_message(request, response, queue)
-
-    def on_delete(self, request, response, queue):
-        self._forward_message(request, response, queue)
-
-    def on_post(self, request, response, queue):
-        self._forward_message(request, response, queue)
+    def __init__(self, partitions_controller, catalogue_controller):
+        super(MessageBulk, self).__init__(
+            partitions_controller, catalogue_controller,
+            methods=['get', 'delete', 'post'])
 
 
-class Message(object):
+class Message(ForwardMixin):
     """Handler for individual messages."""
-    def __init__(self, client):
-        self.client = client
-
-    def _forward_message(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-    def on_get(self, request, response, queue, mid):
-        self._forward_message(request, response, queue)
-
-    def on_delete(self, request, response, queue, mid):
-        self._forward_message(request, response, queue)
+    def __init__(self, partitions_controller, catalogue_controller):
+        super(Message, self).__init__(
+            partitions_controller, catalogue_controller,
+            methods=['get', 'delete'])
 
 
-class Stats(object):
+class Stats(ForwardMixin):
     """Handler for forwarding queue stats requests."""
-    def __init__(self, client):
-        self.client = client
-
-    def _forward_stats(self, request, response, queue):
-        resp = helpers.forward(self.client, request, queue)
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-    def on_get(self, request, response, queue):
-        self._forward_stats(request, response, queue)
+    def __init__(self, partitions_controller, catalogue_controller):
+        super(Stats, self).__init__(
+            partitions_controller, catalogue_controller,
+            methods=['get'])

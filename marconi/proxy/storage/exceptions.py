@@ -39,13 +39,3 @@ class PartitionNotFound(NotFound):
             name=name
         )
         super(PartitionNotFound, self).__init__(msg)
-
-
-class NoPartitionsRegistered(Exception):
-    """An exception that is raised when attempting to select a node from
-    all registered partitions, except that no partitions are
-    registered.
-    """
-    def __init__(self):
-        msg = 'No partitions are registered.'
-        super(NoPartitionsRegistered, self).__init__(msg)

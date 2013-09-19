@@ -59,15 +59,12 @@ class PartitionsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def select(self):
-        """Selects a node from one of the registered partitions. First,
-        a partition is selected by taking into account the partition weights.
-        Then, from the selected partition, the node at the current round robin
-        index is selected. Finally, the node URL is returned after incrementing
-        the round robin index.
+    def select(self, name):
+        """Selects a node from the given partition. Any algorithm may be
+        used, though storage drivers are encouraged to use the
+        provided :see RoundRobin: implementation.
 
-        :returns: A node URL
-        :raises: NoPartitionsRegistered
+        :param name: str - The name of a registered partition.
         """
         raise NotImplementedError
 
@@ -79,6 +76,14 @@ class PartitionsBase(ControllerBase):
         :raises: PartitionNotFound
         """
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, name):
+        """Determines whether the given partition exists
+
+        :param name: str - Partition name to check for
+        :return: True | False
+        """
 
     @abc.abstractmethod
     def create(self, name, weight, nodes):
@@ -113,16 +118,12 @@ class CatalogueBase(ControllerBase):
     """
 
     @abc.abstractmethod
-    def list(self, project, include_metadata=False, include_location=False):
+    def list(self, project):
         """Returns a list of queue entries from the catalogue associated with
         this project.
 
         :param project: The project to use when filtering through queue
                         entries.
-        :param include_metadata: should the returned list include queue
-                                 metadata?
-        :param include_location: should the returned list include queue
-                                 location URLs?
         :returns: a list of dicts: [{'name': ., 'location': ., 'metadata': .}]
         """
         raise NotImplementedError
@@ -140,12 +141,21 @@ class CatalogueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def insert(self, project, queue, location, metadata={}):
+    def exists(self, project, queue):
+        """Determines whether the given queue exists under project.
+
+        :param project: str - Namespace to check.
+        :param queue: str - Particular queue to check for
+        :return: True | False
+        """
+
+    @abc.abstractmethod
+    def insert(self, project, queue, partition, metadata={}):
         """Creates a new catalogue entry.
 
-        :param project: Namespace to insert the given queue into
-        :param queue: The name of the queue to insert
-        :param location: The URL of the node where this queue is being stored
+        :param project: str - Namespace to insert the given queue into
+        :param queue: str - The name of the queue to insert
+        :param partition: str - Partition name where this queue is stored
         :param metadata: A dictionary of metadata for this queue
         """
         raise NotImplementedError
@@ -160,30 +170,11 @@ class CatalogueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def location(self, project, queue):
-        """Returns the location URL for this queue.
-
-        :param project: The namespace to search for this queue
-        :param queue: The name of the queue
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def update_metadata(self, project, queue, metadata):
         """Updates the metadata associated with this queue.
 
         :param project: Namespace to search
         :param queue: The name of the queue
         :param metadata: A dictionary of metadata for this queue
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def move(self, project, queue, location):
-        """Changes the location for this queue.
-
-        :param project: Namespace to search
-        :param queue: The name of the queue
-        :param location: The URL of the node where this queue will be stored
         """
         raise NotImplementedError

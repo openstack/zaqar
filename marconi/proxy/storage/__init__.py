@@ -1,6 +1,7 @@
 """Marconi proxy storage drivers"""
 
 from marconi.proxy.storage import base
+from marconi.proxy.storage import exceptions  # NOQA
 
 
 # NOTE(cpp-cabrera): Hoist classes into package namespace

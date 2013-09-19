@@ -12,57 +12,27 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""catalogue: maintains a directory of all queues proxied through the system
-
-Storage maintains an entry for each queue as follows:
-
-{
-  q.{project}.{queue}: {'h': ByteString, 'n': ByteString, 'm': MsgPack}
-}
-
-"m" -> metadata
-"n" -> name
-"h" -> HTTP host
-
-A list of all queues is also stored as:
-
-{
-  qs.{project}: [{name}, {name}, {name}]
-}
+"""catalogue: maintains a directory of all queues proxied through the system.
 """
 import json
 
 import falcon
-import msgpack
 
+from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
 
 
 class Listing(object):
     """A listing of all entries in the catalogue."""
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, catalogue_controller):
+        self._catalogue = catalogue_controller
 
     def on_get(self, request, response):
         project = helpers.get_project(request)
-        key = 'qs.%s' % project
-        if not self.client.exists(key):
-            response.status = falcon.HTTP_204
-            return
 
         resp = {}
-        for q in self.client.lrange(key, 0, -1):
-            hkey = 'q.%s.%s' % (project, q.decode('utf8'))
-            queue = q.decode('utf8')
-            h, n, m = self.client.hmget(hkey, ['h', 'n', 'm'])
-            if not all([h, n]):
-                continue
-
-            resp[queue] = {
-                'host': h.decode('utf8'),
-                'name': n.decode('utf8')
-            }
-            resp[queue]['metadata'] = msgpack.loads(m) if m else {}
+        for q in self._catalogue.list(project):
+            resp[q['name']] = q
 
         if not resp:
             response.status = falcon.HTTP_204
@@ -74,19 +44,17 @@ class Listing(object):
 
 class Resource(object):
     """A single catalogue entry."""
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, catalogue_controller):
+        self._catalogue = catalogue_controller
 
     def on_get(self, request, response, queue):
-        key = 'q.%s.%s' % (helpers.get_project(request), queue)
-        if not self.client.exists(key):
+        project = helpers.get_project(request)
+        entry = None
+        try:
+            entry = self._catalogue.get(project, queue)
+        except exceptions.EntryNotFound:
             raise falcon.HTTPNotFound()
-        h, n, m = self.client.hmget(key, ['h', 'n', 'm'])
-        resp = {
-            'name': n.decode('utf8'),
-            'host': h.decode('utf8'),
-        }
-        resp['metadata'] = msgpack.loads(m) if m else {}
 
+        resp = entry
         response.status = falcon.HTTP_200
         response.body = json.dumps(resp, ensure_ascii=False)
