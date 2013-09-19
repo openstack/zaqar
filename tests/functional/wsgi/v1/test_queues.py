@@ -20,11 +20,24 @@ import uuid
 from marconi.tests.functional import base  # noqa
 
 
+class mystring(str):
+    pass
+
+
+class mydict(dict):
+    pass
+
+
 @ddt.ddt
 class TestInsertQueue(base.FunctionalTestBase):
     """Tests for Insert queue."""
 
     server_class = base.MarconiServer
+
+    def annotated(test_name, test_input):
+        r = mystring(test_input)
+        setattr(r, "__name__", test_name)
+        return r
 
     def setUp(self):
         super(TestInsertQueue, self).setUp()
@@ -35,7 +48,7 @@ class TestInsertQueue(base.FunctionalTestBase):
         self.client.set_base_url(self.base_url)
 
     @ddt.data('qtestqueue', 'TESTqueue', 'hyphen-name', '_undersore',
-              'i' * 64)
+              annotated('test_insert_queue_long_name', 'i' * 64))
     def test_insert_queue(self, queue_name):
         """Create Queue."""
         self.url = self.base_url + '/queues/' + queue_name
@@ -54,7 +67,8 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     test_insert_queue.tags = ['positive', 'smoke']
 
-    @ddt.data('汉字漢字', '@$@^qw', 'i' * 65)
+    @ddt.data('汉字漢字', '@$@^qw',
+              annotated('test_insert_queue_invalid_name_length', 'i' * 65))
     def test_insert_queue_invalid_name(self, queue_name):
         """Create Queue."""
         self.url = self.base_url + '/queues/' + queue_name
@@ -140,6 +154,11 @@ class TestQueueMetaData(base.FunctionalTestBase):
 
     server_class = base.MarconiServer
 
+    def annotated(test_name, test_input):
+        r = mydict(test_input)
+        setattr(r, "__name__", test_name)
+        return r
+
     def setUp(self):
         super(TestQueueMetaData, self).setUp()
 
@@ -156,8 +175,8 @@ class TestQueueMetaData(base.FunctionalTestBase):
               {"_queue": "Top Level field with _"},
               {"汉字": "non ASCII metadata"},
               {"queue": "#$%^&Apple"},
-              {"queue": "i" * 65000}
-              )
+              annotated('test_insert_queue_metadata_huge',
+                        {"queue": "i" * 65000}))
     def test_insert_queue_metadata(self, doc):
         """Insert Queue with empty json."""
         result = self.client.put(data=doc)
@@ -171,7 +190,9 @@ class TestQueueMetaData(base.FunctionalTestBase):
 
     test_insert_queue_metadata.tags = ['smoke', 'positive']
 
-    @ddt.data('not_a_dict', {"queue": "i" * 65537})
+    @ddt.data('not_a_dict',
+              annotated('test_insert_queue_invalid_metadata_huge',
+                        {"queue": "i" * 65537}))
     def test_insert_queue_invalid_metadata(self, doc):
         """Insert invalid metadata."""
 
