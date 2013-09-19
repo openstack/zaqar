@@ -15,81 +15,49 @@
 """forward: a resource for each marconi route where the desired result
 is to just pass along a request to marconi.
 """
-import falcon
-
-from marconi.proxy.storage import exceptions
-from marconi.proxy.utils import helpers
-from marconi.proxy.utils import http
+from marconi.proxy.utils import forward
 
 
-class ForwardMixin(object):
-    """Implements falcon-compatible forwarding for resources."""
-
-    def __init__(self, partitions_controller, catalogue_controller,
-                 methods):
-        """Initializes a forwarding resource.
-
-        :param partitions_controller: talks to partitions storage
-        :param catalogue_controller: talks to catalogue storage
-        :param methods: [str] - allowed methods, e.g., ['get', 'post']
-        """
-        self._catalogue = catalogue_controller
-        self._partitions = partitions_controller
-        for method in methods:
-            setattr(self, 'on_' + method, self.forward)
-
-    def forward(self, request, response, queue, **kwargs):
-        project = helpers.get_project(request)
-
-        # find the partition, round-robin the host
-        partition = None
-        try:
-            partition = self._catalogue.get(project, queue)['partition']
-        except exceptions.EntryNotFound:
-            raise falcon.HTTPNotFound()
-        host = self._partitions.select(partition)
-
-        # send the request, update the response
-        resp = helpers.forward(host, request)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-
-class ClaimCreate(ForwardMixin):
+class ClaimCreate(forward.ForwardMixin):
     """Handler for the endpoint to post claims."""
-    def __init__(self, partitions_controller, catalogue_controller):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         super(ClaimCreate, self).__init__(
-            partitions_controller, catalogue_controller,
-            methods=['post'])
+            partitions_controller, catalogue_controller, cache,
+            selector, methods=['post'])
 
 
-class Claim(ForwardMixin):
+class Claim(forward.ForwardMixin):
     """Handler for dealing with claims directly."""
-    def __init__(self, partitions_controller, catalogue_controller):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         super(Claim, self).__init__(
-            partitions_controller, catalogue_controller,
-            methods=['patch', 'delete', 'get'])
+            partitions_controller, catalogue_controller, cache,
+            selector, methods=['patch', 'delete', 'get'])
 
 
-class MessageBulk(ForwardMixin):
+class MessageBulk(forward.ForwardMixin):
     """Handler for bulk message operations."""
-    def __init__(self, partitions_controller, catalogue_controller):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         super(MessageBulk, self).__init__(
-            partitions_controller, catalogue_controller,
-            methods=['get', 'delete', 'post'])
+            partitions_controller, catalogue_controller, cache,
+            selector, methods=['get', 'delete', 'post'])
 
 
-class Message(ForwardMixin):
+class Message(forward.ForwardMixin):
     """Handler for individual messages."""
-    def __init__(self, partitions_controller, catalogue_controller):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         super(Message, self).__init__(
-            partitions_controller, catalogue_controller,
-            methods=['get', 'delete'])
+            partitions_controller, catalogue_controller, cache,
+            selector, methods=['get', 'delete'])
 
 
-class Stats(ForwardMixin):
+class Stats(forward.ForwardMixin):
     """Handler for forwarding queue stats requests."""
-    def __init__(self, partitions_controller, catalogue_controller):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         super(Stats, self).__init__(
-            partitions_controller, catalogue_controller,
-            methods=['get'])
+            partitions_controller, catalogue_controller, cache,
+            selector, methods=['get'])

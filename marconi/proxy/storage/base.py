@@ -59,16 +59,6 @@ class PartitionsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def select(self, name):
-        """Selects a node from the given partition. Any algorithm may be
-        used, though storage drivers are encouraged to use the
-        provided :see RoundRobin: implementation.
-
-        :param name: str - The name of a registered partition.
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def get(self, name):
         """Retrieves the nodes and weight for a partition with this name.
 

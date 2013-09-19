@@ -26,7 +26,6 @@ Schema:
 
 from marconi.proxy.storage import base
 from marconi.proxy.storage import exceptions
-from marconi.proxy.utils import round_robin
 from marconi.queues.storage.mongodb import utils
 
 PARTITIONS_INDEX = [
@@ -40,7 +39,6 @@ class PartitionsController(base.PartitionsBase):
 
         self._col = self.driver.db['partitions']
         self._col.ensure_index(PARTITIONS_INDEX, unique=True)
-        self._rr = round_robin.Selector()
 
     @utils.raises_conn_error
     def list(self):
@@ -48,11 +46,6 @@ class PartitionsController(base.PartitionsBase):
 
         for entry in cursor:
             yield _normalize(entry)
-
-    @utils.raises_conn_error
-    def select(self, name):
-        partition = self.get(name)
-        return self._rr.next(partition['name'], partition['hosts'])
 
     @utils.raises_conn_error
     def get(self, name):

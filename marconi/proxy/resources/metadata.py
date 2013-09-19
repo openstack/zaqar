@@ -18,36 +18,17 @@ marconi queue metadata requests.
 import io
 import json
 
-import falcon
-
-from marconi.proxy.storage import exceptions
+from marconi.proxy.utils import forward
 from marconi.proxy.utils import helpers
-from marconi.proxy.utils import http
 
 
-class Resource(object):
-    def __init__(self, partitions_controller, catalogue_controller):
-        self._partitions = partitions_controller
-        self._catalogue = catalogue_controller
-
-    def _forward(self, request, response, queue):
-        project = helpers.get_project(request)
-
-        partition = None
-        try:
-            partition = self._catalogue.get(project, queue)['partition']
-        except exceptions.EntryNotFound:
-            raise falcon.HTTPNotFound()
-
-        host = self._partitions.select(partition)
-        resp = helpers.forward(host, request)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
-
-        return resp
-
-    def on_get(self, request, response, queue):
-        self._forward(request, response, queue)
+class Resource(forward.ForwardMixin):
+    def __init__(self, partitions_controller,
+                 catalogue_controller,
+                 cache, selector):
+        super(Resource, self).__init__(
+            partitions_controller, catalogue_controller,
+            cache, selector, methods=['get'])
 
     def on_put(self, request, response, queue):
         project = helpers.get_project(request)
@@ -55,7 +36,7 @@ class Resource(object):
 
         # NOTE(cpp-cabrera): This is a hack to preserve the metadata
         request.stream = io.BytesIO(data)
-        resp = self._forward(request, response, queue)
+        resp = self.forward(request, response, queue)
 
         if resp.ok:
             self._catalogue.update_metadata(project, queue,

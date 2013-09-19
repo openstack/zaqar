@@ -26,6 +26,10 @@ transport = wsgi
 # Storage driver module (e.g., mongodb, sqlite)
 storage = mongodb
 
+# transport and storage drivers for use with marconi-proxy
+[drivers:proxy]
+storage = mongodb
+
 [drivers:transport:wsgi]
 ;bind = 0.0.0.0
 ;port = 8888
@@ -68,6 +72,10 @@ database = marconi
 # files will be.
 ;gc_threshold = 1000
 
+[drivers:proxy:storage:mongodb]
+uri = mongodb://localhost:27017
+database = marconi_proxy
+
 [limits:transport]
 # The maximum number of queue records per page when listing queues
 ;queue_paging_uplimit = 20
@@ -90,3 +98,8 @@ database = marconi
 ;default_queue_paging = 10
 # The default number of messages per page when listing or claiming messages
 ;default_message_paging = 10
+
+# caching mechanism
+[oslo_cache]
+cache_backend = memory
+;cache_prefix = my_prefix

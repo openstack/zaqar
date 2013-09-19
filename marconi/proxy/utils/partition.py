@@ -12,13 +12,12 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""node: utilities for implementing partition and node selections."""
+"""partition: utilities for implementing partition selections."""
 import random
 
 
 def weighted_select(partitions):
-    """Select a partition from all the partitions registered using a weighted
-    selection algorithm.
+    """Select a partition from all the partitions passed in.
 
     :param partitions: gen({'name': ..., 'weight': ..., 'hosts': ...}, ...)
     :return: (name, hosts)

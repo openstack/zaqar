@@ -16,6 +16,12 @@
 import falcon
 
 
+METHODS = (
+    'get', 'put', 'head', 'delete', 'post',
+    'patch', 'options'
+)
+
+
 _code_map = dict((int(v.split()[0]), v)
                  for k, v in falcon.status_codes.__dict__.items()
                  if k.startswith('HTTP_'))

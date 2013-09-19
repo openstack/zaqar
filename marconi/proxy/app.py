@@ -19,18 +19,17 @@ Supports the following operator API:
 - [PUT|GET|DELETE] /v1/partitions/{partition}
 - [GET] /v1/catalogue
 
-Deploy requirements:
-- redis-server, default port
-- gunicorn
-- python >= 2.7
-- falcon
-- msgpack
-- requests
-
 Running:
+- configure marconi.conf appropriately
 - gunicorn marconi.proxy.app:app
 """
 import falcon
+from oslo.config import cfg
+from stevedore import driver
+
+from marconi.common.cache import cache
+from marconi.common import config
+from marconi.common import exceptions
 
 from marconi.proxy.resources import catalogue
 from marconi.proxy.resources import forward
@@ -39,20 +38,41 @@ from marconi.proxy.resources import metadata
 from marconi.proxy.resources import partitions
 from marconi.proxy.resources import queues
 from marconi.proxy.resources import v1
+from marconi.proxy.utils import round_robin
 
-# TODO(cpp-cabrera): migrate to oslo.config/stevedore
-#                    to stop hard coding the driver
-from marconi.proxy.storage.memory import driver as memory_driver
 
+# TODO(cpp-cabrera): wrap all this up in a nice bootstrap.py
+# TODO(cpp-cabrera): mirror marconi.queues.transport with this
+#                    for nicer deployments (and eventual
+#                    proxy multi-transport support!)
+PROJECT_CFG = config.project('marconi')
+CFG = config.namespace('drivers:proxy').from_options(
+    transport='wsgi',
+    storage='memory')
+
+# TODO(cpp-cabrera): need to wrap this in a bootstrap class to defer
+#                    loading of config until it is run in a WSGI
+#                    context, otherwise, it breaks the test suite.
+if __name__ == '__main__':
+    PROJECT_CFG.load()
 
 app = falcon.API()
-driver = memory_driver.Driver()
-catalogue_driver = driver.catalogue_controller
-partitions_driver = driver.partitions_controller
+
+try:
+    storage = driver.DriverManager('marconi.proxy.storage',
+                                   CFG.storage,
+                                   invoke_on_load=True)
+except RuntimeError as exc:
+    raise exceptions.InvalidDriver(exc)
+
+catalogue_driver = storage.driver.catalogue_controller
+partitions_driver = storage.driver.partitions_controller
+cache_driver = cache.get_cache(cfg.CONF)
+selector = round_robin.Selector()
+
 
 # TODO(cpp-cabrera): don't encode API version in routes -
 #                    let's handle this elsewhere
-# TODO(cpp-cabrera): bring in controllers based on config
 # NOTE(cpp-cabrera): Proxy-specific routes
 app.add_route('/v1/partitions',
               partitions.Listing(partitions_driver))
@@ -62,27 +82,46 @@ app.add_route('/v1/catalogue',
               catalogue.Listing(catalogue_driver))
 app.add_route('/v1/catalogue/{queue}',
               catalogue.Resource(catalogue_driver))
+app.add_route('/v1/health',
+              health.Resource())
 
 # NOTE(cpp-cabrera): queue handling routes
 app.add_route('/v1/queues',
               queues.Listing(catalogue_driver))
 app.add_route('/v1/queues/{queue}',
-              queues.Resource(partitions_driver, catalogue_driver))
+              queues.Resource(partitions_driver, catalogue_driver,
+                              cache_driver, selector))
 
 # NOTE(cpp-cabrera): Marconi forwarded routes
 app.add_route('/v1',
               v1.Resource(partitions_driver))
-app.add_route('/v1/health',
-              health.Resource())
+
+# NOTE(cpp-cabrera): Marconi forwarded routes involving a queue
 app.add_route('/v1/queues/{queue}/claims',
-              forward.ClaimCreate(partitions_driver, catalogue_driver))
+              forward.ClaimCreate(partitions_driver,
+                                  catalogue_driver,
+                                  cache_driver, selector))
+
 app.add_route('/v1/queues/{queue}/claims/{cid}',
-              forward.Claim(partitions_driver, catalogue_driver))
+              forward.Claim(partitions_driver,
+                            catalogue_driver,
+                            cache_driver, selector))
+
 app.add_route('/v1/queues/{queue}/messages',
-              forward.MessageBulk(partitions_driver, catalogue_driver))
+              forward.MessageBulk(partitions_driver,
+                                  catalogue_driver,
+                                  cache_driver, selector))
+
 app.add_route('/v1/queues/{queue}/messages/{mid}',
-              forward.Message(partitions_driver, catalogue_driver))
+              forward.Message(partitions_driver,
+                              catalogue_driver, cache_driver, selector))
+
 app.add_route('/v1/queues/{queue}/stats',
-              forward.Stats(partitions_driver, catalogue_driver))
+              forward.Stats(partitions_driver,
+                            catalogue_driver,
+                            cache_driver, selector))
+
 app.add_route('/v1/queues/{queue}/metadata',
-              metadata.Resource(partitions_driver, catalogue_driver))
+              metadata.Resource(partitions_driver,
+                                catalogue_driver,
+                                cache_driver, selector))

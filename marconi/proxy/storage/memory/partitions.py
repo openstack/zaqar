@@ -16,7 +16,6 @@ import six
 
 from marconi.proxy.storage import base
 from marconi.proxy.storage import exceptions
-from marconi.proxy.utils import round_robin
 
 
 class PartitionsController(base.PartitionsBase):
@@ -25,15 +24,10 @@ class PartitionsController(base.PartitionsBase):
 
         self.driver.db['partitions'] = {}
         self._col = self.driver.db['partitions']
-        self._rr = round_robin.Selector()
 
     def list(self):
         for entry in sorted(self._col.values(), key=lambda x: x['n']):
             yield _normalize(entry)
-
-    def select(self, name):
-        partition = self.get(name)
-        return self._rr.next(partition['name'], partition['hosts'])
 
     def get(self, name):
         entry = None

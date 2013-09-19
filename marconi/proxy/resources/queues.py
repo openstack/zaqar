@@ -17,7 +17,7 @@
 The queues resource performs routing to a marconi partition for
 requests targeting queues.
 
-For the case of a queue listing, the prooxy handles the request in its
+For the case of a queue listing, the proxy handles the request in its
 entirety, since queues for a given project may be spread across
 multiple partitions. This requires the proxy catalogue being
 consistent with the state of the entire deployment.
@@ -32,10 +32,10 @@ import json
 
 import falcon
 
-from marconi.proxy.storage import exceptions
+from marconi.proxy.utils import forward
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
-from marconi.proxy.utils import node
+from marconi.proxy.utils import partition
 
 
 class Listing(object):
@@ -85,60 +85,49 @@ class Listing(object):
         response.body = json.dumps(resp, ensure_ascii=False)
 
 
-class Resource(object):
-    def __init__(self, partitions_controller, catalogue_controller):
+class Resource(forward.ForwardMixin):
+    def __init__(self, partitions_controller, catalogue_controller,
+                 cache, selector):
         self._partitions = partitions_controller
         self._catalogue = catalogue_controller
-
-    def _rr(self, project, queue):
-        """Returns the next host to use for a request."""
-        partition = None
-        try:
-            partition = self._catalogue.get(project, queue)['partition']
-        except exceptions.EntryNotFound:
-            raise falcon.HTTPNotFound()
-
-        return self._partitions.select(partition)
-
-    def on_get(self, request, response, queue):
-        project = helpers.get_project(request)
-        host = self._rr(project, queue)
-        resp = helpers.forward(host, request)
-
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)
-        response.body = resp.content
+        super(Resource, self).__init__(partitions_controller,
+                                       catalogue_controller,
+                                       cache, selector,
+                                       methods=['get'])
 
     def on_put(self, request, response, queue):
-        project = helpers.get_project(request)
-        if self._catalogue.exists(project, queue):
-            response.status = falcon.HTTP_204
-            return
+        """Create a queue in the catalogue, then forwards to marconi.
 
-        partition = node.weighted_select(self._partitions.list())
-        if partition is None:
-            raise falcon.HTTPBadRequest(
+        This is the only time marconi proxy ever needs to select a
+        partition for a queue. The association is created in the
+        catalogue. This should also be the only time
+        partition.weighted_select is ever called.
+
+        :raises: InternalServerError - if no partitions are registered
+
+        """
+        target = partition.weighted_select(self._partitions.list())
+        if target is None:
+            raise falcon.InternalServerError(
                 "No partitions registered",
-                "Register partitions before continuing"
+                "Contact the system administrator for more details."
             )
-        host = partition['hosts'][0]
+        host = target['hosts'][0]
         resp = helpers.forward(host, request)
 
         # NOTE(cpp-cabrera): only catalogue a queue if a request is good
         if resp.ok:
-            self._catalogue.insert(project, queue, partition['name'], host)
+            project = helpers.get_project(request)
+            self._catalogue.insert(project, queue, target['name'],
+                                   host)
 
         response.status = http.status(resp.status_code)
         response.body = resp.content
 
     def on_delete(self, request, response, queue):
         project = helpers.get_project(request)
-        host = self._rr(project, queue)
-        resp = helpers.forward(host, request)
+        resp = self.forward(request, response, queue)
 
         # avoid deleting a queue if the request is bad
         if resp.ok:
             self._catalogue.delete(project, queue)
-
-        response.set_headers(resp.headers)
-        response.status = http.status(resp.status_code)

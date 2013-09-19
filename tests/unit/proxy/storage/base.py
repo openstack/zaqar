@@ -96,18 +96,6 @@ class PartitionsControllerTest(ControllerBaseTest):
                 self._check_structure(p)
                 self._check_values(p, xname=n, xweight=w, xhosts=h)
 
-    def test_select(self):
-        name = self.name
-        with helpers.partition(self.controller, name, 10, ['a', 'b', 'c']):
-            for i in range(3):
-                self.assertEqual(self.controller.select(name), 'a')
-                self.assertEqual(self.controller.select(name), 'b')
-                self.assertEqual(self.controller.select(name), 'c')
-
-    def test_select_raises_with_no_partitions(self):
-        self.assertRaises(exceptions.PartitionNotFound,
-                          self.controller.select, ('not_found'))
-
     def test_get(self):
         name = self.name
         with helpers.partition(self.controller, name, 10, ['a']) as expect:
