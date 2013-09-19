@@ -19,6 +19,7 @@ import requests
 def get_project(request):
     """Retrieves the Project-Id header from a request.
 
+    :param request: falcon.Request
     :returns: The Project-Id value or '_' if not provided
     """
     return request.get_header('x_project_id') or '_'
@@ -27,6 +28,8 @@ def get_project(request):
 def forward(host, request):
     """Forwards a request.
 
+    :param host: str - URL to host to use
+    :param request: falcon.Request
     :returns: a python-requests response object
     """
     url = host + request.path

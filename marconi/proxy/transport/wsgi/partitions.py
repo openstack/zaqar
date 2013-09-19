@@ -32,7 +32,10 @@ from marconi.proxy.storage import exceptions
 
 
 class Listing(object):
-    """A listing of all partitions registered."""
+    """A resource to list registered partition
+
+    :param partitions_controller: means to interact with storage
+    """
     def __init__(self, partitions_controller):
         self._ctrl = partitions_controller
 
@@ -60,7 +63,10 @@ class Listing(object):
 
 
 class Resource(object):
-    """A means to interact with individual partitions."""
+    """A handler for individual partitions
+
+    :param partitions_controller: means to interact with storage
+    """
     def __init__(self, partitions_controller):
         self._ctrl = partitions_controller
 

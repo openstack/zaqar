@@ -79,6 +79,11 @@ class PartitionsController(base.PartitionsBase):
     def delete(self, name):
         self._col.remove({'n': name}, w=0)
 
+    @utils.raises_conn_error
+    def drop_all(self):
+        self._col.drop()
+        self._col.ensure_index(PARTITIONS_INDEX, unique=True)
+
 
 def _normalize(entry):
     return {

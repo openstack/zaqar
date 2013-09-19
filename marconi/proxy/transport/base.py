@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,26 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MongoDB Proxy Storage Driver for Marconi"""
 
-from marconi.proxy.storage.mongodb import driver
+import abc
 
-# Hoist classes into package namespace
-Driver = driver.Driver
+import six
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DriverBase(object):
+    """Base class for Proxy Transport Drivers to document the expected
+    interface.
+
+    :param storage: The storage driver
+    :param cache: The cache driver
+    """
+
+    def __init__(self, storage, cache):
+        self.storage = storage
+        self.cache = cache
+
+    @abc.abstractmethod
+    def listen():
+        """Start listening for client requests (self-hosting mode)."""
+        raise NotImplementedError

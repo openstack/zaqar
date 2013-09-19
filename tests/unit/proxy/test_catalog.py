@@ -13,12 +13,12 @@
 #
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import json
 import random
 
 import falcon
 
+from marconi.proxy import bootstrap as proxy_bootstrap
 from marconi.queues import bootstrap
 
 import base  # noqa
@@ -31,6 +31,7 @@ class CatalogTest(base.TestBase):
     @classmethod
     def setUpClass(cls):
         ports = range(8900, 8903)
+        cls.proxy = proxy_bootstrap.Bootstrap()
         app = bootstrap.Bootstrap().transport.app
         cls.servers = [base.make_app_daemon('localhost', pt, app)
                        for pt in ports]
@@ -43,10 +44,8 @@ class CatalogTest(base.TestBase):
             p.terminate()
 
     def tearDown(self):
-        for server in self.servers:
-            self.simulate_delete('/v1/partitions/' + server.name)
-
-        # TODO(zyuan): use a storage API call to cleanup the catalogs
+        CatalogTest.proxy.cache.flush()
+        CatalogTest.proxy.storage.catalogue_controller.drop_all()
         super(CatalogTest, self).tearDown()
 
     def __add_partitions(self):
@@ -61,6 +60,8 @@ class CatalogTest(base.TestBase):
 
     def test_simple(self):
         path = '/v1/catalogue'
+
+        # TODO(cpp-cabrera): use queue creating/deleting cmgrs
         queue_names = ['arakawa', 'bridge']
 
         # No catalog created yet
@@ -94,3 +95,5 @@ class CatalogTest(base.TestBase):
 
             each_doc = json.loads(result[0])
             self.assertEquals(each_doc, doc[name])
+
+            self.simulate_delete('/v1/queues/' + name)

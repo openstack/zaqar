@@ -21,18 +21,17 @@ from marconi.proxy.utils import lookup
 
 
 class ForwardMixin(object):
-    """Implements falcon-compatible forwarding for resources."""
+    """Implements falcon-compatible forwarding for resources
+
+    :param partitions_controller: talks to partitions storage
+    :param catalogue_controller: talks to catalogue storage
+    :param cache: localized, fast lookups
+    :param selector: @see utils.round_robin - host selection order
+    :param methods: [text] - allowed methods, e.g., ['get', 'post']
+    """
 
     def __init__(self, partitions_controller, catalogue_controller,
                  cache, selector, methods):
-        """Initializes a forwarding resource.
-
-        :param partitions_controller: talks to partitions storage
-        :param catalogue_controller: talks to catalogue storage
-        :param cache: localized, fast lookups
-        :param selector: @see utils.round_robin - host selection order
-        :param methods: [text] - allowed methods, e.g., ['get', 'post']
-        """
         self._catalogue = catalogue_controller
         self._partitions = partitions_controller
         self._cache = cache

@@ -20,6 +20,10 @@ from marconi.proxy.utils import http
 
 
 class Resource(object):
+    """Forwards homedoc requests to marconi queues API
+
+    :param partitions_controller: controller for handling partitions
+    """
     def __init__(self, partitions_controller):
         self._partitions = partitions_controller
 

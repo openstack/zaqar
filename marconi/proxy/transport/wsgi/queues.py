@@ -40,7 +40,9 @@ from marconi.proxy.utils import partition
 
 class Listing(object):
     """Responsible for constructing a valid marconi queue listing
-    from the content stored in the catalogue.
+    from the content stored in the catalogue
+
+    :param catalogue_controller: storage driver to use
     """
     def __init__(self, catalogue_controller):
         self._catalogue = catalogue_controller
@@ -86,6 +88,15 @@ class Listing(object):
 
 
 class Resource(forward.ForwardMixin):
+    """Forwards queue requests to marconi queues API and updates the
+    catalogue
+
+    :param partitions_controller: partitions storage driver
+    :param catalogue_conroller: catalogue storage driver
+    :param cache: caching driver
+    :param selector: algorithm to use to select next node
+    :param methods: HTTP methods to automatically derive from mixin
+    """
     def __init__(self, partitions_controller, catalogue_controller,
                  cache, selector):
         self._partitions = partitions_controller
@@ -103,9 +114,7 @@ class Resource(forward.ForwardMixin):
         catalogue. This should also be the only time
         partition.weighted_select is ever called.
 
-        :raises: HTTPInternalServerError - if no partitions are
-            registered
-
+        :raises: HTTPInternalServerError - if no partitions are registered
         """
         target = partition.weighted_select(self._partitions.list())
         if target is None:

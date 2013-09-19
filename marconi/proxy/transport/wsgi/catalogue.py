@@ -23,7 +23,10 @@ from marconi.proxy.utils import helpers
 
 
 class Listing(object):
-    """A listing of all entries in the catalogue."""
+    """A listing of all entries in the catalogue
+
+    :param catalogue_controller: handles storage details
+    """
     def __init__(self, catalogue_controller):
         self._catalogue = catalogue_controller
 
@@ -43,7 +46,10 @@ class Listing(object):
 
 
 class Resource(object):
-    """A single catalogue entry."""
+    """A single catalogue entry
+
+    :param catalogue_controller: handles storage details
+    """
     def __init__(self, catalogue_controller):
         self._catalogue = catalogue_controller
 
@@ -55,6 +61,5 @@ class Resource(object):
         except exceptions.EntryNotFound:
             raise falcon.HTTPNotFound()
 
-        resp = entry
         response.status = falcon.HTTP_200
-        response.body = json.dumps(resp, ensure_ascii=False)
+        response.body = json.dumps(entry, ensure_ascii=False)

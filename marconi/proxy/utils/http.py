@@ -30,6 +30,7 @@ _code_map = dict((int(v.split()[0]), v)
 def status(code):
     """Maps an integer HTTP status code to a friendly HTTP status message
 
+    :param code: int - HTTP status code
     :raises: KeyError for an unknown HTTP status code
     """
     return _code_map[code]

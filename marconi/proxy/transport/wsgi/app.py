@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,20 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MongoDB Proxy Storage Driver for Marconi"""
 
-from marconi.proxy.storage.mongodb import driver
+"""WSGI App for WSGI Containers
 
-# Hoist classes into package namespace
-Driver = driver.Driver
+This app should be used by external WSGI
+containers. For example:
+
+    $ gunicorn marconi.proxy.transport.wsgi.app:app
+
+NOTE: As for external containers, it is necessary
+to put config files in the standard paths. There's
+no common way to specify / pass configuration files
+to the WSGI app when it is called from other apps.
+"""
+
+from marconi.proxy import bootstrap
+
+app = bootstrap.Bootstrap().transport.app

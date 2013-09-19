@@ -91,6 +91,11 @@ class PartitionsBase(ControllerBase):
         """Removes a partition from storage."""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def drop_all(self):
+        """Drops all partitions from storage."""
+        raise NotImplementedError
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CatalogueBase(ControllerBase):
@@ -167,4 +172,9 @@ class CatalogueBase(ControllerBase):
         :param queue: The name of the queue
         :param metadata: A dictionary of metadata for this queue
         """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def drop_all(self):
+        """Drops all catalogue entries from storage."""
         raise NotImplementedError
