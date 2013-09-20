@@ -38,7 +38,7 @@ class PartitionTest(base.TestBase):
         self.simulate_get(self.partition)
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        doc = {'nodes': ['url'],
+        doc = {'hosts': ['url'],
                'weight': 10}
 
         # Create
@@ -74,7 +74,7 @@ class PartitionTest(base.TestBase):
 
         # Insert
         for n in range(1, 11):
-            doc = {'nodes': map(str, range(n)),
+            doc = {'hosts': map(str, range(n)),
                    'weight': n}
 
             self.simulate_put(self.partition + str(n),
@@ -100,8 +100,8 @@ class PartitionTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         # Bad fields
-        invalid_nodes = [1, {}, {'nodes': 1}, {'nodes': []}]
-        invalid_weights = [{'nodes': ['url']}]
+        invalid_nodes = [1, {}, {'hosts': 1}, {'hosts': []}]
+        invalid_weights = [{'hosts': ['url']}]
         invalid_weights.append(copy.copy(invalid_weights[0]))
         invalid_weights[1]['weight'] = 3.14
 
@@ -111,7 +111,7 @@ class PartitionTest(base.TestBase):
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_reserved_partition(self):
-        doc = {'nodes': ['url'],
+        doc = {'hosts': ['url'],
                'weight': 10}
 
         self.simulate_put('/v1/partitions/__cplusplus',

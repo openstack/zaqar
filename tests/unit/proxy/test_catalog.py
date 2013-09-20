@@ -18,7 +18,6 @@ import json
 import random
 
 import falcon
-import redis
 
 from marconi.queues import bootstrap
 
@@ -47,10 +46,7 @@ class CatalogTest(base.TestBase):
         for server in self.servers:
             self.simulate_delete('/v1/partitions/' + server.name)
 
-        # TODO(zyuan): replace this with an proxy-storage
-        # API call to clean up the catalogs
-        client = redis.StrictRedis()
-        client.flushdb()
+        # TODO(zyuan): use a storage API call to cleanup the catalogs
 
         super(CatalogTest, self).tearDown()
 
@@ -59,7 +55,7 @@ class CatalogTest(base.TestBase):
                 [server.name for server in self.servers],
                 self.urls,
                 random.sample(xrange(100), len(self.urls))):
-            doc = {'nodes': [url], 'weight': weight}
+            doc = {'hosts': [url], 'weight': weight}
             self.simulate_put('/v1/partitions/' + name,
                               body=json.dumps(doc))
             self.assertEquals(self.srmock.status, falcon.HTTP_201)
