@@ -680,7 +680,7 @@ class MessageController(storage.MessageBase):
 
 def _basic_message(msg, now):
     oid = msg['_id']
-    age = utils.oid_ts(oid) - now
+    age = now - utils.oid_ts(oid)
 
     return {
         'id': str(oid),

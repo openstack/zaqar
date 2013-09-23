@@ -22,6 +22,7 @@ from testtools import matchers
 
 import base  # noqa
 from marconi.common import config
+from marconi.openstack.common import timeutils
 
 
 @ddt.ddt
@@ -70,6 +71,9 @@ class MessagesBaseTest(base.TestBase):
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
 
         # Test GET on the message resource directly
+        # NOTE(cpp-cabrera): force the passing of time to age a message
+        timeutils.set_time_override(timeutils.utcnow())
+        timeutils.advance_time_seconds(10)
         for msg_id in msg_ids:
             message_uri = self.messages_path + '/' + msg_id
 
@@ -83,9 +87,16 @@ class MessagesBaseTest(base.TestBase):
             self.assertEquals(self.srmock.headers_dict['Content-Location'],
                               message_uri)
 
+            # Check message properties
             message = json.loads(result[0])
             self.assertEquals(message['href'], message_uri)
             self.assertEquals(message['body'], lookup[message['ttl']])
+
+            # no negative age
+            # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
+            self.assertThat(message['age'],
+                            matchers.GreaterThan(-1))
+        timeutils.clear_time_override()
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)

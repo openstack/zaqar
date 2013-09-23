@@ -20,6 +20,7 @@ import pymongo
 
 import ddt
 import falcon
+from testtools import matchers
 
 import base  # noqa
 from marconi.common import config
@@ -137,13 +138,19 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEquals(len(listed['messages']), len(claimed))
 
         # Check the claim's metadata
+        ## NOTE(cpp-cabrera): advance time to force claim aging
+        timeutils.set_time_override(timeutils.utcnow())
+        timeutils.advance_time_seconds(10)
         body = self.simulate_get(claim_href, self.project_id)
+        timeutils.clear_time_override()
         claim = json.loads(body[0])
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(self.srmock.headers_dict['Content-Location'],
                           claim_href)
         self.assertEquals(claim['ttl'], 100)
+        ## NOTE(cpp-cabrera): verify that claim age is non-negative
+        self.assertThat(claim['age'], matchers.GreaterThan(-1))
 
         # Try to delete the message without submitting a claim_id
         self.simulate_delete(message_href, self.project_id)

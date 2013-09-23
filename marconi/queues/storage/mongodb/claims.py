@@ -86,7 +86,7 @@ class ClaimController(storage.ClaimBase):
             claim = next(msgs)
 
             update_time = claim['e'] - claim['t']
-            age = update_time - now
+            age = now - update_time
 
             claim = {
                 'age': int(age),

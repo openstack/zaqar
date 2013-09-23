@@ -47,7 +47,6 @@ class CatalogTest(base.TestBase):
             self.simulate_delete('/v1/partitions/' + server.name)
 
         # TODO(zyuan): use a storage API call to cleanup the catalogs
-
         super(CatalogTest, self).tearDown()
 
     def __add_partitions(self):
