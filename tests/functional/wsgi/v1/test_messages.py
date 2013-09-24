@@ -45,7 +45,7 @@ class TestMessages(base.FunctionalTestBase):
         This test also verifies that claimed messages are
         retuned (or not) depending on the include_claimed flag.
         """
-        doc = helpers.get_message_body(messagecount=1)
+        doc = helpers.create_message_body(messagecount=1)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
@@ -87,8 +87,8 @@ class TestMessages(base.FunctionalTestBase):
 
     def test_message_bulk_insert(self):
         """Bulk Insert Messages into the Queue."""
-        message_count = 10
-        doc = helpers.get_message_body(messagecount=message_count)
+        message_count = self.limits.message_paging_uplimit
+        doc = helpers.create_message_body(messagecount=message_count)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
@@ -119,8 +119,8 @@ class TestMessages(base.FunctionalTestBase):
         expected_msg_count = params.get('limit', 10)
 
         # Test Setup
-        doc = helpers.get_message_body(messagecount=
-                                       self.limits.message_paging_uplimit)
+        doc = helpers.create_message_body(messagecount=
+                                          self.limits.message_paging_uplimit)
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
@@ -146,7 +146,7 @@ class TestMessages(base.FunctionalTestBase):
     def test_message_delete(self):
         """Delete Message."""
         # Test Setup
-        doc = helpers.get_message_body(messagecount=1)
+        doc = helpers.create_message_body(messagecount=1)
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
@@ -164,7 +164,7 @@ class TestMessages(base.FunctionalTestBase):
 
     def test_message_bulk_delete(self):
         """Bulk Delete Messages."""
-        doc = helpers.get_message_body(messagecount=10)
+        doc = helpers.create_message_body(messagecount=10)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -191,7 +191,7 @@ class TestMessages(base.FunctionalTestBase):
 
     def test_message_partial_delete(self):
         """Delete Messages will be partially successful."""
-        doc = helpers.get_message_body(messagecount=3)
+        doc = helpers.create_message_body(messagecount=3)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -207,7 +207,7 @@ class TestMessages(base.FunctionalTestBase):
 
     def test_message_partial_get(self):
         """Get Messages will be partially successful."""
-        doc = helpers.get_message_body(messagecount=3)
+        doc = helpers.create_message_body(messagecount=3)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -226,7 +226,7 @@ class TestMessages(base.FunctionalTestBase):
 
         Marconi allows  a maximum of 50 message per POST.
         """
-        doc = helpers.get_message_body(messagecount=60)
+        doc = helpers.create_message_body(messagecount=60)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 400)

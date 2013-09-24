@@ -18,6 +18,7 @@ import ddt
 import uuid
 
 from marconi.tests.functional import base  # noqa
+from marconi.tests.functional import helpers
 
 
 class mystring(str):
@@ -219,8 +220,13 @@ class TestQueueMisc(base.FunctionalTestBase):
 
         self.client.set_base_url(self.base_url)
 
+        self.queue_url = self.base_url + '/queues/{0}'.format(uuid.uuid1())
+
     def test_list_queues(self):
         """List Queues."""
+
+        self.client.put(self.queue_url)
+        self.addCleanup(self.client.delete, self.queue_url)
 
         result = self.client.get('/queues')
         self.assertEqual(result.status_code, 200)
@@ -233,6 +239,9 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_list_queues_detailed(self):
         """List Queues with detailed = True."""
+
+        self.client.put(self.queue_url)
+        self.addCleanup(self.client.delete, self.queue_url)
 
         params = {'detailed': True}
         result = self.client.get('/queues', params=params)
@@ -265,12 +274,12 @@ class TestQueueMisc(base.FunctionalTestBase):
     def test_check_queue_exists(self):
         """Checks if queue exists."""
 
-        path = '/queues/testqueue'
-        self.client.put(path)
-        result = self.client.get(path)
+        self.client.put(self.queue_url)
+        self.addCleanup(self.client.delete, self.queue_url)
+        result = self.client.get(self.queue_url)
         self.assertEqual(result.status_code, 204)
 
-        result = self.client.head(path)
+        result = self.client.head(self.queue_url)
         self.assertEqual(result.status_code, 204)
 
     test_check_queue_exists.tags = ['positive']
@@ -294,3 +303,54 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.assertEqual(result.status_code, 204)
 
     test_get_queue_malformed_marker.tags = ['negative']
+
+    def test_get_stats_empty_queue(self):
+        """Get queue stats on an empty queue."""
+
+        result = self.client.put(self.queue_url)
+        self.addCleanup(self.client.delete, self.queue_url)
+        self.assertEqual(result.status_code, 201)
+
+        stats_url = self.queue_url + '/stats'
+
+        #Get stats on an empty queue
+        result = self.client.get(stats_url)
+        self.assertEqual(result.status_code, 200)
+
+        expected_response = {'messages':
+                             {'claimed': 0, 'total': 0, 'free': 0}}
+        self.assertEqual(result.json(), expected_response)
+
+    test_get_stats_empty_queue.tags = ['positive']
+
+    @ddt.data(0, 1)
+    def test_get_queue_stats_claimed(self, claimed):
+        """Get stats on a queue."""
+        result = self.client.put(self.queue_url)
+        self.addCleanup(self.client.delete, self.queue_url)
+        self.assertEqual(result.status_code, 201)
+
+        #Post Messages to the test queue
+        doc = helpers.create_message_body(messagecount=
+                                          self.limits.message_paging_uplimit)
+        message_url = self.queue_url + '/messages'
+        result = self.client.post(message_url, data=doc)
+        self.assertEqual(result.status_code, 201)
+
+        if claimed > 0:
+            claim_url = self.queue_url + '/claims?limit=' + str(claimed)
+            doc = {'ttl': 300, 'grace': 300}
+            result = self.client.post(claim_url, data=doc)
+            self.assertEqual(result.status_code, 201)
+
+        #Get stats on the queue.
+        stats_url = self.queue_url + '/stats'
+        result = self.client.get(stats_url)
+        self.assertEqual(result.status_code, 200)
+
+        self.assertQueueStats(result.json(), claimed)
+
+    test_get_queue_stats_claimed.tags = ['positive']
+
+    def tearDown(self):
+        super(TestQueueMisc, self).tearDown()

@@ -42,8 +42,8 @@ class TestClaims(base.FunctionalTestBase):
 
         #Post Messages
         url = self.queue_url + '/messages'
-        doc = helpers.get_message_body(messagecount=
-                                       self.limits.message_paging_uplimit)
+        doc = helpers.create_message_body(messagecount=
+                                          self.limits.message_paging_uplimit)
         for i in range(25):
             self.client.post(url, data=doc)
 
@@ -58,7 +58,7 @@ class TestClaims(base.FunctionalTestBase):
         self.assertEqual(result.status_code, 201)
 
         actual_message_count = len(result.json())
-        self.assertMessageCount(message_count, actual_message_count)
+        self.assertMessageCount(actual_message_count, message_count)
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_with_body, response_headers)
