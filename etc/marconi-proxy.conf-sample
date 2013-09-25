@@ -1,0 +1,43 @@
+# By default, this should line in one of:
+# ~/.marconi/marconi-proxy.conf
+# /etc/marconi/marconi-proxy.conf
+
+[DEFAULT]
+# Show more verbose log output (sets INFO log level output)
+;verbose = False
+
+# Show debugging output in logs (sets DEBUG log level output)
+;debug = False
+
+# Log to this file!
+log_file = /var/log/marconi/proxy.log
+
+;auth_strategy =
+
+# ================= Syslog Options ============================
+
+# Send logs to syslog (/dev/log) instead of to file specified
+# by `log_file`
+;use_syslog = False
+
+# Facility to use. If unset defaults to LOG_USER.
+;syslog_log_facility = LOG_LOCAL0
+
+
+# Transport driver module (e.g., wsgi, zmq)
+# Storage driver module (e.g., mongodb, sqlite)
+[proxy:drivers]
+transport = wsgi
+storage = mongodb
+
+[proxy:drivers:transport:wsgi]
+;bind = 0.0.0.0
+;port = 8889
+
+[proxy:drivers:storage:mongodb]
+uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
+database = marconi_proxy
+
+[oslo_cache]
+;cache_backend = memcached
+;cache_prefix = my_namespace

@@ -32,7 +32,7 @@ class ClaimsBaseTest(base.TestBase):
         super(ClaimsBaseTest, self).setUp()
 
         self.wsgi_cfg = config.namespace(
-            'drivers:transport:wsgi').from_options()
+            'queues:drivers:transport:wsgi').from_options()
 
         self.project_id = '480924'
         self.queue_path = '/v1/queues/fizbit'
@@ -237,7 +237,9 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
 
         super(ClaimsMongoDBTests, self).setUp()
 
-        self.cfg = config.namespace('drivers:storage:mongodb').from_options()
+        self.cfg = config.namespace(
+            'queues:drivers:storage:mongodb'
+        ).from_options()
 
     def tearDown(self):
         storage = self.boot.storage

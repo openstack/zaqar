@@ -1,3 +1,7 @@
+# By default, this should line in one of:
+# ~/.marconi/marconi-queues.conf
+# /etc/marconi/marconi-queues.conf
+
 [DEFAULT]
 # Show more verbose log output (sets INFO log level output)
 ;verbose = False
@@ -6,7 +10,7 @@
 ;debug = False
 
 # Log to this file!
-log_file = /var/log/marconi/server.log
+log_file = /var/log/marconi/queues.log
 
 ;auth_strategy =
 
@@ -20,19 +24,14 @@ log_file = /var/log/marconi/server.log
 ;syslog_log_facility = LOG_LOCAL0
 
 
-[drivers]
+[queues:drivers]
 # Transport driver module (e.g., wsgi, zmq)
 transport = wsgi
 
 # Storage driver module (e.g., mongodb, sqlite)
 storage = mongodb
 
-# transport and storage drivers for use with marconi-proxy
-[drivers:proxy]
-storage = mongodb
-transport = wsgi
-
-[drivers:transport:wsgi]
+[queues:drivers:transport:wsgi]
 ;bind = 0.0.0.0
 ;port = 8888
 
@@ -41,14 +40,10 @@ transport = wsgi
 ;metadata_max_length = 65536
 ;content_max_length = 262144
 
-;[drivers:transport:zmq]
+;[queues:drivers:transport:zmq]
 ;port = 9999
 
-;[drivers:proxy:transport:wsgi]
-;bind = 0.0.0.0
-;port = 8889
-
-[drivers:storage:mongodb]
+[queues:drivers:storage:mongodb]
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
 database = marconi
 
@@ -72,11 +67,7 @@ database = marconi
 # at the same instant.
 ;max_retry_jitter = 0.005
 
-[drivers:proxy:storage:mongodb]
-uri = mongodb://localhost:27017
-database = marconi_proxy
-
-[limits:transport]
+[queues:limits:transport]
 # The maximum number of queue records per page when listing queues
 ;queue_paging_uplimit = 20
 
@@ -95,14 +86,9 @@ database = marconi_proxy
 ;metadata_size_uplimit = 65536
 ;message_size_uplimit = 262144
 
-[limits:storage]
+[queues:limits:storage]
 # The default number of queue records per page when listing queues
 ;default_queue_paging = 10
 
 # The default number of messages per page when listing or claiming messages
 ;default_message_paging = 10
-
-# caching mechanism
-[oslo_cache]
-cache_backend = memory
-;cache_prefix = my_prefix

@@ -101,7 +101,7 @@ def _init():
 
         return Obj(from_options=from_options)
 
-    def project(name=None):
+    def project(name=None, prog=None):
         """Access the global namespace.
 
         :param name: the name of the project
@@ -141,7 +141,7 @@ def _init():
             args = [] if args is None else args
 
             if filename is None:
-                conf(args=args, project=name, prog=name)
+                conf(args=args, project=name, prog=prog)
             else:
                 conf(args=args, default_config_files=[filename])
 

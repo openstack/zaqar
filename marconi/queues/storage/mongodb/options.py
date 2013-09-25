@@ -48,4 +48,6 @@ OPTIONS = {
     'max_retry_jitter': 0.005,
 }
 
-CFG = config.namespace('drivers:storage:mongodb').from_options(**OPTIONS)
+CFG = config.namespace('queues:drivers:storage:mongodb').from_options(
+    **OPTIONS
+)

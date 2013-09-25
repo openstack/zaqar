@@ -33,7 +33,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         super(QueueLifecycleBaseTest, self).setUp()
 
         self.wsgi_cfg = config.namespace(
-            'drivers:transport:wsgi').from_options()
+            'queues:drivers:transport:wsgi').from_options()
 
     def test_empty_project_id(self):
         path = '/v1/queues/gumshoe'
@@ -259,7 +259,9 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
             self.skipTest('No MongoDB instance running')
         super(QueueLifecycleMongoDBTests, self).setUp()
 
-        self.cfg = config.namespace('drivers:storage:mongodb').from_options()
+        self.cfg = config.namespace(
+            'queues:drivers:storage:mongodb'
+        ).from_options()
 
     def tearDown(self):
         storage = self.boot.storage

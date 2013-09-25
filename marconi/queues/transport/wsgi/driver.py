@@ -33,9 +33,11 @@ OPTIONS = {
     'port': 8888
 }
 
-PROJECT_CFG = config.project('marconi')
+PROJECT_CFG = config.project('marconi', 'marconi-queues')
 GLOBAL_CFG = PROJECT_CFG.from_options()
-WSGI_CFG = config.namespace('drivers:transport:wsgi').from_options(**OPTIONS)
+WSGI_CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
+    **OPTIONS
+)
 
 LOG = logging.getLogger(__name__)
 

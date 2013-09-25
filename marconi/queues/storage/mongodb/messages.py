@@ -36,7 +36,7 @@ from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('limits:storage').from_options(
+CFG = config.namespace('queues:limits:storage').from_options(
     default_message_paging=10,
 )
 

@@ -45,11 +45,11 @@ OPTIONS = {
     'port': 8889
 }
 
-PROJECT_CFG = config.project('marconi')
+PROJECT_CFG = config.project('marconi', 'marconi-proxy')
 GLOBAL_CFG = PROJECT_CFG.from_options()
-WSGI_CFG = config.namespace(
-    'drivers:proxy:transport:wsgi'
-).from_options(**OPTIONS)
+WSGI_CFG = config.namespace('proxy:drivers:transport:wsgi').from_options(
+    **OPTIONS
+)
 
 LOG = logging.getLogger(__name__)
 

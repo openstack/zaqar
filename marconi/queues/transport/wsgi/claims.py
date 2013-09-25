@@ -26,7 +26,7 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('drivers:transport:wsgi').from_options(
+CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
     metadata_max_length=64 * 1024
 )
 
