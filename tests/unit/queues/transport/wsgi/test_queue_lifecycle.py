@@ -36,7 +36,22 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.wsgi_cfg = config.namespace(
             'drivers:transport:wsgi').from_options()
 
-    @ddt.data('480924', 'foo', '', None)
+    def test_empty_project_id(self):
+        path = '/v1/queues/gumshoe'
+
+        self.simulate_get(path, '')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_put(path, '')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_head(path, '')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_delete(path, '')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    @ddt.data('480924', 'foo', None)
     def test_basics_thoroughly(self, project_id):
         path = '/v1/queues/gumshoe'
 

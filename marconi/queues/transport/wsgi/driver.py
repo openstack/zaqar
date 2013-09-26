@@ -52,6 +52,11 @@ media type support with the "Accept" header.''',
 
 def _extract_project_id(req, resp, params):
     params['project_id'] = req.get_header('X-PROJECT-ID')
+    if params['project_id'] == "":
+        raise falcon.HTTPBadRequest('Empty project header not allowed',
+                                    _(u'''
+X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
+and retry.'''))
 
 
 class Driver(transport.DriverBase):
