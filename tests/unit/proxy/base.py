@@ -21,7 +21,7 @@ from wsgiref import simple_server
 from falcon import testing as ftest
 
 from marconi.proxy import app
-from tests.unit.transport.wsgi import base
+from tests.unit.queues.transport.wsgi import base
 
 
 class TestBase(base.TestBase):

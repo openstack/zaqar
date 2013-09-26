@@ -28,7 +28,7 @@ from marconi.queues.storage.mongodb import controllers
 from marconi.queues.storage.mongodb import options as mongodb_options
 from marconi.queues.storage.mongodb import utils
 from marconi import tests as testing
-from marconi.tests.storage import base
+from marconi.tests.queues.storage import base
 
 
 class MongodbUtilsTest(testing.TestBase):
