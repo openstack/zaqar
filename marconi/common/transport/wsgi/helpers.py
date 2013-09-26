@@ -1,0 +1,60 @@
+# Copyright (c) 2013 Rackspace Hosting, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""wsgi transport helpers."""
+import falcon
+
+
+def extract_project_id(req, resp, params):
+    """Adds `project_id` to the list of params for all responders
+
+    Meant to be used as a `before` hook.
+
+    :param req: request sent
+    :type req: falcon.request.Request
+    :param resp: response object to return
+    :type resp: falcon.response.Response
+    :param params: additional parameters passed to responders
+    :type params: dict
+    :rtype: None
+    """
+    params['project_id'] = req.get_header('X-PROJECT-ID')
+    if params['project_id'] == "":
+        raise falcon.HTTPBadRequest('Empty project header not allowed',
+                                    _(u'''
+X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
+and retry.'''))
+
+
+def require_accepts_json(req, resp, params):
+    """Raises an exception if the request does not accept JSON
+
+    Meant to be used as a `before` hook.
+
+    :param req: request sent
+    :type req: falcon.request.Request
+    :param resp: response object to return
+    :type resp: falcon.response.Response
+    :param params: additional parameters passed to responders
+    :type params: dict
+    :rtype: None
+    :raises: falcon.HTTPNotAcceptable
+    """
+    if not req.client_accepts('application/json'):
+        raise falcon.HTTPNotAcceptable(
+            u'''
+Endpoint only serves `application/json`; specify client-side
+media type support with the "Accept" header.''',
+            href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
+            href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')

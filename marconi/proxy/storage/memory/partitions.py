@@ -22,8 +22,6 @@ from marconi.proxy.storage import exceptions
 class PartitionsController(base.PartitionsBase):
     def __init__(self, *args, **kwargs):
         super(PartitionsController, self).__init__(*args, **kwargs)
-
-        self.driver.db['partitions'] = {}
         self._col = self.driver.db['partitions']
 
     def list(self):

@@ -24,6 +24,10 @@ import base  # noqa
 
 class PartitionTest(base.TestBase):
 
+    @classmethod
+    def setUpClass(cls):
+        super(PartitionTest, cls).setUpClass()
+
     def setUp(self):
         super(PartitionTest, self).setUp()
         self.path = '/v1/partitions'
@@ -34,6 +38,10 @@ class PartitionTest(base.TestBase):
         self.proxy.cache.flush()
         self.proxy.storage.partitions_controller.drop_all()
         super(PartitionTest, self).tearDown()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(PartitionTest, cls).tearDownClass()
 
     def test_simple(self):
         # No partition

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +12,20 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marconi.proxy.storage import base
-from marconi.proxy.storage.memory import controllers
 
+"""WSGI App for WSGI Containers
 
-class Driver(base.DriverBase):
+This app should be used by external WSGI
+containers. For example:
 
-    def __init__(self):
-        self._db = {}
-        self._db['partitions'] = {}
-        self._db['catalogue'] = {}
+    $ gunicorn marconi.proxy.transport.wsgi.admin.app:app
 
-    @property
-    def db(self):
-        return self._db
+NOTE: As for external containers, it is necessary
+to put config files in the standard paths. There's
+no common way to specify / pass configuration files
+to the WSGI app when it is called from other apps.
+"""
 
-    @property
-    def partitions_controller(self):
-        return controllers.PartitionsController(self)
+from marconi.proxy.admin import bootstrap
 
-    @property
-    def catalogue_controller(self):
-        return controllers.CatalogueController(self)
+app = bootstrap.Bootstrap().transport.app

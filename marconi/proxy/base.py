@@ -16,6 +16,7 @@
 from oslo.config import cfg
 from stevedore import driver
 
+from marconi.common import access
 from marconi.common.cache import cache as oslo_cache
 from marconi.common import config
 from marconi.common import decorators
@@ -39,9 +40,13 @@ class Bootstrap(object):
     manages their lifetimes.
     """
 
-    def __init__(self, config_file=None, cli_args=None):
+    def __init__(self, access_mode, config_file=None, cli_args=None):
         PROJECT_CFG.load(filename=config_file, args=cli_args)
         log.setup('marconi_proxy')
+        form = 'marconi.proxy.{0}.transport'
+        lookup = {access.Access.public: 'public',
+                  access.Access.admin: 'admin'}
+        self._transport_type = form.format(lookup[access_mode])
 
     @decorators.lazy_property(write=False)
     def storage(self):
@@ -69,7 +74,7 @@ class Bootstrap(object):
     def transport(self):
         LOG.debug(_(u'Loading Proxy Transport Driver'))
         try:
-            mgr = driver.DriverManager('marconi.proxy.transport',
+            mgr = driver.DriverManager(self._transport_type,
                                        CFG.transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage,

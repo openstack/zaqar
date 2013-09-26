@@ -26,8 +26,6 @@ class CatalogueController(base.CatalogueBase):
 
     def __init__(self, *args, **kwargs):
         super(CatalogueController, self).__init__(*args, **kwargs)
-
-        self.driver.db['catalogue'] = {}
         self._col = self.driver.db['catalogue']
 
     def list(self, project):
@@ -47,10 +45,12 @@ class CatalogueController(base.CatalogueBase):
         return _idx(project, queue) in self._col
 
     def insert(self, project, queue, partition, host, metadata={}):
-        self._col[_idx(project, queue)] = {
-            'p': project, 'q': queue,
-            'n': partition, 'h': host, 'm': metadata
-        }
+        key = _idx(project, queue)
+        if key not in self._col:
+            self._col[key] = {
+                'p': project, 'q': queue,
+                'n': partition, 'h': host, 'm': metadata
+            }
 
     def delete(self, project, queue):
         try:

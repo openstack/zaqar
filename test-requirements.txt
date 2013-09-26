@@ -8,6 +8,7 @@ mock>=1.0
 ddt>=0.4.0
 discover
 fixtures>=0.3.14
+httpretty>=0.6.3
 python-subunit
 testrepository>=0.0.17
 testtools>=0.9.32

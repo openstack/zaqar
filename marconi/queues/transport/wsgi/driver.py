@@ -17,6 +17,7 @@ import falcon
 from wsgiref import simple_server
 
 from marconi.common import config
+from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
 from marconi.queues.transport import auth
@@ -42,25 +43,6 @@ WSGI_CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
 LOG = logging.getLogger(__name__)
 
 
-def _check_media_type(req, resp, params):
-    if not req.client_accepts('application/json'):
-        raise falcon.HTTPNotAcceptable(
-            u'''
-Endpoint only serves `application/json`; specify client-side
-media type support with the "Accept" header.''',
-            href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
-            href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
-
-
-def _extract_project_id(req, resp, params):
-    params['project_id'] = req.get_header('X-PROJECT-ID')
-    if params['project_id'] == "":
-        raise falcon.HTTPBadRequest('Empty project header not allowed',
-                                    _(u'''
-X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
-and retry.'''))
-
-
 class Driver(transport.DriverBase):
 
     def __init__(self, storage):
@@ -71,7 +53,10 @@ class Driver(transport.DriverBase):
 
     def _init_routes(self):
         """Initialize URI routes to resources."""
-        self.app = falcon.API(before=[_check_media_type, _extract_project_id])
+        self.app = falcon.API(before=[
+            helpers.require_accepts_json,
+            helpers.extract_project_id
+        ])
 
         queue_controller = self.storage.queue_controller
         message_controller = self.storage.message_controller
