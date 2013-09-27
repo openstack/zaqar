@@ -84,6 +84,16 @@ class PartitionsController(base.PartitionsBase):
         self._col.drop()
         self._col.ensure_index(PARTITIONS_INDEX, unique=True)
 
+    @utils.raises_conn_error
+    def update(self, name, **kwargs):
+        key, value = kwargs.popitem()
+        assert key in ('hosts', 'weight'), "kwargs (hosts, weight)"
+        res = self._col.update({'n': name},
+                               {'$set': {key[0]: value}},
+                               upsert=False)
+        if not res['updatedExisting']:
+            raise exceptions.PartitionNotFound(name)
+
 
 def _normalize(entry):
     return {

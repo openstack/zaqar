@@ -52,6 +52,7 @@ class PartitionsControllerTest(ControllerBaseTest):
         self.name = six.text_type(uuid.uuid1())
 
     def tearDown(self):
+        self.controller.drop_all()
         super(PartitionsControllerTest, self).tearDown()
 
     def _check_structure(self, partition):
@@ -87,6 +88,19 @@ class PartitionsControllerTest(ControllerBaseTest):
 
         # verify it isn't listable
         self.assertEqual(len(list(self.controller.list())), 0)
+
+    def test_partition_updates(self):
+        with helpers.partition(self.controller, 'a', 10, ['a']):
+            self.controller.update('a', weight=11)
+            self.assertEqual(self.controller.get('a')['weight'], 11)
+
+            self.controller.update('a', hosts=['b'])
+            self.assertEqual(self.controller.get('a')['hosts'], ['b'])
+
+    def test_update_on_nonexisting_raises(self):
+        self.assertRaises(exceptions.PartitionNotFound,
+                          self.controller.update,
+                          'a', weight=10)
 
     def test_list(self):
         with helpers.partitions(self.controller, 10) as expect:
@@ -131,6 +145,7 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.project = six.text_type(uuid.uuid1())
 
     def tearDown(self):
+        self.controller.drop_all()
         super(CatalogueControllerTest, self).tearDown()
 
     def _check_structure(self, entry):

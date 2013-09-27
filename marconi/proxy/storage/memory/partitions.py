@@ -45,6 +45,14 @@ class PartitionsController(base.PartitionsBase):
                            'w': weight,
                            'h': hosts}
 
+    def update(self, name, **kwargs):
+        key, value = kwargs.popitem()
+        assert key in ('weight', 'hosts'), "kwargs (hosts, weight)"
+        try:
+            self._col[name][key[0]] = value
+        except KeyError:
+            raise exceptions.PartitionNotFound(name)
+
     def delete(self, name):
         try:
             del self._col[name]
