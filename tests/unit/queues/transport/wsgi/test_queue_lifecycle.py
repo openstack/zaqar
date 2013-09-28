@@ -19,6 +19,7 @@ import os
 
 import ddt
 import falcon
+import six
 
 import base  # noqa
 from marconi.common import config
@@ -112,6 +113,22 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_put('/v1/queues/_' + 'niceboat' * 8)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    @ddt.data((u'/v1/queues/non-ascii-n\u0153me', 'utf-8'),
+              (u'/v1/queues/non-ascii-n\xc4me', 'iso8859-1'))
+    def test_non_ascii_name(self, (uri, enc)):
+
+        if six.PY2:
+            uri = uri.encode(enc)
+
+        self.simulate_put(uri)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_get(uri)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_delete(uri)
         self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_no_metadata(self):

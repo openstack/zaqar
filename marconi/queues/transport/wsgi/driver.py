@@ -29,6 +29,7 @@ from marconi.queues.transport.wsgi import queues
 from marconi.queues.transport.wsgi import stats
 from marconi.queues.transport.wsgi import v1
 
+
 OPTIONS = {
     'bind': '0.0.0.0',
     'port': 8888
@@ -52,11 +53,16 @@ class Driver(transport.DriverBase):
         self._init_middleware()
 
     def _init_routes(self):
-        """Initialize URI routes to resources."""
-        self.app = falcon.API(before=[
+        """Initialize hooks and URI routes to resources."""
+        before_hooks = [
             helpers.require_accepts_json,
-            helpers.extract_project_id
-        ])
+            helpers.extract_project_id,
+
+            # NOTE(kgriffs): Depends on project_id, above
+            helpers.validate_queue_name,
+        ]
+
+        self.app = falcon.API(before=before_hooks)
 
         queue_controller = self.storage.queue_controller
         message_controller = self.storage.message_controller

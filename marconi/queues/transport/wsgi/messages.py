@@ -17,7 +17,6 @@ import falcon
 import six
 
 from marconi.common import config
-from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
@@ -54,7 +53,7 @@ class CollectionResource(object):
                 message_ids=ids,
                 project=project_id)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:
@@ -98,7 +97,7 @@ class CollectionResource(object):
             cursor = next(results)
             messages = list(cursor)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
@@ -167,7 +166,7 @@ class CollectionResource(object):
                 project=project_id,
                 client_uuid=uuid)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
@@ -231,7 +230,7 @@ class CollectionResource(object):
                 message_ids=ids,
                 project=project_id)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:

@@ -18,11 +18,13 @@ import os
 
 import ddt
 import falcon
+import six
 from testtools import matchers
 
 import base  # noqa
 from marconi.common import config
 from marconi.openstack.common import timeutils
+from marconi.queues.transport import validation
 
 
 @ddt.ddt
@@ -154,6 +156,32 @@ class MessagesBaseTest(base.TestBase):
         ]
 
         self._test_post(sample_messages)
+
+    def test_post_to_non_ascii_queue(self):
+        # NOTE(kgriffs): This test verifies that routes with
+        # embedded queue name params go through the validation
+        # hook, regardless of the target resource.
+
+        path = u'/v1/queues/non-ascii-n\u0153me/messages'
+
+        if six.PY2:
+            path = path.encode('utf-8')
+
+        self._post_messages(path)
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+    def test_post_with_long_queue_name(self):
+        # NOTE(kgriffs): This test verifies that routes with
+        # embedded queue name params go through the validation
+        # hook, regardless of the target resource.
+
+        game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
+        self._post_messages('/v1/queues/' + game_title + '/messages')
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+        game_title += 'v'
+        self._post_messages('/v1/queues/' + game_title + '/messages')
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     def test_post_to_missing_queue(self):
         self._post_messages('/v1/queues/nonexistent/messages')

@@ -18,7 +18,6 @@ import re
 import simplejson as json
 
 from marconi.common import config
-from marconi.common import exceptions
 
 OPTIONS = {
     'queue_paging_uplimit': 20,
@@ -32,25 +31,33 @@ OPTIONS = {
 
 CFG = config.namespace('queues:limits:transport').from_options(**OPTIONS)
 
-QUEUE_NAME_REGEX = re.compile('^[\w-]+$')
+# NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
+# only ASCII characters.
+QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-]+$')
+QUEUE_NAME_MAX_LEN = 64
 
 
-def queue_creation(name):
+class ValidationFailed(ValueError):
+    """User input did not follow API restrictions."""
+
+
+def queue_name(name):
     """Restrictions on a queue name.
 
     :param name: The queue name
     :raises: ValidationFailed if the name is longer than 64 bytes or
-        contains bytes other than ASCII digits, letters, underscore,
-        and dash.
+        contains anything other than ASCII digits and letters,
+        underscores, and dashes.
     """
 
-    if len(name) > 64:
-        raise exceptions.ValidationFailed(
-            'queue name longer than 64 bytes')
+    if len(name) > QUEUE_NAME_MAX_LEN:
+        raise ValidationFailed(
+            'Queue names may not be more than 64 characters long.')
 
     if not QUEUE_NAME_REGEX.match(name):
-        raise exceptions.ValidationFailed(
-            'queue name contains forbidden characters')
+        raise ValidationFailed(
+            'Queue names may only contain ASCII letters, digits, '
+            'underscores, and dashes.')
 
 
 def queue_listing(limit=None, **kwargs):
@@ -62,8 +69,8 @@ def queue_listing(limit=None, **kwargs):
     """
 
     if limit is not None and not (0 < limit <= CFG.queue_paging_uplimit):
-        raise exceptions.ValidationFailed(
-            'queue paging count not in (0, %d]' %
+        raise ValidationFailed(
+            'Limit must be at least 1 and no greater than %d.' %
             CFG.queue_paging_uplimit)
 
 
@@ -78,8 +85,9 @@ def queue_content(metadata, check_size):
     if check_size:
         length = _compact_json_length(metadata)
         if length > CFG.metadata_size_uplimit:
-            raise exceptions.ValidationFailed(
-                'queue metadata larger than %d bytes' %
+            raise ValidationFailed(
+                ('Queue metadata may not exceed %d characters, '
+                 'excluding whitespace.') %
                 CFG.metadata_size_uplimit)
 
 
@@ -103,15 +111,17 @@ def message_content(message, check_size):
     """Restrictions on each message."""
 
     if not (60 <= message['ttl'] <= CFG.message_ttl_max):
-        raise exceptions.ValidationFailed(
-            'message TTL not in [60, %d]' %
+        raise ValidationFailed(
+            ('The TTL for a message may not exceed %d seconds, and '
+             'must be at least 60 seconds long.') %
             CFG.message_ttl_max)
 
     if check_size:
         body_length = _compact_json_length(message['body'])
         if body_length > CFG.message_size_uplimit:
-            raise exceptions.ValidationFailed(
-                'message body larger than %d bytes' %
+            raise ValidationFailed(
+                ('Message bodies may not exceed %d characters, '
+                 'excluding whitespace.') %
                 CFG.message_size_uplimit)
 
 
@@ -124,8 +134,8 @@ def message_listing(limit=None, **kwargs):
     """
 
     if limit is not None and not (0 < limit <= CFG.message_paging_uplimit):
-        raise exceptions.ValidationFailed(
-            'message paging count not in (0, %d]' %
+        raise ValidationFailed(
+            'Limit must be at least 1 and may not be greater than %d. ' %
             CFG.message_paging_uplimit)
 
 
@@ -142,8 +152,9 @@ def claim_creation(metadata, **kwargs):
     claim_updating(metadata)
 
     if not (60 <= metadata['grace'] <= CFG.claim_grace_max):
-        raise exceptions.ValidationFailed(
-            'claim grace not in [60, %d]' %
+        raise ValidationFailed(
+            ('Grace must be at least 60 seconds and cannot '
+             'exceed %d.') %
             CFG.claim_grace_max)
 
 
@@ -156,8 +167,9 @@ def claim_updating(metadata):
     """
 
     if not (60 <= metadata['ttl'] <= CFG.claim_ttl_max):
-        raise exceptions.ValidationFailed(
-            'claim TTL not in [60, %d]' %
+        raise ValidationFailed(
+            ('The TTL for a claim may not exceed %d seconds, and must be '
+             'at least 60 seconds long.') %
             CFG.claim_ttl_max)
 
 

@@ -16,12 +16,10 @@
 import falcon
 import six
 
-from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation as validate
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
-
 
 LOG = logging.getLogger(__name__)
 
@@ -40,13 +38,8 @@ class ItemResource(object):
                   {'queue': queue_name, 'project': project_id})
 
         try:
-            validate.queue_creation(name=queue_name)
             created = self.queue_controller.create(
-                queue_name,
-                project=project_id)
-
-        except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
+                queue_name, project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -58,11 +51,10 @@ class ItemResource(object):
 
     def on_head(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue item exists - queue: %(queue)s, '
-                    'project: %(project)s') %
+                    u'project: %(project)s') %
                   {'queue': queue_name, 'project': project_id})
 
-        if self.queue_controller.exists(queue_name,
-                                        project=project_id):
+        if self.queue_controller.exists(queue_name, project=project_id):
             resp.status = falcon.HTTP_204
         else:
             resp.status = falcon.HTTP_404
@@ -107,7 +99,7 @@ class CollectionResource(object):
             validate.queue_listing(**kwargs)
             results = self.queue_controller.list(project=project_id, **kwargs)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:

@@ -43,12 +43,13 @@ def get_keystone_token(conf, client):
 def create_marconi_headers(conf):
     """Returns headers to be used for all Marconi requests."""
 
-    headers = {"Host": conf.headers.host,
-               "User-Agent": conf.headers.user_agent,
-               "Accept": "application/json",
-               "X-Project-ID": conf.headers.project_id,
-               "Client-ID": str(uuid.uuid1())
-               }
+    headers = {
+        "Host": conf.headers.host,
+        "User-Agent": conf.headers.user_agent,
+        "Accept": "application/json",
+        "X-Project-ID": conf.headers.project_id,
+        "Client-ID": str(uuid.uuid1()),
+    }
 
     return headers
 

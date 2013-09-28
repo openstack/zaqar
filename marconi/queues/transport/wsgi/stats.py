@@ -20,7 +20,6 @@ from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 
-
 LOG = logging.getLogger(__name__)
 
 

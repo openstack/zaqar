@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2013 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +14,50 @@
 # limitations under the License.
 import copy
 import ddt
+import six
 import uuid
 
 from marconi.tests.functional import base  # noqa
 
 
-class mystring(str):
-    pass
+class NamedBinaryStr(six.binary_type):
+    """Wrapper for six.binary_type to facilitate overriding __name__."""
 
 
-class mydict(dict):
-    pass
+class NamedUnicodeStr(object):
+    """Unicode string look-alike to facilitate overriding __name__."""
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+    def encode(self, enc):
+        return self.value.encode(enc)
+
+    def __format__(self, formatstr):
+        """Workaround for ddt bug.
+
+        DDT will always call __format__ even when __name__ exists,
+        which blows up for Unicode strings under Py2.
+        """
+        return ''
+
+
+class NamedDict(dict):
+    """Wrapper for dict to facilitate overriding __name__."""
+
+
+def annotated(test_name, test_input):
+    if isinstance(test_input, dict):
+        annotated_input = NamedDict(test_input)
+    elif isinstance(test_input, six.text_type):
+        annotated_input = NamedUnicodeStr(test_input)
+    else:
+        annotated_input = NamedBinaryStr(test_input)
+
+    setattr(annotated_input, '__name__', test_name)
+    return annotated_input
 
 
 @ddt.ddt
@@ -33,11 +65,6 @@ class TestInsertQueue(base.FunctionalTestBase):
     """Tests for Insert queue."""
 
     server_class = base.MarconiServer
-
-    def annotated(test_name, test_input):
-        r = mystring(test_input)
-        setattr(r, "__name__", test_name)
-        return r
 
     def setUp(self):
         super(TestInsertQueue, self).setUp()
@@ -67,13 +94,16 @@ class TestInsertQueue(base.FunctionalTestBase):
 
     test_insert_queue.tags = ['positive', 'smoke']
 
-    @ddt.data('汉字漢字', '@$@^qw',
+    @ddt.data(annotated('test_insert_queue_non_ascii_name',
+                        u'\u6c49\u5b57\u6f22\u5b57'),
+              '@$@^qw',
               annotated('test_insert_queue_invalid_name_length', 'i' * 65))
     def test_insert_queue_invalid_name(self, queue_name):
         """Create Queue."""
+        if six.PY2 and isinstance(queue_name, NamedUnicodeStr):
+            queue_name = queue_name.encode('utf-8')
+
         self.url = self.base_url + '/queues/' + queue_name
-        if queue_name == '汉字漢字':
-            self.skipTest("Test fails, needs fix: bug# 1208873")
         self.addCleanup(self.client.delete, self.url)
 
         result = self.client.put(self.url)
@@ -81,7 +111,7 @@ class TestInsertQueue(base.FunctionalTestBase):
 
         self.url = self.url + '/metadata'
         result = self.client.get(self.url)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(result.status_code, 400)
 
     test_insert_queue_invalid_name.tags = ['negative']
 
@@ -154,11 +184,6 @@ class TestQueueMetaData(base.FunctionalTestBase):
 
     server_class = base.MarconiServer
 
-    def annotated(test_name, test_input):
-        r = mydict(test_input)
-        setattr(r, "__name__", test_name)
-        return r
-
     def setUp(self):
         super(TestQueueMetaData, self).setUp()
 
@@ -172,9 +197,11 @@ class TestQueueMetaData(base.FunctionalTestBase):
         self.client.set_base_url(self.queue_metadata_url)
 
     @ddt.data({},
-              {"_queue": "Top Level field with _"},
-              {"汉字": "non ASCII metadata"},
-              {"queue": "#$%^&Apple"},
+              {'_queue': 'Top Level field with _'},
+              annotated('test_insert_queue_metadata_unicode', {
+                  u'\u6c49\u5b57': u'Unicode: \u6c49\u5b57'
+              }),
+              {'queue': '#$%^&Apple'},
               annotated('test_insert_queue_metadata_huge',
                         {"queue": "i" * 65000}))
     def test_insert_queue_metadata(self, doc):
@@ -185,7 +212,16 @@ class TestQueueMetaData(base.FunctionalTestBase):
         result = self.client.get()
         self.assertEqual(result.status_code, 200)
 
-        doc_decoded = dict((k.decode('utf-8'), v) for k, v in doc.iteritems())
+        doc_decoded = {}
+        for k, v in doc.items():
+            if isinstance(k, six.binary_type):
+                k = k.decode('utf-8')
+
+            if isinstance(v, six.binary_type):
+                v = v.decode('utf-8')
+
+            doc_decoded[k] = v
+
         self.assertEqual(result.json(), doc_decoded)
 
     test_insert_queue_metadata.tags = ['smoke', 'positive']

@@ -20,7 +20,7 @@ class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
     """Wraps falcon.HTTPServiceUnavailable with Marconi messaging."""
 
     TITLE = _(u'Service temporarily unavailable')
-    DESCRIPTION = (u'Please try again in a few seconds.')
+    DESCRIPTION = _(u'Please try again in a few seconds.')
 
     def __init__(self, description, retry_after=30):
         description = description + ' ' + self.DESCRIPTION

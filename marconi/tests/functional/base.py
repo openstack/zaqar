@@ -57,16 +57,16 @@ class FunctionalTestBase(testing.TestBase):
         # NOTE(flaper87): Create client
         # for this test unit.
         self.client = http.Client()
-        self.header = helpers.create_marconi_headers(self.cfg)
+        self.headers = helpers.create_marconi_headers(self.cfg)
 
         if self.cfg.auth.auth_on:
             auth_token = helpers.get_keystone_token(self.cfg, self.client)
-            self.header["X-Auth-Token"] = auth_token
+            self.headers["X-Auth-Token"] = auth_token
 
         self.headers_response_with_body = set(['location',
                                                'content-type'])
 
-        self.client.set_headers(self.header)
+        self.client.set_headers(self.headers)
 
     @classmethod
     def tearDownClass(cls):

@@ -20,7 +20,3 @@ class InvalidDriver(Exception):
 
 class PatternNotFound(Exception):
     """A string did not match the expected pattern or regex."""
-
-
-class ValidationFailed(ValueError):
-    """User input exceeds the API restrictions."""

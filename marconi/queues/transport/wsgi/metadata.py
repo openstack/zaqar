@@ -17,14 +17,12 @@ import falcon
 import six
 
 from marconi.common import config
-from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation as validate
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.queues.transport.wsgi import utils as wsgi_utils
-
 
 LOG = logging.getLogger(__name__)
 CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
@@ -83,7 +81,7 @@ class Resource(object):
                                          metadata=metadata,
                                          project=project_id)
 
-        except input_exceptions.ValidationFailed as ex:
+        except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.QueueDoesNotExist:
