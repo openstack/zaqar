@@ -93,7 +93,7 @@ class Resource(forward.ForwardMixin):
         super(Resource, self).__init__(partitions_controller,
                                        catalogue_controller,
                                        cache, selector,
-                                       methods=['get'])
+                                       methods=['get', 'head'])
 
     def on_put(self, request, response, queue):
         """Create a queue in the catalogue, then forwards to marconi.
@@ -103,12 +103,13 @@ class Resource(forward.ForwardMixin):
         catalogue. This should also be the only time
         partition.weighted_select is ever called.
 
-        :raises: InternalServerError - if no partitions are registered
+        :raises: HTTPInternalServerError - if no partitions are
+            registered
 
         """
         target = partition.weighted_select(self._partitions.list())
         if target is None:
-            raise falcon.InternalServerError(
+            raise falcon.HTTPInternalServerError(
                 "No partitions registered",
                 "Contact the system administrator for more details."
             )
@@ -121,6 +122,7 @@ class Resource(forward.ForwardMixin):
             self._catalogue.insert(project, queue, target['name'],
                                    host)
 
+        response.set_headers(helpers.capitalized(resp.headers))
         response.status = http.status(resp.status_code)
         response.body = resp.content
 

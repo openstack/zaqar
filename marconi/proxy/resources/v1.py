@@ -36,5 +36,7 @@ class Resource(object):
 
         host = partition['hosts'][0]
         resp = helpers.forward(host, request)
+
+        response.set_headers(helpers.capitalized(resp.headers))
         response.status = http.status(resp.status_code)
         response.body = resp.content

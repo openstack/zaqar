@@ -69,6 +69,10 @@ class ForwardMixin(object):
 
         # send the request, update the response
         resp = helpers.forward(host, request)
+
+        # NOTE(zyuan): normalize the lower-case header from
+        # `requests` to Caml-Case and forward the headers back
+        response.set_headers(helpers.capitalized(resp.headers))
         response.status = http.status(resp.status_code)
         response.body = resp.content
 

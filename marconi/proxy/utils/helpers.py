@@ -36,3 +36,16 @@ def forward(host, request):
     resp = requests.request(method, url, headers=request._headers,
                             data=request.stream.read())
     return resp
+
+
+def capitalized(headers):
+    """Construct a new headers dict with all keys capitalized.
+
+    :returns: a new dict of headers in This-Form
+    """
+    d = {}
+    for k, v in headers.items():
+        nk = '-'.join([w.capitalize() for w in k.split('-')])
+        d[nk] = v
+
+    return d
