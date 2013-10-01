@@ -18,6 +18,7 @@
 import pymongo
 import pymongo.errors
 
+from marconi.common import decorators
 from marconi.openstack.common import log as logging
 from marconi.queues import storage
 from marconi.queues.storage.mongodb import controllers
@@ -28,32 +29,44 @@ LOG = logging.getLogger(__name__)
 
 class Driver(storage.DriverBase):
 
-    def __init__(self):
-        # Lazy instantiation
-        self._database = None
-        self._connection = None
+    @decorators.lazy_property()
+    def queues_database(self):
+        """Database dedicated to the "queues" collection.
 
-    def _connect(self):
-        if options.CFG.uri and 'replicaSet' in options.CFG.uri:
-            self._connection = pymongo.MongoReplicaSetClient(options.CFG.uri)
-        else:
-            self._connection = pymongo.MongoClient(options.CFG.uri)
+        The queues collection is separated out into it's own database
+        to avoid writer lock contention with the messages collections.
+        """
 
-    @property
-    def db(self):
-        """Property for lazy instantiation of mongodb's database."""
-        if self._database is None:
-            self._database = self.connection[options.CFG.database]
+        name = options.CFG.database + '_queues'
+        return self.connection[name]
 
-        return self._database
+    @decorators.lazy_property()
+    def message_databases(self):
+        """List of message databases, ordered by partition number."""
 
-    @property
+        name = options.CFG.database
+        partitions = options.CFG.partitions
+
+        # NOTE(kgriffs): Partition names are zero-based, and
+        # the list is ordered by partition, which means that a
+        # caller can, e.g., get marconi_mp0 by simply indexing
+        # the first element in the list of databases:
+        #
+        #     self.driver.message_databases[0]
+        #
+        return [self.connection[name + '_messages_p' + str(p)]
+                for p in range(partitions)]
+
+    @decorators.lazy_property()
     def connection(self):
-        """Property for lazy instantiation of mongodb's client connection."""
-        if self._connection is None:
-            self._connect()
+        """MongoDB client connection instance."""
 
-        return self._connection
+        if options.CFG.uri and 'replicaSet' in options.CFG.uri:
+            MongoClient = pymongo.MongoReplicaSetClient
+        else:
+            MongoClient = pymongo.MongoClient
+
+        return MongoClient(options.CFG.uri)
 
     @property
     def gc_interval(self):

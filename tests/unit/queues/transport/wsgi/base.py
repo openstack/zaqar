@@ -26,15 +26,15 @@ class TestBase(testing.TestBase):
     config_filename = None
 
     def setUp(self):
-        super(TestBase, self).setUp()
-
         if self.config_filename is None:
             self.skipTest('No config specified')
 
-        conf_file = self.conf_path(self.config_filename)
-        boot = marconi.Bootstrap(conf_file)
+        super(TestBase, self).setUp()
 
-        self.app = boot.transport.app
+        conf_file = self.conf_path(self.config_filename)
+        self.boot = marconi.Bootstrap(conf_file)
+
+        self.app = self.boot.transport.app
         self.srmock = ftest.StartResponseMock()
 
     def simulate_request(self, path, project_id=None, **kwargs):

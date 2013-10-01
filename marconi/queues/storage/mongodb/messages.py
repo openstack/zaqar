@@ -107,41 +107,47 @@ class MessageController(storage.MessageBase):
     def __init__(self, *args, **kwargs):
         super(MessageController, self).__init__(*args, **kwargs)
 
-        # Cache for convenience and performance (avoids extra lookups and
-        # recreating the range for every request.)
+        # Cache for convenience and performance
         self._queue_ctrl = self.driver.queue_controller
-        self._db = self.driver.db
         self._retry_range = range(options.CFG.max_attempts)
 
-        # Make sure indexes exist before,
-        # doing anything.
-        self._col = self._db['messages']
+        # Create a list of 'messages' collections, one for each database
+        # partition, ordered by partition number.
+        #
+        # NOTE(kgriffs): Order matters, since it is used to lookup the
+        # collection by partition number. For example, self._collections[2]
+        # would provide access to marconi_p2.messages (partition numbers are
+        # zero-based).
+        self._collections = [db.messages
+                             for db in self.driver.message_databases]
 
-        self._ensure_indexes()
+        # Ensure indexes are initialized before any queries are performed
+        for collection in self._collections:
+            self._ensure_indexes(collection)
 
     #-----------------------------------------------------------------------
     # Helpers
     #-----------------------------------------------------------------------
 
-    def _ensure_indexes(self):
+    def _ensure_indexes(self, collection):
         """Ensures that all indexes are created."""
 
-        self._col.ensure_index(TTL_INDEX_FIELDS,
-                               name='ttl',
-                               expireAfterSeconds=0,
-                               background=True)
+        collection.ensure_index(TTL_INDEX_FIELDS,
+                                name='ttl',
+                                expireAfterSeconds=0,
+                                background=True)
 
-        self._col.ensure_index(ACTIVE_INDEX_FIELDS,
-                               name='active',
-                               background=True)
+        collection.ensure_index(ACTIVE_INDEX_FIELDS,
+                                name='active',
+                                background=True)
 
-        self._col.ensure_index(CLAIMED_INDEX_FIELDS,
-                               name='claimed',
-                               background=True)
+        collection.ensure_index(CLAIMED_INDEX_FIELDS,
+                                name='claimed',
+                                background=True)
 
-        self._col.ensure_index(COUNTING_INDEX_FIELDS,
-                               name='counting',
-                               background=True)
+        collection.ensure_index(COUNTING_INDEX_FIELDS,
+                                name='counting',
+                                background=True)
 
         # NOTE(kgriffs): This index must be unique so that
         # inserting a message with the same marker to the
@@ -150,10 +156,14 @@ class MessageController(storage.MessageBase):
         # to miss a message when there is more than one
         # producer posting messages to the same queue, in
         # parallel.
-        self._col.ensure_index(MARKER_INDEX_FIELDS,
-                               name='queue_marker',
-                               unique=True,
-                               background=True)
+        collection.ensure_index(MARKER_INDEX_FIELDS,
+                                name='queue_marker',
+                                unique=True,
+                                background=True)
+
+    def _collection(self, queue_name, project=None):
+        """Get a partitioned collection instance."""
+        return self._collections[utils.get_partition(queue_name, project)]
 
     def _backoff_sleep(self, attempt):
         """Sleep between retries using a jitter algorithm.
@@ -183,7 +193,8 @@ class MessageController(storage.MessageBase):
         :param project: ID of the project to which the queue belongs
         """
         scope = utils.scope_queue_name(queue_name, project)
-        self._col.remove({'p_q': scope}, w=0)
+        collection = self._collection(queue_name, project)
+        collection.remove({'p_q': scope}, w=0)
 
     def _list(self, queue_name, project=None, marker=None,
               echo=False, client_uuid=None, fields=None,
@@ -233,16 +244,19 @@ class MessageController(storage.MessageBase):
         if marker is not None:
             query['k'] = {'$gt': marker}
 
+        collection = self._collection(queue_name, project)
+
         if not include_claimed:
             # Only include messages that are not part of
             # any claim, or are part of an expired claim.
             query['c.e'] = {'$lte': now}
 
         # Construct the request
-        cursor = self._col.find(query, fields=fields,
-                                sort=[('k', sort)], limit=limit)
+        cursor = collection.find(query, fields=fields,
+                                 sort=[('k', sort)], limit=limit)
 
-        # NOTE(flaper87): Suggest the index to use for this query
+        # NOTE(flaper87): Suggest the index to use for this query to
+        # ensure the most performant one is chosen.
         return cursor.hint(ACTIVE_INDEX_FIELDS)
 
     #-----------------------------------------------------------------------
@@ -269,7 +283,8 @@ class MessageController(storage.MessageBase):
             # Exclude messages that are claimed
             query['c.e'] = {'$lte': timeutils.utcnow_ts()}
 
-        return self._col.find(query).hint(COUNTING_INDEX_FIELDS).count()
+        collection = self._collection(queue_name, project)
+        return collection.find(query).hint(COUNTING_INDEX_FIELDS).count()
 
     def first(self, queue_name, project=None, sort=1):
         """Get first message in the queue (including claimed).
@@ -318,8 +333,9 @@ class MessageController(storage.MessageBase):
         # the primary to avoid a race condition caused by the
         # multi-phased "create claim" algorithm.
         preference = pymongo.read_preferences.ReadPreference.PRIMARY
-        msgs = self._col.find(query, sort=[('k', 1)],
-                              read_preference=preference)
+        collection = self._collection(queue_name, project)
+        msgs = collection.find(query, sort=[('k', 1)],
+                               read_preference=preference)
 
         if limit is not None:
             msgs = msgs.limit(limit)
@@ -346,9 +362,11 @@ class MessageController(storage.MessageBase):
         # and the claim expiration time to now
         now = timeutils.utcnow_ts()
         scope = utils.scope_queue_name(queue_name, project)
-        self._col.update({'p_q': scope, 'c.id': cid},
-                         {'$set': {'c': {'id': None, 'e': now}}},
-                         upsert=False, multi=True)
+        collection = self._collection(queue_name, project)
+
+        collection.update({'p_q': scope, 'c.id': cid},
+                          {'$set': {'c': {'id': None, 'e': now}}},
+                          upsert=False, multi=True)
 
     def list(self, queue_name, project=None, marker=None, limit=None,
              echo=False, client_uuid=None, include_claimed=False):
@@ -396,7 +414,8 @@ class MessageController(storage.MessageBase):
             'p_q': utils.scope_queue_name(queue_name, project),
         }
 
-        message = list(self._col.find(query).limit(1).hint(ID_INDEX_FIELDS))
+        collection = self._collection(queue_name, project)
+        message = list(collection.find(query).limit(1).hint(ID_INDEX_FIELDS))
 
         if not message:
             raise exceptions.MessageDoesNotExist(message_id, queue_name,
@@ -418,9 +437,11 @@ class MessageController(storage.MessageBase):
             'p_q': utils.scope_queue_name(queue_name, project),
         }
 
+        collection = self._collection(queue_name, project)
+
         # NOTE(flaper87): Should this query
         # be sorted?
-        messages = self._col.find(query).hint(ID_INDEX_FIELDS)
+        messages = collection.find(query).hint(ID_INDEX_FIELDS)
 
         def denormalizer(msg):
             return _basic_message(msg, now)
@@ -429,11 +450,12 @@ class MessageController(storage.MessageBase):
 
     @utils.raises_conn_error
     def post(self, queue_name, messages, client_uuid, project=None):
-        now = timeutils.utcnow_ts()
-        now_dt = datetime.datetime.utcfromtimestamp(now)
-
         if not self._queue_ctrl.exists(queue_name, project):
             raise exceptions.QueueDoesNotExist(queue_name, project)
+
+        now = timeutils.utcnow_ts()
+        now_dt = datetime.datetime.utcfromtimestamp(now)
+        collection = self._collection(queue_name, project)
 
         # Set the next basis marker for the first attempt.
         next_marker = self._queue_ctrl._get_counter(queue_name, project)
@@ -461,7 +483,7 @@ class MessageController(storage.MessageBase):
         # before the operation is abandoned is 49.95 seconds.
         for attempt in self._retry_range:
             try:
-                ids = self._col.insert(prepared_messages)
+                ids = collection.insert(prepared_messages)
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
@@ -597,6 +619,8 @@ class MessageController(storage.MessageBase):
         if mid is None:
             return
 
+        collection = self._collection(queue_name, project)
+
         query = {
             '_id': mid,
             'p_q': utils.scope_queue_name(queue_name, project),
@@ -610,7 +634,7 @@ class MessageController(storage.MessageBase):
             return
 
         now = timeutils.utcnow_ts()
-        message = self._col.find_one(query)
+        message = collection.find_one(query)
 
         if message is None:
             return
@@ -626,7 +650,7 @@ class MessageController(storage.MessageBase):
             if message['c']['id'] != cid:
                 raise exceptions.MessageIsClaimedBy(message_id, claim)
 
-        self._col.remove(query['_id'], w=0)
+        collection.remove(query['_id'], w=0)
 
     @utils.raises_conn_error
     def bulk_delete(self, queue_name, message_ids, project=None):
@@ -636,7 +660,8 @@ class MessageController(storage.MessageBase):
             'p_q': utils.scope_queue_name(queue_name, project),
         }
 
-        self._col.remove(query, w=0)
+        collection = self._collection(queue_name, project)
+        collection.remove(query, w=0)
 
 
 def _basic_message(msg, now):

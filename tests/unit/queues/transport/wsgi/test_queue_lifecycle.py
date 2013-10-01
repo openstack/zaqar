@@ -19,7 +19,6 @@ import os
 
 import ddt
 import falcon
-import pymongo
 
 import base  # noqa
 from marconi.common import config
@@ -263,8 +262,14 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
         self.cfg = config.namespace('drivers:storage:mongodb').from_options()
 
     def tearDown(self):
-        conn = pymongo.MongoClient(self.cfg.uri)
-        conn.drop_database(self.cfg.database)
+        storage = self.boot.storage
+        connection = storage.connection
+
+        connection.drop_database(storage.queues_database)
+
+        for db in storage.message_databases:
+            connection.drop_database(db)
+
         super(QueueLifecycleMongoDBTests, self).tearDown()
 
 

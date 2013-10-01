@@ -23,6 +23,7 @@ log_file = /var/log/marconi/server.log
 [drivers]
 # Transport driver module (e.g., wsgi, zmq)
 transport = wsgi
+
 # Storage driver module (e.g., mongodb, sqlite)
 storage = mongodb
 
@@ -46,6 +47,13 @@ storage = mongodb
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
 database = marconi
 
+# Number of databases across which to partition message data,
+# in order to reduce writer lock %. DO NOT change this setting
+# after initial deployment. It MUST remain static. Also,
+# you should not need a large number of partitions to improve
+# performance, esp. if deploying MongoDB on SSD storage.
+;partitions = 2
+
 # Maximum number of times to retry a failed operation. Currently
 # only used for retrying a message post.
 ;max_attempts = 1000
@@ -66,10 +74,12 @@ database = marconi_proxy
 [limits:transport]
 # The maximum number of queue records per page when listing queues
 ;queue_paging_uplimit = 20
+
 # The maximum number of messages in a message posting, maximum
 # number of messages per page when listing or claiming messages,
 # and maximum number of messages involved in a bulk operation.
 ;message_paging_uplimit = 20
+
 # Expiration limits; the minimal values are all 60 (seconds)
 ;message_ttl_max = 1209600
 ;claim_ttl_max = 43200
@@ -83,6 +93,7 @@ database = marconi_proxy
 [limits:storage]
 # The default number of queue records per page when listing queues
 ;default_queue_paging = 10
+
 # The default number of messages per page when listing or claiming messages
 ;default_message_paging = 10
 
