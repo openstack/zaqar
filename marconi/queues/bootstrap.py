@@ -45,7 +45,7 @@ class Bootstrap(object):
     def storage(self):
         LOG.debug(_(u'Loading Storage Driver'))
         try:
-            mgr = driver.DriverManager('marconi.storage',
+            mgr = driver.DriverManager('marconi.queues.storage',
                                        CFG.storage,
                                        invoke_on_load=True)
             return mgr.driver
@@ -57,7 +57,7 @@ class Bootstrap(object):
     def transport(self):
         LOG.debug(_(u'Loading Transport Driver'))
         try:
-            mgr = driver.DriverManager('marconi.transport',
+            mgr = driver.DriverManager('marconi.queues.transport',
                                        CFG.transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage])
