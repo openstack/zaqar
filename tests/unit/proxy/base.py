@@ -14,30 +14,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import multiprocessing
-from wsgiref import simple_server
-
 from falcon import testing as ftest
 
-from marconi.proxy import bootstrap
+from marconi.proxy.admin import bootstrap as admin
+from marconi.proxy.transport.wsgi import (
+    queues, version
+)
+from marconi.proxy.utils import round_robin
 from tests.unit.queues.transport.wsgi import base
 
 
 class TestBase(base.TestBase):
 
-    def setUp(self):
-        super(base.TestBase, self).setUp()
+    config_filename = "wsgi_proxy_memory.conf"
 
-        self.proxy = bootstrap.Bootstrap()
-        self.app = self.proxy.transport.app
+    @classmethod
+    def setUpClass(cls):
+        super(TestBase, cls).setUpClass()
+        TestBase._proxy = admin.Bootstrap()
+
+        TestBase._app = TestBase._proxy.transport.app
+        partitions_controller = TestBase._proxy.storage.partitions_controller
+        catalogue_controller = TestBase._proxy.storage.catalogue_controller
+        cache = TestBase._proxy.cache
+        selector = round_robin.Selector()
+
+        # NOTE(cpp-cabrera): allow for queue creation: needed for
+        # catalogue tests
+        TestBase._app.add_route(version.path() + '/queues/{queue}',
+                                queues.Resource(partitions_controller,
+                                                catalogue_controller,
+                                                cache, selector))
+
+    def setUp(self):
+        super(TestBase, self).setUp()
+        self.app = TestBase._app
+        self.proxy = TestBase._proxy
         self.srmock = ftest.StartResponseMock()
 
-
-def make_app_daemon(host, port, app):
-    httpd = simple_server.make_server(host, port, app)
-    process = multiprocessing.Process(target=httpd.serve_forever,
-                                      name='marconi_' + str(port))
-    process.daemon = True
-    process.start()
-
-    return process
+    @classmethod
+    def tearDownClass(cls):
+        super(TestBase, cls).tearDownClass()

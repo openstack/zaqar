@@ -25,6 +25,7 @@ Schema:
     'm': Metadata :: dict
 }
 """
+from pymongo import errors
 
 import marconi.openstack.common.log as logging
 from marconi.proxy.storage import base
@@ -78,8 +79,11 @@ class CatalogueController(base.CatalogueBase):
 
     @utils.raises_conn_error
     def insert(self, project, queue, partition, host, metadata={}):
-        self._col.insert({'p': project, 'q': queue,
-                          'n': partition, 'h': host, 'm': metadata})
+        try:
+            self._col.insert({'p': project, 'q': queue,
+                              'n': partition, 'h': host, 'm': metadata})
+        except errors.DuplicateKeyError:
+            pass  # duplicate insertions are not a problem
 
     @utils.raises_conn_error
     def delete(self, project, queue):

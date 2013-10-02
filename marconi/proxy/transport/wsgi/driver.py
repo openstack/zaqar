@@ -12,33 +12,21 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""marconi-proxy: maintains a mapping from inserted queues to partitions
-
-Supports the following operator API:
-- [GET] /v1/partitions - lists registered partitions
-- [PUT|GET|DELETE] /v1/partitions/{partition}
-- [GET] /v1/catalogue
-
-Running:
-- configure marconi.conf appropriately
-- gunicorn marconi.proxy.transport.wsgi.app:app
-"""
+"""marconi-proxy (base): Interface for driver implementations."""
+import abc
 from wsgiref import simple_server
 
 import falcon
+import six
 
 from marconi.common import config
+from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.proxy import transport
-from marconi.proxy.transport.wsgi import (
-    catalogue, forward, health, metadata,
-    partitions, queues, v1, version
-)
+from marconi.proxy.transport.wsgi import version
 from marconi.proxy.utils import round_robin
 from marconi.queues.transport import auth
 
-
-_VER = version.path()
 
 OPTIONS = {
     'bind': '0.0.0.0',
@@ -54,92 +42,30 @@ WSGI_CFG = config.namespace('proxy:drivers:transport:wsgi').from_options(
 LOG = logging.getLogger(__name__)
 
 
-# TODO(cpp-cabrera): refactor to avoid duplication with queues..wsgi
-def _check_media_type(req, resp, params):
-    if not req.client_accepts('application/json'):
-        raise falcon.HTTPNotAcceptable(
-            u'''
-Endpoint only serves `application/json`; specify client-side
-media type support with the "Accept" header.''',
-            href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
-            href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
-
-
-class Driver(transport.DriverBase):
+@six.add_metaclass(abc.ABCMeta)
+class DriverBase(transport.DriverBase):
     """Entry point to the proxy
 
     :param storage: storage driver to use
+    :type storage: marconi.proxy.storage.base.DriverBase
     :param cache: cache driver to use
+    :type cache: marconi.common.cache.backends.BaseCache
     """
     def __init__(self, storage, cache):
-        super(Driver, self).__init__(storage, cache)
+        super(DriverBase, self).__init__(storage, cache)
         self.app = None
-        self._catalogue = self.storage.catalogue_controller
-        self._partitions = self.storage.partitions_controller
-        self._selector = round_robin.Selector()
+        self.catalogue = self.storage.catalogue_controller
+        self.partitions = self.storage.partitions_controller
+        self.selector = round_robin.Selector()
 
         self._init_routes()
         self._init_middleware()
 
     def _init_routes(self):
-        self.app = falcon.API(before=[_check_media_type])
-
-        # NOTE(cpp-cabrera): proxy-specififc routes
-        self.app.add_route(_VER + '/partitions',
-                           partitions.Listing(self._partitions))
-        self.app.add_route(_VER + '/partitions/{partition}',
-                           partitions.Resource(self._partitions))
-        self.app.add_route(_VER + '/catalogue',
-                           catalogue.Listing(self._catalogue))
-        self.app.add_route(_VER + '/catalogue/{queue}',
-                           catalogue.Resource(self._catalogue))
-        self.app.add_route(_VER + '/health',
-                           health.Resource())
-
-        # NOTE(cpp-cabrera): queue handling routes
-        self.app.add_route(_VER + '/queues',
-                           queues.Listing(self._catalogue))
-        self.app.add_route(_VER + '/queues/{queue}',
-                           queues.Resource(self._partitions,
-                                           self._catalogue,
-                                           self.cache, self._selector))
-
-        # NOTE(cpp-cabrera): Marconi forwarded routes
-        self.app.add_route(_VER,
-                           v1.Resource(self._partitions))
-
-        # NOTE(cpp-cabrera): Marconi forwarded routes involving a queue
-        self.app.add_route(_VER + '/queues/{queue}/claims',
-                           forward.ClaimCreate(self._partitions,
-                                               self._catalogue,
-                                               self.cache,
-                                               self._selector))
-
-        self.app.add_route(_VER + '/queues/{queue}/claims/{cid}',
-                           forward.Claim(self._partitions,
-                                         self._catalogue,
-                                         self.cache, self._selector))
-
-        self.app.add_route(_VER + '/queues/{queue}/messages',
-                           forward.MessageBulk(self._partitions,
-                                               self._catalogue,
-                                               self.cache,
-                                               self._selector))
-
-        self.app.add_route(_VER + '/queues/{queue}/messages/{mid}',
-                           forward.Message(self._partitions,
-                                           self._catalogue, self.cache,
-                                           self._selector))
-
-        self.app.add_route(_VER + '/queues/{queue}/stats',
-                           forward.Stats(self._partitions,
-                                         self._catalogue,
-                                         self.cache, self._selector))
-
-        self.app.add_route(_VER + '/queues/{queue}/metadata',
-                           metadata.Resource(self._partitions,
-                                             self._catalogue,
-                                             self.cache, self._selector))
+        version_path = version.path()
+        self.app = falcon.API(before=[helpers.require_accepts_json])
+        for route, resource in self.bridge:
+            self.app.add_route(version_path + route, resource)
 
     # TODO(cpp-cabrera): refactor to avoid duplication with queues..wsgi
     def _init_middleware(self):
@@ -149,6 +75,17 @@ class Driver(transport.DriverBase):
         if GLOBAL_CFG.auth_strategy:
             strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
             self.app = strategy.install(self.app, PROJECT_CFG.conf)
+
+    @abc.abstractproperty
+    def bridge(self):
+        """Constructs a list of route/responder pairs that can be used to
+        establish the functionality of this driver.
+
+        Note: the routes should be unversioned.
+
+        :rtype: [(str, falcon-compatible responser)]
+        """
+        raise NotImplementedError
 
     def listen(self):
         """Listens on the 'bind:port' as per the config."""

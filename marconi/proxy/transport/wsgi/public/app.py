@@ -18,7 +18,7 @@
 This app should be used by external WSGI
 containers. For example:
 
-    $ gunicorn marconi.proxy.transport.wsgi.app:app
+    $ gunicorn marconi.proxy.transport.wsgi.public.app:app
 
 NOTE: As for external containers, it is necessary
 to put config files in the standard paths. There's
@@ -26,6 +26,6 @@ no common way to specify / pass configuration files
 to the WSGI app when it is called from other apps.
 """
 
-from marconi.proxy import bootstrap
+from marconi.proxy.public import bootstrap
 
 app = bootstrap.Bootstrap().transport.app

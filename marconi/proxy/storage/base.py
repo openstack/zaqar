@@ -145,12 +145,13 @@ class CatalogueBase(ControllerBase):
         """
 
     @abc.abstractmethod
-    def insert(self, project, queue, partition, metadata={}):
+    def insert(self, project, queue, partition, host, metadata={}):
         """Creates a new catalogue entry.
 
         :param project: str - Namespace to insert the given queue into
         :param queue: str - The name of the queue to insert
         :param partition: str - Partition name where this queue is stored
+        :param host: text - URL to representative host
         :param metadata: A dictionary of metadata for this queue
         """
         raise NotImplementedError
