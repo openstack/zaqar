@@ -16,7 +16,9 @@
 
 import copy
 import json
+import uuid
 
+import ddt
 import falcon
 
 import base  # noqa
@@ -120,10 +122,93 @@ class PartitionTest(base.TestBase):
                               body=json.dumps(doc))
             self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
-    def test_reserved_partition(self):
-        doc = {'hosts': ['url'],
-               'weight': 10}
+    def test_fetch_nonexisting_partition_404s(self):
+        self.simulate_get('/v1/partition/no')
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
-        self.simulate_put('/v1/partitions/__cplusplus',
-                          body=json.dumps(doc))
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+    def test_patch_nonexisting_partition_404s(self):
+        doc = {'weight': 1}
+        self.simulate_patch('/v1/partition/no', body=json.dumps(doc))
+        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+    def test_bad_json_on_put_raises_bad_request(self):
+        self.simulate_put('/v1/partitions/bad_json', body="")
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+
+@ddt.ddt
+class ExistingPartitionTest(base.TestBase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(ExistingPartitionTest, cls).setUpClass()
+
+    def setUp(self):
+        super(ExistingPartitionTest, self).setUp()
+        self.weight = 100
+        self.hosts = ['a']
+        self.name = str(uuid.uuid1())
+        self.partition_uri = '/v1/partitions/' + self.name
+        doc = {'weight': self.weight, 'hosts': self.hosts}
+        self.simulate_put(self.partition_uri, body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+    def tearDown(self):
+        self.simulate_delete(self.partition_uri)
+        super(ExistingPartitionTest, self).tearDown()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(ExistingPartitionTest, cls).tearDownClass()
+
+    def test_put_on_existing_partition_204s(self):
+        self.simulate_put(self.partition_uri, body="")
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+    def test_patch_weight(self):
+        doc = {'weight': self.weight + 1}
+        self.simulate_patch(self.partition_uri,
+                            body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        result = self.simulate_get(self.partition_uri)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        doc = json.loads(result[0])
+        self.assertEqual(doc['weight'], self.weight + 1)
+
+    def test_patch_hosts(self):
+        doc = {'hosts': self.hosts + ['b']}
+        self.simulate_patch(self.partition_uri,
+                            body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        result = self.simulate_get(self.partition_uri)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        doc = json.loads(result[0])
+        self.assertEqual(doc['hosts'], self.hosts + ['b'])
+
+    def test_partition_route_respects_allowed(self):
+        for method in ('head', 'post'):
+            getattr(self, 'simulate_' + method)(self.partition_uri)
+            self.assertEqual(self.srmock.status, falcon.HTTP_405)
+
+    def test_bad_json_on_patch_raises_bad_request(self):
+        self.simulate_patch(self.partition_uri, body="{")
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    def test_patch_fails_validation_when_missing_hosts_and_weight(self):
+        doc = {'winning': 1}
+        self.simulate_patch(self.partition_uri, body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    @ddt.data(-10, -1, 0, 'a', 2**64 + 1)
+    def test_patch_fails_validation_with_invalid_weight(self, weight):
+        doc = {'weight': weight}
+        self.simulate_patch(self.partition_uri, body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    @ddt.data([], 'localhost', 1)
+    def test_patch_fails_validation_with_invalid_hosts(self, hosts):
+        doc = {'hosts': hosts}
+        self.simulate_patch(self.partition_uri, body=json.dumps(doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)

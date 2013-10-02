@@ -96,6 +96,19 @@ class PartitionsBase(ControllerBase):
         """Drops all partitions from storage."""
         raise NotImplementedError
 
+    def update(self, name, **kwargs):
+        """Updates the weight or hosts of this partition.
+
+        :param name: Name of the partition
+        :type name: text
+        :param weight: Weight, > 0
+        :type weight: int
+        :param kwargs: one of 'hosts' or 'weight'
+        :type kwargs: dict
+        :raises: PartitionNotFound
+        """
+        raise NotImplementedError
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CatalogueBase(ControllerBase):

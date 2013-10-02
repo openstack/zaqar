@@ -27,8 +27,29 @@ following fields are required:
 import json
 
 import falcon
+import jsonschema
 
 from marconi.proxy.storage import exceptions
+from marconi.proxy.transport import schema, utils
+from marconi.queues.transport import utils as json_utils
+from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+
+
+def load(req):
+    """Reads request body, raising an exception if it is not JSON.
+
+    :param req: The request object to read from
+    :type req: falcon.Request
+    :return: a dictionary decoded from the JSON stream
+    :rtype: dict
+    :raises: wsgi_errors.HTTPBadRequestBody
+    """
+    try:
+        return json_utils.read_json(req.stream, req.content_length)
+    except (json_utils.MalformedJSON, json_utils.OverflowedJSONInteger):
+        raise wsgi_errors.HTTPBadRequestBody(
+            'JSON could not be parsed.'
+        )
 
 
 class Listing(object):
@@ -69,6 +90,10 @@ class Resource(object):
     """
     def __init__(self, partitions_controller):
         self._ctrl = partitions_controller
+        validator_type = jsonschema.Draft4Validator
+        self._put_validator = validator_type(schema.partition_create)
+        self._hosts_validator = validator_type(schema.partition_patch_hosts)
+        self._weight_validator = validator_type(schema.partition_patch_weight)
 
     def on_get(self, request, response, partition):
         """Returns a JSON object for a single partition entry:
@@ -89,39 +114,6 @@ class Resource(object):
             'weight': data['weight'],
         }, ensure_ascii=False)
 
-    def _validate_put(self, data):
-        if not isinstance(data, dict):
-            raise falcon.HTTPBadRequest(
-                'Invalid metadata', 'Define a partition as a dict'
-            )
-
-        if 'hosts' not in data:
-            raise falcon.HTTPBadRequest(
-                'Missing hosts list', 'Provide a list of hosts'
-            )
-
-        if not data['hosts']:
-            raise falcon.HTTPBadRequest(
-                'Empty hosts list', 'Hosts list cannot be empty'
-            )
-
-        if not isinstance(data['hosts'], list):
-            raise falcon.HTTPBadRequest(
-                'Invalid hosts', 'Hosts must be a list of URLs'
-            )
-
-        # TODO(cpp-cabrera): check [str]
-        if 'weight' not in data:
-            raise falcon.HTTPBadRequest(
-                'Missing weight',
-                'Provide an integer weight for this partition'
-            )
-
-        if not isinstance(data['weight'], int):
-            raise falcon.HTTPBadRequest(
-                'Invalid weight', 'Weight must be an integer'
-            )
-
     def on_put(self, request, response, partition):
         """Creates a new partition. Expects the following input:
 
@@ -129,23 +121,12 @@ class Resource(object):
 
         :returns: HTTP | [201, 204]
         """
-        if partition.startswith('_'):
-            raise falcon.HTTPBadRequest(
-                'Reserved name', '_names are reserved for internal use'
-            )
-
         if self._ctrl.exists(partition):
             response.status = falcon.HTTP_204
             return
 
-        try:
-            data = json.loads(request.stream.read().decode('utf8'))
-        except ValueError:
-            raise falcon.HTTPBadRequest(
-                'Invalid JSON', 'This is not a valid JSON stream.'
-            )
-
-        self._validate_put(data)
+        data = load(request)
+        utils.validate(self._put_validator, data)
         self._ctrl.create(partition,
                           weight=data['weight'],
                           hosts=data['hosts'])
@@ -158,3 +139,32 @@ class Resource(object):
         """
         self._ctrl.delete(partition)
         response.status = falcon.HTTP_204
+
+    def on_patch(self, request, response, partition):
+        """Allows one to update a partition's weight and/or hosts.
+
+        This method expects the user to submit a JSON object
+        containing both or either of 'hosts' and 'weight'. If neither
+        is found, the request is flagged as bad. There is also strict
+        format checking through the use of jsonschema. Appropriate
+        errors are returned in each case for badly formatted input.
+
+        :returns: HTTP | 200,400
+
+        """
+        data = load(request)
+
+        if 'weight' not in data and 'hosts' not in data:
+            raise wsgi_errors.HTTPBadRequestBody(
+                'One of `hosts` or `weight` needs to be specified'
+            )
+
+        utils.validate(self._weight_validator, data)
+        utils.validate(self._hosts_validator, data)
+        try:
+            if 'weight' in data:
+                self._ctrl.update(partition, weight=data['weight'])
+            if 'hosts' in data:
+                self._ctrl.update(partition, hosts=data['hosts'])
+        except exceptions.PartitionNotFound:
+            raise falcon.HTTPNotFound()
