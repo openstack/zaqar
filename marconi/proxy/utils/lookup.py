@@ -27,7 +27,7 @@ def partition(project, queue, catalogue_controller, cache):
     :param cache: cache for catalogue - updated if lookup fails
     :returns: Maybe text - partition name or None if not found
     """
-    key = u'q.{project}.{queue}'.format(project=project, queue=queue)
+    key = u'q.{project}/{queue}'.format(project=project, queue=queue)
     name = cache.get(key)
     if not name:
         try:

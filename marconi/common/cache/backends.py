@@ -13,11 +13,11 @@
 #    under the License.
 
 import abc
+import six
 
 
+@six.add_metaclass(abc.ABCMeta)
 class BaseCache(object):
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, conf, group, cache_namespace):
         self.conf = conf[group]
@@ -68,10 +68,19 @@ class BaseCache(object):
 
         :param key: The key to be prefixed
         """
+        prepared = key
         if self._cache_namespace:
-            return ("%(prefix)s-%(key)s" %
-                    {'prefix': self._cache_namespace, 'key': key})
-        return key
+            prepared = ("%(prefix)s-%(key)s" %
+                        {'prefix': self._cache_namespace, 'key': key})
+
+        # NOTE(cpp-cabrera): some caching backends (memcache) enforce
+        # that the key type must be bytes. This is here to ensure that
+        # this precondition is respected and that users can continue
+        # to use the caching layer transparently.
+        if isinstance(prepared, six.text_type):
+            prepared = prepared.encode('utf8')
+
+        return prepared
 
     def add(self, key, value, ttl=0):
         """Sets the value for a key if it doesn't exist
