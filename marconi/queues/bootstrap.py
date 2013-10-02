@@ -22,8 +22,8 @@ from marconi.openstack.common import log
 from marconi.queues import transport  # NOQA
 
 
-PROJECT_CFG = config.project('marconi')
-CFG = config.namespace('drivers').from_options(
+PROJECT_CFG = config.project('marconi', 'marconi-queues')
+CFG = config.namespace('queues:drivers').from_options(
     transport='wsgi',
     storage='sqlite')
 

@@ -31,7 +31,7 @@ from marconi.queues.storage import exceptions
 from marconi.queues.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('limits:storage').from_options(
+CFG = config.namespace('queues:limits:storage').from_options(
     default_queue_paging=10,
 )
 

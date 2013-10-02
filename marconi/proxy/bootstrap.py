@@ -24,8 +24,8 @@ from marconi.openstack.common import log
 from marconi.proxy import transport  # NOQA
 
 
-PROJECT_CFG = config.project('marconi')
-CFG = config.namespace('drivers:proxy').from_options(
+PROJECT_CFG = config.project('marconi', 'marconi-proxy')
+CFG = config.namespace('proxy:drivers').from_options(
     transport='wsgi',
     storage='memory')
 

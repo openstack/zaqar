@@ -19,7 +19,7 @@ from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
-CFG = config.namespace('limits:storage').from_options(
+CFG = config.namespace('queues:limits:storage').from_options(
     default_message_paging=10,
 )
 

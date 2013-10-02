@@ -23,7 +23,7 @@ from marconi.queues import storage
 from marconi.queues.storage.sqlite import controllers
 from marconi.queues.storage.sqlite import utils
 
-CFG = config.namespace('drivers:storage:sqlite').from_options(
+CFG = config.namespace('queues:drivers:storage:sqlite').from_options(
     database=':memory:')
 
 

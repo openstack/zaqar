@@ -32,7 +32,7 @@ class MessagesBaseTest(base.TestBase):
         super(MessagesBaseTest, self).setUp()
 
         self.wsgi_cfg = config.namespace(
-            'drivers:transport:wsgi').from_options()
+            'queues:drivers:transport:wsgi').from_options()
 
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'

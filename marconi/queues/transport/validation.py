@@ -30,7 +30,7 @@ OPTIONS = {
     'claim_grace_max': 43200,
 }
 
-CFG = config.namespace('limits:transport').from_options(**OPTIONS)
+CFG = config.namespace('queues:limits:transport').from_options(**OPTIONS)
 
 QUEUE_NAME_REGEX = re.compile('^[\w-]+$')
 

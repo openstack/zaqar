@@ -25,5 +25,6 @@ OPTIONS = {
     'database': 'marconi_proxy'
 }
 
-NAMESPACE = 'drivers:proxy:storage:mongodb'
-CFG = config.namespace(NAMESPACE).from_options(**OPTIONS)
+CFG = config.namespace('proxy:drivers:storage:mongodb').from_options(
+    **OPTIONS
+)
