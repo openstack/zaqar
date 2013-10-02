@@ -63,17 +63,14 @@ class Listing(object):
     def on_get(self, request, response):
         """Returns a partition listing as a JSON object:
 
-        {
-            "name": {"weight": 100, "hosts": [""]},
-            "..."
-        }
+        [
+            {"name": "", "weight": 100, "hosts": [""]},
+            ...
+        ]
 
         :returns: HTTP | [200, 204]
         """
-        resp = {}
-        for p in self._ctrl.list():
-            resp[p['name']] = {'weight': int(p['weight']),
-                               'hosts': p['hosts']}
+        resp = list(self._ctrl.list())
 
         if not resp:
             response.status = falcon.HTTP_204
@@ -108,11 +105,9 @@ class Resource(object):
         except exceptions.PartitionNotFound:
             raise falcon.HTTPNotFound()
 
-        hosts, weight = data['hosts'], data['weight']
-        response.body = json.dumps({
-            'hosts': data['hosts'],
-            'weight': data['weight'],
-        }, ensure_ascii=False)
+        # getting a specific partition has no 'name' entry
+        del data['name']
+        response.body = json.dumps(data, ensure_ascii=False)
 
     def on_put(self, request, response, partition):
         """Creates a new partition. Expects the following input:

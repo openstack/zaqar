@@ -33,9 +33,7 @@ class Listing(object):
     def on_get(self, request, response):
         project = helpers.get_project(request)
 
-        resp = {}
-        for q in self._catalogue.list(project):
-            resp[q['name']] = q
+        resp = list(self._catalogue.list(project))
 
         if not resp:
             response.status = falcon.HTTP_204
