@@ -12,8 +12,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-
 from marconi.proxy.storage import mongodb
 from marconi.proxy.storage.mongodb import controllers
 from marconi.proxy.storage.mongodb import options
@@ -22,12 +20,10 @@ from marconi import tests as testing
 from tests.unit.proxy.storage import base
 
 
+@testing.requires_mongodb
 class MongodbDriverTest(testing.TestBase):
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MongodbDriverTest, self).setUp()
         self.load_conf('wsgi_proxy_mongodb.conf')
 
@@ -37,15 +33,13 @@ class MongodbDriverTest(testing.TestBase):
         self.assertEquals(db.name, options.CFG.database)
 
 
+@testing.requires_mongodb
 class MongodbPartitionsTest(base.PartitionsControllerTest):
 
     driver_class = mongodb.Driver
     controller_class = controllers.PartitionsController
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance found running')
-
         super(MongodbPartitionsTest, self).setUp()
         self.load_conf('wsgi_proxy_mongodb.conf')
 
@@ -54,15 +48,13 @@ class MongodbPartitionsTest(base.PartitionsControllerTest):
         super(MongodbPartitionsTest, self).tearDown()
 
 
+@testing.requires_mongodb
 class MongodbCatalogueTest(base.CatalogueControllerTest):
 
     driver_class = mongodb.Driver
     controller_class = controllers.CatalogueController
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance found running')
-
         super(MongodbCatalogueTest, self).setUp()
         self.load_conf('wsgi_proxy_mongodb.conf')
 

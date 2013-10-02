@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import json
-import os
 
 import ddt
 import falcon
@@ -23,6 +22,7 @@ import six
 
 import base  # noqa
 from marconi.common import config
+from marconi import tests as testing
 
 
 @ddt.ddt
@@ -271,9 +271,8 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
 
     config_filename = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
         super(QueueLifecycleMongoDBTests, self).setUp()
 
         self.cfg = config.namespace(

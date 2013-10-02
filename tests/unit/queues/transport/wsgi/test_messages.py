@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import json
-import os
 
 import ddt
 import falcon
@@ -25,6 +24,7 @@ import base  # noqa
 from marconi.common import config
 from marconi.openstack.common import timeutils
 from marconi.queues.transport import validation
+from marconi import tests as testing
 
 
 @ddt.ddt
@@ -408,14 +408,12 @@ class MessagesSQLiteTests(MessagesBaseTest):
     config_filename = 'wsgi_sqlite.conf'
 
 
+@testing.requires_mongodb
 class MessagesMongoDBTests(MessagesBaseTest):
 
     config_filename = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MessagesMongoDBTests, self).setUp()
 
 

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import time
 
 import mock
@@ -75,12 +74,10 @@ class MongodbUtilsTest(testing.TestBase):
         self.assertRaises(ValueError, utils.calculate_backoff, 11, 10, 2, 0)
 
 
+@testing.requires_mongodb
 class MongodbDriverTest(testing.TestBase):
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MongodbDriverTest, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
 
@@ -93,15 +90,13 @@ class MongodbDriverTest(testing.TestBase):
                 mongodb_options.CFG.database))
 
 
+@testing.requires_mongodb
 class MongodbQueueTests(base.QueueControllerTest):
 
     driver_class = mongodb.Driver
     controller_class = controllers.QueueController
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MongodbQueueTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
 
@@ -138,6 +133,7 @@ class MongodbQueueTests(base.QueueControllerTest):
             self.assertRaises(storage.exceptions.ConnectionError, queues.next)
 
 
+@testing.requires_mongodb
 class MongodbMessageTests(base.MessageControllerTest):
 
     driver_class = mongodb.Driver
@@ -147,9 +143,6 @@ class MongodbMessageTests(base.MessageControllerTest):
     gc_interval = 60
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MongodbMessageTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
 
@@ -300,14 +293,12 @@ class MongodbMessageTests(base.MessageControllerTest):
                           self.controller.first, queue_name, sort=0)
 
 
+@testing.requires_mongodb
 class MongodbClaimTests(base.ClaimControllerTest):
     driver_class = mongodb.Driver
     controller_class = controllers.ClaimController
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(MongodbClaimTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
 

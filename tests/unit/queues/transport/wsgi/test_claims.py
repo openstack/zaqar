@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import json
-import os
 
 import ddt
 import falcon
@@ -23,6 +22,7 @@ from testtools import matchers
 import base  # noqa
 from marconi.common import config
 from marconi.openstack.common import timeutils
+from marconi import tests as testing
 
 
 @ddt.ddt
@@ -227,14 +227,12 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
 
 
+@testing.requires_mongodb
 class ClaimsMongoDBTests(ClaimsBaseTest):
 
     config_filename = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        if not os.environ.get('MONGODB_TEST_LIVE'):
-            self.skipTest('No MongoDB instance running')
-
         super(ClaimsMongoDBTests, self).setUp()
 
         self.cfg = config.namespace(
