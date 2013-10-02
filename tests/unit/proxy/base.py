@@ -15,24 +15,21 @@
 # limitations under the License.
 
 import multiprocessing
-import os
 from wsgiref import simple_server
 
 from falcon import testing as ftest
 
-from marconi.proxy import app
+from marconi.proxy import bootstrap
 from tests.unit.queues.transport.wsgi import base
 
 
 class TestBase(base.TestBase):
 
     def setUp(self):
-        if not os.environ.get('REDIS_TEST_LIVE'):
-            self.skipTest('No Redis instance running')
-
         super(base.TestBase, self).setUp()
 
-        self.app = app.app
+        self.proxy = bootstrap.Bootstrap()
+        self.app = self.proxy.transport.app
         self.srmock = ftest.StartResponseMock()
 
 

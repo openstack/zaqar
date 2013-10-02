@@ -58,7 +58,8 @@ def partitions(controller, count):
     """context_manager: Creates `count` partitions in storage,
     and deletes them once this goes out of scope.
 
-    :param partitions_controller:
+    :param controller:
+    :param count: int - number of partitions to create
     :returns: [(str, int, [str])] - names, weights, hosts
     """
     spec = [(six.text_type(uuid.uuid1()), i,
@@ -98,6 +99,7 @@ def entry(controller, project, queue, partition, host, metadata={}):
     :param queue: str - name of queue
     :param partition: str - associated partition
     :param host: str - representative host
+    :param metadata: dict - metadata representation for this entry
     :returns: (str, str, str, str, dict) - (project, queue, part, host, meta)
     """
     controller.insert(project, queue, partition, host, metadata)
@@ -111,6 +113,7 @@ def entries(controller, count):
     deletes them once the context manager goes out of scope.
 
     :param controller: storage handler
+    :param count: int - number of entries to create
     :returns: [(str, str, str, str)] - [(project, queue, partition, host)]
     """
     spec = [(u'_', six.text_type(uuid.uuid1()), six.text_type(i),

@@ -93,6 +93,11 @@ class CatalogueController(base.CatalogueBase):
                          {'$set': {'m': metadata}},
                          multi=False, manipulate=False)
 
+    @utils.raises_conn_error
+    def drop_all(self):
+        self._col.drop()
+        self._col.ensure_index(CATALOGUE_INDEX, unique=True)
+
 
 def _normalize(entry):
     return {

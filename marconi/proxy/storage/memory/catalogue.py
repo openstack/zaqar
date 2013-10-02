@@ -19,7 +19,7 @@ from marconi.proxy.storage import exceptions
 
 
 def _idx(project, queue):
-    return project + '.' + queue
+    return project + '/' + queue
 
 
 class CatalogueController(base.CatalogueBase):
@@ -44,7 +44,7 @@ class CatalogueController(base.CatalogueBase):
         return _normalize(entry)
 
     def exists(self, project, queue):
-        return self._col.get(_idx(project, queue)) is not None
+        return _idx(project, queue) in self._col
 
     def insert(self, project, queue, partition, host, metadata={}):
         self._col[_idx(project, queue)] = {
@@ -63,6 +63,9 @@ class CatalogueController(base.CatalogueBase):
             self._col[_idx(project, queue)]['m'] = metadata
         except KeyError:
             pass
+
+    def drop_all(self):
+        self._col = {}
 
 
 def _normalize(entry):

@@ -31,6 +31,8 @@ class PartitionTest(base.TestBase):
 
     def tearDown(self):
         self.simulate_delete(self.partition)
+        self.proxy.cache.flush()
+        self.proxy.storage.partitions_controller.drop_all()
         super(PartitionTest, self).tearDown()
 
     def test_simple(self):

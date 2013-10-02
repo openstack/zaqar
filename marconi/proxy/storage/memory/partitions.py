@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import six
 
 from marconi.proxy.storage import base
@@ -39,7 +40,7 @@ class PartitionsController(base.PartitionsBase):
         return _normalize(entry)
 
     def exists(self, name):
-        return self._col.get(name) is not None
+        return name in self._col
 
     def create(self, name, weight, hosts):
         self._col[name] = {'n': name,
@@ -51,6 +52,9 @@ class PartitionsController(base.PartitionsBase):
             del self._col[name]
         except KeyError:
             pass
+
+    def drop_all(self):
+        self._col = {}
 
 
 def _normalize(entry):

@@ -12,21 +12,21 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""round_robin: Implements round-robin selection for partition hosts."""
-import itertools
+"""version: version information for the proxy transport API."""
 
 
-class Selector(object):
-    def __init__(self):
-        self._index = {}
+def info():
+    """Returns the API version as a tuple.
 
-    def next(self, name, hosts):
-        """Round robin selection of hosts
+    :rtype: (int, int)
+    """
+    return (1, 0)
 
-        :param name: text - name to associate this list with
-        :param hosts: [a] - list of things to round robin. In the context
-                            of Marconi, this is a list of URLs.
-        """
-        if name not in self._index:
-            self._index[name] = itertools.cycle(hosts)
-        return next(self._index[name])
+
+def path():
+    """Returns the API version as /v{version}.
+
+    :returns: /v{version}
+    :rtype: text
+    """
+    return '/v{0}'.format(info()[0])

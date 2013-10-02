@@ -30,6 +30,7 @@ storage = mongodb
 # transport and storage drivers for use with marconi-proxy
 [drivers:proxy]
 storage = mongodb
+transport = wsgi
 
 [drivers:transport:wsgi]
 ;bind = 0.0.0.0
@@ -42,6 +43,10 @@ storage = mongodb
 
 ;[drivers:transport:zmq]
 ;port = 9999
+
+;[drivers:proxy:transport:wsgi]
+;bind = 0.0.0.0
+;port = 8889
 
 [drivers:storage:mongodb]
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
