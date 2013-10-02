@@ -35,7 +35,7 @@ class MessageController(base.MessageBase):
                 qid INTEGER,
                 ttl INTEGER,
                 content DOCUMENT,
-                client TEXT,
+                client UUID,
                 created DATETIME,  -- seconds since the Julian day
                 PRIMARY KEY(id),
                 FOREIGN KEY(qid) references Queues(id) on delete cascade
@@ -157,7 +157,7 @@ class MessageController(base.MessageBase):
             if not echo:
                 sql += '''
                    and M.client != ?'''
-                args += [client_uuid]
+                args += [self.driver.uuid(client_uuid)]
 
             if marker:
                 sql += '''
@@ -214,7 +214,8 @@ class MessageController(base.MessageBase):
             def it():
                 for m in messages:
                     yield (my['newid'], qid, m['ttl'],
-                           self.driver.pack(m['body']), client_uuid)
+                           self.driver.pack(m['body']),
+                           self.driver.uuid(client_uuid))
                     my['newid'] += 1
 
             self.driver.run_multiple('''

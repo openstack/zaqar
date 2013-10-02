@@ -15,6 +15,7 @@
 
 import contextlib
 import sqlite3
+import uuid
 
 import msgpack
 
@@ -43,10 +44,21 @@ class Driver(storage.DriverBase):
         :param o: a Python str, unicode, int, long, float, bool, None
                   or a dict or list of %o
         """
-        return buffer(msgpack.dumps(o))
+        return sqlite3.Binary(msgpack.dumps(o))
 
     sqlite3.register_converter('DOCUMENT', lambda s:
                                msgpack.loads(s, encoding='utf-8'))
+
+    @staticmethod
+    def uuid(o):
+        """Converts a UUID object to a custom SQlite `UUID`.
+
+        :param o: a UUID object
+        """
+        return sqlite3.Binary(o.bytes)
+
+    sqlite3.register_converter('UUID', lambda s:
+                               uuid.UUID(hex=s))
 
     def run(self, sql, *args):
         """Performs a SQL query.

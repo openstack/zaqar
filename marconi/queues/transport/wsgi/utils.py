@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 import marconi.openstack.common.log as logging
 
 from marconi.queues.transport import utils
@@ -153,3 +155,20 @@ def get_checked_field(document, name, value_type):
     description = _(u'The value of the "{name}" field must be a {vtype}.')
     description = description.format(name=name, vtype=value_type.__name__)
     raise exceptions.HTTPBadRequestBody(description)
+
+
+def get_client_uuid(req):
+    """Read a required Client-ID from a request.
+
+    :param req: A falcon.Request object
+    :raises: HTTPBadRequest if the Client-ID header is missing or
+        does not represent a valid UUID
+    :returns: A UUID object
+    """
+
+    try:
+        return uuid.UUID(req.get_header('Client-ID', required=True))
+
+    except ValueError:
+        description = _(u'Malformed hexadecimal UUID.')
+        raise exceptions.HTTPBadRequestAPI(description)

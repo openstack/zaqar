@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 import ddt
 import falcon
 from falcon import testing
@@ -36,8 +38,10 @@ class TestWSGIMediaType(base.TestBase):
         ('GET', '/v1/health'),
     )
     def test_json_only_endpoints(self, (method, endpoint)):
-        headers = {'Client-ID': '30387f00',
-                   'Accept': 'application/xml'}
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+            'Accept': 'application/xml',
+        }
 
         env = testing.create_environ(endpoint,
                                      method=method,
