@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import falcon
+import six
 
 from marconi.common import exceptions as input_exceptions
 import marconi.openstack.common.log as logging
@@ -45,7 +46,7 @@ class ItemResource(object):
                 project=project_id)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -107,7 +108,7 @@ class CollectionResource(object):
             results = self.queue_controller.list(project=project_id, **kwargs)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)

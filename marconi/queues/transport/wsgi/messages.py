@@ -12,7 +12,9 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import falcon
+import six
 
 from marconi.common import config
 from marconi.common import exceptions as input_exceptions
@@ -53,7 +55,7 @@ class CollectionResource(object):
                 project=project_id)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -97,7 +99,7 @@ class CollectionResource(object):
             messages = list(cursor)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
@@ -166,7 +168,7 @@ class CollectionResource(object):
                 client_uuid=uuid)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
             raise falcon.HTTPNotFound()
@@ -230,7 +232,7 @@ class CollectionResource(object):
                 project=project_id)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)

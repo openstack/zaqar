@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import falcon
+import six
 
 from marconi.common import config
 from marconi.common import exceptions as input_exceptions
@@ -83,7 +84,7 @@ class Resource(object):
                                          project=project_id)
 
         except input_exceptions.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(str(ex))
+            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
 
         except storage_exceptions.QueueDoesNotExist:
             raise falcon.HTTPNotFound()
