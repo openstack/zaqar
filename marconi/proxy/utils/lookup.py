@@ -15,8 +15,10 @@
 """lookup: functions to handle caching/lookup of proxy details."""
 import msgpack
 
+from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 
+LOG = log.getLogger(__name__)
 
 def _entry_key(project, queue):
     assert project is not None, 'Project must not be None'
@@ -44,10 +46,16 @@ def try_cache_entry(project, queue, catalogue_controller, cache):
     """
     key = _entry_key(project, queue)
     name = None
+
     try:
         name = catalogue_controller.get(project, queue)['partition']
     except exceptions.EntryNotFound:
+        LOG.debug('CACHE entry - project/queue: {0}/{1}'.format(
+            project, queue
+        ))
+
         return None
+
     cache.set(key, name)
 
     return name
@@ -68,14 +76,20 @@ def exists(project, queue, catalogue_controller, cache):
     :rtype: bool
     """
     key = _entry_key(project, queue)
+
     if not cache.has_key(key):  # flake8: noqa
         return try_cache_entry(project, queue,
                                catalogue_controller, cache) is not None
+
     return True
 
 
 def invalidate_entry(project, queue, cache):
     """Removes an entry from the cache."""
+    LOG.debug('INVALIDATE entry - project/queue: {0}/{1}'.format(
+        project, queue
+    ))
+
     key = _entry_key(project, queue)
     cache.unset(key)
 
@@ -94,16 +108,25 @@ def partition(project, queue, catalogue_controller, cache):
     :returns: partition name or None if not found
     :rtype: text | None
     """
+    LOG.debug('LOOKUP partition - project/queue: {0}/{1}'.format(
+        project, queue
+    ))
+
     key = _entry_key(project, queue)
     name = cache.get(key)
+
     if not name:
+        LOG.debug('Entry not in cache: ' + key)
         return try_cache_entry(project, queue,
                                catalogue_controller, cache)
+
     return name
 
 
 def invalidate_partition(name, cache):
     """Removes a partition from the cache."""
+    LOG.debug('INVALIDATE partition - partition: ' + name)
+
     key = _partition_key(name)
     cache.unset(key)
 
@@ -116,6 +139,8 @@ def hosts(name, partitions_controller, cache):
     :param cache: cache to check first - updated if partition not found
     :returns: Maybe [text] - list of hosts or None if not found
     """
+    LOG.debug('LOOKUP hosts - partition: ' + name)
+
     key = _partition_key(name)
     data = cache.get(key)
     hosts = None
@@ -124,10 +149,14 @@ def hosts(name, partitions_controller, cache):
         hosts = msgpack.loads(data)
 
     if not hosts:
+        LOG.debug('Partition not in cache: ' + name)
+
         try:
             hosts = partitions_controller.get(name)['hosts']
         except exceptions.PartitionNotFound:
+            LOG.debug('Partition not in primary storage: ' + name)
             return None
+
         cache.set(key, msgpack.dumps(hosts))
 
     return hosts

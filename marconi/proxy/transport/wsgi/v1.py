@@ -15,8 +15,11 @@
 """v1: queries the first node in the first partition for a homedoc."""
 import falcon
 
+from marconi.openstack.common import log
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
+
+LOG = log.getLogger(__name__)
 
 
 class Resource(object):
@@ -28,10 +31,12 @@ class Resource(object):
         self._partitions = partitions_controller
 
     def on_get(self, request, response):
+        LOG.debug('GET v1')
         partition = None
         try:
             partition = next(self._partitions.list())
         except StopIteration:
+            LOG.error('GET v1 - no partitions registered')
             raise falcon.HTTPServiceUnavailable(
                 "No partitions found",
                 "Register some partitions",

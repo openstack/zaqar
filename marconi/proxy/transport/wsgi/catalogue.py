@@ -18,8 +18,11 @@ import json
 
 import falcon
 
+from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
+
+LOG = log.getLogger(__name__)
 
 
 class Listing(object):
@@ -32,6 +35,7 @@ class Listing(object):
 
     def on_get(self, request, response):
         project = helpers.get_project(request)
+        LOG.debug('LIST catalogue - project: {0}'.format(project))
 
         resp = list(self._catalogue.list(project))
 
@@ -53,10 +57,14 @@ class Resource(object):
 
     def on_get(self, request, response, queue):
         project = helpers.get_project(request)
+        LOG.debug('GET catalogue - project/queue: {0}/{1}'.format(
+            project, queue
+        ))
         entry = None
         try:
             entry = self._catalogue.get(project, queue)
         except exceptions.EntryNotFound:
+            LOG.debug('Entry not found')
             raise falcon.HTTPNotFound()
 
         response.status = falcon.HTTP_200

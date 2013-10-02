@@ -29,10 +29,13 @@ import json
 import falcon
 import jsonschema
 
+from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 from marconi.proxy.transport import schema, utils
 from marconi.queues.transport import utils as json_utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+
+LOG = log.getLogger(__name__)
 
 
 def load(req):
@@ -46,7 +49,8 @@ def load(req):
     """
     try:
         return json_utils.read_json(req.stream, req.content_length)
-    except (json_utils.MalformedJSON, json_utils.OverflowedJSONInteger):
+    except (json_utils.MalformedJSON, json_utils.OverflowedJSONInteger) as ex:
+        LOG.exception(ex)
         raise wsgi_errors.HTTPBadRequestBody(
             'JSON could not be parsed.'
         )
@@ -70,6 +74,7 @@ class Listing(object):
 
         :returns: HTTP | [200, 204]
         """
+        LOG.debug('LIST partitions')
         resp = list(self._ctrl.list())
 
         if not resp:
@@ -99,10 +104,12 @@ class Resource(object):
 
         :returns: HTTP | [200, 404]
         """
+        LOG.debug('GET partition - name: {0}'.format(partition))
         data = None
         try:
             data = self._ctrl.get(partition)
-        except exceptions.PartitionNotFound:
+        except exceptions.PartitionNotFound as ex:
+            LOG.exception(ex)
             raise falcon.HTTPNotFound()
 
         # getting a specific partition has no 'name' entry
@@ -116,7 +123,9 @@ class Resource(object):
 
         :returns: HTTP | [201, 204]
         """
+        LOG.debug('PUT partition - name: {0}'.format(partition))
         if self._ctrl.exists(partition):
+            LOG.debug('Partition {0} already exists'.format(partition))
             response.status = falcon.HTTP_204
             return
 
@@ -132,6 +141,7 @@ class Resource(object):
 
         :returns: HTTP | 204
         """
+        LOG.debug('DELETE partition - name: {0}'.format(partition))
         self._ctrl.delete(partition)
         response.status = falcon.HTTP_204
 
@@ -147,9 +157,11 @@ class Resource(object):
         :returns: HTTP | 200,400
 
         """
+        LOG.debug('PATCH partition - name: {0}'.format(partition))
         data = load(request)
 
         if 'weight' not in data and 'hosts' not in data:
+            LOG.debug('PATCH partition, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 'One of `hosts` or `weight` needs to be specified'
             )
@@ -161,5 +173,6 @@ class Resource(object):
                 self._ctrl.update(partition, weight=data['weight'])
             if 'hosts' in data:
                 self._ctrl.update(partition, hosts=data['hosts'])
-        except exceptions.PartitionNotFound:
+        except exceptions.PartitionNotFound as ex:
+            LOG.exception(ex)
             raise falcon.HTTPNotFound()

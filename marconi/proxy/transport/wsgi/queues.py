@@ -32,9 +32,12 @@ import json
 
 import falcon
 
+from marconi.openstack.common import log
 from marconi.proxy.utils import (
     forward, lookup, helpers, http, partition
 )
+
+LOG = log.getLogger(__name__)
 
 
 class Listing(object):
@@ -51,6 +54,7 @@ class Listing(object):
     #                   for great impl./data DRYness
     def on_get(self, request, response):
         project = helpers.get_project(request)
+        LOG.debug('LIST queues - project: {0}'.format(project))
 
         kwargs = {}
         request.get_param('marker', store=kwargs)
@@ -74,6 +78,7 @@ class Listing(object):
                 break
 
         if not resp:
+            LOG.debug('LIST queues - no queues found')
             response.status = falcon.HTTP_204
             return
 
@@ -135,6 +140,7 @@ class Resource(forward.ForwardMixin):
 
         target = partition.weighted_select(self._partitions.list())
         if target is None:
+            LOG.error('No partitions registered')
             raise falcon.HTTPInternalServerError(
                 "No partitions registered",
                 "Contact the system administrator for more details."
@@ -153,6 +159,9 @@ class Resource(forward.ForwardMixin):
 
     def on_delete(self, request, response, queue):
         project = helpers.get_project(request)
+        LOG.debug('DELETE queue - project/queue: {0}/{1}'.format(
+            project, queue
+        ))
         resp = self.forward(request, response, queue)
 
         # avoid deleting a queue if the request is bad
