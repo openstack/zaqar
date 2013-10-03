@@ -32,10 +32,9 @@ import json
 
 import falcon
 
-from marconi.proxy.utils import forward
-from marconi.proxy.utils import helpers
-from marconi.proxy.utils import http
-from marconi.proxy.utils import partition
+from marconi.proxy.utils import (
+    forward, lookup, helpers, http, partition
+)
 
 
 class Listing(object):
@@ -101,6 +100,7 @@ class Resource(forward.ForwardMixin):
                  cache, selector):
         self._partitions = partitions_controller
         self._catalogue = catalogue_controller
+        self._cache = cache
         super(Resource, self).__init__(partitions_controller,
                                        catalogue_controller,
                                        cache, selector,
@@ -116,6 +116,23 @@ class Resource(forward.ForwardMixin):
 
         :raises: HTTPInternalServerError - if no partitions are registered
         """
+        project = helpers.get_project(request)
+
+        # NOTE(cpp-cabrera): if we've already registered a queue,
+        # don't try to create it again, because it will duplicate it
+        # across partitions.
+        #
+        # There exists a race condition here, but it is benign. It's
+        # possible that after the existence check has succeeded,
+        # another request may succeed in DELETEing a queue. In this
+        # scenario, the queue will be recreated on another partition,
+        # which is reasonable, since the user meant to both DELETE and
+        # PUT That queue.
+        if lookup.exists(project, queue,
+                         self._catalogue, self._cache):
+            response.status = falcon.HTTP_204
+            return
+
         target = partition.weighted_select(self._partitions.list())
         if target is None:
             raise falcon.HTTPInternalServerError(
@@ -125,9 +142,8 @@ class Resource(forward.ForwardMixin):
         host = target['hosts'][0]
         resp = helpers.forward(host, request)
 
-        # NOTE(cpp-cabrera): only catalogue a queue if a request is good
-        if resp.ok:
-            project = helpers.get_project(request)
+        # NOTE(cpp-cabrera): only catalogue a queue if it was created
+        if resp.status_code == 201:
             self._catalogue.insert(project, queue, target['name'],
                                    host)
 
@@ -142,3 +158,4 @@ class Resource(forward.ForwardMixin):
         # avoid deleting a queue if the request is bad
         if resp.ok:
             self._catalogue.delete(project, queue)
+            lookup.invalidate_entry(project, queue, self._cache)

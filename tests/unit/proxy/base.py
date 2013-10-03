@@ -46,6 +46,11 @@ class TestBase(base.TestBase):
                                                 catalogue_controller,
                                                 cache, selector))
 
+        # NOTE(cpp-cabrera): allow for queue listing
+        # TODO(cpp-cabrera): move this out into proxy:public test base
+        TestBase._app.add_route(version.path() + '/queues',
+                                queues.Listing(catalogue_controller))
+
     def setUp(self):
         super(TestBase, self).setUp()
         self.app = TestBase._app
