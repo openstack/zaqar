@@ -18,10 +18,10 @@ import uuid
 
 import ddt
 import falcon
+from oslo.config import cfg
 from testtools import matchers
 
 import base  # noqa
-from marconi.common import config
 from marconi.openstack.common import timeutils
 from marconi import tests as testing
 
@@ -32,8 +32,7 @@ class ClaimsBaseTest(base.TestBase):
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
 
-        self.wsgi_cfg = config.namespace(
-            'queues:drivers:transport:wsgi').from_options()
+        self.wsgi_cfg = cfg.CONF['queues:drivers:transport:wsgi']
 
         self.project_id = '480924'
         self.queue_path = '/v1/queues/fizbit'
@@ -240,9 +239,7 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
     def setUp(self):
         super(ClaimsMongoDBTests, self).setUp()
 
-        self.cfg = config.namespace(
-            'queues:drivers:storage:mongodb'
-        ).from_options()
+        self.cfg = cfg.CONF['queues:drivers:storage:mongodb']
 
     def tearDown(self):
         storage = self.boot.storage

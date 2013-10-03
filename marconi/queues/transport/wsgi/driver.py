@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import falcon
+from oslo.config import cfg
 from wsgiref import simple_server
 
-from marconi.common import config
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
@@ -30,16 +30,8 @@ from marconi.queues.transport.wsgi import stats
 from marconi.queues.transport.wsgi import v1
 
 
-OPTIONS = {
-    'bind': '0.0.0.0',
-    'port': 8888
-}
-
-PROJECT_CFG = config.project('marconi', 'marconi-queues')
-GLOBAL_CFG = PROJECT_CFG.from_options()
-WSGI_CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
-    **OPTIONS
-)
+GLOBAL_CFG = cfg.CONF
+WSGI_CFG = cfg.CONF['queues:drivers:transport:wsgi']
 
 LOG = logging.getLogger(__name__)
 
@@ -114,7 +106,7 @@ class Driver(transport.DriverBase):
         # NOTE(flaper87): Install Auth
         if GLOBAL_CFG.auth_strategy:
             strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
-            self.app = strategy.install(self.app, PROJECT_CFG.conf)
+            self.app = strategy.install(self.app, GLOBAL_CFG)
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""

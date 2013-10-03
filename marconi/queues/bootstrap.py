@@ -13,19 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo.config import cfg
 from stevedore import driver
 
-from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
 from marconi.queues import transport  # NOQA
 
 
-PROJECT_CFG = config.project('marconi', 'marconi-queues')
-CFG = config.namespace('queues:drivers').from_options(
-    transport='wsgi',
-    storage='sqlite')
+_bootstrap_options = [
+    cfg.StrOpt('transport', default='wsgi',
+               help='Transport driver to use'),
+    cfg.StrOpt('storage', default='sqlite',
+               help='Storage driver to use'),
+]
+
+CFG = cfg.CONF
+CFG.register_opts(_bootstrap_options, group="queues:drivers")
 
 LOG = log.getLogger(__name__)
 
@@ -38,7 +43,12 @@ class Bootstrap(object):
     """
 
     def __init__(self, config_file=None, cli_args=None):
-        PROJECT_CFG.load(filename=config_file, args=cli_args)
+        default_file = None
+        if config_file is not None:
+            default_file = [config_file]
+
+        CFG(project='marconi', prog='marconi-queues', args=cli_args or [],
+            default_config_files=default_file)
         log.setup('marconi')
 
     @decorators.lazy_property(write=False)
@@ -46,7 +56,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Storage Driver'))
         try:
             mgr = driver.DriverManager('marconi.queues.storage',
-                                       CFG.storage,
+                                       CFG['queues:drivers'].storage,
                                        invoke_on_load=True)
             return mgr.driver
         except RuntimeError as exc:
@@ -58,7 +68,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Transport Driver'))
         try:
             mgr = driver.DriverManager('marconi.queues.transport',
-                                       CFG.transport,
+                                       CFG['queues:drivers'].transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage])
             return mgr.driver

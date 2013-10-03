@@ -21,9 +21,9 @@ Field Mappings:
     letter of their long name.
 """
 
+from oslo.config import cfg
 import pymongo.errors
 
-from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
@@ -31,9 +31,7 @@ from marconi.queues.storage import exceptions
 from marconi.queues.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('queues:limits:storage').from_options(
-    default_queue_paging=10,
-)
+STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 
 class QueueController(storage.QueueBase):
@@ -174,7 +172,7 @@ class QueueController(storage.QueueBase):
              limit=None, detailed=False):
 
         if limit is None:
-            limit = CFG.default_queue_paging
+            limit = STORAGE_LIMITS.default_queue_paging
 
         query = {}
         scoped_name = utils.scope_queue_name(marker, project)

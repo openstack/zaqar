@@ -51,7 +51,7 @@ class FunctionalTestBase(testing.TestBase):
             self.server = self.server_class()
             self.server.start(self.conf_path(self.cfg.marconi.config))
 
-        self.mconf = self.load_conf(self.cfg.marconi.config).conf
+        self.mconf = self.load_conf(self.cfg.marconi.config)
         self.limits = self.mconf['queues:limits:transport']
 
         # NOTE(flaper87): Create client

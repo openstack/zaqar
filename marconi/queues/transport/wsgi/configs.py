@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace Hosting, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""MongoDB driver configuration options."""
-
 from oslo.config import cfg
 
+_WSGI_OPTIONS = [
+    cfg.StrOpt('bind', default='0.0.0.0',
+               help='Address to bind this server to'),
 
-_MONGODB_OPTIONS = [
-    cfg.StrOpt('uri', help='Mongodb Connection URI'),
+    cfg.IntOpt('port', default=8888,
+               help='Port to bind this server to'),
 
-    # Database name
-    # TODO(kgriffs): Consider local sharding across DBs to mitigate
-    # per-DB locking latency.
-    cfg.StrOpt('database', default='marconi_proxy', help='Database name'),
+    cfg.IntOpt('content_max_length', default=256 * 1024),
+    cfg.IntOpt('metadata_max_length', default=64 * 1024)
 ]
 
-_GROUP = 'proxy:drivers:storage:mongodb'
-cfg.CONF.register_opts(_MONGODB_OPTIONS, group=_GROUP)
-CFG = cfg.CONF[_GROUP]
+cfg.CONF.register_opts(_WSGI_OPTIONS, group='queues:drivers:transport:wsgi')

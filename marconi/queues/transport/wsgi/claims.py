@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import falcon
+from oslo.config import cfg
 import six
 
-from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
@@ -26,9 +26,7 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('queues:drivers:transport:wsgi').from_options(
-    metadata_max_length=64 * 1024
-)
+CFG = cfg.CONF['queues:drivers:transport:wsgi']
 
 CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
 CLAIM_PATCH_SPEC = (('ttl', int),)

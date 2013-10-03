@@ -20,10 +20,8 @@ import functools
 import sys
 import termios
 
-from marconi.common import config
 from marconi.openstack.common import log as logging
 
-PROJECT_CFG = config.project('marconi')
 LOG = logging.getLogger(__name__)
 
 
@@ -69,7 +67,6 @@ def runnable(func):
 
         try:
             logging.setup('marconi')
-            PROJECT_CFG.load(args=sys.argv[1:])
             func()
         except KeyboardInterrupt:
             LOG.info(_(u'Terminating'))

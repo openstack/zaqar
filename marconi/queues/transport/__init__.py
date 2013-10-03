@@ -1,13 +1,14 @@
 """Marconi Transport Drivers"""
 
-from marconi.common import config
+from oslo.config import cfg
+
 from marconi.queues.transport import base
 
-OPTIONS = {
-    'auth_strategy': ""
-}
+_TRANSPORT_OPTIONS = [
+    cfg.StrOpt('auth_strategy', default='')
+]
 
-CFG = config.project('marconi').from_options(**OPTIONS)
+cfg.CONF.register_opts(_TRANSPORT_OPTIONS)
 
 # Hoist into package namespace
 DriverBase = base.DriverBase

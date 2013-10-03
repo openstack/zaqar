@@ -18,11 +18,11 @@ import uuid
 
 import ddt
 import falcon
+from oslo.config import cfg
 import six
 from testtools import matchers
 
 import base  # noqa
-from marconi.common import config
 from marconi.openstack.common import timeutils
 from marconi.queues.transport import validation
 from marconi import tests as testing
@@ -34,8 +34,7 @@ class MessagesBaseTest(base.TestBase):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
-        self.wsgi_cfg = config.namespace(
-            'queues:drivers:transport:wsgi').from_options()
+        self.wsgi_cfg = cfg.CONF['queues:drivers:transport:wsgi']
 
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'

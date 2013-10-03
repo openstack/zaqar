@@ -17,9 +17,7 @@ import fixtures
 import os
 import testtools
 
-from marconi.common import config
-
-CFG = config.project()
+from oslo.config import cfg
 
 
 class TestBase(testtools.TestCase):
@@ -65,8 +63,8 @@ class TestBase(testtools.TestCase):
 
         :returns: Project's config object.
         """
-        CFG.load(filename=cls.conf_path(filename))
-        return CFG
+        cfg.CONF(args=[], default_config_files=[cls.conf_path(filename)])
+        return cfg.CONF
 
     def config(self, group=None, **kw):
         """Override some configuration values.

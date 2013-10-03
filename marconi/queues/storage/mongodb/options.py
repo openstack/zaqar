@@ -16,38 +16,43 @@
 
 """MongoDB storage driver configuration options."""
 
-from marconi.common import config
+from oslo.config import cfg
 
 
-# TODO(kgriffs): Expose documentation to oslo.config
-OPTIONS = {
-    # Connection string
-    'uri': None,
+_MONGODB_OPTIONS = [
+    cfg.StrOpt('uri', help='Mongodb Connection URI'),
 
-    # Database name. Will be postfixed with partition identifiers.
-    'database': 'marconi',
+    # Database name
+    # TODO(kgriffs): Consider local sharding across DBs to mitigate
+    # per-DB locking latency.
+    cfg.StrOpt('database', default='marconi', help='Database name'),
 
-    # Number of databases across which to partition message data,
-    # in order to reduce writer lock %. DO NOT change this setting
-    # after initial deployment. It MUST remain static. Also,
-    # you should not need a large number of partitions to improve
-    # performance, esp. if deploying MongoDB on SSD storage.
-    'partitions': 2,
+    cfg.IntOpt('partitions', default=2,
+               help=('Number of databases across which to '
+                     'partition message data, in order to '
+                     'reduce writer lock %. DO NOT change '
+                     'this setting after initial deployment. '
+                     'It MUST remain static. Also, you '
+                     'should not need a large number of partitions '
+                     'to improve performance, esp. if deploying '
+                     'MongoDB on SSD storage.')),
 
-    # Maximum number of times to retry a failed operation. Currently
-    # only used for retrying a message post.
-    'max_attempts': 1000,
+    cfg.IntOpt('max_attempts', default=1000,
+               help=('Maximum number of times to retry a failed operation.'
+                     'Currently only used for retrying a message post.')),
 
-    # Maximum sleep interval between retries (actual sleep time
-    # increases linearly according to number of attempts performed).
-    'max_retry_sleep': 0.1,
+    cfg.FloatOpt('max_retry_sleep', default=0.1,
+                 help=('Maximum sleep interval between retries '
+                       '(actual sleep time increases linearly '
+                       'according to number of attempts performed).')),
 
-    # Maximum jitter interval, to be added to the sleep interval, in
-    # order to decrease probability that parallel requests will retry
-    # at the same instant.
-    'max_retry_jitter': 0.005,
-}
+    cfg.FloatOpt('max_retry_jitter', default=0.005,
+                 help=('Maximum jitter interval, to be added to the '
+                       'sleep interval, in order to decrease probability '
+                       'that parallel requests will retry at the '
+                       'same instant.')),
+]
 
-CFG = config.namespace('queues:drivers:storage:mongodb').from_options(
-    **OPTIONS
-)
+cfg.CONF.register_opts(_MONGODB_OPTIONS,
+                       group='queues:drivers:storage:mongodb')
+CFG = cfg.CONF['queues:drivers:storage:mongodb']

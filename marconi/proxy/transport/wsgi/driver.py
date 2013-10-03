@@ -17,9 +17,9 @@ import abc
 from wsgiref import simple_server
 
 import falcon
+from oslo.config import cfg
 import six
 
-from marconi.common import config
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.proxy import transport
@@ -28,16 +28,20 @@ from marconi.proxy.utils import round_robin
 from marconi.queues.transport import auth
 
 
-OPTIONS = {
-    'bind': '0.0.0.0',
-    'port': 8889
-}
+_WSGI_OPTIONS = [
+    cfg.StrOpt('bind', default='0.0.0.0',
+               help='Address to bind this server to'),
 
-PROJECT_CFG = config.project('marconi', 'marconi-proxy')
-GLOBAL_CFG = PROJECT_CFG.from_options()
-WSGI_CFG = config.namespace('proxy:drivers:transport:wsgi').from_options(
-    **OPTIONS
-)
+    cfg.IntOpt('port', default=8888,
+               help='Port to bind this server to'),
+
+]
+
+cfg.CONF.register_opts(_WSGI_OPTIONS,
+                       group='proxy:drivers:transport:wsgi')
+
+GLOBAL_CFG = cfg.CONF
+WSGI_CFG = cfg.CONF['proxy:drivers:transport:wsgi']
 
 LOG = logging.getLogger(__name__)
 
@@ -74,7 +78,7 @@ class DriverBase(transport.DriverBase):
         # NOTE(flaper87): Install Auth
         if GLOBAL_CFG.auth_strategy:
             strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
-            self.app = strategy.install(self.app, PROJECT_CFG.conf)
+            self.app = strategy.install(self.app, GLOBAL_CFG)
 
     @abc.abstractproperty
     def bridge(self):

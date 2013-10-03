@@ -15,21 +15,23 @@
 
 import re
 
+from oslo.config import cfg
 import simplejson as json
 
-from marconi.common import config
 
-OPTIONS = {
-    'queue_paging_uplimit': 20,
-    'metadata_size_uplimit': 64 * 1024,
-    'message_paging_uplimit': 20,
-    'message_size_uplimit': 256 * 1024,
-    'message_ttl_max': 1209600,
-    'claim_ttl_max': 43200,
-    'claim_grace_max': 43200,
-}
+_TRANSPORT_LIMITS_OPTIONS = [
+    cfg.IntOpt('queue_paging_uplimit', default=20),
+    cfg.IntOpt('metadata_size_uplimit', default=64 * 1024),
+    cfg.IntOpt('message_paging_uplimit', default=20),
+    cfg.IntOpt('message_size_uplimit', default=256 * 1024),
+    cfg.IntOpt('message_ttl_max', default=1209600),
+    cfg.IntOpt('claim_ttl_max', default=43200),
+    cfg.IntOpt('claim_grace_max', default=43200),
+]
 
-CFG = config.namespace('queues:limits:transport').from_options(**OPTIONS)
+cfg.CONF.register_opts(_TRANSPORT_LIMITS_OPTIONS,
+                       group='queues:limits:transport')
+CFG = cfg.CONF['queues:limits:transport']
 
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.

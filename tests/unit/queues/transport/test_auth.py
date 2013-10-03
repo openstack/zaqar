@@ -16,7 +16,6 @@
 
 from oslo.config import cfg
 
-from marconi.common import config
 from marconi.queues.transport import auth
 from marconi import tests as testing
 
@@ -25,13 +24,11 @@ class TestTransportAuth(testing.TestBase):
 
     def setUp(self):
         super(TestTransportAuth, self).setUp()
-        self.cfg = config.project('marconi')
+        self.cfg = cfg.ConfigOpts()
 
     def tearDown(self):
         super(TestTransportAuth, self).tearDown()
-        self.cfg.conf = cfg.ConfigOpts()
 
     def test_configs(self):
-        auth.strategy('keystone')._register_opts(self.cfg.conf)
-        self.assertIn('keystone_authtoken', self.cfg.conf)
-        self.assertIn('keystone_authtoken', dir(self.cfg.from_options()))
+        auth.strategy('keystone')._register_opts(self.cfg)
+        self.assertIn('keystone_authtoken', self.cfg)

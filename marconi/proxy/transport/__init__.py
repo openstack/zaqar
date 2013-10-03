@@ -1,9 +1,12 @@
 """Marconi Proxy Transport Drivers"""
 
-from marconi.common import config
+from oslo.config import cfg
+
 from marconi.proxy.transport import base
 
-CFG = config.project('marconi').from_options()
+# NOTE(flaper87): Not sure
+# what this is for.
+CFG = cfg.CONF
 
 # Hoist into package namespace
 DriverBase = base.DriverBase

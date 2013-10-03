@@ -18,17 +18,21 @@ from stevedore import driver
 
 from marconi.common import access
 from marconi.common.cache import cache as oslo_cache
-from marconi.common import config
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
 from marconi.proxy import transport  # NOQA
 
 
-PROJECT_CFG = config.project('marconi', 'marconi-proxy')
-CFG = config.namespace('proxy:drivers').from_options(
-    transport='wsgi',
-    storage='memory')
+_bootstrap_options = [
+    cfg.StrOpt('transport', default='wsgi',
+               help='Transport driver to use'),
+    cfg.StrOpt('storage', default='memory',
+               help='Storage driver to use'),
+]
+
+CFG = cfg.CONF
+CFG.register_opts(_bootstrap_options, group="proxy:drivers")
 
 LOG = log.getLogger(__name__)
 
@@ -41,7 +45,13 @@ class Bootstrap(object):
     """
 
     def __init__(self, access_mode, config_file=None, cli_args=None):
-        PROJECT_CFG.load(filename=config_file, args=cli_args)
+        default_file = None
+        if config_file is not None:
+            default_file = [config_file]
+
+        CFG(project='marconi', args=cli_args or [],
+            default_config_files=default_file)
+
         log.setup('marconi_proxy')
         form = 'marconi.proxy.{0}.transport'
         lookup = {access.Access.public: 'public',
@@ -53,7 +63,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Proxy Storage Driver'))
         try:
             mgr = driver.DriverManager('marconi.proxy.storage',
-                                       CFG.storage,
+                                       CFG['proxy:drivers'].storage,
                                        invoke_on_load=True)
             return mgr.driver
         except RuntimeError as exc:
@@ -64,7 +74,7 @@ class Bootstrap(object):
     def cache(self):
         LOG.debug(_(u'Loading Proxy Cache Driver'))
         try:
-            mgr = oslo_cache.get_cache(cfg.CONF)
+            mgr = oslo_cache.get_cache(CFG)
             return mgr
         except RuntimeError as exc:
             LOG.exception(exc)
@@ -75,7 +85,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Proxy Transport Driver'))
         try:
             mgr = driver.DriverManager(self._transport_type,
-                                       CFG.transport,
+                                       CFG['proxy:drivers'].transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage,
                                                     self.cache])

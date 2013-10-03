@@ -24,10 +24,10 @@ Field Mappings:
 import datetime
 import time
 
+from oslo.config import cfg
 import pymongo.errors
 import pymongo.read_preferences
 
-from marconi.common import config
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
@@ -36,9 +36,7 @@ from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
-CFG = config.namespace('queues:limits:storage').from_options(
-    default_message_paging=10,
-)
+STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 # NOTE(kgriffs): This value, in seconds, should be at least less than the
 # minimum allowed TTL for messages (60 seconds). Make it 45 to allow for
@@ -354,7 +352,7 @@ class MessageController(storage.MessageBase):
              echo=False, client_uuid=None, include_claimed=False):
 
         if limit is None:
-            limit = CFG.default_message_paging
+            limit = STORAGE_LIMITS.default_message_paging
 
         if marker is not None:
             try:

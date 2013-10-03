@@ -14,14 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import config
+from oslo.config import cfg
+
 from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
-CFG = config.namespace('queues:limits:storage').from_options(
-    default_queue_paging=10,
-)
+STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 
 class QueueController(base.QueueBase):
@@ -47,7 +46,7 @@ class QueueController(base.QueueBase):
             project = ''
 
         if limit is None:
-            limit = CFG.default_queue_paging
+            limit = STORAGE_LIMITS.default_queue_paging
 
         sql = (('''
             select name from Queues''' if not detailed

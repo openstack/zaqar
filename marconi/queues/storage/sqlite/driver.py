@@ -18,14 +18,19 @@ import sqlite3
 import uuid
 
 import msgpack
+from oslo.config import cfg
 
-from marconi.common import config
 from marconi.queues import storage
 from marconi.queues.storage.sqlite import controllers
 from marconi.queues.storage.sqlite import utils
 
-CFG = config.namespace('queues:drivers:storage:sqlite').from_options(
-    database=':memory:')
+_SQLITE_OPTIONS = [
+    cfg.StrOpt('database', default=':memory:',
+               help='Sqlite database to use.')
+]
+
+cfg.CONF.register_opts(_SQLITE_OPTIONS, group='queues:drivers:storage:sqlite')
+CFG = cfg.CONF['queues:drivers:storage:sqlite']
 
 
 class Driver(storage.DriverBase):

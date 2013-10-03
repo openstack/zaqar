@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import config
+from oslo.config import cfg
+
 from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
-CFG = config.namespace('queues:limits:storage').from_options(
-    default_message_paging=10,
-)
+STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 
 class ClaimController(base.ClaimBase):
@@ -84,7 +83,7 @@ class ClaimController(base.ClaimBase):
             project = ''
 
         if limit is None:
-            limit = CFG.default_message_paging
+            limit = STORAGE_LIMITS.default_message_paging
 
         with self.driver('immediate'):
             try:
