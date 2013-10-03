@@ -84,14 +84,30 @@ class FunctionalTestBase(testing.TestBase):
         self.assertTrue(required_values.issubset(actual_values),
                         msg=form.format((required_values - actual_values)))
 
-    def assertMessageCount(self, expectedCount, actualCount):
+    def assertMessageCount(self, actualCount, expectedCount):
         """Checks if number of messages returned <= limit
 
         :param expectedCount: limit value passed in the url (OR) default(10).
         :param actualCount: number of messages returned in the API response.
         """
-        self.assertTrue(actualCount <= expectedCount,
-                        msg='More Messages returned than allowed')
+        msg = 'More Messages returned than allowed: expected count = {0}' \
+              ', actual count = {1}'.format(expectedCount, actualCount)
+        self.assertTrue(actualCount <= expectedCount, msg)
+
+    def assertQueueStats(self, result_json, claimed):
+        """Checks the Queue Stats results
+
+        :param result_json: json response returned for Queue Stats.
+        :param claimed: expected number of claimed messages.
+        """
+        total = self.limits.message_paging_uplimit
+        free = total - claimed
+
+        self.assertEqual(result_json['messages']['claimed'], claimed)
+        self.assertEqual(result_json['messages']['free'],
+                         free)
+        self.assertEqual(result_json['messages']['total'],
+                         total)
 
 
 class Server(object):

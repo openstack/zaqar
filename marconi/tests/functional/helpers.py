@@ -93,7 +93,7 @@ def single_message_body(**kwargs):
     return message_body
 
 
-def get_message_body(**kwargs):
+def create_message_body(**kwargs):
     """Returns request body for post message tests.
 
     :param **kwargs: can be {messagecount: x} , x is the # of messages.
