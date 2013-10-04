@@ -28,6 +28,15 @@ class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
             self.TITLE, description, retry_after)
 
 
+class HTTPBadRequestAPI(falcon.HTTPBadRequest):
+    """Wraps falcon.HTTPBadRequest with a contextual title."""
+
+    TITLE = _(u'Invalid API call')
+
+    def __init__(self, description):
+        super(HTTPBadRequestAPI, self).__init__(self.TITLE, description)
+
+
 class HTTPBadRequestBody(falcon.HTTPBadRequest):
     """Wraps falcon.HTTPBadRequest with a contextual title."""
 
