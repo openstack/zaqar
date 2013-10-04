@@ -119,6 +119,19 @@ class QueuesTest(base.TestBase):
         self.simulate_get('/v1/queues')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
+    # An incomplete test, only for Bug #1234481
+    # TODO(zyuan): tearDown the queue creation
+    def test_list_queues_with_option_detailed(self):
+        self._mock_create_queue('/v1/queues/q1', status=201)
+        self._mock_create_queue('/v1/queues/q2', status=201)
+
+        result = self.simulate_get('/v1/queues', query_string="?detailed=True")
+        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
+        doc = json.loads(result[0])
+        for entry in doc['queues']:
+            self.assertIn('metadata', entry)
+
 
 @ddt.ddt
 class QueuesWithNoPartitionsTest(base.TestBase):
