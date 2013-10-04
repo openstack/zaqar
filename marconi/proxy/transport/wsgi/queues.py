@@ -58,18 +58,18 @@ class Listing(object):
         request.get_param_as_bool('detailed', store=kwargs)
 
         resp = collections.defaultdict(list)
-        for q in self._catalogue.list(project):
-            queue = q['name']
-            if queue < kwargs.get('marker', ''):
+        for queue in self._catalogue.list(project):
+            queue_name = queue['name']
+            if queue_name < kwargs.get('marker', ''):
                 continue
             entry = {
-                'href': request.path + '/' + queue,
-                'name': queue
+                'href': request.path + '/' + queue_name,
+                'name': queue_name
             }
             if kwargs.get('detailed', None):
                 entry['metadata'] = queue['metadata']
             resp['queues'].append(entry)
-            kwargs['marker'] = queue
+            kwargs['marker'] = queue_name
             if len(resp['queues']) == kwargs.get('limit', 0):
                 break
 
