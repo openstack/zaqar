@@ -95,8 +95,17 @@ class PartitionTest(base.TestBase):
 
         # List
         result = self.simulate_get(self.path)
+        doc = json.loads(result[0])
+
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(len(json.loads(result[0])), 10)
+        self.assertEquals(len(doc), 10)
+
+        for item in doc:
+            name = item.pop('name')
+            result = self.simulate_get(self.path + '/' + name)
+            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+
+            self.assertEquals(json.loads(result[0]), item)
 
         # Delete all
         for n in range(1, 11):
