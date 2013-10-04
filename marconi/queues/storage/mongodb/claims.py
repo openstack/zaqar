@@ -83,8 +83,8 @@ class ClaimController(storage.ClaimBase):
             # Lets get claim's data
             # from the first message
             # in the iterator
-            msgs = messages(msg_ctrl.claimed(queue, cid, now,
-                                             project=project))
+            msgs = messages(msg_ctrl._claimed(queue, cid, now,
+                                              project=project))
             claim = next(msgs)
 
             update_time = claim['e'] - claim['t']
@@ -143,8 +143,8 @@ class ClaimController(storage.ClaimBase):
 
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
-        msgs = msg_ctrl.active(queue, fields={'_id': 1}, project=project,
-                               limit=limit)
+        msgs = msg_ctrl._active(queue, fields={'_id': 1}, project=project,
+                                limit=limit)
 
         messages = iter([])
         ids = [msg['_id'] for msg in msgs]
@@ -205,8 +205,8 @@ class ClaimController(storage.ClaimBase):
         expires = now + ttl
 
         msg_ctrl = self.driver.message_controller
-        claimed = msg_ctrl.claimed(queue, cid, expires=now,
-                                   limit=1, project=project)
+        claimed = msg_ctrl._claimed(queue, cid, expires=now,
+                                    limit=1, project=project)
 
         try:
             next(claimed)
@@ -240,4 +240,4 @@ class ClaimController(storage.ClaimBase):
     @utils.raises_conn_error
     def delete(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
-        msg_ctrl.unclaim(queue, claim_id, project=project)
+        msg_ctrl._unclaim(queue, claim_id, project=project)

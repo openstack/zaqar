@@ -95,7 +95,7 @@ class MessageController(base.MessageBase):
                 'body': content,
             }
 
-    def first(self, queue, project, sort=1):
+    def first(self, queue, project=None, sort=1):
         if project is None:
             project = ''
 
