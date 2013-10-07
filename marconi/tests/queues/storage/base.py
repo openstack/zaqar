@@ -15,6 +15,7 @@
 
 import datetime
 import time
+import uuid
 
 import ddt
 from testtools import matchers
@@ -121,9 +122,11 @@ class QueueControllerTest(ControllerBaseTest):
         metadata = self.controller.get_metadata('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
+        client_uuid = uuid.uuid4()
+
         # Test queue statistic
         _insert_fixtures(self.message_controller, 'test',
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=client_uuid,
                          num=6)
 
         # NOTE(kgriffs): We can't get around doing this, because
@@ -132,7 +135,7 @@ class QueueControllerTest(ControllerBaseTest):
         time.sleep(1)
 
         _insert_fixtures(self.message_controller, 'test',
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=client_uuid,
                          num=6)
 
         stats = self.controller.stats('test', project=self.project)
@@ -231,7 +234,7 @@ class MessageControllerTest(ControllerBaseTest):
         # Test Message Creation
         created = list(self.controller.post(queue_name, messages,
                                             project=self.project,
-                                            client_uuid='unused'))
+                                            client_uuid=uuid.uuid4()))
         self.assertEqual(len(created), 1)
 
         # Test Message Get
@@ -245,8 +248,10 @@ class MessageControllerTest(ControllerBaseTest):
             self.controller.get(queue_name, created[0], project=self.project)
 
     def test_get_multi(self):
+        client_uuid = uuid.uuid4()
+
         _insert_fixtures(self.controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid', num=15)
+                         project=self.project, client_uuid=client_uuid, num=15)
 
         def load_messages(expected, *args, **kwargs):
             interaction = self.controller.list(*args, **kwargs)
@@ -256,7 +261,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         # Test all messages, echo False and uuid
         load_messages(0, self.queue_name, project=self.project,
-                      client_uuid='my_uuid')
+                      client_uuid=client_uuid)
 
         # Test all messages and limit
         load_messages(15, self.queue_name, project=self.project, limit=20,
@@ -265,17 +270,17 @@ class MessageControllerTest(ControllerBaseTest):
         # Test all messages, echo True, and uuid
         interaction = load_messages(10, self.queue_name, echo=True,
                                     project=self.project,
-                                    client_uuid='my_uuid')
+                                    client_uuid=client_uuid)
 
         # Test all messages, echo True, uuid and marker
         load_messages(5, self.queue_name, echo=True, project=self.project,
-                      marker=next(interaction), client_uuid='my_uuid')
+                      marker=next(interaction), client_uuid=client_uuid)
 
     def test_multi_ids(self):
         messages_in = [{'ttl': 120, 'body': 0}, {'ttl': 240, 'body': 1}]
         ids = self.controller.post(self.queue_name, messages_in,
                                    project=self.project,
-                                   client_uuid='my_uuid')
+                                   client_uuid=uuid.uuid4())
 
         messages_out = self.controller.bulk_get(self.queue_name, ids,
                                                 project=self.project)
@@ -292,13 +297,15 @@ class MessageControllerTest(ControllerBaseTest):
             next(result)
 
     def test_claim_effects(self):
+        client_uuid = uuid.uuid4()
+
         _insert_fixtures(self.controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid', num=12)
+                         project=self.project, client_uuid=client_uuid, num=12)
 
         def list_messages(include_claimed=None):
             kwargs = {
                 'project': self.project,
-                'client_uuid': 'my_uuid',
+                'client_uuid': client_uuid,
                 'echo': True,
             }
 
@@ -360,14 +367,15 @@ class MessageControllerTest(ControllerBaseTest):
     @testing.is_slow(condition=lambda self: self.gc_interval != 0)
     def test_expired_messages(self):
         messages = [{'body': 3.14, 'ttl': 0}]
+        client_uuid = uuid.uuid4()
 
         [msgid] = self.controller.post(self.queue_name, messages,
                                        project=self.project,
-                                       client_uuid='my_uuid')
+                                       client_uuid=client_uuid)
 
         [msgid] = self.controller.post(self.queue_name, messages,
                                        project=self.project,
-                                       client_uuid='my_uuid')
+                                       client_uuid=client_uuid)
 
         time.sleep(self.gc_interval)
 
@@ -400,7 +408,7 @@ class MessageControllerTest(ControllerBaseTest):
         [msgid] = self.controller.post(self.queue_name,
                                        [{'body': {}, 'ttl': 10}],
                                        project=self.project,
-                                       client_uuid='my_uuid')
+                                       client_uuid=uuid.uuid4())
 
         bad_claim_id = '; DROP TABLE queues'
         self.controller.delete(self.queue_name,
@@ -412,6 +420,7 @@ class MessageControllerTest(ControllerBaseTest):
         bad_marker = 'xyz'
         interaction = self.controller.list(self.queue_name,
                                            project=self.project,
+                                           client_uuid=uuid.uuid4(),
                                            marker=bad_marker)
         messages = list(next(interaction))
 
@@ -442,7 +451,8 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_claim_lifecycle(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid', num=20)
+                         project=self.project, client_uuid=uuid.uuid4(),
+                         num=20)
 
         meta = {'ttl': 70, 'grace': 30}
 
@@ -500,7 +510,7 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=uuid.uuid4(),
                          num=20, ttl=120)
 
         meta = {'ttl': 777, 'grace': 0}
@@ -513,7 +523,7 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_extend_lifetime_with_grace_1(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=uuid.uuid4(),
                          num=20, ttl=120)
 
         meta = {'ttl': 777, 'grace': 23}
@@ -526,7 +536,7 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_extend_lifetime_with_grace_2(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=uuid.uuid4(),
                          num=20, ttl=120)
 
         # Although ttl is less than the message's TTL, the grace
@@ -541,7 +551,7 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def test_do_not_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
-                         project=self.project, client_uuid='my_uuid',
+                         project=self.project, client_uuid=uuid.uuid4(),
                          num=20, ttl=120)
 
         # Choose a ttl that is less than the message's current TTL

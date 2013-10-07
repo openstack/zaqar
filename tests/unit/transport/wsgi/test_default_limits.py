@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import uuid
 
 import falcon
 
@@ -59,7 +60,7 @@ class DefaultLimitsTest(base.TestBase):
         self.__prepare_messages(10)
 
         result = self.simulate_get(self.messages_path,
-                                   headers={'Client-ID': 'audience'})
+                                   headers={'Client-ID': str(uuid.uuid4())})
 
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
 

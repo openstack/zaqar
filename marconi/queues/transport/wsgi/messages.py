@@ -74,8 +74,7 @@ class CollectionResource(object):
         return messages
 
     def _get(self, req, project_id, queue_name):
-        uuid = req.get_header('Client-ID', required=True)
-
+        client_uuid = wsgi_utils.get_client_uuid(req)
         kwargs = {}
 
         # NOTE(kgriffs): This syntax ensures that
@@ -90,7 +89,7 @@ class CollectionResource(object):
             results = self.message_controller.list(
                 queue_name,
                 project=project_id,
-                client_uuid=uuid,
+                client_uuid=client_uuid,
                 **kwargs)
 
             # Buffer messages
@@ -136,7 +135,7 @@ class CollectionResource(object):
                     u'project: %(project)s') %
                   {'queue': queue_name, 'project': project_id})
 
-        uuid = req.get_header('Client-ID', required=True)
+        client_uuid = wsgi_utils.get_client_uuid(req)
 
         # Place JSON size restriction before parsing
         if req.content_length > CFG.content_max_length:
@@ -164,7 +163,7 @@ class CollectionResource(object):
                 queue_name,
                 messages=messages,
                 project=project_id,
-                client_uuid=uuid)
+                client_uuid=client_uuid)
 
         except validate.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))

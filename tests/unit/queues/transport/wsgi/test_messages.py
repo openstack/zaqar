@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import uuid
 
 import ddt
 import falcon
@@ -44,7 +45,7 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_put(self.queue_path, self.project_id, body=doc)
 
         self.headers = {
-            'Client-ID': '30387f00',
+            'Client-ID': str(uuid.uuid4()),
         }
 
     def tearDown(self):
@@ -186,6 +187,20 @@ class MessagesBaseTest(base.TestBase):
     def test_post_to_missing_queue(self):
         self._post_messages('/v1/queues/nonexistent/messages')
         self.assertEquals(self.srmock.status, falcon.HTTP_404)
+
+    @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
+    def test_bad_client_id(self, text_id):
+        self.simulate_post(self.queue_path + '/messages',
+                           body='{"ttl": 60, "body": ""}',
+                           headers={'Client-ID': text_id})
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_get(self.queue_path + '/messages',
+                          query_string='limit=3&echo=true',
+                          headers={'Client-ID': text_id})
+
+        self.assertEquals(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(None, '[', '[]', '{}', '.')
     def test_post_bad_message(self, document):
@@ -426,7 +441,7 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
         path = '/v1/queues/fizbit/messages'
         doc = '[{"body": 239, "ttl": 100}]'
         headers = {
-            'Client-ID': '30387f00',
+            'Client-ID': str(uuid.uuid4()),
         }
 
         self.simulate_post(path, project_id,

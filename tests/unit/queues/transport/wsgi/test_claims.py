@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import uuid
 
 import ddt
 import falcon
@@ -46,7 +47,7 @@ class ClaimsBaseTest(base.TestBase):
 
         doc = json.dumps([{'body': 239, 'ttl': 300}] * 10)
         self.simulate_post(self.queue_path + '/messages', self.project_id,
-                           body=doc, headers={'Client-ID': '30387f00'})
+                           body=doc, headers={'Client-ID': str(uuid.uuid4())})
         self.assertEquals(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
@@ -122,15 +123,19 @@ class ClaimsBaseTest(base.TestBase):
                            query_string='limit=3')
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+        }
+
         # Listing messages, by default, won't include claimed
         body = self.simulate_get(self.messages_path, self.project_id,
-                                 headers={'Client-ID': 'foo'})
+                                 headers=headers)
         self.assertEquals(self.srmock.status, falcon.HTTP_204)
 
         # Include claimed messages this time
         body = self.simulate_get(self.messages_path, self.project_id,
                                  query_string='include_claimed=true',
-                                 headers={'Client-ID': 'foo'})
+                                 headers=headers)
         listed = json.loads(body[0])
         self.assertEquals(self.srmock.status, falcon.HTTP_200)
         self.assertEquals(len(listed['messages']), len(claimed))

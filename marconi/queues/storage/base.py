@@ -184,8 +184,7 @@ class MessageBase(ControllerBase):
             messages to return.
         :param echo: (Default False) Boolean expressing whether
             or not this client should receive its own messages.
-        :param client_uuid: Client's unique identifier. This param
-            is required when echo=False.
+        :param client_uuid: A UUID object. Required when echo=False.
 
         :returns: An iterator giving a sequence of messages and
             the marker of the next page.
@@ -245,7 +244,7 @@ class MessageBase(ControllerBase):
         :param messages: Messages to post to queue, an iterable
             yielding 1 or more elements. An empty iterable
             results in undefined behavior.
-        :param client_uuid: Client's unique identifier.
+        :param client_uuid: A UUID object.
         :param project: Project id
 
         :returns: List of message ids

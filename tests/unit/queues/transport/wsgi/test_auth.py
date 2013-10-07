@@ -14,6 +14,8 @@
 # limitations under the License.
 """Test Auth."""
 
+import uuid
+
 import falcon
 from falcon import testing
 from keystoneclient.middleware import auth_token
@@ -27,7 +29,7 @@ class TestWSGIAuth(base.TestBase):
 
     def setUp(self):
         super(TestWSGIAuth, self).setUp()
-        self.headers = {'Client-ID': '30387f00'}
+        self.headers = {'Client-ID': str(uuid.uuid4())}
 
     def test_auth_install(self):
         self.assertTrue(isinstance(self.app,
