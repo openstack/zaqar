@@ -181,16 +181,14 @@ class QueueController(storage.QueueBase):
 
         if not scoped_name.startswith('/'):
             # NOTE(kgriffs): scoped queue, e.g., 'project-id/queue-name'
-            query['p_q'] = {'$gt': scoped_name}
+            project_prefix = '^' + project + '/'
+            query['p_q'] = {'$regex': project_prefix, '$gt': scoped_name}
         elif scoped_name == '/':
             # NOTE(kgriffs): list global queues, but exclude scoped ones
             query['p_q'] = {'$regex': '^/'}
         else:
             # NOTE(kgriffs): unscoped queue, e.g., '/my-global-queue'
-            query['$and'] = [
-                {'p_q':  {'$regex': '^/'}},
-                {'p_q':  {'$gt': scoped_name}},
-            ]
+            query['p_q'] = {'$regex': '^/', '$gt': scoped_name}
 
         fields = {'p_q': 1, '_id': 0}
         if detailed:

@@ -213,58 +213,100 @@ class QueueLifecycleBaseTest(base.TestBase):
                           path + '/metadata')
 
     def test_list(self):
-        project_id = '644079696574693'
-        alt_project_id = '644079696574694'
+        arbitrary_number = 644079696574693
+        project_id = str(arbitrary_number)
+
+        # NOTE(kgriffs): It's important that this one sort after the one
+        # above. This is in order to prove that bug/1236605 is fixed, and
+        # stays fixed!
+        alt_project_id = str(arbitrary_number + 1)
 
         # List empty
         self.simulate_get('/v1/queues', project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Payload exceeded
         self.simulate_get('/v1/queues', project_id, query_string='limit=21')
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Create some
-        self.simulate_put('/v1/queues/q1', project_id, body='{"_ttl": 30 }')
-        self.simulate_put('/v1/queues/q2', project_id, body='{}')
-        self.simulate_put('/v1/queues/q3', project_id, body='{"_ttl": 30 }')
+        def create_queue(name, project_id, body):
+            uri = '/v1/queues/' + name
+            self.simulate_put(uri, project_id)
+            self.simulate_put(uri + '/metadata', project_id, body=body)
 
-        # List (no metadata)
+        create_queue('g1', None, '{"answer": 42}')
+        create_queue('g2', None, '{"answer": 42}')
+
+        create_queue('q1', project_id, '{"node": 31}')
+        create_queue('q2', project_id, '{"node": 32}')
+        create_queue('q3', project_id, '{"node": 33}')
+
+        create_queue('q3', alt_project_id, '{"alt": 1}')
+
+        # List (global queues)
+        result = self.simulate_get('/v1/queues', None,
+                                   query_string='limit=2&detailed=true')
+
+        result_doc = json.loads(result[0])
+        queues = result_doc['queues']
+        self.assertEqual(len(queues), 2)
+
+        for queue in queues:
+            self.assertEqual(queue['metadata'], {'answer': 42})
+
+        # List (limit)
         result = self.simulate_get('/v1/queues', project_id,
                                    query_string='limit=2')
 
         result_doc = json.loads(result[0])
+        self.assertEqual(len(result_doc['queues']), 2)
+
+        # List (no metadata, get all)
+        result = self.simulate_get('/v1/queues', project_id,
+                                   query_string='limit=5')
+
+        result_doc = json.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          '/v1/queues?limit=2')
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                         '/v1/queues?limit=5')
 
-        for queue in result_doc['queues']:
+        # Ensure we didn't pick up the queue from the alt project.
+        queues = result_doc['queues']
+        self.assertEqual(len(queues), 3)
+
+        for queue in queues:
             self.simulate_get(queue['href'] + '/metadata', project_id)
-            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-            self.simulate_get(queue['href'] + '/metadata', alt_project_id)
-            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+            self.simulate_get(queue['href'] + '/metadata', 'imnothere')
+            self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
             self.assertNotIn('metadata', queue)
 
         # List with metadata
         result = self.simulate_get('/v1/queues', project_id,
-                                   query_string=params + '&detailed=true')
+                                   query_string='detailed=true')
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
         result_doc = json.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
-        [queue] = result_doc['queues']
+        queue = result_doc['queues'][0]
         result = self.simulate_get(queue['href'] + '/metadata', project_id)
         result_doc = json.loads(result[0])
-        self.assertEquals(result_doc, queue['metadata'])
+        self.assertEqual(result_doc, queue['metadata'])
+        self.assertEqual(result_doc, {'node': 31})
 
         # List tail
         self.simulate_get(target, project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        # List manually-constructed tail
+        self.simulate_get(target, project_id, query_string='marker=zzz')
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
 
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
