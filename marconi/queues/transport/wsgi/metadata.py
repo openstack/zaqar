@@ -82,7 +82,7 @@ class Resource(object):
                                          project=project_id)
 
         except validate.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestBody(six.text_type(ex))
+            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_exceptions.QueueDoesNotExist:
             raise falcon.HTTPNotFound()
