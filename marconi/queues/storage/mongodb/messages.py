@@ -260,10 +260,10 @@ class MessageController(storage.MessageBase):
         return cursor.hint(ACTIVE_INDEX_FIELDS)
 
     #-----------------------------------------------------------------------
-    # Interface
+    # "Friends" interface
     #-----------------------------------------------------------------------
 
-    def count(self, queue_name, project=None, include_claimed=False):
+    def _count(self, queue_name, project=None, include_claimed=False):
         """Return total number of messages in a queue.
 
         This method is designed to very quickly count the number
@@ -286,39 +286,17 @@ class MessageController(storage.MessageBase):
         collection = self._collection(queue_name, project)
         return collection.find(query).hint(COUNTING_INDEX_FIELDS).count()
 
-    def first(self, queue_name, project=None, sort=1):
-        """Get first message in the queue (including claimed).
-
-        :param queue_name: Name of the queue to list
-        :param sort: (Default 1) Sort order for the listing. Pass 1 for
-            ascending (oldest message first), or -1 for descending (newest
-            message first).
-
-        :returns: First message in the queue, or None if the queue is
-            empty
-
-        """
-        cursor = self._list(queue_name, project=project,
-                            include_claimed=True, sort=sort,
-                            limit=1)
-        try:
-            message = next(cursor)
-        except StopIteration:
-            raise exceptions.QueueIsEmpty(queue_name, project)
-
-        return message
-
-    def active(self, queue_name, marker=None, echo=False,
-               client_uuid=None, fields=None, project=None,
-               limit=None):
+    def _active(self, queue_name, marker=None, echo=False,
+                client_uuid=None, fields=None, project=None,
+                limit=None):
 
         return self._list(queue_name, project=project, marker=marker,
                           echo=echo, client_uuid=client_uuid,
                           fields=fields, include_claimed=False,
                           limit=limit)
 
-    def claimed(self, queue_name, claim_id,
-                expires=None, limit=None, project=None):
+    def _claimed(self, queue_name, claim_id,
+                 expires=None, limit=None, project=None):
 
         if claim_id is None:
             claim_id = {'$ne': None}
@@ -350,7 +328,7 @@ class MessageController(storage.MessageBase):
 
         return utils.HookedCursor(msgs, denormalizer)
 
-    def unclaim(self, queue_name, claim_id, project=None):
+    def _unclaim(self, queue_name, claim_id, project=None):
         cid = utils.to_oid(claim_id)
 
         # NOTE(cpp-cabrera): early abort - avoid a DB query if we're handling
@@ -367,6 +345,10 @@ class MessageController(storage.MessageBase):
         collection.update({'p_q': scope, 'c.id': cid},
                           {'$set': {'c': {'id': None, 'e': now}}},
                           upsert=False, multi=True)
+
+    #-----------------------------------------------------------------------
+    # Public interface
+    #-----------------------------------------------------------------------
 
     def list(self, queue_name, project=None, marker=None, limit=None,
              echo=False, client_uuid=None, include_claimed=False):
@@ -388,6 +370,8 @@ class MessageController(storage.MessageBase):
 
         now = timeutils.utcnow_ts()
 
+        # NOTE (kgriffs) @utils.raises_conn_error not needed on this
+        # function, since utils.HookedCursor already has it.
         def denormalizer(msg):
             marker_id['next'] = msg['k']
 
@@ -397,11 +381,19 @@ class MessageController(storage.MessageBase):
         yield str(marker_id['next'])
 
     @utils.raises_conn_error
-    def get(self, queue_name, message_id, project=None):
-        """Gets a single message by ID.
+    def first(self, queue_name, project=None, sort=1):
+        cursor = self._list(queue_name, project=project,
+                            include_claimed=True, sort=sort,
+                            limit=1)
+        try:
+            message = next(cursor)
+        except StopIteration:
+            raise exceptions.QueueIsEmpty(queue_name, project)
 
-        :raises: exceptions.MessageDoesNotExist
-        """
+        return message
+
+    @utils.raises_conn_error
+    def get(self, queue_name, message_id, project=None):
         mid = utils.to_oid(message_id)
         if mid is None:
             raise exceptions.MessageDoesNotExist(message_id, queue_name,

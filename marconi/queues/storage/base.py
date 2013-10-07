@@ -192,6 +192,21 @@ class MessageBase(ControllerBase):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def first(self, queue, project=None, sort=1):
+        """Get first message in the queue (including claimed).
+
+        :param queue: Name of the queue to list
+        :param sort: (Default 1) Sort order for the listing. Pass 1 for
+            ascending (oldest message first), or -1 for descending (newest
+            message first).
+
+        :returns: First message in the queue, or None if the queue is
+            empty
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get(self, queue, message_id, project=None):
         """Base method for getting a message.
 
@@ -205,6 +220,7 @@ class MessageBase(ControllerBase):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
     def bulk_get(self, queue, message_ids, project=None):
         """Base method for getting multiple messages.
 

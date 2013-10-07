@@ -61,6 +61,9 @@ class MessageController(storage.MessageBase):
     def __init__(self, driver):
         pass
 
+    def first(self, queue_name, project=None, sort=1):
+        raise NotImplementedError()
+
     def get(self, queue, message_id, project=None):
         raise NotImplementedError()
 
