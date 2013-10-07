@@ -25,6 +25,20 @@ def get_project(request):
     return request.get_header('x_project_id') or '_'
 
 
+# TODO(cpp-cabrera): when falcon 0.1.7 lands in openstack
+# requirements, move to use the request.headers property instead of
+# this function.
+def canonicalize(headers):
+    """Converts headers from WSGI:Content_Length -> HTTP:C-A
+
+    :param headers: A dictionary of {'name': 'value'} header items
+    :type headers: dict
+    :returns: HTTP-canonicalized headers
+    :rtype: dict
+    """
+    return dict([(k.replace('_', '-'), v) for k, v in headers.items()])
+
+
 def forward(host, request):
     """Forwards a request.
 
@@ -36,7 +50,8 @@ def forward(host, request):
     if request.query_string:
         url += '?' + request.query_string
     method = request.method.lower()
-    resp = requests.request(method, url, headers=request._headers,
+    resp = requests.request(method, url,
+                            headers=canonicalize(request._headers),
                             data=request.stream.read())
     return resp
 
