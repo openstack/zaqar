@@ -31,13 +31,20 @@ import collections
 import json
 
 import falcon
+from oslo.config import cfg
+import six
 
 from marconi.openstack.common import log
 from marconi.proxy.utils import (
     forward, lookup, helpers, http, partition
 )
+from marconi.queues import storage  # NOQA
+from marconi.queues.transport import validation as validate
+from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+
 
 LOG = log.getLogger(__name__)
+STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 
 class Listing(object):
@@ -62,6 +69,14 @@ class Listing(object):
         request.get_param_as_bool('detailed', store=kwargs)
 
         resp = collections.defaultdict(list)
+        limit = kwargs.get('limit',
+                           STORAGE_LIMITS.default_queue_paging)
+
+        try:
+            validate.queue_listing(limit=limit)
+        except validate.ValidationFailed as ex:
+            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+
         for queue in self._catalogue.list(project):
             queue_name = queue['name']
             if queue_name < kwargs.get('marker', ''):
@@ -74,7 +89,7 @@ class Listing(object):
                 entry['metadata'] = queue['metadata']
             resp['queues'].append(entry)
             kwargs['marker'] = queue_name
-            if len(resp['queues']) == kwargs.get('limit', 0):
+            if len(resp['queues']) == limit:
                 break
 
         if not resp:

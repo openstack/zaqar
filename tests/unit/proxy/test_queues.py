@@ -132,6 +132,12 @@ class QueuesTest(base.TestBase):
         for entry in doc['queues']:
             self.assertIn('metadata', entry)
 
+    @ddt.data(-1, 0, 30)
+    def test_list_queues_raises_400_with_invalid_limit(self, limit):
+        self.simulate_get('/v1/queues',
+                          query_string='limit={0}'.format(limit))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
 
 @ddt.ddt
 class QueuesWithNoPartitionsTest(base.TestBase):
