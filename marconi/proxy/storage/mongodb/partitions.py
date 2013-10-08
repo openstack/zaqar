@@ -86,10 +86,11 @@ class PartitionsController(base.PartitionsBase):
 
     @utils.raises_conn_error
     def update(self, name, **kwargs):
-        key, value = kwargs.popitem()
-        assert key in ('hosts', 'weight'), "kwargs (hosts, weight)"
+        fields = dict((k[0], v) for k, v in kwargs.items()
+                      if k in ('hosts', 'weight') and v is not None)
+        assert fields, '`hosts` or `weight` not found in kwargs'
         res = self._col.update({'n': name},
-                               {'$set': {key[0]: value}},
+                               {'$set': fields},
                                upsert=False)
         if not res['updatedExisting']:
             raise exceptions.PartitionNotFound(name)

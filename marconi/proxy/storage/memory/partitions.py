@@ -46,10 +46,11 @@ class PartitionsController(base.PartitionsBase):
                            'h': hosts}
 
     def update(self, name, **kwargs):
-        key, value = kwargs.popitem()
-        assert key in ('weight', 'hosts'), "kwargs (hosts, weight)"
+        fields = dict((k[0], v) for k, v in kwargs.items()
+                      if k in ('hosts', 'weight') and v is not None)
+        assert fields, '`hosts` or `weight` not found in kwargs'
         try:
-            self._col[name][key[0]] = value
+            self._col[name].update(fields)
         except KeyError:
             raise exceptions.PartitionNotFound(name)
 

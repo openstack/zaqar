@@ -97,7 +97,7 @@ class PartitionsBase(ControllerBase):
         raise NotImplementedError
 
     def update(self, name, **kwargs):
-        """Updates the weight or hosts of this partition.
+        """Updates the weight and/or hosts of this partition.
 
         :param name: Name of the partition
         :type name: text
@@ -105,7 +105,7 @@ class PartitionsBase(ControllerBase):
         :type weight: int
         :param kwargs: one of 'hosts' or 'weight'
         :type kwargs: dict
-        :raises: PartitionNotFound
+        :raises: PartitionNotFound, AssertionError
         """
         raise NotImplementedError
 
