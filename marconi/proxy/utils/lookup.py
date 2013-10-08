@@ -44,16 +44,15 @@ def try_cache_entry(project, queue, catalogue_controller, cache):
     :returns: partition name or None if not found
     :rtype: text | None
     """
+    LOG.debug('CACHE entry - project/queue: {0}/{1}'.format(
+        project, queue
+    ))
     key = _entry_key(project, queue)
     name = None
 
     try:
         name = catalogue_controller.get(project, queue)['partition']
     except exceptions.EntryNotFound:
-        LOG.debug('CACHE entry - project/queue: {0}/{1}'.format(
-            project, queue
-        ))
-
         return None
 
     cache.set(key, name)

@@ -33,6 +33,7 @@ import six
 from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 from marconi.proxy.transport import schema, utils
+from marconi.proxy.utils import lookup
 from marconi.queues.transport import utils as json_utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_errors
 
@@ -91,8 +92,9 @@ class Resource(object):
 
     :param partitions_controller: means to interact with storage
     """
-    def __init__(self, partitions_controller):
+    def __init__(self, partitions_controller, cache_driver):
         self._ctrl = partitions_controller
+        self._cache = cache_driver
         validator_type = jsonschema.Draft4Validator
         self._put_validator = validator_type(schema.partition_create)
         self._hosts_validator = validator_type(schema.partition_patch_hosts)
@@ -143,6 +145,7 @@ class Resource(object):
         :returns: HTTP | 204
         """
         LOG.debug('DELETE partition - name: {0}'.format(partition))
+        lookup.invalidate_partition(partition, self._cache)
         self._ctrl.delete(partition)
         response.status = falcon.HTTP_204
 

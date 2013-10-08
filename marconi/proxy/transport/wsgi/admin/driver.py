@@ -29,7 +29,7 @@ class Driver(driver.DriverBase):
             ('/partitions',
              partitions.Listing(self.partitions)),
             ('/partitions/{partition}',
-             partitions.Resource(self.partitions)),
+             partitions.Resource(self.partitions, self.cache)),
             ('/catalogue',
              catalogue.Listing(self.catalogue)),
             ('/catalogue/{queue}',
