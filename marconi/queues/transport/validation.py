@@ -35,6 +35,7 @@ _TRANSPORT_LIMITS_GROUP = 'limits:transport'
 # only ASCII characters.
 QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-]+$')
 QUEUE_NAME_MAX_LEN = 64
+PROJECT_ID_MAX_LEN = 256
 
 
 class ValidationFailed(ValueError):
@@ -48,20 +49,28 @@ class Validator(object):
                                  group=_TRANSPORT_LIMITS_GROUP)
         self._limits_conf = self._conf[_TRANSPORT_LIMITS_GROUP]
 
-    def queue_name(self, name):
-        """Restrictions on a queue name.
+    def queue_identification(self, queue, project):
+        """Restrictions on a project id & queue name pair.
 
-        :param name: The queue name
-        :raises: ValidationFailed if the name is longer than 64 bytes or
-            contains anything other than ASCII digits and letters,
-            underscores, and dashes.
+        :param queue: Name of the queue
+        :param project: Project id
+        :raises: ValidationFailed if the `name` is longer than 64
+            characters or contains anything other than ASCII digits and
+            letters, underscores, and dashes.  Also raises if `project`
+            is not None but longer than 256 characters.
         """
 
-        if len(name) > QUEUE_NAME_MAX_LEN:
+        if project is not None and len(project) > PROJECT_ID_MAX_LEN:
             raise ValidationFailed(
-                'Queue names may not be more than 64 characters long.')
+                'Project ids may not be more than %d characters long.'
+                % PROJECT_ID_MAX_LEN)
 
-        if not QUEUE_NAME_REGEX.match(name):
+        if len(queue) > QUEUE_NAME_MAX_LEN:
+            raise ValidationFailed(
+                'Queue names may not be more than %d characters long.'
+                % QUEUE_NAME_MAX_LEN)
+
+        if not QUEUE_NAME_REGEX.match(queue):
             raise ValidationFailed(
                 'Queue names may only contain ASCII letters, digits, '
                 'underscores, and dashes.')

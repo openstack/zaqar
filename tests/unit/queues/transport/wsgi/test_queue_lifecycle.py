@@ -111,6 +111,16 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.simulate_put('/v1/queues/_' + 'niceboat' * 8)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
+    def test_project_id_restriction(self):
+        self.simulate_put('/v1/queues/Muv-Luv',
+                          headers={'X-Project-ID': 'JAM Project' * 24})
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+        # no charset restrictions
+        self.simulate_put('/v1/queues/Muv-Luv',
+                          headers={'X-Project-ID': 'JAM Project'})
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
     @ddt.data((u'/v1/queues/non-ascii-n\u0153me', 'utf-8'),
               (u'/v1/queues/non-ascii-n\xc4me', 'iso8859-1'))
     def test_non_ascii_name(self, (uri, enc)):
