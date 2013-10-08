@@ -26,6 +26,7 @@ from marconi.queues.storage.mongodb import claims
 from marconi.queues.storage.mongodb import messages
 from marconi.queues.storage.mongodb import queues
 
+
 ClaimController = claims.ClaimController
 MessageController = messages.MessageController
 QueueController = queues.QueueController

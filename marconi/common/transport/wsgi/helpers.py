@@ -12,12 +12,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """wsgi transport helpers."""
+
 import falcon
 import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import validation as validate
+
 
 LOG = logging.getLogger(__name__)
 

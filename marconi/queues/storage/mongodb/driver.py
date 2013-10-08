@@ -24,6 +24,7 @@ from marconi.queues import storage
 from marconi.queues.storage.mongodb import controllers
 from marconi.queues.storage.mongodb import options
 
+
 LOG = logging.getLogger(__name__)
 
 

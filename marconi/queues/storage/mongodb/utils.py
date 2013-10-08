@@ -29,6 +29,7 @@ from marconi.openstack.common import timeutils
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.storage.mongodb import options
 
+
 # BSON ObjectId gives TZ-aware datetime, so we generate a
 # TZ-aware UNIX epoch for convenience.
 EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)

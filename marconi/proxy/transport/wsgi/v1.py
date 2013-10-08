@@ -12,12 +12,15 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """v1: queries the first node in the first partition for a homedoc."""
+
 import falcon
 
 from marconi.openstack.common import log
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
+
 
 LOG = log.getLogger(__name__)
 

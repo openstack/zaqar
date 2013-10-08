@@ -23,6 +23,7 @@ from marconi.proxy import storage
 from marconi.proxy.storage.mongodb import controllers
 from marconi.proxy.storage.mongodb import options
 
+
 LOG = logging.getLogger(__name__)
 
 

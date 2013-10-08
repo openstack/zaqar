@@ -12,9 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """forward: a resource for each marconi route where the desired result
 is to just pass along a request to marconi.
 """
+
 from marconi.proxy.utils import forward
 
 

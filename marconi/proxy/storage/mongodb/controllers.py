@@ -18,5 +18,6 @@
 from marconi.proxy.storage.mongodb import catalogue
 from marconi.proxy.storage.mongodb import partitions
 
+
 CatalogueController = catalogue.CatalogueController
 PartitionsController = partitions.PartitionsController

@@ -16,6 +16,7 @@
 
 from marconi.queues.storage import exceptions
 
+
 UNIX_EPOCH_AS_JULIAN_SEC = 2440587.5 * 86400.0
 
 

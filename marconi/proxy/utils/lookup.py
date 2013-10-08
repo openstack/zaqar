@@ -12,13 +12,17 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """lookup: functions to handle caching/lookup of proxy details."""
+
 import msgpack
 
 from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 
+
 LOG = log.getLogger(__name__)
+
 
 def _entry_key(project, queue):
     assert project is not None, 'Project must not be None'

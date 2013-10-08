@@ -12,7 +12,9 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Defines an interface for working with proxy partitions and the catalogue."""
+
 import abc
 
 import six

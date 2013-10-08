@@ -19,6 +19,7 @@ from oslo.config import cfg
 
 from marconi.common.cache import backends
 
+
 _memcache_opts = [
     cfg.ListOpt('memcached_servers',
                 default=['127.0.0.1:11211'],

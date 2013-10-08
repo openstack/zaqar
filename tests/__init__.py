@@ -15,6 +15,7 @@
 
 import os
 
+
 tests_dir = os.path.abspath(os.path.dirname(__file__))
 os.environ.setdefault("MARCONI_TESTS_DIR", tests_dir)
 

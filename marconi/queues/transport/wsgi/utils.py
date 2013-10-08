@@ -17,7 +17,6 @@
 import uuid
 
 import marconi.openstack.common.log as logging
-
 from marconi.queues.transport import utils
 from marconi.queues.transport.wsgi import exceptions
 

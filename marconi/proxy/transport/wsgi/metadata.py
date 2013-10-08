@@ -12,9 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """metadata: adds queue metadata to the catalogue and forwards to
 marconi queue metadata requests.
 """
+
 import io
 import json
 

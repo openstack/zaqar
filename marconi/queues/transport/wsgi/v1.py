@@ -16,6 +16,7 @@
 
 import json
 
+
 # NOTE(kgriffs): http://tools.ietf.org/html/draft-nottingham-json-home-03
 JSON_HOME = {
     'resources': {

@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from marconi.proxy.storage.memory import catalogue
 from marconi.proxy.storage.memory import partitions
 

@@ -12,10 +12,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from marconi.proxy.storage import memory
 from marconi.proxy.storage.memory import controllers
 from marconi import tests as testing
-
 from tests.unit.proxy.storage import base
 
 

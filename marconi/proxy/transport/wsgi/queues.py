@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """queues: routing and cataloguing queue operations on marconi
 
 The queues resource performs routing to a marconi partition for
@@ -27,6 +28,7 @@ based on the operation. A DELETE removes entries from the catalogue. A
 PUT adds an entry to the catalogue. A GET asks marconi for an
 authoritative response.
 """
+
 import collections
 import json
 

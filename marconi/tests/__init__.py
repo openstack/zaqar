@@ -18,6 +18,7 @@
 from marconi.tests import base
 from marconi.tests import helpers
 
+
 SKIP_SLOW_TESTS = helpers.SKIP_SLOW_TESTS
 RUN_SLOW_TESTS = not SKIP_SLOW_TESTS
 
