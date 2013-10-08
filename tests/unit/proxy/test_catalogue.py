@@ -50,14 +50,14 @@ class CatalogueTest(base.TestBase):
 
     def test_list_empty(self):
         self.simulate_get('/v1/catalogue')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     @httpretty.activate
     def test_simple(self):
         queues = ['arakawa', 'bridge']
 
         self.simulate_get('/v1/catalogue/' + queues[0])
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Create queues
         for name in queues:
@@ -78,7 +78,7 @@ class CatalogueTest(base.TestBase):
             self.assertEqual(data['name'], name)
             self.assertEqual(data['partition'], self.partition_name)
             self.assertEqual(data['host'], self.host)
-            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
             # delete queues, implicitly removing from catalogue
             self.simulate_delete('/v1/queues/' + name)

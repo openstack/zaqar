@@ -59,13 +59,13 @@ class TestWSGIutils(testtools.TestCase):
         doc = {'hello': 'world', 'teh answer': 42, 'question': []}
 
         value = utils.get_checked_field(doc, 'hello', str)
-        self.assertEquals(value, 'world')
+        self.assertEqual(value, 'world')
 
         value = utils.get_checked_field(doc, 'teh answer', int)
-        self.assertEquals(value, 42)
+        self.assertEqual(value, 42)
 
         value = utils.get_checked_field(doc, 'question', list)
-        self.assertEquals(value, [])
+        self.assertEqual(value, [])
 
     def test_filter_missing(self):
         doc = {'body': {'event': 'start_backup'}}

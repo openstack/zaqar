@@ -45,7 +45,7 @@ class QueuesTest(base.TestBase):
         for host, uri in zip(self.hosts, self.partitions):
             doc = {'weight': 100, 'hosts': [host]}
             self.simulate_put(uri, body=json.dumps(doc))
-            self.assertEquals(self.srmock.status, falcon.HTTP_201)
+            self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
         for uri in self.partitions:
@@ -59,7 +59,7 @@ class QueuesTest(base.TestBase):
     @ddt.data('get', 'head', 'delete')
     def test_nonexistent_queue_404s_on(self, method):
         getattr(self, 'simulate_' + method)('/v1/queues/no')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     @httpretty.activate
     def _mock_create_queue(self, queue_uri, status):
@@ -70,7 +70,7 @@ class QueuesTest(base.TestBase):
 
         self.simulate_put(queue_uri)
         expect = getattr(falcon, 'HTTP_%s' % status)
-        self.assertEquals(self.srmock.status, expect)
+        self.assertEqual(self.srmock.status, expect)
 
     def test_put_queue_creates_catalogue_entry(self):
         queue_uri = '/v1/queues/create'
@@ -80,12 +80,12 @@ class QueuesTest(base.TestBase):
 
         # is it in the catalogue?
         result = self.simulate_get(catalogue_uri)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
         data = json.loads(result[0])
-        self.assertEquals(data['name'], 'create')
+        self.assertEqual(data['name'], 'create')
         self.assertIn(data['partition'], self.partition_names)
         self.assertIn(data['host'], self.hosts)
-        self.assertEquals(data['metadata'], {})
+        self.assertEqual(data['metadata'], {})
 
     def test_put_queue_leaves_catalogue_alone_on_204(self):
         queue_uri = '/v1/queues/existing'
@@ -104,7 +104,7 @@ class QueuesTest(base.TestBase):
 
         # is it in the catalogue?
         self.simulate_get(catalogue_uri)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_put_does_not_duplicate_queues(self):
         queue_uri = '/v1/queues/nodup'
@@ -113,11 +113,11 @@ class QueuesTest(base.TestBase):
 
         for i in range(10):
             self.simulate_put(queue_uri)
-            self.assertEquals(self.srmock.status, falcon.HTTP_204)
+            self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_list_queues_with_no_queues_204s(self):
         self.simulate_get('/v1/queues')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     # An incomplete test, only for Bug #1234481
     # TODO(zyuan): tearDown the queue creation
@@ -126,7 +126,7 @@ class QueuesTest(base.TestBase):
         self._mock_create_queue('/v1/queues/q2', status=201)
 
         result = self.simulate_get('/v1/queues', query_string="?detailed=True")
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         doc = json.loads(result[0])
         for entry in doc['queues']:
@@ -154,9 +154,9 @@ class QueuesWithNoPartitionsTest(base.TestBase):
 
     def test_put_raises_500_with_no_partitions_registered(self):
         self.simulate_put('/v1/queues/no')
-        self.assertEquals(self.srmock.status, falcon.HTTP_500)
+        self.assertEqual(self.srmock.status, falcon.HTTP_500)
 
     @ddt.data('get', 'head', 'delete')
     def test_404_with_no_partitions_registered(self, method):
         getattr(self, 'simulate_' + method)('/v1/queues/no')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)

@@ -43,12 +43,12 @@ class ClaimsBaseTest(base.TestBase):
         doc = '{"_ttl": 60}'
 
         self.simulate_put(self.queue_path, self.project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         doc = json.dumps([{'body': 239, 'ttl': 300}] * 10)
         self.simulate_post(self.queue_path + '/messages', self.project_id,
                            body=doc, headers={'Client-ID': str(uuid.uuid4())})
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, self.project_id)
@@ -58,26 +58,26 @@ class ClaimsBaseTest(base.TestBase):
     @ddt.data(None, '[', '[]', '{}', '.', '"fail"')
     def test_bad_claim(self, doc):
         self.simulate_post(self.claims_path, self.project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         href = self._get_a_claim()
 
         self.simulate_patch(href, self.project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_exceeded_claim(self):
         self.simulate_post(self.claims_path, self.project_id,
                            body='{"ttl": 100, "grace": 60}',
                            query_string='limit=21')
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data((-1, -1), (59, 60), (60, 59), (60, 43201), (43201, 60))
     def test_unacceptable_ttl_or_grace(self, (ttl, grace)):
         self.simulate_post(self.claims_path, self.project_id,
                            body=json.dumps({'ttl': ttl, 'grace': grace}))
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 59, 43201)
     def test_unacceptable_new_ttl(self, ttl):
@@ -86,7 +86,7 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_patch(href, self.project_id,
                             body=json.dumps({'ttl': ttl}))
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def _get_a_claim(self):
         doc = '{"ttl": 100, "grace": 60}'
@@ -99,20 +99,20 @@ class ClaimsBaseTest(base.TestBase):
                           (self.wsgi_cfg.metadata_max_length - len(doc) + 1))
 
         self.simulate_post(self.claims_path, self.project_id, body=long_doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_post(self.claims_path, self.project_id, body=doc)
         href = self.srmock.headers_dict['Location']
 
         self.simulate_patch(href, self.project_id, body=long_doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_lifecycle(self):
         doc = '{"ttl": 100, "grace": 60}'
 
         # First, claim some messages
         body = self.simulate_post(self.claims_path, self.project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         claimed = json.loads(body[0])
         claim_href = self.srmock.headers_dict['Location']
@@ -121,7 +121,7 @@ class ClaimsBaseTest(base.TestBase):
         # No more messages to claim
         self.simulate_post(self.claims_path, self.project_id, body=doc,
                            query_string='limit=3')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         headers = {
             'Client-ID': str(uuid.uuid4()),
@@ -130,15 +130,15 @@ class ClaimsBaseTest(base.TestBase):
         # Listing messages, by default, won't include claimed
         body = self.simulate_get(self.messages_path, self.project_id,
                                  headers=headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Include claimed messages this time
         body = self.simulate_get(self.messages_path, self.project_id,
                                  query_string='include_claimed=true',
                                  headers=headers)
         listed = json.loads(body[0])
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(len(listed['messages']), len(claimed))
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(len(listed['messages']), len(claimed))
 
         # Check the claim's metadata
         ## NOTE(cpp-cabrera): advance time to force claim aging
@@ -148,35 +148,35 @@ class ClaimsBaseTest(base.TestBase):
         timeutils.clear_time_override()
         claim = json.loads(body[0])
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          claim_href)
-        self.assertEquals(claim['ttl'], 100)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                         claim_href)
+        self.assertEqual(claim['ttl'], 100)
         ## NOTE(cpp-cabrera): verify that claim age is non-negative
         self.assertThat(claim['age'], matchers.GreaterThan(-1))
 
         # Try to delete the message without submitting a claim_id
         self.simulate_delete(message_href, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_403)
+        self.assertEqual(self.srmock.status, falcon.HTTP_403)
 
         # Delete the message and its associated claim
         self.simulate_delete(message_href, self.project_id,
                              query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Try to get it from the wrong project
         self.simulate_get(message_href, 'bogus_project', query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Get the message
         self.simulate_get(message_href, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Update the claim
         new_claim_ttl = '{"ttl": 60}'
         creation = timeutils.utcnow()
         self.simulate_patch(claim_href, self.project_id, body=new_claim_ttl)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Get the claimed messages (again)
         body = self.simulate_get(claim_href, self.project_id)
@@ -184,52 +184,52 @@ class ClaimsBaseTest(base.TestBase):
         claim = json.loads(body[0])
         message_href, params = claim['messages'][0]['href'].split('?')
 
-        self.assertEquals(claim['ttl'], 60)
+        self.assertEqual(claim['ttl'], 60)
         estimated_age = timeutils.delta_seconds(creation, query)
         self.assertTrue(estimated_age > claim['age'])
 
         # Delete the claim
         self.simulate_delete(claim['href'], 'bad_id')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_delete(claim['href'], self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Try to delete a message with an invalid claim ID
         self.simulate_delete(message_href, self.project_id,
                              query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_403)
+        self.assertEqual(self.srmock.status, falcon.HTTP_403)
 
         # Make sure it wasn't deleted!
         self.simulate_get(message_href, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         # Try to get a claim that doesn't exist
         self.simulate_get(claim['href'])
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Try to update a claim that doesn't exist
         self.simulate_patch(claim['href'], body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_nonexistent(self):
         self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
                            body='{"ttl": 100, "grace": 60}')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_claim_404s(self):
         self.simulate_get(self.claims_path + '/a')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_delete_nonexistent_claim_204s(self):
         self.simulate_delete(self.claims_path + '/a')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_patch_nonexistent_claim_404s(self):
         patch_data = json.dumps({'ttl': 100})
         self.simulate_patch(self.claims_path + '/a', body=patch_data)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
 
 @testing.requires_mongodb
@@ -271,13 +271,13 @@ class ClaimsFaultyDriverTests(base.TestBaseFaulty):
         doc = '{"ttl": 100, "grace": 60}'
 
         self.simulate_post(claims_path, project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_get(claims_path + '/nichts', project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_patch(claims_path + '/nichts', project_id, body=doc)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_delete(claims_path + '/foo', project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)

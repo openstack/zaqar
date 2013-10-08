@@ -47,7 +47,7 @@ class ValidationTest(base.TestBase):
                           self.project_id,
                           body='{"timespace": "Shangri-la"}')
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Too long
         metadata_size_uplimit = 64
@@ -63,7 +63,7 @@ class ValidationTest(base.TestBase):
                               self.project_id,
                               body=doc)
 
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_message_deserialization(self):
         # Normal case
@@ -72,7 +72,7 @@ class ValidationTest(base.TestBase):
                            body='[{"body": "Dragon Knights", "ttl": 100}]',
                            headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # Both messages' size are too long
         message_size_uplimit = 256
@@ -88,4 +88,4 @@ class ValidationTest(base.TestBase):
                                body=doc,
                                headers=self.headers)
 
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(self.srmock.status, falcon.HTTP_400)

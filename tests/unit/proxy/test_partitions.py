@@ -48,7 +48,7 @@ class PartitionTest(base.TestBase):
     def test_simple(self):
         # No partition
         self.simulate_get(self.partition)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         doc = {'hosts': ['url'],
                'weight': 10}
@@ -56,7 +56,7 @@ class PartitionTest(base.TestBase):
         # Create
         self.simulate_put(self.partition,
                           body=json.dumps(doc))
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # Already exist
         doc2 = copy.copy(doc)
@@ -64,25 +64,25 @@ class PartitionTest(base.TestBase):
 
         self.simulate_put(self.partition,
                           body=json.dumps(doc2))
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Get
         result = self.simulate_get(self.partition)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(json.loads(result[0]), doc)  # unchanged
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(json.loads(result[0]), doc)  # unchanged
 
         # Delete
         self.simulate_delete(self.partition)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # No longer exist
         self.simulate_get(self.partition)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_listing(self):
         # Empty
         self.simulate_get(self.path)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Insert
         for n in range(1, 11):
@@ -91,21 +91,21 @@ class PartitionTest(base.TestBase):
 
             self.simulate_put(self.partition + str(n),
                               body=json.dumps(doc))
-            self.assertEquals(self.srmock.status, falcon.HTTP_201)
+            self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # List
         result = self.simulate_get(self.path)
         doc = json.loads(result[0])
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(len(doc), 10)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(len(doc), 10)
 
         for item in doc:
             name = item.pop('name')
             result = self.simulate_get(self.path + '/' + name)
-            self.assertEquals(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-            self.assertEquals(json.loads(result[0]), item)
+            self.assertEqual(json.loads(result[0]), item)
 
         # Delete all
         for n in range(1, 11):
@@ -113,12 +113,12 @@ class PartitionTest(base.TestBase):
 
         # Back to empty
         self.simulate_get(self.path)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_bad_input(self):
         # Not a JSON
         self.simulate_put('/v1/partitions/avalon', body='{')
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Bad fields
         invalid_nodes = [1, {}, {'hosts': 1}, {'hosts': []}]
@@ -129,16 +129,16 @@ class PartitionTest(base.TestBase):
         for doc in invalid_nodes + invalid_weights:
             self.simulate_put('/v1/partitions/avalon',
                               body=json.dumps(doc))
-            self.assertEquals(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_fetch_nonexisting_partition_404s(self):
         self.simulate_get('/v1/partition/no')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_patch_nonexisting_partition_404s(self):
         doc = {'weight': 1}
         self.simulate_patch('/v1/partition/no', body=json.dumps(doc))
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_bad_json_on_put_raises_bad_request(self):
         self.simulate_put('/v1/partitions/bad_json', body="")

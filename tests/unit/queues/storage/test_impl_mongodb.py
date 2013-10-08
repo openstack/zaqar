@@ -34,28 +34,28 @@ from marconi.tests.queues.storage import base
 class MongodbUtilsTest(testing.TestBase):
 
     def test_scope_queue_name(self):
-        self.assertEquals(utils.scope_queue_name('my-q'), '/my-q')
-        self.assertEquals(utils.scope_queue_name('my-q', None), '/my-q')
-        self.assertEquals(utils.scope_queue_name('my-q', '123'), '123/my-q')
+        self.assertEqual(utils.scope_queue_name('my-q'), '/my-q')
+        self.assertEqual(utils.scope_queue_name('my-q', None), '/my-q')
+        self.assertEqual(utils.scope_queue_name('my-q', '123'), '123/my-q')
 
-        self.assertEquals(utils.scope_queue_name(None), '/')
-        self.assertEquals(utils.scope_queue_name(None, '123'), '123/')
+        self.assertEqual(utils.scope_queue_name(None), '/')
+        self.assertEqual(utils.scope_queue_name(None, '123'), '123/')
 
     def test_descope_queue_name(self):
-        self.assertEquals(utils.descope_queue_name('/'), None)
-        self.assertEquals(utils.descope_queue_name('/some-pig'), 'some-pig')
-        self.assertEquals(utils.descope_queue_name('radiant/some-pig'),
-                          'some-pig')
+        self.assertEqual(utils.descope_queue_name('/'), None)
+        self.assertEqual(utils.descope_queue_name('/some-pig'), 'some-pig')
+        self.assertEqual(utils.descope_queue_name('radiant/some-pig'),
+                         'some-pig')
 
     def test_calculate_backoff(self):
         sec = utils.calculate_backoff(0, 10, 2, 0)
-        self.assertEquals(sec, 0)
+        self.assertEqual(sec, 0)
 
         sec = utils.calculate_backoff(9, 10, 2, 0)
-        self.assertEquals(sec, 1.8)
+        self.assertEqual(sec, 1.8)
 
         sec = utils.calculate_backoff(4, 10, 2, 0)
-        self.assertEquals(sec, 0.8)
+        self.assertEqual(sec, 0.8)
 
         sec = utils.calculate_backoff(4, 10, 2, 1)
         if sec != 0.8:
@@ -188,13 +188,13 @@ class MongodbMessageTests(base.MessageControllerTest):
         new_value = self.queue_controller._inc_counter(queue_name)
         self.assertIsNotNone(new_value)
         value_after = self.queue_controller._get_counter(queue_name)
-        self.assertEquals(value_after, value_before + 1)
+        self.assertEqual(value_after, value_before + 1)
 
         value_before = value_after
         new_value = self.queue_controller._inc_counter(queue_name, amount=7)
         value_after = self.queue_controller._get_counter(queue_name)
-        self.assertEquals(value_after, value_before + 7)
-        self.assertEquals(value_after, new_value)
+        self.assertEqual(value_after, value_before + 7)
+        self.assertEqual(value_after, new_value)
 
         reference_value = value_after
 
@@ -208,7 +208,7 @@ class MongodbMessageTests(base.MessageControllerTest):
 
         timeutils.advance_time_seconds(10)
         changed = self.queue_controller._inc_counter(queue_name, window=5)
-        self.assertEquals(changed, reference_value + 1)
+        self.assertEqual(changed, reference_value + 1)
         timeutils.clear_time_override()
 
     def test_race_condition_on_post(self):
@@ -252,7 +252,7 @@ class MongodbMessageTests(base.MessageControllerTest):
             method.return_value = 2
             messages = expected_messages[:1]
             created = list(self.controller.post(queue_name, messages, uuid))
-            self.assertEquals(len(created), 1)
+            self.assertEqual(len(created), 1)
 
             # Force infinite retries
             if testing.RUN_SLOW_TESTS:
@@ -265,7 +265,7 @@ class MongodbMessageTests(base.MessageControllerTest):
                                             expected_messages[1:],
                                             uuid))
 
-        self.assertEquals(len(created), 2)
+        self.assertEqual(len(created), 2)
 
         expected_ids = [m['body']['backupId'] for m in expected_messages]
 
@@ -273,10 +273,10 @@ class MongodbMessageTests(base.MessageControllerTest):
                                            echo=True)
 
         actual_messages = list(next(interaction))
-        self.assertEquals(len(actual_messages), len(expected_messages))
+        self.assertEqual(len(actual_messages), len(expected_messages))
         actual_ids = [m['body']['backupId'] for m in actual_messages]
 
-        self.assertEquals(actual_ids, expected_ids)
+        self.assertEqual(actual_ids, expected_ids)
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'

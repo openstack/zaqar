@@ -27,10 +27,10 @@ class TestHomeDocument(base.TestBase):
 
     def test_json_response(self):
         body = self.simulate_get('/v1')
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         content_type = self.srmock.headers_dict['Content-Type']
-        self.assertEquals(content_type, 'application/json-home')
+        self.assertEqual(content_type, 'application/json-home')
 
         try:
             json.loads(body[0])
