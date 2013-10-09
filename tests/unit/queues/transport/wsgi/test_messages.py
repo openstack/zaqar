@@ -56,19 +56,19 @@ class MessagesBaseTest(base.TestBase):
 
         result = self.simulate_post(self.messages_path, self.project_id,
                                     body=sample_doc, headers=self.headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         result_doc = json.loads(result[0])
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
-        self.assertEquals(len(msg_ids), len(sample_messages))
+        self.assertEqual(len(msg_ids), len(sample_messages))
 
         expected_resources = [unicode(self.messages_path + '/' + id)
                               for id in msg_ids]
-        self.assertEquals(expected_resources, result_doc['resources'])
+        self.assertEqual(expected_resources, result_doc['resources'])
         self.assertFalse(result_doc['partial'])
 
-        self.assertEquals(len(msg_ids), len(sample_messages))
+        self.assertEqual(len(msg_ids), len(sample_messages))
 
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
 
@@ -81,18 +81,18 @@ class MessagesBaseTest(base.TestBase):
 
             # Wrong project ID
             self.simulate_get(message_uri, '777777')
-            self.assertEquals(self.srmock.status, falcon.HTTP_404)
+            self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
             # Correct project ID
             result = self.simulate_get(message_uri, self.project_id)
-            self.assertEquals(self.srmock.status, falcon.HTTP_200)
-            self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                              message_uri)
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                             message_uri)
 
             # Check message properties
             message = json.loads(result[0])
-            self.assertEquals(message['href'], message_uri)
-            self.assertEquals(message['body'], lookup[message['ttl']])
+            self.assertEqual(message['href'], message_uri)
+            self.assertEqual(message['body'], lookup[message['ttl']])
 
             # no negative age
             # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
@@ -105,7 +105,7 @@ class MessagesBaseTest(base.TestBase):
         result = self.simulate_get(self.messages_path, self.project_id,
                                    query_string=query_string)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
         result_doc = json.loads(result[0])
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in result_doc)
@@ -118,28 +118,28 @@ class MessagesBaseTest(base.TestBase):
 
         # Posting restriction
         self._post_messages(self.messages_path, repeat=23)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Bulk GET restriction
         query_string = 'ids=' + ','.join([msg_id] * 21)
         self.simulate_get(self.messages_path, self.project_id,
                           query_string=query_string)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Listing restriction
         self.simulate_get(self.messages_path, self.project_id,
                           query_string='limit=21',
                           headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Bulk deletion restriction
         query_string = 'ids=' + ','.join([msg_id] * 22)
         self.simulate_delete(self.messages_path, self.project_id,
                              query_string=query_string)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_post_single(self):
         sample_messages = [
@@ -168,7 +168,7 @@ class MessagesBaseTest(base.TestBase):
             path = path.encode('utf-8')
 
         self._post_messages(path)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_post_with_long_queue_name(self):
         # NOTE(kgriffs): This test verifies that routes with
@@ -177,15 +177,15 @@ class MessagesBaseTest(base.TestBase):
 
         game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
         self._post_messages('/v1/queues/' + game_title + '/messages')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         game_title += 'v'
         self._post_messages('/v1/queues/' + game_title + '/messages')
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_post_to_missing_queue(self):
         self._post_messages('/v1/queues/nonexistent/messages')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
@@ -193,13 +193,13 @@ class MessagesBaseTest(base.TestBase):
                            body='{"ttl": 60, "body": ""}',
                            headers={'Client-ID': text_id})
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_get(self.queue_path + '/messages',
                           query_string='limit=3&echo=true',
                           headers={'Client-ID': text_id})
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(None, '[', '[]', '{}', '.')
     def test_post_bad_message(self, document):
@@ -207,7 +207,7 @@ class MessagesBaseTest(base.TestBase):
                            body=document,
                            headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
@@ -216,7 +216,7 @@ class MessagesBaseTest(base.TestBase):
                                              'body': None}]),
                            headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_exceeded_message_posting(self):
         # Total (raw request) size
@@ -228,7 +228,7 @@ class MessagesBaseTest(base.TestBase):
                            body=long_doc,
                            headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data('{"overflow": 9223372036854775808}',
               '{"underflow": -9223372036854775809}')
@@ -237,7 +237,7 @@ class MessagesBaseTest(base.TestBase):
                            body=document,
                            headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_delete(self):
         self._post_messages(self.messages_path)
@@ -245,17 +245,17 @@ class MessagesBaseTest(base.TestBase):
         target = self.messages_path + '/' + msg_id
 
         self.simulate_get(target, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         self.simulate_delete(target, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_get(target, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_bulk_delete(self):
         path = self.queue_path + '/messages'
@@ -264,24 +264,24 @@ class MessagesBaseTest(base.TestBase):
 
         # Deleting the whole collection is denied
         self.simulate_delete(path, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_get(target, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Even after the queue is gone
         self.simulate_delete(self.queue_path, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_list(self):
         path = self.queue_path + '/messages'
@@ -292,9 +292,9 @@ class MessagesBaseTest(base.TestBase):
                                  query_string=query_string,
                                  headers=self.headers)
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
-        self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          path + '?' + query_string)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                         path + '?' + query_string)
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
@@ -303,23 +303,23 @@ class MessagesBaseTest(base.TestBase):
 
             for msg in contents['messages']:
                 self.simulate_get(msg['href'], self.project_id)
-                self.assertEquals(self.srmock.status, falcon.HTTP_200)
+                self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
             body = self.simulate_get(target, self.project_id,
                                      query_string=params,
                                      headers=self.headers)
             cnt += 1
 
-        self.assertEquals(cnt, 4)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(cnt, 4)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Stats
         body = self.simulate_get(self.queue_path + '/stats', self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         message_stats = json.loads(body[0])['messages']
-        self.assertEquals(self.srmock.headers_dict['Content-Location'],
-                          self.queue_path + '/stats')
+        self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                         self.queue_path + '/stats')
 
         # NOTE(kgriffs): The other parts of the stats are tested
         # in tests.storage.base and so are not repeated here.
@@ -331,7 +331,7 @@ class MessagesBaseTest(base.TestBase):
         # NOTE(kgriffs): Try to get messages for a missing queue
         self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
                           headers=self.headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_list_with_bad_marker(self):
         path = self.queue_path + '/messages'
@@ -349,10 +349,10 @@ class MessagesBaseTest(base.TestBase):
 
         self.simulate_post(path, '7e7e7e', body='[{"body": 0, "ttl": 100}]')
 
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_get(path, '7e7e7e')
-        self.assertEquals(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     # NOTE(cpp-cabrera): regression test against bug #1210633
     def test_when_claim_deleted_then_messages_unclaimed(self):
@@ -362,37 +362,37 @@ class MessagesBaseTest(base.TestBase):
         # post claim
         self.simulate_post(path + '/claims', self.project_id,
                            body='{"ttl": 100, "grace": 100}')
-        self.assertEquals(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
         location = self.srmock.headers_dict['Location']
 
         # release claim
         self.simulate_delete(location, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # get unclaimed messages
         self.simulate_get(path + '/messages', self.project_id,
                           query_string='echo=true',
                           headers=self.headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_message_404s(self):
         path = '/v1/queues/notthere'
 
         self.simulate_get(path + '/messages/a')
-        self.assertEquals(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_multiple_invalid_messages_204s(self):
         path = '/v1/queues/notthere'
 
         self.simulate_get(path + '/messages', query_string='ids=a,b,c')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_delete_multiple_invalid_messages_204s(self):
         path = '/v1/queues/notthere'
 
         self.simulate_delete(path + '/messages', query_string='ids=a,b,c')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_delete_message_with_invalid_claim_doesnt_delete_message(self):
         path = self.queue_path
@@ -400,10 +400,10 @@ class MessagesBaseTest(base.TestBase):
         location = json.loads(resp[0])['resources'][0]
 
         self.simulate_delete(location, query_string='claim_id=invalid')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_get(location, self.project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
@@ -446,14 +446,14 @@ class MessagesFaultyDriverTests(base.TestBaseFaulty):
         self.simulate_post(path, project_id,
                            body=doc,
                            headers=headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_get(path, project_id,
                           headers=headers)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_get(path + '/nonexistent', project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)
 
         self.simulate_delete(path + '/nada', project_id)
-        self.assertEquals(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(self.srmock.status, falcon.HTTP_503)

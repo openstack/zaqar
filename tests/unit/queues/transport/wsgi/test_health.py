@@ -25,10 +25,10 @@ class TestHealth(base.TestBase):
 
     def test_get(self):
         response = self.simulate_get('/v1/health')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
-        self.assertEquals(response, [])
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(response, [])
 
     def test_head(self):
         response = self.simulate_head('/v1/health')
-        self.assertEquals(self.srmock.status, falcon.HTTP_204)
-        self.assertEquals(response, [])
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(response, [])

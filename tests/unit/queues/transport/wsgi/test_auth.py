@@ -41,4 +41,4 @@ class TestWSGIAuth(base.TestBase):
                                      headers=self.headers)
 
         self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_401)
+        self.assertEqual(self.srmock.status, falcon.HTTP_401)

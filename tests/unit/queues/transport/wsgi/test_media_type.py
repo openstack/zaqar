@@ -48,4 +48,4 @@ class TestWSGIMediaType(base.TestBase):
                                      headers=headers)
 
         self.app(env, self.srmock)
-        self.assertEquals(self.srmock.status, falcon.HTTP_406)
+        self.assertEqual(self.srmock.status, falcon.HTTP_406)

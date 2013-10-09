@@ -77,19 +77,19 @@ class QueueControllerTest(ControllerBaseTest):
                                            detailed=True)
         queues = list(next(interaction))
 
-        self.assertEquals(all(map(lambda queue:
-                                  'name' in queue and
-                                  'metadata' in queue, queues)), True)
-        self.assertEquals(len(queues), 10)
+        self.assertEqual(all(map(lambda queue:
+                                 'name' in queue and
+                                 'metadata' in queue, queues)), True)
+        self.assertEqual(len(queues), 10)
 
         interaction = self.controller.list(project=project,
                                            marker=next(interaction))
         queues = list(next(interaction))
 
-        self.assertEquals(all(map(lambda queue:
-                                  'name' in queue and
-                                  'metadata' not in queue, queues)), True)
-        self.assertEquals(len(queues), 5)
+        self.assertEqual(all(map(lambda queue:
+                                 'name' in queue and
+                                 'metadata' not in queue, queues)), True)
+        self.assertEqual(len(queues), 5)
 
     def test_queue_lifecycle(self):
         # Test queue creation
@@ -102,7 +102,7 @@ class QueueControllerTest(ControllerBaseTest):
         # Test queue retrieval
         interaction = self.controller.list(project=self.project)
         queue = list(next(interaction))[0]
-        self.assertEquals(queue['name'], 'test')
+        self.assertEqual(queue['name'], 'test')
 
         # Test queue metadata retrieval
         metadata = self.controller.get_metadata('test', project=self.project)
@@ -286,7 +286,7 @@ class MessageControllerTest(ControllerBaseTest):
                                                 project=self.project)
 
         for idx, message in enumerate(messages_out):
-            self.assertEquals(message['body'], idx)
+            self.assertEqual(message['body'], idx)
 
         self.controller.bulk_delete(self.queue_name, ids,
                                     project=self.project)
@@ -386,7 +386,7 @@ class MessageControllerTest(ControllerBaseTest):
         stats = self.queue_controller.stats(self.queue_name,
                                             project=self.project)
 
-        self.assertEquals(stats['messages']['free'], 0)
+        self.assertEqual(stats['messages']['free'], 0)
 
     def test_bad_id(self):
         # NOTE(cpp-cabrera): A malformed ID should result in an empty
@@ -424,7 +424,7 @@ class MessageControllerTest(ControllerBaseTest):
                                            marker=bad_marker)
         messages = list(next(interaction))
 
-        self.assertEquals(messages, [])
+        self.assertEqual(messages, [])
 
 
 class ClaimControllerTest(ControllerBaseTest):
@@ -462,7 +462,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     limit=15)
 
         messages = list(messages)
-        self.assertEquals(len(messages), 15)
+        self.assertEqual(len(messages), 15)
 
         # Ensure Queue stats
         countof = self.queue_controller.stats(self.queue_name,
@@ -476,10 +476,10 @@ class ClaimControllerTest(ControllerBaseTest):
                                                project=self.project)
 
         messages2 = list(messages2)
-        self.assertEquals(len(messages2), 15)
-        self.assertEquals(messages, messages2)
-        self.assertEquals(claim['ttl'], 70)
-        self.assertEquals(claim['id'], claim_id)
+        self.assertEqual(len(messages2), 15)
+        self.assertEqual(messages, messages2)
+        self.assertEqual(claim['ttl'], 70)
+        self.assertEqual(claim['id'], claim_id)
 
         new_meta = {'ttl': 100, 'grace': 60}
         self.controller.update(self.queue_name, claim_id,
@@ -490,15 +490,15 @@ class ClaimControllerTest(ControllerBaseTest):
                                                project=self.project)
 
         messages2 = list(messages2)
-        self.assertEquals(len(messages2), 15)
+        self.assertEqual(len(messages2), 15)
 
         # TODO(zyuan): Add some tests to ensure the ttl is
         # extended/not-extended.
         for msg1, msg2 in zip(messages, messages2):
-            self.assertEquals(msg1['body'], msg2['body'])
+            self.assertEqual(msg1['body'], msg2['body'])
 
-        self.assertEquals(claim['ttl'], 100)
-        self.assertEquals(claim['id'], claim_id)
+        self.assertEqual(claim['ttl'], 100)
+        self.assertEqual(claim['id'], claim_id)
 
         # Make sure delete works
         self.controller.delete(self.queue_name, claim_id,
@@ -519,7 +519,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['ttl'], 777)
+            self.assertEqual(message['ttl'], 777)
 
     def test_extend_lifetime_with_grace_1(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -532,7 +532,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['ttl'], 800)
+            self.assertEqual(message['ttl'], 800)
 
     def test_extend_lifetime_with_grace_2(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -547,7 +547,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['ttl'], 122)
+            self.assertEqual(message['ttl'], 122)
 
     def test_do_not_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -561,7 +561,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEquals(message['ttl'], 120)
+            self.assertEqual(message['ttl'], 120)
 
     def test_expired_claim(self):
         meta = {'ttl': 0, 'grace': 60}

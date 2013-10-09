@@ -30,7 +30,7 @@ class MongodbDriverTest(testing.TestBase):
     def test_db_instance(self):
         driver = mongodb.Driver()
         db = driver.db
-        self.assertEquals(db.name, options.CFG.database)
+        self.assertEqual(db.name, options.CFG.database)
 
 
 @testing.requires_mongodb
