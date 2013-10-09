@@ -13,11 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""utils: utilities for transport handling."""
+"""utils: a set of utilities to help with transport handling details."""
 
 import jsonschema
 
+from marconi.openstack.common import log
+from marconi.queues.transport import utils as json_utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+
+LOG = log.getLogger(__name__)
+
+
+def load(req):
+    """Reads request body, raising an exception if it is not JSON.
+
+    :param req: The request object to read from
+    :type req: falcon.Request
+    :return: a dictionary decoded from the JSON stream
+    :rtype: dict
+    :raises: wsgi_errors.HTTPBadRequestBody
+    """
+    try:
+        return json_utils.read_json(req.stream, req.content_length)
+    except (json_utils.MalformedJSON, json_utils.OverflowedJSONInteger) as ex:
+        LOG.exception(ex)
+        raise wsgi_errors.HTTPBadRequestBody(
+            'JSON could not be parsed.'
+        )
 
 
 # TODO(cpp-cabrera): generalize this
