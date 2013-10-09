@@ -33,8 +33,7 @@ class TestBase(testing.TestBase):
 
         super(TestBase, self).setUp()
 
-        conf = cfg.ConfigOpts()
-        conf(default_config_files=[self.conf_path(self.config_filename)])
+        conf = self.load_conf(self.conf_path(self.config_filename))
         conf.register_opts(driver._WSGI_OPTIONS,
                            group=driver._WSGI_GROUP)
         self.wsgi_cfg = conf[driver._WSGI_GROUP]
@@ -101,7 +100,7 @@ class TestBaseFaulty(TestBase):
 
     def setUp(self):
         self._storage_backup = bootstrap.Bootstrap.storage
-        faulty = faulty_storage.Driver(cfg.ConfigOpts())
+        faulty = faulty_storage.DataDriver(cfg.ConfigOpts())
         setattr(bootstrap.Bootstrap, 'storage', faulty)
         super(TestBaseFaulty, self).setUp()
 

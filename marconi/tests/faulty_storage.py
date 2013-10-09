@@ -16,7 +16,7 @@
 from marconi.queues import storage
 
 
-class Driver(storage.DriverBase):
+class DataDriver(storage.DataDriverBase):
     @property
     def default_options(self):
         return {}
@@ -31,6 +31,16 @@ class Driver(storage.DriverBase):
 
     @property
     def claim_controller(self):
+        return None
+
+
+class ControlDriver(storage.ControlDriverBase):
+    @property
+    def default_options(self):
+        return {}
+
+    @property
+    def shards_controller(self):
         return None
 
 

@@ -34,10 +34,10 @@ class TestShardCatalog(base.TestBase):
         lookup = sharding.Catalog(conf).lookup
 
         storage = lookup('q1', '123456')
-        self.assertIsInstance(storage, sqlite.Driver)
+        self.assertIsInstance(storage, sqlite.DataDriver)
 
         storage = lookup('q2', '123456')
-        self.assertIsInstance(storage, sqlite.Driver)
+        self.assertIsInstance(storage, sqlite.DataDriver)
 
         storage = lookup('g1', None)
-        self.assertIsInstance(storage, sqlite.Driver)
+        self.assertIsInstance(storage, sqlite.DataDriver)

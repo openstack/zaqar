@@ -67,12 +67,12 @@ class Bootstrap(object):
 
         if self.conf.sharding:
             LOG.debug(_(u'Storage sharding enabled'))
-            storage_driver = sharding.Driver(self.conf)
+            storage_driver = sharding.DataDriver(self.conf)
         else:
             storage_driver = storage_utils.load_storage_driver(self.conf)
 
         LOG.debug(_(u'Loading storage pipeline'))
-        return pipeline.Driver(self.conf, storage_driver)
+        return pipeline.DataDriver(self.conf, storage_driver)
 
     @decorators.lazy_property(write=False)
     def cache(self):

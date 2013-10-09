@@ -14,15 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Exports SQLite driver controllers."""
-
-from marconi.queues.storage.sqlite import claims
-from marconi.queues.storage.sqlite import messages
-from marconi.queues.storage.sqlite import queues
-from marconi.queues.storage.sqlite import shards
+from marconi.queues.storage import base
 
 
-ClaimController = claims.ClaimController
-MessageController = messages.MessageController
-QueueController = queues.QueueController
-ShardsController = shards.ShardsController
+class ShardsController(base.ShardsController):
+
+    def list(self, marker=None, limit=10, detailed=False):
+        pass
+
+    def get(self, name):
+        pass
+
+    def create(self, name, weight, uri, options=None):
+        pass
+
+    def exists(self, name):
+        pass
+
+    def update(self, name, **kwargs):
+        pass
+
+    def delete(self, name):
+        pass
+
+    def drop_all(self):
+        pass

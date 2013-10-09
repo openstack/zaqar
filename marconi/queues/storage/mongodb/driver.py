@@ -28,10 +28,10 @@ from marconi.queues.storage.mongodb import options
 LOG = logging.getLogger(__name__)
 
 
-class Driver(storage.DriverBase):
+class DataDriver(storage.DataDriverBase):
 
     def __init__(self, conf):
-        super(Driver, self).__init__(conf)
+        super(DataDriver, self).__init__(conf)
 
         self.conf.register_opts(options.MONGODB_OPTIONS,
                                 group=options.MONGODB_GROUP)
@@ -88,3 +88,18 @@ class Driver(storage.DriverBase):
     @decorators.lazy_property(write=False)
     def claim_controller(self):
         return controllers.ClaimController(self)
+
+
+class ControlDriver(storage.ControlDriverBase):
+
+    def __init__(self, conf):
+        super(ControlDriver, self).__init__(conf)
+
+        self.conf.register_opts(options.MONGODB_OPTIONS,
+                                group=options.MONGODB_GROUP)
+
+        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+
+    @property
+    def shards_controller(self):
+        return controllers.ShardsController(self)

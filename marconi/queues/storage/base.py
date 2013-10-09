@@ -16,6 +16,7 @@
 """Implements the DriverBase abstract class for Marconi storage drivers."""
 
 import abc
+import six
 
 from oslo.config import cfg
 
@@ -30,8 +31,12 @@ _LIMITS_OPTIONS = [
 _LIMITS_GROUP = 'queues:limits:storage'
 
 
-class DriverBase(object):
+@six.add_metaclass(abc.ABCMeta)
+class DataDriverBase(object):
     """Interface definition for storage drivers.
+
+    Data plane storage drivers are responsible for implementing the
+    core functionality of the system.
 
     Connection information and driver-specific options are
     loaded from the config file or the shard catalog.
@@ -41,8 +46,8 @@ class DriverBase(object):
         options. Must at least include 'uri' which
         provides connection options such as host and
         port.
+
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, conf):
         self.conf = conf
@@ -66,6 +71,28 @@ class DriverBase(object):
         raise NotImplementedError
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ControlDriverBase(object):
+    """Interface definition for control plane storage drivers.
+
+    Storage drivers that work at the control plane layer allow one to
+    modify aspects of the functionality of the system. This is ideal
+    for administrative purposes.
+
+    Allows access to the shard registry through a catalogue and a
+    shard controller.
+
+    """
+
+    def __init__(self, conf):
+        self.conf = conf
+
+    @abc.abstractproperty
+    def shards_controller(self):
+        """Returns storage's shard management controller."""
+        raise NotImplementedError
+
+
 class ControllerBase(object):
     """Top-level class for controllers.
 
@@ -77,6 +104,7 @@ class ControllerBase(object):
         self.driver = driver
 
 
+@six.add_metaclass(abc.ABCMeta)
 class QueueBase(ControllerBase):
     """This class is responsible for managing queues.
 
@@ -86,8 +114,6 @@ class QueueBase(ControllerBase):
     be capable of handling high workloads and huge
     numbers of queues.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list(self, project=None, marker=None, limit=10,
@@ -172,10 +198,9 @@ class QueueBase(ControllerBase):
         raise NotImplementedError
 
 
+@six.add_metaclass(abc.ABCMeta)
 class MessageBase(ControllerBase):
     """This class is responsible for managing message CRUD."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list(self, queue, project=None, marker=None,
@@ -285,9 +310,8 @@ class MessageBase(ControllerBase):
         raise NotImplementedError
 
 
+@six.add_metaclass(abc.ABCMeta)
 class ClaimBase(ControllerBase):
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get(self, queue, claim_id, project=None):
@@ -341,4 +365,90 @@ class ClaimBase(ControllerBase):
         :param claim_id: Claim to be deleted
         :param project: Project id
         """
+        raise NotImplementedError
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ShardsController(ControllerBase):
+    """A controller for managing shards."""
+
+    @abc.abstractmethod
+    def list(self, marker=None, limit=10, detailed=False):
+        """Lists all registered shards.
+
+        :param marker: used to determine which shard to start with
+        :type marker: six.text_type
+        :param limit: how many results to return
+        :type limit: int
+        :param detailed: whether to include options
+        :type detailed: bool
+        :returns: A list of shards - name, weight, uri
+        :rtype: [{}]
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create(self, name, weight, uri, options=None):
+        """Registers a shard entry.
+
+        :param name: The name of this shard
+        :type name: six.text_type
+        :param weight: the likelihood that this shard will be used
+        :type weight: int
+        :param uri: A URI that can be used by a storage client
+        (e.g., pymongo) to access this shard.
+        :type uri: six.text_type
+        :param options: Options used to configure this shard
+        :type options: dict
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(self, name):
+        """Returns a single shard entry.
+
+        :param name: The name of this shard
+        :type name: six.text_type
+        :returns: weight, uri, and options for this shard
+        :rtype: {}
+        :raises: ShardDoesNotExist if not found
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, name):
+        """Returns a single shard entry.
+
+        :param name: The name of this shard
+        :type name: six.text_type
+        :returns: True if the shard exists
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, name):
+        """Removes a shard entry.
+
+        :param name: The name of this shard
+        :type name: six.text_type
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, name, **kwargs):
+        """Updates the weight, uris, and/or options of this shard
+
+        :param name: Name of the shard
+        :type name: text
+        :param kwargs: one of: `uri`, `weight`, `options`
+        :type kwargs: dict
+        :raises: ShardDoesNotExist
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def drop_all(self):
+        """Deletes all shards from storage."""
         raise NotImplementedError

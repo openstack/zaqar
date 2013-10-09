@@ -28,7 +28,7 @@ _CATALOG_OPTIONS = [
 _CATALOG_GROUP = 'queues:sharding:catalog'
 
 
-class Driver(storage.DriverBase):
+class DataDriver(storage.DataDriverBase):
     """Sharding meta-driver for routing requests to multiple backends.
 
     :param storage_conf: Ignored, since this is a meta-driver
@@ -36,7 +36,7 @@ class Driver(storage.DriverBase):
     """
 
     def __init__(self, conf):
-        super(Driver, self).__init__(conf)
+        super(DataDriver, self).__init__(conf)
         self._shard_catalog = Catalog(conf)
 
     @decorators.lazy_property(write=False)

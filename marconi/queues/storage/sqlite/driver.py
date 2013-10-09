@@ -34,10 +34,10 @@ _SQLITE_OPTIONS = [
 _SQLITE_GROUP = 'queues:drivers:storage:sqlite'
 
 
-class Driver(storage.DriverBase):
+class DataDriver(storage.DataDriverBase):
 
     def __init__(self, conf):
-        super(Driver, self).__init__(conf)
+        super(DataDriver, self).__init__(conf)
 
         self.conf.register_opts(_SQLITE_OPTIONS, group=_SQLITE_GROUP)
         self.sqlite_conf = self.conf[_SQLITE_GROUP]
@@ -196,3 +196,24 @@ class Driver(storage.DriverBase):
     @decorators.lazy_property(write=False)
     def claim_controller(self):
         return controllers.ClaimController(self)
+
+
+class ControlDriver(storage.ControlDriverBase):
+
+    def __init__(self, conf):
+        super(ControlDriver, self).__init__(conf)
+
+        self.conf.register_opts(_SQLITE_OPTIONS, group=_SQLITE_GROUP)
+        self.sqlite_conf = self.conf[_SQLITE_GROUP]
+
+        self.__path = self.sqlite_conf.database
+
+        # TODO(cpp-cabrera): implement this thing
+        self.__conn = sqlite3.connect(self.__path,
+                                      detect_types=sqlite3.PARSE_DECLTYPES)
+        self.__db = self.__conn.cursor()
+        self.run('''PRAGMA foreign_keys = ON''')
+
+    @property
+    def shards_controller(self):
+        return controllers.ShardsController(self)

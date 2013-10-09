@@ -20,12 +20,12 @@ from marconi.tests.queues.storage import base
 
 
 class SQliteQueueTests(base.QueueControllerTest):
-    driver_class = sqlite.Driver
+    driver_class = sqlite.DataDriver
     controller_class = controllers.QueueController
 
 
 class SQliteMessageTests(base.MessageControllerTest):
-    driver_class = sqlite.Driver
+    driver_class = sqlite.DataDriver
     controller_class = controllers.MessageController
 
     def test_empty_queue_exception(self):
@@ -43,5 +43,5 @@ class SQliteMessageTests(base.MessageControllerTest):
 
 
 class SQliteClaimTests(base.ClaimControllerTest):
-    driver_class = sqlite.Driver
+    driver_class = sqlite.DataDriver
     controller_class = controllers.ClaimController

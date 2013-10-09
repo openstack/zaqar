@@ -35,13 +35,13 @@ class TestBootstrap(base.TestBase):
 
     def test_storage_sqlite(self):
         bootstrap = self._bootstrap('etc/wsgi_sqlite.conf')
-        self.assertIsInstance(bootstrap.storage, pipeline.Driver)
-        self.assertIsInstance(bootstrap.storage._storage, sqlite.Driver)
+        self.assertIsInstance(bootstrap.storage, pipeline.DataDriver)
+        self.assertIsInstance(bootstrap.storage._storage, sqlite.DataDriver)
 
     def test_storage_sqlite_sharded(self):
         """Makes sure we can load the shard driver."""
         bootstrap = self._bootstrap('etc/wsgi_sqlite_sharded.conf')
-        self.assertIsInstance(bootstrap.storage._storage, sharding.Driver)
+        self.assertIsInstance(bootstrap.storage._storage, sharding.DataDriver)
 
     def test_transport_invalid(self):
         boot = self._bootstrap('etc/drivers_transport_invalid.conf')

@@ -81,7 +81,7 @@ class MongodbDriverTest(testing.TestBase):
         self._conf = self.load_conf('wsgi_mongodb.conf')
 
     def test_db_instance(self):
-        driver = mongodb.Driver(self._conf)
+        driver = mongodb.DataDriver(self._conf)
 
         databases = driver.message_databases + [driver.queues_database]
         for db in databases:
@@ -92,7 +92,7 @@ class MongodbDriverTest(testing.TestBase):
 @testing.requires_mongodb
 class MongodbQueueTests(base.QueueControllerTest):
 
-    driver_class = mongodb.Driver
+    driver_class = mongodb.DataDriver
     controller_class = controllers.QueueController
 
     def setUp(self):
@@ -135,7 +135,7 @@ class MongodbQueueTests(base.QueueControllerTest):
 @testing.requires_mongodb
 class MongodbMessageTests(base.MessageControllerTest):
 
-    driver_class = mongodb.Driver
+    driver_class = mongodb.DataDriver
     controller_class = controllers.MessageController
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
@@ -294,7 +294,7 @@ class MongodbMessageTests(base.MessageControllerTest):
 
 @testing.requires_mongodb
 class MongodbClaimTests(base.ClaimControllerTest):
-    driver_class = mongodb.Driver
+    driver_class = mongodb.DataDriver
     controller_class = controllers.ClaimController
 
     def setUp(self):

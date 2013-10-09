@@ -80,7 +80,7 @@ def _get_storage_pipeline(resource_name, conf):
     return common.Pipeline(pipeline)
 
 
-class Driver(base.DriverBase):
+class DataDriver(base.DataDriverBase):
     """Meta-driver for injecting pipelines in front of controllers.
 
     :param storage_conf: For real drivers, this would be used to
@@ -91,7 +91,7 @@ class Driver(base.DriverBase):
     """
 
     def __init__(self, conf, storage):
-        super(Driver, self).__init__(conf)
+        super(DataDriver, self).__init__(conf)
         self._storage = storage
 
     @decorators.lazy_property(write=False)

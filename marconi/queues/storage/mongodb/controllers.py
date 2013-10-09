@@ -25,8 +25,10 @@ Field Mappings:
 from marconi.queues.storage.mongodb import claims
 from marconi.queues.storage.mongodb import messages
 from marconi.queues.storage.mongodb import queues
+from marconi.queues.storage.mongodb import shards
 
 
 ClaimController = claims.ClaimController
 MessageController = messages.MessageController
 QueueController = queues.QueueController
+ShardsController = shards.ShardsController
