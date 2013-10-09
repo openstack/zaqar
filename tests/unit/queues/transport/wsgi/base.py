@@ -17,7 +17,7 @@
 from falcon import testing as ftest
 from oslo.config import cfg
 
-import marconi.queues
+from marconi.queues import bootstrap
 from marconi.queues.transport.wsgi import driver
 from marconi import tests as testing
 from marconi.tests import faulty_storage
@@ -39,7 +39,7 @@ class TestBase(testing.TestBase):
                            group=driver._WSGI_GROUP)
         self.wsgi_cfg = conf[driver._WSGI_GROUP]
 
-        self.boot = marconi.Bootstrap(conf)
+        self.boot = bootstrap.Bootstrap(conf)
 
         self.app = self.boot.transport.app
         self.srmock = ftest.StartResponseMock()
@@ -100,11 +100,11 @@ class TestBaseFaulty(TestBase):
     """This test ensures we aren't letting any exceptions go unhandled."""
 
     def setUp(self):
-        self._storage_backup = marconi.Bootstrap.storage
+        self._storage_backup = bootstrap.Bootstrap.storage
         faulty = faulty_storage.Driver(cfg.ConfigOpts())
-        setattr(marconi.Bootstrap, 'storage', faulty)
+        setattr(bootstrap.Bootstrap, 'storage', faulty)
         super(TestBaseFaulty, self).setUp()
 
     def tearDown(self):
-        setattr(marconi.Bootstrap, 'storage', self._storage_backup)
+        setattr(bootstrap.Bootstrap, 'storage', self._storage_backup)
         super(TestBaseFaulty, self).tearDown()

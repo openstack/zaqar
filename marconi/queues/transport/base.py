@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import abc
+import six
 
 from oslo.config import cfg
 
@@ -22,17 +23,22 @@ _TRANSPORT_OPTIONS = [
 ]
 
 
+@six.add_metaclass(abc.ABCMeta)
 class DriverBase(object):
     """Base class for Transport Drivers to document the expected interface.
 
+    :param conf: configuration instance
+    :type conf: oslo.config.cfg.CONF
     :param storage: The storage driver
+    :type storage: marconi.queues.storage.base.DriverBase
+    :param cache: caching object
+    :type cache: marconi.common.cache.backends.BaseCache
     """
 
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self, conf, storage):
+    def __init__(self, conf, storage, cache):
         self._conf = conf
         self._storage = storage
+        self._cache = cache
 
         self._conf.register_opts(_TRANSPORT_OPTIONS)
 

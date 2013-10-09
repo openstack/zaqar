@@ -15,8 +15,9 @@
 
 """marconi-proxy (admin): interface for managing partitions."""
 
+from marconi.common.transport.wsgi import health
 from marconi.proxy.transport.wsgi import (
-    catalogue, driver, health, partitions,
+    catalogue, driver, partitions,
 )
 
 

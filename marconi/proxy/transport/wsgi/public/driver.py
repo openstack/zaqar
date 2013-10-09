@@ -17,15 +17,16 @@
 Forwards requests to the appropriate marconi queues server.
 """
 
+from marconi.common.transport.wsgi import health
 from marconi.proxy.transport.wsgi import (
-    driver, forward, health, metadata,
+    driver, forward, metadata,
     queues, v1
 )
 
 
 class Driver(driver.DriverBase):
 
-    def __init(self, storage, cache):
+    def __init__(self, storage, cache):
         super(Driver, self).__init__(storage, cache)
 
     @property

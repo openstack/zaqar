@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from marconi.common import exceptions
-import marconi.queues
+from marconi.queues import bootstrap
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding
 from marconi.queues.storage import sqlite
@@ -26,12 +26,12 @@ class TestBootstrap(base.TestBase):
 
     def _bootstrap(self, conf_file):
         conf = self.load_conf(conf_file)
-        return marconi.Bootstrap(conf)
+        return bootstrap.Bootstrap(conf)
 
     def test_storage_invalid(self):
-        bootstrap = self._bootstrap('etc/drivers_storage_invalid.conf')
+        boot = self._bootstrap('etc/drivers_storage_invalid.conf')
         self.assertRaises(exceptions.InvalidDriver,
-                          lambda: bootstrap.storage)
+                          lambda: boot.storage)
 
     def test_storage_sqlite(self):
         bootstrap = self._bootstrap('etc/wsgi_sqlite.conf')
@@ -44,9 +44,9 @@ class TestBootstrap(base.TestBase):
         self.assertIsInstance(bootstrap.storage._storage, sharding.Driver)
 
     def test_transport_invalid(self):
-        bootstrap = self._bootstrap('etc/drivers_transport_invalid.conf')
+        boot = self._bootstrap('etc/drivers_transport_invalid.conf')
         self.assertRaises(exceptions.InvalidDriver,
-                          lambda: bootstrap.transport)
+                          lambda: boot.transport)
 
     def test_transport_wsgi(self):
         bootstrap = self._bootstrap('etc/wsgi_sqlite.conf')

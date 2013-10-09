@@ -22,10 +22,10 @@ import falcon
 from oslo.config import cfg
 import six
 
+from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.proxy import transport
-from marconi.proxy.transport.wsgi import version
 from marconi.proxy.utils import round_robin
 from marconi.queues.transport import auth
 
