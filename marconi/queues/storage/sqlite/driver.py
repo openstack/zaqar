@@ -117,13 +117,13 @@ class Driver(storage.DriverBase):
             raise
 
     @property
-    def queue_controller(self):
+    def _queue_controller(self):
         return controllers.QueueController(self)
 
     @property
-    def message_controller(self):
+    def _message_controller(self):
         return controllers.MessageController(self)
 
     @property
-    def claim_controller(self):
+    def _claim_controller(self):
         return controllers.ClaimController(self)

@@ -19,15 +19,15 @@ from marconi.queues import storage
 
 class Driver(storage.DriverBase):
     @property
-    def queue_controller(self):
+    def _queue_controller(self):
         return QueueController(self)
 
     @property
-    def message_controller(self):
+    def _message_controller(self):
         return MessageController(self)
 
     @property
-    def claim_controller(self):
+    def _claim_controller(self):
         return None
 
 

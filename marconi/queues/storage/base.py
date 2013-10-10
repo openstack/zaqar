@@ -17,6 +17,10 @@
 
 import abc
 
+from oslo.config import cfg
+
+from marconi.common import pipeline
+
 
 class DriverBase:
     __metaclass__ = abc.ABCMeta
@@ -45,19 +49,40 @@ class DriverBase:
         raise NotImplementedError
 
     @abc.abstractproperty
-    def queue_controller(self):
+    def _queue_controller(self):
         """Returns storage's queues controller."""
         raise NotImplementedError
 
+    @property
+    def queue_controller(self):
+        controller = self._queue_controller
+        pipes = pipeline.get_storage_pipeline(cfg.CONF)
+        pipes.append(controller)
+        return pipes
+
     @abc.abstractproperty
-    def message_controller(self):
+    def _message_controller(self):
         """Returns storage's messages controller."""
         raise NotImplementedError
 
+    @property
+    def message_controller(self):
+        controller = self._message_controller
+        pipes = pipeline.get_storage_pipeline(cfg.CONF)
+        pipes.append(controller)
+        return pipes
+
     @abc.abstractproperty
-    def claim_controller(self):
+    def _claim_controller(self):
         """Returns storage's claims controller."""
         raise NotImplementedError
+
+    @property
+    def claim_controller(self):
+        controller = self._claim_controller
+        pipes = pipeline.get_storage_pipeline(cfg.CONF)
+        pipes.append(controller)
+        return pipes
 
 
 class ControllerBase(object):
