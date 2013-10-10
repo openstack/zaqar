@@ -13,7 +13,7 @@ Running a local Marconi server with MongoDB
 
 3. Clone the Marconi repo::
 
-    git clone https://github.com/stackforge/marconi.git
+    git clone https://github.com/openstack/marconi.git
 
 4. cd to your local copy of the repo
 5. Copy the Marconi config files to the directory **~/.marconi**::
