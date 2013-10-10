@@ -30,15 +30,18 @@ class DriverBase(object):
     :param conf: configuration instance
     :type conf: oslo.config.cfg.CONF
     :param storage: The storage driver
-    :type storage: marconi.queues.storage.base.DriverBase
+    :type storage: marconi.queues.storage.base.DataDriverBase
     :param cache: caching object
     :type cache: marconi.common.cache.backends.BaseCache
+    :param control: Storage driver to handle the control plane
+    :type control: marconi.queues.storage.base.ControlDriverBase
     """
 
-    def __init__(self, conf, storage, cache):
+    def __init__(self, conf, storage, cache, control):
         self._conf = conf
         self._storage = storage
         self._cache = cache
+        self._control = control
 
         self._conf.register_opts(_TRANSPORT_OPTIONS)
 

@@ -25,9 +25,6 @@ from marconi.queues.transport.wsgi import (
 
 class Driver(driver.DriverBase):
 
-    def __init__(self, conf, storage, cache):
-        super(Driver, self).__init__(conf, storage, cache)
-
     @property
     def bridge(self):
         queue_controller = self._storage.queue_controller

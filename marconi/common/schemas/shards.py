@@ -29,9 +29,9 @@ patch_options = {
 # NOTE(cpp-cabrera): a string valid for use in a URI
 # TODO(cpp-cabrera): perhaps validate this further using jsonschema's
 # uri validator as per rfc3987
-patch_location = {
+patch_uri = {
     'type': 'object', 'properties': {
-        'location': {
+        'uri': {
             'type': 'string'
         },
         'additionalProperties': False
@@ -50,11 +50,11 @@ patch_weight = {
 create = {
     'type': 'object', 'properties': {
         'weight': patch_weight['properties']['weight'],
-        'location': patch_location['properties']['location'],
+        'uri': patch_uri['properties']['uri'],
         'options': patch_options['properties']['options']
     },
     # NOTE(cpp-cabrera): options need not be present. Storage drivers
     # must provide reasonable defaults.
-    'required': ['location', 'weight'],
+    'required': ['uri', 'weight'],
     'additionalProperties': False
 }

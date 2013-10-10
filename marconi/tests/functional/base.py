@@ -226,3 +226,14 @@ class MarconiServer(Server):
     def get_target(self, conf):
         server = bootstrap.Bootstrap(conf)
         return server.run
+
+
+class MarconiAdminServer(Server):
+
+    name = "marconi-admin-wsgiref-test-server"
+
+    def get_target(self, conf):
+        conf.admin_mode = True
+        server = bootstrap.Bootstrap(conf)
+        conf.admin_mode = False
+        return server.run

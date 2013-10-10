@@ -15,12 +15,10 @@
 # limitations under the License.
 
 from falcon import testing as ftest
-from oslo.config import cfg
 
 from marconi.queues import bootstrap
 from marconi.queues.transport.wsgi import driver
 from marconi import tests as testing
-from marconi.tests import faulty_storage
 
 
 class TestBase(testing.TestBase):
@@ -38,9 +36,10 @@ class TestBase(testing.TestBase):
                            group=driver._WSGI_GROUP)
         self.wsgi_cfg = conf[driver._WSGI_GROUP]
 
+        conf.admin_mode = True
         self.boot = bootstrap.Bootstrap(conf)
-
         self.app = self.boot.transport.app
+
         self.srmock = ftest.StartResponseMock()
 
     def simulate_request(self, path, project_id=None, **kwargs):
@@ -97,13 +96,3 @@ class TestBase(testing.TestBase):
 
 class TestBaseFaulty(TestBase):
     """This test ensures we aren't letting any exceptions go unhandled."""
-
-    def setUp(self):
-        self._storage_backup = bootstrap.Bootstrap.storage
-        faulty = faulty_storage.DataDriver(cfg.ConfigOpts())
-        setattr(bootstrap.Bootstrap, 'storage', faulty)
-        super(TestBaseFaulty, self).setUp()
-
-    def tearDown(self):
-        setattr(bootstrap.Bootstrap, 'storage', self._storage_backup)
-        super(TestBaseFaulty, self).tearDown()

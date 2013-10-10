@@ -22,7 +22,7 @@ class ShardsController(base.ShardsBase):
     def list(self, marker=None, limit=10, detailed=False):
         pass
 
-    def get(self, name):
+    def get(self, name, detailed=False):
         pass
 
     def create(self, name, weight, uri, options=None):

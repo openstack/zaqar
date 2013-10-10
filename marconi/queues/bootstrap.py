@@ -75,6 +75,12 @@ class Bootstrap(object):
         return pipeline.DataDriver(self.conf, storage_driver)
 
     @decorators.lazy_property(write=False)
+    def control(self):
+        LOG.debug(_(u'Loading storage control driver'))
+        return storage_utils.load_storage_driver(self.conf,
+                                                 control_mode=True)
+
+    @decorators.lazy_property(write=False)
     def cache(self):
         LOG.debug(_(u'Loading Proxy Cache Driver'))
         try:
@@ -89,13 +95,12 @@ class Bootstrap(object):
         transport_name = self.driver_conf.transport
         LOG.debug(_(u'Loading transport driver: %s'), transport_name)
 
+        args = [self.conf, self.storage, self.cache, self.control]
         try:
             mgr = driver.DriverManager(self._transport_type,
                                        transport_name,
                                        invoke_on_load=True,
-                                       invoke_args=[self.conf,
-                                                    self.storage,
-                                                    self.cache])
+                                       invoke_args=args)
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)

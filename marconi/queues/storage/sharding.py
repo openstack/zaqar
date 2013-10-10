@@ -73,7 +73,7 @@ class RoutingController(storage.base.ControllerBase):
     @decorators.cached_getattr
     def __getattr__(self, name):
         # NOTE(kgriffs): Use a closure trick to avoid
-        # some attr lookups each time foward() is called.
+        # some attr lookups each time forward() is called.
         lookup = self._shard_catalog.lookup
 
         # NOTE(kgriffs): Assume that every controller method
@@ -144,14 +144,10 @@ class Catalog(object):
         # TODO(kgriffs): SHARDING - Read options from catalog backend
         conf = cfg.ConfigOpts()
 
-        general_opts = [
-            cfg.BoolOpt('admin_mode', default=False)
-        ]
         options = [
             cfg.StrOpt('storage', default='sqlite'),
         ]
 
-        conf.register_opts(general_opts)
         conf.register_opts(options, group='queues:drivers')
         return utils.load_storage_driver(conf)
 

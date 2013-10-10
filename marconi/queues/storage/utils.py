@@ -22,7 +22,7 @@ from marconi.openstack.common import log
 LOG = log.getLogger(__name__)
 
 
-def load_storage_driver(conf):
+def load_storage_driver(conf, control_mode=False):
     """Loads a storage driver and returns it.
 
     The driver's initializer will be passed conf as its only arg.
@@ -31,8 +31,10 @@ def load_storage_driver(conf):
         driver. Must include a 'queues:drivers' group.
     """
 
+    mode = 'control' if control_mode else 'data'
+    driver_type = 'marconi.queues.{0}.storage'.format(mode)
     try:
-        mgr = driver.DriverManager('marconi.queues.data.storage',
+        mgr = driver.DriverManager(driver_type,
                                    conf['queues:drivers'].storage,
                                    invoke_on_load=True,
                                    invoke_args=[conf])

@@ -15,19 +15,20 @@
 """marconi-queues (admin): interface for managing partitions."""
 
 from marconi.common.transport.wsgi import health
-from marconi.queues.transport.wsgi import driver
 from marconi.queues.transport.wsgi.public import driver as public_driver
+from marconi.queues.transport.wsgi import shards
 
 
-class Driver(driver.DriverBase):
-
-    def __init__(self, conf, storage, cache):
-        super(Driver, self).__init__(conf, storage, cache)
-        self.public = public_driver.Driver(conf, storage, cache)
+class Driver(public_driver.Driver):
 
     @property
     def bridge(self):
-        return self.public.bridge + [
+        shards_controller = self._control.shards_controller
+        return super(Driver, self).bridge + [
+            ('/shards',
+             shards.Listing(shards_controller)),
+            ('/shards/{shard}',
+             shards.Resource(shards_controller)),
             ('/health',
              health.Resource())
         ]

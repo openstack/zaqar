@@ -21,6 +21,7 @@ import falcon
 from oslo.config import cfg
 import six
 
+from marconi.common import decorators
 from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
@@ -46,8 +47,8 @@ LOG = logging.getLogger(__name__)
 @six.add_metaclass(abc.ABCMeta)
 class DriverBase(transport.DriverBase):
 
-    def __init__(self, conf, storage, cache):
-        super(DriverBase, self).__init__(conf, storage, cache)
+    def __init__(self, conf, storage, cache, control):
+        super(DriverBase, self).__init__(conf, storage, cache, control)
 
         self._conf.register_opts(_WSGI_OPTIONS, group=_WSGI_GROUP)
         self._wsgi_conf = self._conf[_WSGI_GROUP]
@@ -57,9 +58,10 @@ class DriverBase(transport.DriverBase):
         self._init_routes()
         self._init_middleware()
 
-    def _init_routes(self):
-        """Initialize hooks and URI routes to resources."""
-        before_hooks = [
+    @decorators.lazy_property(write=False)
+    def before_hooks(self):
+        """Exposed to facilitate unit testing."""
+        return [
             helpers.require_accepts_json,
             helpers.extract_project_id,
 
@@ -68,7 +70,9 @@ class DriverBase(transport.DriverBase):
                               self._validate.queue_name)
         ]
 
-        self.app = falcon.API(before=before_hooks)
+    def _init_routes(self):
+        """Initialize hooks and URI routes to resources."""
+        self.app = falcon.API(before=self.before_hooks)
         version_path = version.path()
         for route, resource in self.bridge:
             self.app.add_route(version_path + route, resource)

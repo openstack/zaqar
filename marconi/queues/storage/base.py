@@ -81,7 +81,6 @@ class ControlDriverBase(object):
 
     Allows access to the shard registry through a catalogue and a
     shard controller.
-
     """
 
     def __init__(self, conf):
@@ -373,19 +372,8 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
 
-class AdminControllerBase(object):
-    """Top-level class for controllers.
-
-    :param driver: Instance of the driver
-        instantiating this controller.
-    """
-
-    def __init__(self, driver):
-        self.driver = driver
-
-
 @six.add_metaclass(abc.ABCMeta)
-class ShardsBase(AdminControllerBase):
+class ShardsBase(ControllerBase):
     """A controller for managing shards."""
 
     @abc.abstractmethod

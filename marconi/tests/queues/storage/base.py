@@ -639,22 +639,22 @@ class ShardsControllerTest(ControllerBaseTest):
                             xlocation='localhost2')
 
     def _shard_expects(self, shard, xname, xweight, xlocation):
-        self.assertIn('n', shard)
-        self.assertEqual(shard['n'], xname)
-        self.assertIn('w', shard)
-        self.assertEqual(shard['w'], xweight)
-        self.assertIn('u', shard)
-        self.assertEqual(shard['u'], xlocation)
+        self.assertIn('name', shard)
+        self.assertEqual(shard['name'], xname)
+        self.assertIn('weight', shard)
+        self.assertEqual(shard['weight'], xweight)
+        self.assertIn('uri', shard)
+        self.assertEqual(shard['uri'], xlocation)
 
     def test_get_returns_expected_content(self):
         res = self.shards_controller.get(self.shard)
         self._shard_expects(res, self.shard, 100, 'localhost')
-        self.assertNotIn('o', res)
+        self.assertNotIn('options', res)
 
     def test_detailed_get_returns_expected_content(self):
         res = self.shards_controller.get(self.shard, detailed=True)
-        self.assertIn('o', res)
-        self.assertEqual(res['o'], {})
+        self.assertIn('options', res)
+        self.assertEqual(res['options'], {})
 
     def test_get_raises_if_not_found(self):
         self.assertRaises(storage.errors.ShardDoesNotExist,
@@ -674,7 +674,7 @@ class ShardsControllerTest(ControllerBaseTest):
                                       options={'a': 1})
         res = self.shards_controller.get(self.shard, detailed=True)
         self._shard_expects(res, self.shard, 101, 'redis://localhost')
-        self.assertEqual(res['o'], {'a': 1})
+        self.assertEqual(res['options'], {'a': 1})
 
     def test_delete_works(self):
         self.shards_controller.delete(self.shard)
@@ -699,6 +699,7 @@ class ShardsControllerTest(ControllerBaseTest):
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
             self._shard_expects(entry, str(i), i, str(i))
+            self.assertNotIn('options', entry)
 
         res = list(self.shards_controller.list(limit=5))
         self.assertEqual(len(res), 5)
@@ -710,8 +711,8 @@ class ShardsControllerTest(ControllerBaseTest):
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
             self._shard_expects(entry, str(i), i, str(i))
-            self.assertIn('o', entry)
-            self.assertEqual(entry['o'], {})
+            self.assertIn('options', entry)
+            self.assertEqual(entry['options'], {})
 
 
 class CatalogueControllerTest(ControllerBaseTest):

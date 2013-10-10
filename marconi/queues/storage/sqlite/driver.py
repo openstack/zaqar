@@ -212,7 +212,6 @@ class ControlDriver(storage.ControlDriverBase):
         self.__conn = sqlite3.connect(self.__path,
                                       detect_types=sqlite3.PARSE_DECLTYPES)
         self.__db = self.__conn.cursor()
-        self.run('''PRAGMA foreign_keys = ON''')
 
     @property
     def catalogue_controller(self):
