@@ -74,6 +74,7 @@ class TestInsertQueue(base.FunctionalTestBase):
 
         self.headers_response_empty = set(['location'])
         self.client.set_base_url(self.base_url)
+        self.header = helpers.create_marconi_headers(self.cfg)
 
     @ddt.data('qtestqueue', 'TESTqueue', 'hyphen-name', '_undersore',
               annotated('test_insert_queue_long_name', 'i' * 64))
@@ -251,12 +252,12 @@ class TestQueueMisc(base.FunctionalTestBase):
     def setUp(self):
         super(TestQueueMisc, self).setUp()
 
-        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
-                                         self.cfg.marconi.version)
-
+        self.base_url = self.cfg.marconi.url
         self.client.set_base_url(self.base_url)
 
-        self.queue_url = self.base_url + '/queues/{0}'.format(uuid.uuid1())
+        self.queue_url = self.base_url + '/{0}/queues/{1}' \
+                                         .format(self.cfg.marconi.version,
+                                                 uuid.uuid1())
 
     def test_list_queues(self):
         """List Queues."""
@@ -264,7 +265,8 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
 
-        result = self.client.get('/queues')
+        result = self.client.get('/{0}/queues'
+                                 .format(self.cfg.marconi.version))
         self.assertEqual(result.status_code, 200)
 
         response_keys = result.json().keys()
@@ -280,7 +282,9 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.addCleanup(self.client.delete, self.queue_url)
 
         params = {'detailed': True}
-        result = self.client.get('/queues', params=params)
+        result = self.client.get('/{0}/queues'
+                                 .format(self.cfg.marconi.version),
+                                 params=params)
         self.assertEqual(result.status_code, 200)
 
         response_keys = result.json()['queues'][0].keys()
@@ -289,12 +293,14 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     test_list_queues_detailed.tags = ['smoke', 'positive']
 
-    @ddt.data(0, -1, 30)
+    @ddt.data(0, -1, 1001)
     def test_list_queue_invalid_limit(self, limit):
         """List Queues with a limit value that is not allowed."""
 
         params = {'limit': limit}
-        result = self.client.get('/queues', params=params)
+        result = self.client.get('/{0}/queues'
+                                 .format(self.cfg.marconi.version),
+                                 params=params)
         self.assertEqual(result.status_code, 400)
 
     test_list_queue_invalid_limit.tags = ['negative']
@@ -302,7 +308,8 @@ class TestQueueMisc(base.FunctionalTestBase):
     def test_check_health(self):
         """Test health endpoint."""
 
-        result = self.client.get('/health')
+        result = self.client.get('/{0}/health'
+                                 .format(self.cfg.marconi.version))
         self.assertEqual(result.status_code, 204)
 
     test_check_health.tags = ['positive']
@@ -322,7 +329,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def test_check_queue_exists_negative(self):
         """Checks non-existing queue."""
-        path = '/queues/nonexistingqueue'
+        path = '/{0}/queues/nonexistingqueue'.format(self.cfg.marconi.version)
         result = self.client.get(path)
         self.assertEqual(result.status_code, 404)
 
@@ -334,8 +341,8 @@ class TestQueueMisc(base.FunctionalTestBase):
     def test_get_queue_malformed_marker(self):
         """List queues with invalid marker."""
 
-        url = self.base_url + '/queues?marker=zzz'
-        result = self.client.get(url)
+        path = '/{0}/queues?marker=zzz'.format(self.cfg.marconi.version)
+        result = self.client.get(path)
         self.assertEqual(result.status_code, 204)
 
     test_get_queue_malformed_marker.tags = ['negative']

@@ -17,6 +17,8 @@
 import abc
 import multiprocessing
 
+
+from marconi.openstack.common import timeutils
 from marconi.queues import bootstrap
 # NOTE(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
@@ -108,6 +110,52 @@ class FunctionalTestBase(testing.TestBase):
                          free)
         self.assertEqual(result_json['messages']['total'],
                          total)
+
+        if 'oldest' in result_json['messages']:
+            oldest_message = result_json['messages']['oldest']
+            self.verify_message_stats(oldest_message)
+
+            newest_message = result_json['messages']['newest']
+            self.verify_message_stats(newest_message)
+
+    def verify_message_stats(self, message):
+        """Verifies the oldest & newest message stats
+
+        :param message: oldest (or) newest message returned by
+                        queue_name/stats.
+        """
+        expected_keys = ['age', 'created', 'href']
+
+        response_keys = message.keys()
+        response_keys.sort()
+        self.assertEqual(response_keys, expected_keys)
+
+        # Verify that age has valid values
+        age = message['age']
+        self.assertTrue(0 <= age <= self.limits.message_ttl_max,
+                        msg='Invalid Age {0}'.format(age))
+
+        # Verify that GET on href returns 200
+        path = message['href']
+        result = self.client.get(path)
+        self.assertEqual(result.status_code, 200)
+
+        # Verify that created time falls within the last 10 minutes
+        # NOTE(malini): The messages are created during the test.
+        created_time = message['created']
+        created_time = timeutils.normalize_time(
+            timeutils.parse_isotime(created_time))
+        now = timeutils.utcnow()
+
+        delta = timeutils.delta_seconds(before=created_time, after=now)
+        # NOTE(malini): The 'int()' below is a work around  for the small time
+        # difference between julianday & UTC.
+        # (needed to pass this test on sqlite driver)
+        delta = int(delta)
+
+        msg = 'Invalid Time Delta {0}, Created time {1}, Now {2}' \
+              .format(delta, created_time, now)
+        self.assertTrue(0 <= delta <= 6000, msg)
 
 
 class Server(object):
