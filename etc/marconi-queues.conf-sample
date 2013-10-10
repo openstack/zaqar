@@ -23,6 +23,7 @@ log_file = /var/log/marconi/queues.log
 # Facility to use. If unset defaults to LOG_USER.
 ;syslog_log_facility = LOG_LOCAL0
 
+# ================= Driver Options ============================
 
 [queues:drivers]
 # Transport driver module (e.g., wsgi, zmq)
@@ -30,6 +31,15 @@ transport = wsgi
 
 # Storage driver module (e.g., mongodb, sqlite)
 storage = mongodb
+
+# TODO(kgriffs): Add example stages
+[storage]
+# Pipeline for operations on queue resources
+;queue_pipeline =
+# Pipeline for operations on message resources
+;message_pipeline =
+# Pipeline for operations on claim resources
+;claim_pipeline =
 
 [queues:drivers:transport:wsgi]
 ;bind = 0.0.0.0

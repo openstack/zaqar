@@ -242,7 +242,7 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
         self.cfg = cfg.CONF['queues:drivers:storage:mongodb']
 
     def tearDown(self):
-        storage = self.boot.storage
+        storage = self.boot.storage._storage
         connection = storage.connection
 
         connection.drop_database(storage.queues_database)

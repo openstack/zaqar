@@ -19,6 +19,7 @@ from stevedore import driver
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
+from marconi.queues.storage import pipeline
 from marconi.queues import transport  # NOQA
 
 
@@ -53,22 +54,27 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        LOG.debug(_(u'Loading Storage Driver'))
+        storage_name = CFG['queues:drivers'].storage
+        LOG.debug(_(u'Loading storage driver: ') + storage_name)
+
         try:
             mgr = driver.DriverManager('marconi.queues.storage',
-                                       CFG['queues:drivers'].storage,
+                                       storage_name,
                                        invoke_on_load=True)
-            return mgr.driver
+
+            return pipeline.Driver(CFG, mgr.driver)
         except RuntimeError as exc:
             LOG.exception(exc)
             raise exceptions.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
-        LOG.debug(_(u'Loading Transport Driver'))
+        transport_name = CFG['queues:drivers'].transport
+        LOG.debug(_(u'Loading transport driver: ') + transport_name)
+
         try:
             mgr = driver.DriverManager('marconi.queues.transport',
-                                       CFG['queues:drivers'].transport,
+                                       transport_name,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage])
             return mgr.driver

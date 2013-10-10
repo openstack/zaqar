@@ -17,49 +17,24 @@
 
 import abc
 
-from oslo.config import cfg
 
-from marconi.common import pipeline
-
-
-class DriverBase:
+class DriverBase(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
-    def _queue_controller(self):
-        """Returns storage's queues controller."""
-        raise NotImplementedError
-
-    @property
     def queue_controller(self):
-        controller = self._queue_controller
-        pipes = pipeline.get_storage_pipeline(cfg.CONF)
-        pipes.append(controller)
-        return pipes
-
-    @abc.abstractproperty
-    def _message_controller(self):
-        """Returns storage's messages controller."""
+        """Returns the driver's queue controller."""
         raise NotImplementedError
 
-    @property
+    @abc.abstractproperty
     def message_controller(self):
-        controller = self._message_controller
-        pipes = pipeline.get_storage_pipeline(cfg.CONF)
-        pipes.append(controller)
-        return pipes
-
-    @abc.abstractproperty
-    def _claim_controller(self):
-        """Returns storage's claims controller."""
+        """Returns the driver's message controller."""
         raise NotImplementedError
 
-    @property
+    @abc.abstractproperty
     def claim_controller(self):
-        controller = self._claim_controller
-        pipes = pipeline.get_storage_pipeline(cfg.CONF)
-        pipes.append(controller)
-        return pipes
+        """Returns the driver's claim controller."""
+        raise NotImplementedError
 
 
 class ControllerBase(object):

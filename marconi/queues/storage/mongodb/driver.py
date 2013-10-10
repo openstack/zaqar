@@ -70,13 +70,13 @@ class Driver(storage.DriverBase):
         return MongoClient(options.CFG.uri)
 
     @property
-    def _queue_controller(self):
+    def queue_controller(self):
         return controllers.QueueController(self)
 
     @property
-    def _message_controller(self):
+    def message_controller(self):
         return controllers.MessageController(self)
 
     @property
-    def _claim_controller(self):
+    def claim_controller(self):
         return controllers.ClaimController(self)
