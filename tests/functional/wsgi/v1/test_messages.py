@@ -284,6 +284,21 @@ class TestMessages(base.FunctionalTestBase):
 
     test_get_messages_malformed_marker.tags = ['negative']
 
+    @ddt.data(None, '1234', 'aa2-bb3',
+              '103e09c6-31b7-11e3-86bc-b8ca3ad0f5d81',
+              '103e09c6-31b7-11e3-86bc-b8ca3ad0f5d')
+    def test_get_messages_invalid_client_id(self, client_id):
+        """Get messages with invalid client id."""
+        url = self.message_url
+
+        header = helpers.create_marconi_headers(self.cfg)
+        header['Client-ID'] = client_id
+
+        result = self.client.get(url, headers=header)
+        self.assertEqual(result.status_code, 400)
+
+    test_get_messages_invalid_client_id.tags = ['negative']
+
     def tearDown(self):
         super(TestMessages, self).tearDown()
         self.client.delete(self.queue_url)
