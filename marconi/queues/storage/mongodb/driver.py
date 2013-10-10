@@ -69,10 +69,6 @@ class Driver(storage.DriverBase):
         return MongoClient(options.CFG.uri)
 
     @property
-    def gc_interval(self):
-        return options.CFG.gc_interval
-
-    @property
     def _queue_controller(self):
         return controllers.QueueController(self)
 
