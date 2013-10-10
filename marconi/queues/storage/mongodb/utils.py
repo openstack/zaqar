@@ -128,7 +128,7 @@ def stat_message(message, now):
     """Creates a stat document from the given message, relative to now."""
     oid = message['_id']
     created = oid_ts(oid)
-    age = created - now
+    age = now - created
 
     return {
         'id': str(oid),

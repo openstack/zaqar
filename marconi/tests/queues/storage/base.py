@@ -132,7 +132,7 @@ class QueueControllerTest(ControllerBaseTest):
         # NOTE(kgriffs): We can't get around doing this, because
         # we don't know how the storage drive may be calculating
         # message timestamps (and may not be monkey-patchable).
-        time.sleep(1)
+        time.sleep(1.2)
 
         _insert_fixtures(self.message_controller, 'test',
                          project=self.project, client_uuid=client_uuid,
@@ -149,6 +149,9 @@ class QueueControllerTest(ControllerBaseTest):
         newest = message_stats['newest']
 
         self.assertNotEqual(oldest, newest)
+
+        age = oldest['age']
+        self.assertThat(age, matchers.GreaterThan(0))
 
         # NOTE(kgriffs): Ensure is different enough
         # for the next comparison to work.
