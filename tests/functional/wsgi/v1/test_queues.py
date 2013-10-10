@@ -72,6 +72,7 @@ class TestInsertQueue(base.FunctionalTestBase):
         self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
                                          self.cfg.marconi.version)
 
+        self.header = helpers.create_marconi_headers(self.cfg)
         self.headers_response_empty = set(['location'])
         self.client.set_base_url(self.base_url)
 
@@ -129,7 +130,7 @@ class TestInsertQueue(base.FunctionalTestBase):
             self.skipTest("Auth is not on!")
 
         header = copy.copy(self.header)
-        header["X-Auth-Token"] = 'invalid'
+        header['X-Auth-Token'] = 'invalid'
 
         result = self.client.put(self.url, headers=header)
         self.assertEqual(result.status_code, 401)
@@ -289,7 +290,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     test_list_queues_detailed.tags = ['smoke', 'positive']
 
-    @ddt.data(0, -1, 30)
+    @ddt.data(0, -1, 1001)
     def test_list_queue_invalid_limit(self, limit):
         """List Queues with a limit value that is not allowed."""
 
