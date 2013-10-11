@@ -50,13 +50,7 @@ class CatalogueController(base.CatalogueBase):
 
     @utils.raises_conn_error
     def list(self, project, include_metadata=False):
-        fields = {
-            'p': 1,
-            'q': 1,
-            'n': 1,
-            'h': 1,
-            'm': 1
-        }
+        fields = {'_id': 0}
 
         cursor = self._col.find({'p': project}, fields)
         for entry in cursor:
@@ -64,7 +58,7 @@ class CatalogueController(base.CatalogueBase):
 
     @utils.raises_conn_error
     def get(self, project, queue):
-        fields = {'p': 1, 'q': 1, 'n': 1, 'h': 1, 'm': 1, '_id': 0}
+        fields = {'_id': 0}
         entry = self._col.find_one({'p': project, 'q': queue},
                                    fields=fields)
 

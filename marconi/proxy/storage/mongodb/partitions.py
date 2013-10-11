@@ -42,14 +42,14 @@ class PartitionsController(base.PartitionsBase):
 
     @utils.raises_conn_error
     def list(self):
-        cursor = self._col.find(fields={'n': 1, 'h': 1, 'w': 1, '_id': 0})
+        cursor = self._col.find(fields={'_id': 0})
 
         for entry in cursor:
             yield _normalize(entry)
 
     @utils.raises_conn_error
     def get(self, name):
-        fields = {'n': 1, 'w': 1, 'h': 1, '_id': 0}
+        fields = {'_id': 0}
         partition = self._col.find_one({'n': name},
                                        fields=fields)
 
