@@ -20,11 +20,14 @@ Running a local Marconi server with MongoDB
 
     cp -r marconi/etc/*.conf-sample ~/.marconi/marconi.conf
 
-6. Find the ``[drivers:storage:mongodb]`` section in **~/.marconi/marconi.conf** and modify the URI to point to your local mongod instance::
+6. Find the ``[drivers:storage:mongodb]`` section in 
+   **~/.marconi/marconi-queues.conf** and modify the URI to point 
+   to your local mongod instance::
 
     uri = mongodb://localhost
 
-7. Run the following so you can see the results of any changes you make to the code, without having to reinstall the package each time::
+7. Run the following so you can see the results of any changes you make 
+   to the code, without having to reinstall the package each time::
 
     python setup.py develop
 
