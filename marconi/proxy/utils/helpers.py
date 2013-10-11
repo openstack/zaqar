@@ -52,7 +52,7 @@ def forward(host, request):
     method = request.method.lower()
     resp = requests.request(method, url,
                             headers=canonicalize(request._headers),
-                            data=request.stream.read())
+                            data=request.stream)
     return resp
 
 
