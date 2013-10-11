@@ -3,7 +3,6 @@
 from marconi.proxy.storage import base
 from marconi.proxy.storage import exceptions  # NOQA
 
-
 # NOTE(cpp-cabrera): Hoist classes into package namespace
 CatalogueBase = base.CatalogueBase
 DriverBase = base.DriverBase
