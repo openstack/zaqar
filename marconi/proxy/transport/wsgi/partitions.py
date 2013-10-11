@@ -28,6 +28,7 @@ import json
 
 import falcon
 import jsonschema
+import six
 
 from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
@@ -169,10 +170,11 @@ class Resource(object):
         utils.validate(self._weight_validator, data)
         utils.validate(self._hosts_validator, data)
         try:
-            if 'weight' in data:
-                self._ctrl.update(partition, weight=data['weight'])
-            if 'hosts' in data:
-                self._ctrl.update(partition, hosts=data['hosts'])
+            fields = dict((k, v) for k, v in six.iteritems(data)
+                          if k in ('hosts', 'weight')
+                          and v is not None)
+
+            self._ctrl.update(partition, **fields)
         except exceptions.PartitionNotFound as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()

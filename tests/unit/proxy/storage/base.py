@@ -97,6 +97,16 @@ class PartitionsControllerTest(ControllerBaseTest):
             self.controller.update('a', hosts=['b'])
             self.assertEqual(self.controller.get('a')['hosts'], ['b'])
 
+            # Multi-update
+            self.controller.update('a', hosts=['c'], weight=12)
+            self.assertEqual(self.controller.get('a')['weight'], 12)
+            self.assertEqual(self.controller.get('a')['hosts'], ['c'])
+
+    def test_update_with_missing_hosts_and_weight_raises(self):
+        self.assertRaises(AssertionError,
+                          self.controller.update,
+                          'a', cat='adorable')
+
     def test_update_on_nonexisting_raises(self):
         self.assertRaises(exceptions.PartitionNotFound,
                           self.controller.update,
