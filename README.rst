@@ -26,7 +26,7 @@ Running a local Marconi server with MongoDB
 
 7. Run the following so you can see the results of any changes you make to the code, without having to reinstall the package each time::
 
-    python setup.py develop
+    pip install -e .
 
 8. Start the marconi server::
 
