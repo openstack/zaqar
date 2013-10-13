@@ -30,8 +30,6 @@ At least one of the stages has to implement the calling method. If none of
 them do, an AttributeError exception will be raised.
 """
 
-import functools
-
 import six
 
 from marconi.common import decorators
@@ -50,49 +48,62 @@ class Pipeline(object):
 
     @decorators.cached_getattr
     def __getattr__(self, name):
-        return functools.partial(self.consume_for, name)
+        return self.consumer_for(name)
 
-    def consume_for(self, method, *args, **kwargs):
-        """Consumes the pipeline for `method`.
+    def consumer_for(self, method):
+        """Creates a closure for `method`
 
-        This method walks through the pipeline and calls
-        `method` for each of the items in the pipeline. A
-        warning will be logged for each pipe not implementing
-        `method` and an Attribute error will be raised if
-        none of the stages do.
+        This method creates a closure to consume the pipeline
+        for `method`.
 
-        :params method: The method name to call on each pipe
+        :params method: The method name to call on each stage
         :type method: `six.text_type`
-        :param args: Positional arguments to pass to the call.
-        :param kwargs: Keyword arguments to pass to the call.
 
-        :returns: Anything returned by the called methods.
-        :raises: AttributeError if none of the stages implement `method`
+        :returns: A callable to consume the pipeline.
         """
-        # NOTE(flaper87): Used as a way to verify
-        # the requested method exists in at least
-        # one of the stages, otherwise AttributeError
-        # will be raised.
-        target = None
 
-        for stage in self._pipeline:
-            try:
-                target = getattr(stage, method)
-            except AttributeError:
-                msg = _(u'Stage {0} does not implement {1}')
-                LOG.warning(msg.format(six.text_type(stage), method))
-                continue
+        def consumer(*args, **kwargs):
+            """Consumes the pipeline for `method`
 
-            result = target(*args, **kwargs)
+            This function walks through the pipeline and calls
+            `method` for each of the items in the pipeline. A
+            warning will be logged for each stage not implementing
+            `method` and an Attribute error will be raised if
+            none of the stages do.
 
-            # NOTE(flaper87): Will keep going forward
-            # through the pipeline unless the call returns
-            # something.
-            if result is not None:
-                return result
+            :param args: Positional arguments to pass to the call.
+            :param kwargs: Keyword arguments to pass to the call.
 
-        if target is None:
-            msg = _(u'Method {0} not found in any of '
-                    'the registered stages').format(method)
-            LOG.error(msg)
-            raise AttributeError(msg)
+            :raises: AttributeError if none of the stages implement `method`
+            """
+            # NOTE(flaper87): Used as a way to verify
+            # the requested method exists in at least
+            # one of the stages, otherwise AttributeError
+            # will be raised.
+            target = None
+
+            for stage in self._pipeline:
+                try:
+                    target = getattr(stage, method)
+                except AttributeError:
+                    sstage = six.text_type(stage)
+                    msg = _(u"Stage {0} does not implement {1}").format(sstage,
+                                                                        method)
+                    LOG.warning(msg)
+                    continue
+
+                result = target(*args, **kwargs)
+
+                # NOTE(flaper87): Will keep going forward
+                # through the stageline unless the call returns
+                # something.
+                if result is not None:
+                    return result
+
+            if target is None:
+                msg = _(u'Method {0} not found in any of '
+                        'the registered stages').format(method)
+                LOG.error(msg)
+                raise AttributeError(msg)
+
+        return consumer

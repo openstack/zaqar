@@ -63,9 +63,8 @@ class TestPipeLine(base.TestBase):
                                            SecondClass()])
 
     def test_attribute_error(self):
-        self.assertRaises(AttributeError,
-                          self.pipeline.consume_for,
-                          'does_not_exist')
+        consumer = self.pipeline.consumer_for('does_not_exist')
+        self.assertRaises(AttributeError, consumer)
 
     def test_with_args(self):
         name = 'James'

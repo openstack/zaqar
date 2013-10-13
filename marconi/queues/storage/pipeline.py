@@ -68,11 +68,12 @@ def _get_storage_pipeline(resource_name, conf):
     pipeline = []
     for ns in storage_conf[resource_name + '_pipeline']:
         try:
-            mgr = driver.DriverManager('marconi.queues.storage.pipes',
+            mgr = driver.DriverManager('marconi.queues.storage.stages',
                                        ns, invoke_on_load=True)
             pipeline.append(mgr.driver)
         except RuntimeError as exc:
-            msg = _('Pipe {0} could not be imported: {1}').format(ns, str(exc))
+            msg = _('Stage {0} could not be imported: {1}').format(ns,
+                                                                   str(exc))
             LOG.warning(msg)
             continue
 
@@ -95,18 +96,18 @@ class Driver(base.DriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        pipes = _get_storage_pipeline('queue', self.conf)
-        pipes.append(self._storage.queue_controller)
-        return pipes
+        stages = _get_storage_pipeline('queue', self.conf)
+        stages.append(self._storage.queue_controller)
+        return stages
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        pipes = _get_storage_pipeline('message', self.conf)
-        pipes.append(self._storage.message_controller)
-        return pipes
+        stages = _get_storage_pipeline('message', self.conf)
+        stages.append(self._storage.message_controller)
+        return stages
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        pipes = _get_storage_pipeline('claim', self.conf)
-        pipes.append(self._storage.claim_controller)
-        return pipes
+        stages = _get_storage_pipeline('claim', self.conf)
+        stages.append(self._storage.claim_controller)
+        return stages
