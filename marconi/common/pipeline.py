@@ -34,6 +34,7 @@ import functools
 
 import six
 
+from marconi.common import decorators
 import marconi.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class Pipeline(object):
     def append(self, stage):
         self._pipeline.append(stage)
 
+    @decorators.cached_getattr
     def __getattr__(self, name):
         return functools.partial(self.consume_for, name)
 
