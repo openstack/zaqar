@@ -21,6 +21,7 @@ from marconi.queues import bootstrap
 # NOTE(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
 # refactored as part of the work for this blueprint
+from marconi.queues.transport import validation
 from marconi.queues.transport import wsgi  # noqa
 from marconi import tests as testing
 from marconi.tests.functional import config
@@ -52,7 +53,9 @@ class FunctionalTestBase(testing.TestBase):
             self.server.start(self.conf_path(self.cfg.marconi.config))
 
         self.mconf = self.load_conf(self.cfg.marconi.config)
-        self.limits = self.mconf['queues:limits:transport']
+
+        validator = validation.Validator(self.mconf)
+        self.limits = validator._limits_conf
 
         # NOTE(flaper87): Create client
         # for this test unit.

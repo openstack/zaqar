@@ -32,8 +32,7 @@ class TestWSGIAuth(base.TestBase):
         self.headers = {'Client-ID': str(uuid.uuid4())}
 
     def test_auth_install(self):
-        self.assertTrue(isinstance(self.app,
-                                   auth_token.AuthProtocol))
+        self.assertIsInstance(self.app, auth_token.AuthProtocol)
 
     def test_non_authenticated(self):
         env = testing.create_environ('/v1/480924/queues/',

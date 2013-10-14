@@ -13,34 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
-
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
 
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
-
-
 class MessageController(base.MessageBase):
-    def __init__(self, driver):
-        self.driver = driver
-        self.driver.run('''
-            create table
-            if not exists
-            Messages (
-                id INTEGER,
-                qid INTEGER,
-                ttl INTEGER,
-                content DOCUMENT,
-                client UUID,
-                created DATETIME,  -- seconds since the Julian day
-                PRIMARY KEY(id),
-                FOREIGN KEY(qid) references Queues(id) on delete cascade
-            )
-        ''')
 
     def get(self, queue, message_id, project):
         if project is None:
@@ -139,7 +118,7 @@ class MessageController(base.MessageBase):
              echo=False, client_uuid=None, include_claimed=False):
 
         if limit is None:
-            limit = STORAGE_LIMITS.default_message_paging
+            limit = self.driver.limits_conf.default_message_paging
 
         if project is None:
             project = ''

@@ -13,40 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
-
 from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
 
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
-
-
 class ClaimController(base.ClaimBase):
-    def __init__(self, driver):
-        self.driver = driver
-        self.driver.run('''
-            create table
-            if not exists
-            Claims (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                qid INTEGER,
-                ttl INTEGER,
-                created DATETIME,  -- seconds since the Julian day
-                FOREIGN KEY(qid) references Queues(id) on delete cascade
-            )
-        ''')
-        self.driver.run('''
-            create table
-            if not exists
-            Locked (
-                cid INTEGER,
-                msgid INTEGER,
-                FOREIGN KEY(cid) references Claims(id) on delete cascade,
-                FOREIGN KEY(msgid) references Messages(id) on delete cascade
-            )
-        ''')
 
     def get(self, queue, claim_id, project):
         if project is None:
@@ -84,7 +56,7 @@ class ClaimController(base.ClaimBase):
             project = ''
 
         if limit is None:
-            limit = STORAGE_LIMITS.default_message_paging
+            limit = self.driver.limits_conf.default_message_paging
 
         with self.driver('immediate'):
             try:

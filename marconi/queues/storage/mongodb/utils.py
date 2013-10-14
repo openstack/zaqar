@@ -27,7 +27,6 @@ from pymongo import errors
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import exceptions as storage_exceptions
-from marconi.queues.storage.mongodb import options
 
 
 # BSON ObjectId gives TZ-aware datetime, so we generate a
@@ -173,7 +172,7 @@ def descope_queue_name(scoped_name):
     return scoped_name.partition('/')[2] or None
 
 
-def get_partition(queue, project=None):
+def get_partition(num_partitions, queue, project=None):
     """Get the partition number for a given queue and project.
 
     Hashes the queue to a partition number. The hash is stable,
@@ -191,7 +190,7 @@ def get_partition(queue, project=None):
     # NOTE(kgriffs): For small numbers of partitions, crc32 will
     # provide a uniform distribution. This was verified experimentally
     # with up to 100 partitions.
-    return binascii.crc32(name) % options.CFG.partitions
+    return binascii.crc32(name) % num_partitions
 
 
 def raises_conn_error(func):

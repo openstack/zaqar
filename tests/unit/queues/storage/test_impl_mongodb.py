@@ -25,7 +25,6 @@ from marconi.queues import storage
 from marconi.queues.storage import exceptions
 from marconi.queues.storage import mongodb
 from marconi.queues.storage.mongodb import controllers
-from marconi.queues.storage.mongodb import options as mongodb_options
 from marconi.queues.storage.mongodb import utils
 from marconi import tests as testing
 from marconi.tests.queues.storage import base
@@ -79,15 +78,15 @@ class MongodbDriverTest(testing.TestBase):
 
     def setUp(self):
         super(MongodbDriverTest, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
+        self._conf = self.load_conf('wsgi_mongodb.conf')
 
     def test_db_instance(self):
-        driver = mongodb.Driver()
+        driver = mongodb.Driver(self._conf)
 
         databases = driver.message_databases + [driver.queues_database]
         for db in databases:
             self.assertThat(db.name, matchers.StartsWith(
-                mongodb_options.CFG.database))
+                driver.mongodb_conf.database))
 
 
 @testing.requires_mongodb

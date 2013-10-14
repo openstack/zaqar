@@ -14,31 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
-
 from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
 
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
-
-
 class QueueController(base.QueueBase):
-    def __init__(self, driver):
-        self.driver = driver
-        self.driver.run('''
-            create table
-            if not exists
-            Queues (
-                id INTEGER,
-                project TEXT,
-                name TEXT,
-                metadata DOCUMENT,
-                PRIMARY KEY(id),
-                UNIQUE(project, name)
-            )
-        ''')
 
     def list(self, project, marker=None,
              limit=None, detailed=False):
@@ -47,7 +28,7 @@ class QueueController(base.QueueBase):
             project = ''
 
         if limit is None:
-            limit = STORAGE_LIMITS.default_queue_paging
+            limit = self.driver.limits_conf.default_queue_paging
 
         sql = (('''
             select name from Queues''' if not detailed

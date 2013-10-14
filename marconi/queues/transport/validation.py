@@ -29,9 +29,7 @@ _TRANSPORT_LIMITS_OPTIONS = [
     cfg.IntOpt('claim_grace_max', default=43200),
 ]
 
-cfg.CONF.register_opts(_TRANSPORT_LIMITS_OPTIONS,
-                       group='queues:limits:transport')
-CFG = cfg.CONF['queues:limits:transport']
+_TRANSPORT_LIMITS_GROUP = 'queues:limits:transport'
 
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.
@@ -43,136 +41,138 @@ class ValidationFailed(ValueError):
     """User input did not follow API restrictions."""
 
 
-def queue_name(name):
-    """Restrictions on a queue name.
+class Validator(object):
+    def __init__(self, conf):
+        self._conf = conf
+        self._conf.register_opts(_TRANSPORT_LIMITS_OPTIONS,
+                                 group=_TRANSPORT_LIMITS_GROUP)
+        self._limits_conf = self._conf[_TRANSPORT_LIMITS_GROUP]
 
-    :param name: The queue name
-    :raises: ValidationFailed if the name is longer than 64 bytes or
-        contains anything other than ASCII digits and letters,
-        underscores, and dashes.
-    """
+    def queue_name(self, name):
+        """Restrictions on a queue name.
 
-    if len(name) > QUEUE_NAME_MAX_LEN:
-        raise ValidationFailed(
-            'Queue names may not be more than 64 characters long.')
+        :param name: The queue name
+        :raises: ValidationFailed if the name is longer than 64 bytes or
+            contains anything other than ASCII digits and letters,
+            underscores, and dashes.
+        """
 
-    if not QUEUE_NAME_REGEX.match(name):
-        raise ValidationFailed(
-            'Queue names may only contain ASCII letters, digits, '
-            'underscores, and dashes.')
-
-
-def queue_listing(limit=None, **kwargs):
-    """Restrictions involving a list of queues.
-
-    :param limit: The expected number of queues in the list
-    :param kwargs: Ignored arguments passed to storage API
-    :raises: ValidationFailed if the limit is exceeded
-    """
-
-    if limit is not None and not (0 < limit <= CFG.queue_paging_uplimit):
-        raise ValidationFailed(
-            'Limit must be at least 1 and no greater than %d.' %
-            CFG.queue_paging_uplimit)
-
-
-def queue_content(metadata, check_size):
-    """Restrictions on queue metadata.
-
-    :param metadata: Metadata as a Python dict
-    :param check_size: Whether this size checking is required
-    :raises: ValidationFailed if the metadata is oversize.
-    """
-
-    if check_size:
-        length = _compact_json_length(metadata)
-        if length > CFG.metadata_size_uplimit:
+        if len(name) > QUEUE_NAME_MAX_LEN:
             raise ValidationFailed(
-                ('Queue metadata may not exceed %d characters, '
-                 'excluding whitespace.') %
-                CFG.metadata_size_uplimit)
+                'Queue names may not be more than 64 characters long.')
 
-
-def message_posting(messages, check_size=True):
-    """Restrictions on a list of messages.
-
-    :param messages: A list of messages
-    :param check_size: Whether the size checking for each message
-        is required
-    :raises: ValidationFailed if any message has a out-of-range
-        TTL, or an oversize message body.
-    """
-
-    message_listing(limit=len(messages))
-
-    for msg in messages:
-        message_content(msg, check_size)
-
-
-def message_content(message, check_size):
-    """Restrictions on each message."""
-
-    if not (60 <= message['ttl'] <= CFG.message_ttl_max):
-        raise ValidationFailed(
-            ('The TTL for a message may not exceed %d seconds, and '
-             'must be at least 60 seconds long.') %
-            CFG.message_ttl_max)
-
-    if check_size:
-        body_length = _compact_json_length(message['body'])
-        if body_length > CFG.message_size_uplimit:
+        if not QUEUE_NAME_REGEX.match(name):
             raise ValidationFailed(
-                ('Message bodies may not exceed %d characters, '
-                 'excluding whitespace.') %
-                CFG.message_size_uplimit)
+                'Queue names may only contain ASCII letters, digits, '
+                'underscores, and dashes.')
 
+    def queue_listing(self, limit=None, **kwargs):
+        """Restrictions involving a list of queues.
 
-def message_listing(limit=None, **kwargs):
-    """Restrictions involving a list of messages.
+        :param limit: The expected number of queues in the list
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the limit is exceeded
+        """
 
-    :param limit: The expected number of messages in the list
-    :param kwargs: Ignored arguments passed to storage API
-    :raises: ValidationFailed if the limit is exceeded
-    """
+        uplimit = self._limits_conf.queue_paging_uplimit
+        if limit is not None and not (0 < limit <= uplimit):
+            raise ValidationFailed(
+                'Limit must be at least 1 and no greater than %d.' %
+                self._limits_conf.queue_paging_uplimit)
 
-    if limit is not None and not (0 < limit <= CFG.message_paging_uplimit):
-        raise ValidationFailed(
-            'Limit must be at least 1 and may not be greater than %d. ' %
-            CFG.message_paging_uplimit)
+    def queue_content(self, metadata, check_size):
+        """Restrictions on queue metadata.
 
+        :param metadata: Metadata as a Python dict
+        :param check_size: Whether this size checking is required
+        :raises: ValidationFailed if the metadata is oversize.
+        """
 
-def claim_creation(metadata, **kwargs):
-    """Restrictions on the claim parameters upon creation.
+        if check_size:
+            length = _compact_json_length(metadata)
+            if length > self._limits_conf.metadata_size_uplimit:
+                raise ValidationFailed(
+                    ('Queue metadata may not exceed %d characters, '
+                     'excluding whitespace.') %
+                    self._limits_conf.metadata_size_uplimit)
 
-    :param metadata: The claim metadata
-    :param kwargs: Other arguments passed to storage API
-    :raises: ValidationFailed if either TTL or grace is out of range,
-        or the expected number of messages exceed the limit.
-    """
+    def message_posting(self, messages, check_size=True):
+        """Restrictions on a list of messages.
 
-    message_listing(**kwargs)
-    claim_updating(metadata)
+        :param messages: A list of messages
+        :param check_size: Whether the size checking for each message
+            is required
+        :raises: ValidationFailed if any message has a out-of-range
+            TTL, or an oversize message body.
+        """
 
-    if not (60 <= metadata['grace'] <= CFG.claim_grace_max):
-        raise ValidationFailed(
-            ('Grace must be at least 60 seconds and cannot '
-             'exceed %d.') %
-            CFG.claim_grace_max)
+        self.message_listing(limit=len(messages))
 
+        for msg in messages:
+            self.message_content(msg, check_size)
 
-def claim_updating(metadata):
-    """Restrictions on the claim TTL.
+    def message_content(self, message, check_size):
+        """Restrictions on each message."""
 
-    :param metadata: The claim metadata
-    :param kwargs: Ignored arguments passed to storage API
-    :raises: ValidationFailed if the TTL is out of range
-    """
+        if not (60 <= message['ttl'] <= self._limits_conf.message_ttl_max):
+            raise ValidationFailed(
+                ('The TTL for a message may not exceed %d seconds, and '
+                 'must be at least 60 seconds long.') %
+                self._limits_conf.message_ttl_max)
 
-    if not (60 <= metadata['ttl'] <= CFG.claim_ttl_max):
-        raise ValidationFailed(
-            ('The TTL for a claim may not exceed %d seconds, and must be '
-             'at least 60 seconds long.') %
-            CFG.claim_ttl_max)
+        if check_size:
+            body_length = _compact_json_length(message['body'])
+            if body_length > self._limits_conf.message_size_uplimit:
+                raise ValidationFailed(
+                    ('Message bodies may not exceed %d characters, '
+                     'excluding whitespace.') %
+                    self._limits_conf.message_size_uplimit)
+
+    def message_listing(self, limit=None, **kwargs):
+        """Restrictions involving a list of messages.
+
+        :param limit: The expected number of messages in the list
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the limit is exceeded
+        """
+
+        uplimit = self._limits_conf.message_paging_uplimit
+        if limit is not None and not (0 < limit <= uplimit):
+            raise ValidationFailed(
+                'Limit must be at least 1 and may not be greater than %d. ' %
+                self._limits_conf.message_paging_uplimit)
+
+    def claim_creation(self, metadata, **kwargs):
+        """Restrictions on the claim parameters upon creation.
+
+        :param metadata: The claim metadata
+        :param kwargs: Other arguments passed to storage API
+        :raises: ValidationFailed if either TTL or grace is out of range,
+            or the expected number of messages exceed the limit.
+        """
+
+        self.message_listing(**kwargs)
+        self.claim_updating(metadata)
+
+        if not (60 <= metadata['grace'] <= self._limits_conf.claim_grace_max):
+            raise ValidationFailed(
+                ('Grace must be at least 60 seconds and cannot '
+                 'exceed %d.') %
+                self._limits_conf.claim_grace_max)
+
+    def claim_updating(self, metadata):
+        """Restrictions on the claim TTL.
+
+        :param metadata: The claim metadata
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the TTL is out of range
+        """
+
+        if not (60 <= metadata['ttl'] <= self._limits_conf.claim_ttl_max):
+            raise ValidationFailed(
+                ('The TTL for a claim may not exceed %d seconds, and must be '
+                 'at least 60 seconds long.') %
+                self._limits_conf.claim_ttl_max)
 
 
 def _compact_json_length(obj):

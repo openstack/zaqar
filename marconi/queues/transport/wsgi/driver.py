@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 from wsgiref import simple_server
 
 import falcon
@@ -22,6 +23,7 @@ from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
 from marconi.queues.transport import auth
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import claims
 from marconi.queues.transport.wsgi import health
 from marconi.queues.transport.wsgi import messages
@@ -30,17 +32,30 @@ from marconi.queues.transport.wsgi import queues
 from marconi.queues.transport.wsgi import stats
 from marconi.queues.transport.wsgi import v1
 
+_WSGI_OPTIONS = [
+    cfg.StrOpt('bind', default='127.0.0.1',
+               help='Address on which the self-hosting server will listen'),
 
-GLOBAL_CFG = cfg.CONF
-WSGI_CFG = cfg.CONF['queues:drivers:transport:wsgi']
+    cfg.IntOpt('port', default=8888,
+               help='Port on which the self-hosting server will listen'),
+
+    cfg.IntOpt('content_max_length', default=256 * 1024),
+    cfg.IntOpt('metadata_max_length', default=64 * 1024)
+]
+
+_WSGI_GROUP = 'queues:drivers:transport:wsgi'
 
 LOG = logging.getLogger(__name__)
 
 
 class Driver(transport.DriverBase):
 
-    def __init__(self, storage):
-        super(Driver, self).__init__(storage)
+    def __init__(self, conf, storage):
+        super(Driver, self).__init__(conf, storage)
+
+        self._conf.register_opts(_WSGI_OPTIONS, group=_WSGI_GROUP)
+        self._wsgi_conf = self._conf[_WSGI_GROUP]
+        self._validate = validation.Validator(self._conf)
 
         self._init_routes()
         self._init_middleware()
@@ -51,21 +66,23 @@ class Driver(transport.DriverBase):
             helpers.require_accepts_json,
             helpers.extract_project_id,
 
-            # NOTE(kgriffs): Depends on project_id, above
-            helpers.validate_queue_name,
+            # NOTE(kgriffs): Depends on project_id being extracted, above
+            functools.partial(helpers.validate_queue_name,
+                              self._validate.queue_name)
         ]
 
         self.app = falcon.API(before=before_hooks)
 
-        queue_controller = self.storage.queue_controller
-        message_controller = self.storage.message_controller
-        claim_controller = self.storage.claim_controller
+        queue_controller = self._storage.queue_controller
+        message_controller = self._storage.message_controller
+        claim_controller = self._storage.claim_controller
 
         # Home
         self.app.add_route('/v1', v1.V1Resource())
 
         # Queues Endpoints
-        queue_collection = queues.CollectionResource(queue_controller)
+        queue_collection = queues.CollectionResource(self._validate,
+                                                     queue_controller)
         self.app.add_route('/v1/queues', queue_collection)
 
         queue_item = queues.ItemResource(queue_controller, message_controller)
@@ -76,12 +93,15 @@ class Driver(transport.DriverBase):
                            '/stats', stats_endpoint)
 
         # Metadata Endpoints
-        metadata_endpoint = metadata.Resource(queue_controller)
+        metadata_endpoint = metadata.Resource(self._wsgi_conf, self._validate,
+                                              queue_controller)
         self.app.add_route('/v1/queues/{queue_name}'
                            '/metadata', metadata_endpoint)
 
         # Messages Endpoints
-        msg_collection = messages.CollectionResource(message_controller)
+        msg_collection = messages.CollectionResource(self._wsgi_conf,
+                                                     self._validate,
+                                                     message_controller)
         self.app.add_route('/v1/queues/{queue_name}'
                            '/messages', msg_collection)
 
@@ -90,11 +110,14 @@ class Driver(transport.DriverBase):
                            '/messages/{message_id}', msg_item)
 
         # Claims Endpoints
-        claim_collection = claims.CollectionResource(claim_controller)
+        claim_collection = claims.CollectionResource(self._wsgi_conf,
+                                                     self._validate,
+                                                     claim_controller)
         self.app.add_route('/v1/queues/{queue_name}'
                            '/claims', claim_collection)
 
-        claim_item = claims.ItemResource(claim_controller)
+        claim_item = claims.ItemResource(self._wsgi_conf, self._validate,
+                                         claim_controller)
         self.app.add_route('/v1/queues/{queue_name}'
                            '/claims/{claim_id}', claim_item)
 
@@ -105,17 +128,18 @@ class Driver(transport.DriverBase):
         """Initialize WSGI middlewarez."""
 
         # NOTE(flaper87): Install Auth
-        if GLOBAL_CFG.auth_strategy:
-            strategy = auth.strategy(GLOBAL_CFG.auth_strategy)
-            self.app = strategy.install(self.app, GLOBAL_CFG)
+        if self._conf.auth_strategy:
+            strategy = auth.strategy(self._conf.auth_strategy)
+            self.app = strategy.install(self.app, self._conf)
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
 
         msg = _(u'Serving on host %(bind)s:%(port)s')
-        msg %= {'bind': WSGI_CFG.bind, 'port': WSGI_CFG.port}
+        msg %= {'bind': self._wsgi_conf.bind, 'port': self._wsgi_conf.port}
         LOG.info(msg)
 
-        httpd = simple_server.make_server(WSGI_CFG.bind, WSGI_CFG.port,
+        httpd = simple_server.make_server(self._wsgi_conf.bind,
+                                          self._wsgi_conf.port,
                                           self.app)
         httpd.serve_forever()

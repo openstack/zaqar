@@ -63,8 +63,9 @@ class TestBase(testtools.TestCase):
 
         :returns: Project's config object.
         """
-        cfg.CONF(args=[], default_config_files=[cls.conf_path(filename)])
-        return cfg.CONF
+        conf = cfg.ConfigOpts()
+        conf(args=[], default_config_files=[cls.conf_path(filename)])
+        return conf
 
     def config(self, group=None, **kw):
         """Override some configuration values.

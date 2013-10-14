@@ -18,6 +18,7 @@ import time
 import uuid
 
 import ddt
+from oslo.config import cfg
 from testtools import matchers
 
 from marconi.openstack.common import timeutils
@@ -43,7 +44,7 @@ class ControllerBaseTest(testing.TestBase):
                           'Tests not supported'.format(
                           self.controller_class, self.controller_base_class))
 
-        self.driver = self.driver_class()
+        self.driver = self.driver_class(cfg.ConfigOpts())
         self.controller = self.controller_class(self.driver)
 
     def tearDown(self):

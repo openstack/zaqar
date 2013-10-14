@@ -30,7 +30,15 @@ LOG = logging.getLogger(__name__)
 
 class Driver(storage.DriverBase):
 
-    @decorators.lazy_property()
+    def __init__(self, conf):
+        super(Driver, self).__init__(conf)
+
+        self.conf.register_opts(options.MONGODB_OPTIONS,
+                                group=options.MONGODB_GROUP)
+
+        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+
+    @decorators.lazy_property(write=False)
     def queues_database(self):
         """Database dedicated to the "queues" collection.
 
@@ -38,15 +46,15 @@ class Driver(storage.DriverBase):
         to avoid writer lock contention with the messages collections.
         """
 
-        name = options.CFG.database + '_queues'
+        name = self.mongodb_conf.database + '_queues'
         return self.connection[name]
 
-    @decorators.lazy_property()
+    @decorators.lazy_property(write=False)
     def message_databases(self):
         """List of message databases, ordered by partition number."""
 
-        name = options.CFG.database
-        partitions = options.CFG.partitions
+        name = self.mongodb_conf.database
+        partitions = self.mongodb_conf.partitions
 
         # NOTE(kgriffs): Partition names are zero-based, and
         # the list is ordered by partition, which means that a
@@ -58,25 +66,25 @@ class Driver(storage.DriverBase):
         return [self.connection[name + '_messages_p' + str(p)]
                 for p in range(partitions)]
 
-    @decorators.lazy_property()
+    @decorators.lazy_property(write=False)
     def connection(self):
         """MongoDB client connection instance."""
 
-        if options.CFG.uri and 'replicaSet' in options.CFG.uri:
+        if self.mongodb_conf.uri and 'replicaSet' in self.mongodb_conf.uri:
             MongoClient = pymongo.MongoReplicaSetClient
         else:
             MongoClient = pymongo.MongoClient
 
-        return MongoClient(options.CFG.uri)
+        return MongoClient(self.mongodb_conf.uri)
 
-    @property
+    @decorators.lazy_property(write=False)
     def queue_controller(self):
         return controllers.QueueController(self)
 
-    @property
+    @decorators.lazy_property(write=False)
     def message_controller(self):
         return controllers.MessageController(self)
 
-    @property
+    @decorators.lazy_property(write=False)
     def claim_controller(self):
         return controllers.ClaimController(self)

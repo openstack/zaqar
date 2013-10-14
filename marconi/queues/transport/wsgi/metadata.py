@@ -14,25 +14,25 @@
 # limitations under the License.
 
 import falcon
-from oslo.config import cfg
 import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
-from marconi.queues.transport import validation as validate
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
-CFG = cfg.CONF['queues:drivers:transport:wsgi']
 
 
 class Resource(object):
-    __slots__ = ('queue_ctrl', )
+    __slots__ = ('_wsgi_conf', '_validate', 'queue_ctrl')
 
-    def __init__(self, queue_controller):
+    def __init__(self, _wsgi_conf, validate, queue_controller):
+        self._wsgi_conf = _wsgi_conf
+        self._validate = validate
         self.queue_ctrl = queue_controller
 
     def on_get(self, req, resp, project_id, queue_name):
@@ -62,7 +62,7 @@ class Resource(object):
                   {'queue': queue_name, 'project': project_id})
 
         # Place JSON size restriction before parsing
-        if req.content_length > CFG.metadata_max_length:
+        if req.content_length > self._wsgi_conf.metadata_max_length:
             description = _(u'Queue metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
@@ -72,15 +72,15 @@ class Resource(object):
                                              spec=None)
 
         try:
-            validate.queue_content(
+            self._validate.queue_content(
                 metadata, check_size=(
-                    validate.CFG.metadata_size_uplimit <
-                    CFG.metadata_max_length))
+                    self._validate._limits_conf.metadata_size_uplimit <
+                    self._wsgi_conf.metadata_max_length))
             self.queue_ctrl.set_metadata(queue_name,
                                          metadata=metadata,
                                          project=project_id)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_exceptions.QueueDoesNotExist:

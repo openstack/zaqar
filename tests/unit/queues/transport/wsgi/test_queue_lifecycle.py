@@ -18,7 +18,6 @@ import json
 
 import ddt
 import falcon
-from oslo.config import cfg
 import six
 
 import base  # noqa
@@ -32,8 +31,6 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     def setUp(self):
         super(QueueLifecycleBaseTest, self).setUp()
-
-        self.wsgi_cfg = cfg.CONF['queues:drivers:transport:wsgi']
 
     def test_empty_project_id(self):
         path = '/v1/queues/gumshoe'
@@ -315,8 +312,6 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
     @testing.requires_mongodb
     def setUp(self):
         super(QueueLifecycleMongoDBTests, self).setUp()
-
-        self.cfg = cfg.CONF['queues:drivers:storage:mongodb']
 
     def tearDown(self):
         storage = self.boot.storage._storage

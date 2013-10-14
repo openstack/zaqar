@@ -36,6 +36,7 @@ class MongodbDriverTest(testing.TestBase):
 @testing.requires_mongodb
 class MongodbPartitionsTest(base.PartitionsControllerTest):
 
+    uri = 'mongodb://localhost'
     driver_class = mongodb.Driver
     controller_class = controllers.PartitionsController
 
@@ -51,6 +52,7 @@ class MongodbPartitionsTest(base.PartitionsControllerTest):
 @testing.requires_mongodb
 class MongodbCatalogueTest(base.CatalogueControllerTest):
 
+    uri = 'mongodb://localhost'
     driver_class = mongodb.Driver
     controller_class = controllers.CatalogueController
 

@@ -22,18 +22,16 @@ from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
 from marconi.queues import transport  # NOQA
 
+LOG = log.getLogger(__name__)
 
-_bootstrap_options = [
+_DRIVER_OPTIONS = [
     cfg.StrOpt('transport', default='wsgi',
                help='Transport driver to use'),
     cfg.StrOpt('storage', default='sqlite',
                help='Storage driver to use'),
 ]
 
-CFG = cfg.CONF
-CFG.register_opts(_bootstrap_options, group="queues:drivers")
-
-LOG = log.getLogger(__name__)
+_DRIVER_GROUP = 'queues:drivers'
 
 
 class Bootstrap(object):
@@ -48,35 +46,40 @@ class Bootstrap(object):
         if config_file is not None:
             default_file = [config_file]
 
-        CFG(project='marconi', prog='marconi-queues', args=cli_args or [],
-            default_config_files=default_file)
+        self.conf = cfg.ConfigOpts()
+        self.conf.register_opts(_DRIVER_OPTIONS, group=_DRIVER_GROUP)
+        self.driver_conf = self.conf[_DRIVER_GROUP]
+
+        self.conf(project='marconi', prog='marconi-queues',
+                  args=cli_args or [], default_config_files=default_file)
+
         log.setup('marconi')
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        storage_name = CFG['queues:drivers'].storage
+        storage_name = self.driver_conf.storage
         LOG.debug(_(u'Loading storage driver: ') + storage_name)
 
         try:
             mgr = driver.DriverManager('marconi.queues.storage',
                                        storage_name,
-                                       invoke_on_load=True)
-
-            return pipeline.Driver(CFG, mgr.driver)
+                                       invoke_on_load=True,
+                                       invoke_args=[self.conf])
+            return pipeline.Driver(self.conf, mgr.driver)
         except RuntimeError as exc:
             LOG.exception(exc)
             raise exceptions.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
-        transport_name = CFG['queues:drivers'].transport
+        transport_name = self.driver_conf.transport
         LOG.debug(_(u'Loading transport driver: ') + transport_name)
 
         try:
             mgr = driver.DriverManager('marconi.queues.transport',
                                        transport_name,
                                        invoke_on_load=True,
-                                       invoke_args=[self.storage])
+                                       invoke_args=[self.conf, self.storage])
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)

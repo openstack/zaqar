@@ -14,28 +14,27 @@
 # limitations under the License.
 
 import falcon
-from oslo.config import cfg
 import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
-from marconi.queues.transport import validation as validate
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
-
 LOG = logging.getLogger(__name__)
-CFG = cfg.CONF['queues:drivers:transport:wsgi']
 
 MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
 
 
 class CollectionResource(object):
 
-    __slots__ = ('message_controller')
+    __slots__ = ('message_controller', '_wsgi_conf', '_validate')
 
-    def __init__(self, message_controller):
+    def __init__(self, wsgi_conf, validate, message_controller):
+        self._wsgi_conf = wsgi_conf
+        self._validate = validate
         self.message_controller = message_controller
 
     #-----------------------------------------------------------------------
@@ -45,13 +44,13 @@ class CollectionResource(object):
     def _get_by_id(self, base_path, project_id, queue_name, ids):
         """Returns one or more messages from the queue by ID."""
         try:
-            validate.message_listing(limit=len(ids))
+            self._validate.message_listing(limit=len(ids))
             messages = self.message_controller.bulk_get(
                 queue_name,
                 message_ids=ids,
                 project=project_id)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
@@ -83,7 +82,7 @@ class CollectionResource(object):
         req.get_param_as_bool('include_claimed', store=kwargs)
 
         try:
-            validate.message_listing(**kwargs)
+            self._validate.message_listing(**kwargs)
             results = self.message_controller.list(
                 queue_name,
                 project=project_id,
@@ -94,7 +93,7 @@ class CollectionResource(object):
             cursor = next(results)
             messages = list(cursor)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
@@ -136,7 +135,7 @@ class CollectionResource(object):
         client_uuid = wsgi_utils.get_client_uuid(req)
 
         # Place JSON size restriction before parsing
-        if req.content_length > CFG.content_max_length:
+        if req.content_length > self._wsgi_conf.content_max_length:
             description = _(u'Message collection size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
@@ -153,17 +152,18 @@ class CollectionResource(object):
         try:
             # No need to check each message's size if it
             # can not exceed the request size limit
-            validate.message_posting(
+            self._validate.message_posting(
                 messages, check_size=(
-                    validate.CFG.message_size_uplimit <
-                    CFG.content_max_length))
+                    self._validate._limits_conf.message_size_uplimit <
+                    self._wsgi_conf.content_max_length))
+
             message_ids = self.message_controller.post(
                 queue_name,
                 messages=messages,
                 project=project_id,
                 client_uuid=client_uuid)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:
@@ -221,13 +221,13 @@ class CollectionResource(object):
         ids = req.get_param_as_list('ids', required=True)
 
         try:
-            validate.message_listing(limit=len(ids))
+            self._validate.message_listing(limit=len(ids))
             self.message_controller.bulk_delete(
                 queue_name,
                 message_ids=ids,
                 project=project_id)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:

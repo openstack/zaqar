@@ -19,7 +19,7 @@
 from oslo.config import cfg
 
 
-_MONGODB_OPTIONS = [
+MONGODB_OPTIONS = [
     cfg.StrOpt('uri', help='Mongodb Connection URI'),
 
     # Database name
@@ -53,6 +53,4 @@ _MONGODB_OPTIONS = [
                        'same instant.')),
 ]
 
-cfg.CONF.register_opts(_MONGODB_OPTIONS,
-                       group='queues:drivers:storage:mongodb')
-CFG = cfg.CONF['queues:drivers:storage:mongodb']
+MONGODB_GROUP = 'queues:drivers:storage:mongodb'

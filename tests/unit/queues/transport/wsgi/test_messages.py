@@ -18,7 +18,6 @@ import uuid
 
 import ddt
 import falcon
-from oslo.config import cfg
 import six
 from testtools import matchers
 
@@ -33,8 +32,6 @@ class MessagesBaseTest(base.TestBase):
 
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
-
-        self.wsgi_cfg = cfg.CONF['queues:drivers:transport:wsgi']
 
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'

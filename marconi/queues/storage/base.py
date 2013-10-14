@@ -17,9 +17,38 @@
 
 import abc
 
+from oslo.config import cfg
+
+_LIMITS_OPTIONS = [
+    cfg.IntOpt('default_queue_paging', default=10,
+               help='Default queue pagination size'),
+
+    cfg.IntOpt('default_message_paging', default=10,
+               help='Default message pagination size')
+]
+
+_LIMITS_GROUP = 'queues:limits:storage'
+
 
 class DriverBase(object):
+    """Interface definition for storage drivers.
+
+    Connection information and driver-specific options are
+    loaded from the config file or the shard catalog.
+
+    :param conf: Driver configuration. Can be any
+        dict-like object containing the expected
+        options. Must at least include 'uri' which
+        provides connection options such as host and
+        port.
+    """
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, conf):
+        self.conf = conf
+
+        self.conf.register_opts(_LIMITS_OPTIONS, group=_LIMITS_GROUP)
+        self.limits_conf = self.conf[_LIMITS_GROUP]
 
     @abc.abstractproperty
     def queue_controller(self):

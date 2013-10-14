@@ -18,7 +18,6 @@ import uuid
 
 import ddt
 import falcon
-from oslo.config import cfg
 from testtools import matchers
 
 import base  # noqa
@@ -31,8 +30,6 @@ class ClaimsBaseTest(base.TestBase):
 
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
-
-        self.wsgi_cfg = cfg.CONF['queues:drivers:transport:wsgi']
 
         self.project_id = '480924'
         self.queue_path = '/v1/queues/fizbit'
@@ -238,8 +235,6 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
 
     def setUp(self):
         super(ClaimsMongoDBTests, self).setUp()
-
-        self.cfg = cfg.CONF['queues:drivers:storage:mongodb']
 
     def tearDown(self):
         storage = self.boot.storage._storage

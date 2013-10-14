@@ -24,7 +24,6 @@ Field Mappings:
 import datetime
 
 from bson import objectid
-from oslo.config import cfg
 
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
@@ -34,7 +33,6 @@ from marconi.queues.storage.mongodb import utils
 
 
 LOG = logging.getLogger(__name__)
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 
 class ClaimController(storage.ClaimBase):
@@ -121,7 +119,7 @@ class ClaimController(storage.ClaimBase):
         msg_ctrl = self.driver.message_controller
 
         if limit is None:
-            limit = STORAGE_LIMITS.default_message_paging
+            limit = self.driver.limits_conf.default_message_paging
 
         ttl = metadata['ttl']
         grace = metadata['grace']

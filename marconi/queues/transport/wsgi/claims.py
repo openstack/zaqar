@@ -14,30 +14,32 @@
 # limitations under the License.
 
 import falcon
-from oslo.config import cfg
 import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import exceptions as storage_exceptions
 from marconi.queues.transport import utils
-from marconi.queues.transport import validation as validate
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
-
 LOG = logging.getLogger(__name__)
-CFG = cfg.CONF['queues:drivers:transport:wsgi']
 
 CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
 CLAIM_PATCH_SPEC = (('ttl', int),)
 
 
-class CollectionResource(object):
+class Resource(object):
 
-    __slots__ = ('claim_controller')
+    __slots__ = ('claim_controller', '_metadata_max_length', '_validate')
 
-    def __init__(self, claim_controller):
+    def __init__(self, wsgi_conf, validate, claim_controller):
         self.claim_controller = claim_controller
+        self._metadata_max_length = wsgi_conf.metadata_max_length
+        self._validate = validate
+
+
+class CollectionResource(Resource):
 
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Claims collection POST - queue: %(queue)s, '
@@ -49,7 +51,7 @@ class CollectionResource(object):
         claim_options = {} if limit is None else {'limit': limit}
 
         # Place JSON size restriction before parsing
-        if req.content_length > CFG.metadata_max_length:
+        if req.content_length > self._metadata_max_length:
             description = _(u'Claim metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
@@ -60,7 +62,7 @@ class CollectionResource(object):
 
         # Claim some messages
         try:
-            validate.claim_creation(metadata, **claim_options)
+            self._validate.claim_creation(metadata, **claim_options)
             cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
@@ -71,7 +73,7 @@ class CollectionResource(object):
             # TODO(kgriffs): optimize, along with serialization (below)
             resp_msgs = list(msgs)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
@@ -95,12 +97,14 @@ class CollectionResource(object):
             resp.status = falcon.HTTP_204
 
 
-class ItemResource(object):
+class ItemResource(Resource):
 
-    __slots__ = ('claim_controller')
+    __slots__ = ('claim_controller', '_metadata_max_length', '_validate')
 
-    def __init__(self, claim_controller):
+    def __init__(self, wsgi_conf, validate, claim_controller):
         self.claim_controller = claim_controller
+        self._metadata_max_length = wsgi_conf.metadata_max_length
+        self._validate = validate
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
         LOG.debug(_(u'Claim item GET - claim: %(claim_id)s, '
@@ -147,7 +151,7 @@ class ItemResource(object):
                    'claim_id': claim_id})
 
         # Place JSON size restriction before parsing
-        if req.content_length > CFG.metadata_max_length:
+        if req.content_length > self._metadata_max_length:
             description = _(u'Claim metadata size is too large.')
             raise wsgi_exceptions.HTTPBadRequestBody(description)
 
@@ -157,7 +161,7 @@ class ItemResource(object):
                                              CLAIM_PATCH_SPEC)
 
         try:
-            validate.claim_updating(metadata)
+            self._validate.claim_updating(metadata)
             self.claim_controller.update(queue_name,
                                          claim_id=claim_id,
                                          metadata=metadata,
@@ -165,7 +169,7 @@ class ItemResource(object):
 
             resp.status = falcon.HTTP_204
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_exceptions.DoesNotExist:

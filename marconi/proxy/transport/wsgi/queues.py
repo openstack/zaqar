@@ -40,13 +40,17 @@ from marconi.openstack.common import log
 from marconi.proxy.utils import (
     forward, lookup, helpers, http, partition
 )
-from marconi.queues import storage  # NOQA
+from marconi.queues.storage import base as storage
 from marconi.queues.transport import validation as validate
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 
 
 LOG = log.getLogger(__name__)
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
+
+CFG = cfg.CONF
+CFG.register_opts(storage._LIMITS_OPTIONS, group=storage._LIMITS_GROUP)
+
+STORAGE_LIMITS = cfg.CONF[storage._LIMITS_GROUP]
 
 
 class Listing(object):

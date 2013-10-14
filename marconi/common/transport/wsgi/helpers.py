@@ -19,7 +19,7 @@ import falcon
 import six
 
 import marconi.openstack.common.log as logging
-from marconi.queues.transport import validation as validate
+from marconi.queues.transport import validation
 
 
 LOG = logging.getLogger(__name__)
@@ -46,22 +46,32 @@ X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
 and retry.'''))
 
 
-def validate_queue_name(req, resp, params):
-    """Hook for validating the queue name sepecified in requests.
+def validate_queue_name(validate, req, resp, params):
+    """Hook for validating the queue name specified in a request.
 
     Validation is short-circuited if 'queue_name' does not
     exist in `params`.
 
     This hook depends on the `get_project` hook, which must be
     installed upstream.
+
+
+    :param validate: A validator function that will
+        be used to check the queue name against configured
+        limits. functools.partial or a closure must be used to
+        set this first arg, and expose the remaining ones as
+        a Falcon hook interface.
+    :param req: Falcon request object
+    :param resp: Falcon response object
+    :param params: Responder params dict
     """
 
     try:
-        validate.queue_name(params['queue_name'])
+        validate(params['queue_name'])
     except KeyError:
         # NOTE(kgriffs): queue_name not in params, so nothing to do
         pass
-    except validate.ValidationFailed as ex:
+    except validation.ValidationFailed as ex:
         project = params['project_id']
         queue = params['queue_name'].decode('utf-8', 'replace')
 

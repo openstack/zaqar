@@ -18,7 +18,7 @@ import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import utils
-from marconi.queues.transport import validation as validate
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 
 
@@ -81,10 +81,11 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('queue_controller')
+    __slots__ = ('queue_controller', '_validate')
 
-    def __init__(self, queue_controller):
+    def __init__(self, validate, queue_controller):
         self.queue_controller = queue_controller
+        self._validate = validate
 
     def on_get(self, req, resp, project_id):
 
@@ -97,10 +98,10 @@ class CollectionResource(object):
         req.get_param_as_bool('detailed', store=kwargs)
 
         try:
-            validate.queue_listing(**kwargs)
+            self._validate.queue_listing(**kwargs)
             results = self.queue_controller.list(project=project_id, **kwargs)
 
-        except validate.ValidationFailed as ex:
+        except validation.ValidationFailed as ex:
             raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:

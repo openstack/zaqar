@@ -15,6 +15,12 @@
 
 import abc
 
+from oslo.config import cfg
+
+_TRANSPORT_OPTIONS = [
+    cfg.StrOpt('auth_strategy', default='')
+]
+
 
 class DriverBase(object):
     """Base class for Transport Drivers to document the expected interface.
@@ -24,8 +30,11 @@ class DriverBase(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, storage):
-        self.storage = storage
+    def __init__(self, conf, storage):
+        self._conf = conf
+        self._storage = storage
+
+        self._conf.register_opts(_TRANSPORT_OPTIONS)
 
     @abc.abstractmethod
     def listen():

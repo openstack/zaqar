@@ -24,7 +24,6 @@ Field Mappings:
 import datetime
 import time
 
-from oslo.config import cfg
 import pymongo.errors
 import pymongo.read_preferences
 
@@ -32,12 +31,10 @@ import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
 from marconi.queues.storage import exceptions
-from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
 
 
 LOG = logging.getLogger(__name__)
-STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 # NOTE(kgriffs): This value, in seconds, should be at least less than the
 # minimum allowed TTL for messages (60 seconds). Make it 45 to allow for
@@ -107,8 +104,9 @@ class MessageController(storage.MessageBase):
         super(MessageController, self).__init__(*args, **kwargs)
 
         # Cache for convenience and performance
+        self._num_partitions = self.driver.mongodb_conf.partitions
         self._queue_ctrl = self.driver.queue_controller
-        self._retry_range = range(options.CFG.max_attempts)
+        self._retry_range = range(self.driver.mongodb_conf.max_attempts)
 
         # Create a list of 'messages' collections, one for each database
         # partition, ordered by partition number.
@@ -162,7 +160,8 @@ class MessageController(storage.MessageBase):
 
     def _collection(self, queue_name, project=None):
         """Get a partitioned collection instance."""
-        return self._collections[utils.get_partition(queue_name, project)]
+        return self._collections[utils.get_partition(self._num_partitions,
+                                                     queue_name, project)]
 
     def _backoff_sleep(self, attempt):
         """Sleep between retries using a jitter algorithm.
@@ -173,9 +172,10 @@ class MessageController(storage.MessageBase):
 
         :param attempt: current attempt number, zero-based
         """
-        seconds = utils.calculate_backoff(attempt, options.CFG.max_attempts,
-                                          options.CFG.max_retry_sleep,
-                                          options.CFG.max_retry_jitter)
+        conf = self.driver.mongodb_conf
+        seconds = utils.calculate_backoff(attempt, conf.max_attempts,
+                                          conf.max_retry_sleep,
+                                          conf.max_retry_jitter)
 
         time.sleep(seconds)
 
@@ -353,7 +353,7 @@ class MessageController(storage.MessageBase):
              echo=False, client_uuid=None, include_claimed=False):
 
         if limit is None:
-            limit = STORAGE_LIMITS.default_message_paging
+            limit = self.driver.limits_conf.default_message_paging
 
         if marker is not None:
             try:
@@ -594,7 +594,8 @@ class MessageController(storage.MessageBase):
 
         message = _(u'Hit maximum number of attempts (%(max)s) for queue '
                     u'"%(queue)s" under project %(project)s')
-        message %= dict(max=options.CFG.max_attempts, queue=queue_name,
+        message %= dict(max=self.driver.mongodb_conf.max_attempts,
+                        queue=queue_name,
                         project=project)
 
         LOG.warning(message)

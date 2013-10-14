@@ -82,29 +82,31 @@ def _get_storage_pipeline(resource_name, conf):
 class Driver(base.DriverBase):
     """Meta-driver for injecting pipelines in front of controllers.
 
+    :param storage_conf: For real drivers, this would be used to
+        configure the storage, but in this case it is simply ignored.
     :param conf: Configuration from which to load pipeline settings
     :param storage: Storage driver that will service requests as the
         last step in the pipeline
     """
 
     def __init__(self, conf, storage):
-        self._conf = conf
+        super(Driver, self).__init__(conf)
         self._storage = storage
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        pipes = _get_storage_pipeline('queue', self._conf)
+        pipes = _get_storage_pipeline('queue', self.conf)
         pipes.append(self._storage.queue_controller)
         return pipes
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        pipes = _get_storage_pipeline('message', self._conf)
+        pipes = _get_storage_pipeline('message', self.conf)
         pipes.append(self._storage.message_controller)
         return pipes
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        pipes = _get_storage_pipeline('claim', self._conf)
+        pipes = _get_storage_pipeline('claim', self.conf)
         pipes.append(self._storage.claim_controller)
         return pipes

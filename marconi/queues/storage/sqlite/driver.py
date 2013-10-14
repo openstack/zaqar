@@ -20,6 +20,7 @@ import uuid
 import msgpack
 from oslo.config import cfg
 
+from marconi.common import decorators
 from marconi.queues import storage
 from marconi.queues.storage.sqlite import controllers
 from marconi.queues.storage.sqlite import utils
@@ -30,18 +31,85 @@ _SQLITE_OPTIONS = [
                help='Sqlite database to use.')
 ]
 
-cfg.CONF.register_opts(_SQLITE_OPTIONS, group='queues:drivers:storage:sqlite')
-CFG = cfg.CONF['queues:drivers:storage:sqlite']
+_SQLITE_GROUP = 'queues:drivers:storage:sqlite'
 
 
 class Driver(storage.DriverBase):
 
-    def __init__(self):
-        self.__path = CFG.database
+    def __init__(self, conf):
+        super(Driver, self).__init__(conf)
+
+        self.conf.register_opts(_SQLITE_OPTIONS, group=_SQLITE_GROUP)
+        self.sqlite_conf = self.conf[_SQLITE_GROUP]
+
+        self.__path = self.sqlite_conf.database
+
+        # TODO(kgriffs): SHARDING - Make use of uri
         self.__conn = sqlite3.connect(self.__path,
                                       detect_types=sqlite3.PARSE_DECLTYPES)
         self.__db = self.__conn.cursor()
         self.run('''PRAGMA foreign_keys = ON''')
+
+        self._ensure_tables()
+
+    def _ensure_tables(self):
+        """Creates tables if they don't already exist."""
+
+        # NOTE(kgriffs): Create tables all together rather
+        # than separately in each controller, since some queries
+        # in the individual controllers actually require the
+        # presence of more than one table.
+
+        self.run('''
+            create table
+            if not exists
+            Messages (
+                id INTEGER,
+                qid INTEGER,
+                ttl INTEGER,
+                content DOCUMENT,
+                client UUID,
+                created DATETIME,  -- seconds since the Julian day
+                PRIMARY KEY(id),
+                FOREIGN KEY(qid) references Queues(id) on delete cascade
+            )
+        ''')
+
+        self.run('''
+            create table
+            if not exists
+            Queues (
+                id INTEGER,
+                project TEXT,
+                name TEXT,
+                metadata DOCUMENT,
+                PRIMARY KEY(id),
+                UNIQUE(project, name)
+            )
+        ''')
+
+        self.run('''
+            create table
+            if not exists
+            Claims (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                qid INTEGER,
+                ttl INTEGER,
+                created DATETIME,  -- seconds since the Julian day
+                FOREIGN KEY(qid) references Queues(id) on delete cascade
+            )
+        ''')
+
+        self.run('''
+            create table
+            if not exists
+            Locked (
+                cid INTEGER,
+                msgid INTEGER,
+                FOREIGN KEY(cid) references Claims(id) on delete cascade,
+                FOREIGN KEY(msgid) references Messages(id) on delete cascade
+            )
+        ''')
 
     @staticmethod
     def pack(o):
@@ -117,14 +185,14 @@ class Driver(storage.DriverBase):
             self.__conn.rollback()
             raise
 
-    @property
+    @decorators.lazy_property(write=False)
     def queue_controller(self):
         return controllers.QueueController(self)
 
-    @property
+    @decorators.lazy_property(write=False)
     def message_controller(self):
         return controllers.MessageController(self)
 
-    @property
+    @decorators.lazy_property(write=False)
     def claim_controller(self):
         return controllers.ClaimController(self)

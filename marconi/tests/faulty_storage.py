@@ -18,6 +18,10 @@ from marconi.queues import storage
 
 class Driver(storage.DriverBase):
     @property
+    def default_options(self):
+        return {}
+
+    @property
     def queue_controller(self):
         return QueueController(self)
 

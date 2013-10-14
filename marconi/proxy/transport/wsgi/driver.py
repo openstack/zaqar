@@ -39,6 +39,7 @@ _WSGI_OPTIONS = [
 
 ]
 
+cfg.CONF.register_opt(cfg.StrOpt('auth_strategy', default=''))
 cfg.CONF.register_opts(_WSGI_OPTIONS,
                        group='proxy:drivers:transport:wsgi')
 
