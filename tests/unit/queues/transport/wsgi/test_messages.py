@@ -419,6 +419,11 @@ class MessagesSQLiteTests(MessagesBaseTest):
     config_filename = 'wsgi_sqlite.conf'
 
 
+class MessagesSQLiteShardedTests(MessagesBaseTest):
+
+    config_filename = 'wsgi_sqlite_sharded.conf'
+
+
 @testing.requires_mongodb
 class MessagesMongoDBTests(MessagesBaseTest):
 
@@ -426,6 +431,15 @@ class MessagesMongoDBTests(MessagesBaseTest):
 
     def setUp(self):
         super(MessagesMongoDBTests, self).setUp()
+
+
+@testing.requires_mongodb
+class MessagesMongoDBShardedTests(MessagesBaseTest):
+
+    config_filename = 'wsgi_mongodb_sharded.conf'
+
+    def setUp(self):
+        super(MessagesMongoDBShardedTests, self).setUp()
 
 
 class MessagesFaultyDriverTests(base.TestBaseFaulty):
