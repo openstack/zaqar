@@ -16,6 +16,7 @@
 import pbr.packaging
 import pbr.version
 
+
 version_info = pbr.version.VersionInfo('marconi')
 
 

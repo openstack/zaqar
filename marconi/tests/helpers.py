@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testtools
-
 import contextlib
 import functools
 import os
 import uuid
 
 import six
+import testtools
+
 
 SKIP_SLOW_TESTS = os.environ.get('MARCONI_TEST_SLOW') is None
 SKIP_MONGODB_TESTS = os.environ.get('MARCONI_TEST_MONGODB') is None

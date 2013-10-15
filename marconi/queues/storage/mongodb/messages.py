@@ -35,6 +35,7 @@ from marconi.queues.storage import exceptions
 from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
 
+
 LOG = logging.getLogger(__name__)
 STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 

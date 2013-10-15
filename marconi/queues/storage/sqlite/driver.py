@@ -24,6 +24,7 @@ from marconi.queues import storage
 from marconi.queues.storage.sqlite import controllers
 from marconi.queues.storage.sqlite import utils
 
+
 _SQLITE_OPTIONS = [
     cfg.StrOpt('database', default=':memory:',
                help='Sqlite database to use.')

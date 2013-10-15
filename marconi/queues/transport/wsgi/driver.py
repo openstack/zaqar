@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from wsgiref import simple_server
+
 import falcon
 from oslo.config import cfg
-from wsgiref import simple_server
 
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging

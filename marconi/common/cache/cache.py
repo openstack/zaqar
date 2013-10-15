@@ -22,6 +22,7 @@ Supported configuration options:
 from oslo.config import cfg
 from stevedore import driver
 
+
 _cache_options = [
     cfg.StrOpt('cache_backend',
                default='memory',

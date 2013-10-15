@@ -12,8 +12,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """catalogue: maintains a directory of all queues proxied through the system.
 """
+
 import json
 
 import falcon
@@ -21,6 +23,7 @@ import falcon
 from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
 from marconi.proxy.utils import helpers
+
 
 LOG = log.getLogger(__name__)
 

@@ -24,6 +24,7 @@ from marconi.queues.transport import validation as validate
 from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
+
 LOG = logging.getLogger(__name__)
 CFG = cfg.CONF['queues:drivers:transport:wsgi']
 

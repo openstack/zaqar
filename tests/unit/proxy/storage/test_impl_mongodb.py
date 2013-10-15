@@ -12,11 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from marconi.proxy.storage import mongodb
 from marconi.proxy.storage.mongodb import controllers
 from marconi.proxy.storage.mongodb import options
 from marconi import tests as testing
-
 from tests.unit.proxy.storage import base
 
 

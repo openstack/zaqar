@@ -12,13 +12,16 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """forward: exposes a mixin class appropriate for forwarding requests."""
+
 import falcon
 
 from marconi.openstack.common import log
 from marconi.proxy.utils import helpers
 from marconi.proxy.utils import http
 from marconi.proxy.utils import lookup
+
 
 LOG = log.getLogger(__name__)
 

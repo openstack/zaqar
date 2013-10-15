@@ -15,9 +15,9 @@
 # limitations under the License.
 
 import io
+import json
 
 import falcon
-import json
 import testtools
 
 from marconi.queues.transport.wsgi import utils

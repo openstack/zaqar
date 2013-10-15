@@ -12,10 +12,12 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import copy
+import uuid
+
 import ddt
 import six
-import uuid
 
 from marconi.tests.functional import base  # noqa
 from marconi.tests.functional import helpers

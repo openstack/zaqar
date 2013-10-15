@@ -28,6 +28,7 @@ from marconi.proxy.storage import base
 from marconi.proxy.storage import exceptions
 from marconi.queues.storage.mongodb import utils
 
+
 PARTITIONS_INDEX = [
     ('n', 1)
 ]

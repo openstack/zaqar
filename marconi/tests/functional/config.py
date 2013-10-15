@@ -17,6 +17,7 @@ import os
 
 from oslo.config import cfg
 
+
 _DEFAULT = [
     cfg.BoolOpt("run_tests", default=True),
 ]

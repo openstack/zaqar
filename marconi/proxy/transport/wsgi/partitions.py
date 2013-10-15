@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """partitions: a registry of all marconi partitions this proxy can route to
 
 A partition is added by an operator by interacting with the
@@ -24,6 +25,7 @@ following fields are required:
     "hosts": [HTTP_EndPoints(:Port), ...]
 }
 """
+
 import json
 
 import falcon
@@ -36,6 +38,7 @@ from marconi.proxy.transport import schema, utils
 from marconi.proxy.utils import lookup
 from marconi.queues.transport import utils as json_utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+
 
 LOG = log.getLogger(__name__)
 

@@ -20,6 +20,7 @@ from marconi.queues.storage import base
 from marconi.queues.storage import exceptions
 from marconi.queues.storage.sqlite import utils
 
+
 STORAGE_LIMITS = cfg.CONF['queues:limits:storage']
 
 

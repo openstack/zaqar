@@ -20,6 +20,7 @@ from marconi.queues.storage.sqlite import claims
 from marconi.queues.storage.sqlite import messages
 from marconi.queues.storage.sqlite import queues
 
+
 ClaimController = claims.ClaimController
 MessageController = messages.MessageController
 QueueController = queues.QueueController

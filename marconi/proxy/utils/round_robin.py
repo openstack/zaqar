@@ -12,7 +12,9 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """round_robin: Implements round-robin selection for partition hosts."""
+
 import itertools
 
 

@@ -19,6 +19,7 @@ from keystoneclient.middleware import auth_token
 
 from marconi.openstack.common import log
 
+
 STRATEGIES = {}
 
 LOG = log.getLogger(__name__)
