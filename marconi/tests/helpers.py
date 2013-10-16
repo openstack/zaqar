@@ -132,6 +132,51 @@ def entries(controller, count):
         controller.delete(p, q)
 
 
+@contextlib.contextmanager
+def shard_entry(controller, project, queue, shard):
+    """Creates a catalogue entry with the given details, and deletes
+    it once the context manager goes out of scope.
+
+    :param controller: storage handler
+    :type controller: queues.storage.base:CatalogueBase
+    :param project: namespace for queue
+    :type project: six.text_type
+    :param queue: name of queue
+    :type queue: six.text_type
+    :param shard: an identifier for the shard
+    :type shard: six.text_type
+    :returns: (project, queue, shard)
+    :rtype: (six.text_type, six.text_type, six.text_type)
+    """
+    controller.insert(project, queue, shard)
+    yield (project, queue, shard)
+    controller.delete(project, queue)
+
+
+@contextlib.contextmanager
+def shard_entries(controller, count):
+    """Creates `count` catalogue entries with the given details, and
+    deletes them once the context manager goes out of scope.
+
+    :param controller: storage handler
+    :type controller: queues.storage.base:CatalogueBase
+    :param count: number of entries to create
+    :type count: int
+    :returns: [(project, queue, shard)]
+    :rtype: [(six.text_type, six.text_type, six.text_type)]
+    """
+    spec = [(u'_', six.text_type(uuid.uuid1()), six.text_type(i))
+            for i in range(count)]
+
+    for p, q, s in spec:
+        controller.insert(p, q, s)
+
+    yield spec
+
+    for p, q, _ in spec:
+        controller.delete(p, q)
+
+
 def requires_mongodb(test_case):
     """Decorator to flag a test case as being dependent on MongoDB.
 

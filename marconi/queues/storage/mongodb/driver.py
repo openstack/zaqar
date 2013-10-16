@@ -29,7 +29,6 @@ LOG = logging.getLogger(__name__)
 
 
 def _connection(conf):
-    """MongoDB client connection instance."""
     if conf.uri and 'replicaSet' in conf.uri:
         MongoClient = pymongo.MongoReplicaSetClient
     else:
@@ -52,7 +51,7 @@ class DataDriver(storage.DataDriverBase):
     def queues_database(self):
         """Database dedicated to the "queues" collection.
 
-        The queues collection is separated out into it's own database
+        The queues collection is separated out into its own database
         to avoid writer lock contention with the messages collections.
         """
 
@@ -78,6 +77,7 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def connection(self):
+        """MongoDB client connection instance."""
         return _connection(self.mongodb_conf)
 
     @decorators.lazy_property(write=False)
@@ -116,3 +116,18 @@ class ControlDriver(storage.ControlDriverBase):
     @property
     def shards_controller(self):
         return controllers.ShardsController(self)
+
+    @decorators.lazy_property(write=False)
+    def catalogue_database(self):
+        """Database dedicated to the "queues" collection.
+
+        The queues collection is separated out into its own database
+        to avoid writer lock contention with the messages collections.
+        """
+
+        name = self.mongodb_conf.database + '_catalogue'
+        return self.connection[name]
+
+    @property
+    def catalogue_controller(self):
+        return controllers.CatalogueController(self)

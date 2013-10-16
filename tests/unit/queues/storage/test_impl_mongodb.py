@@ -345,3 +345,17 @@ class MongodbShardsTests(base.ShardsControllerTest):
 
     def tearDown(self):
         super(MongodbShardsTests, self).tearDown()
+
+
+@testing.requires_mongodb
+class MongodbCatalogueTests(base.CatalogueControllerTest):
+    driver_class = mongodb.ControlDriver
+    controller_class = controllers.CatalogueController
+
+    def setUp(self):
+        super(MongodbCatalogueTests, self).setUp()
+        self.load_conf('wsgi_mongodb.conf')
+
+    def tearDown(self):
+        self.controller.drop_all()
+        super(MongodbCatalogueTests, self).tearDown()

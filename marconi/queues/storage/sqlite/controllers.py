@@ -16,12 +16,14 @@
 
 """Exports SQLite driver controllers."""
 
+from marconi.queues.storage.sqlite import catalogue
 from marconi.queues.storage.sqlite import claims
 from marconi.queues.storage.sqlite import messages
 from marconi.queues.storage.sqlite import queues
 from marconi.queues.storage.sqlite import shards
 
 
+CatalogueController = catalogue.CatalogueController
 ClaimController = claims.ClaimController
 MessageController = messages.MessageController
 QueueController = queues.QueueController

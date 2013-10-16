@@ -33,6 +33,9 @@ from marconi.queues.storage import exceptions as storage_exceptions
 # TZ-aware UNIX epoch for convenience.
 EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)
 
+# NOTE(cpp-cabrera): the authoritative form of project/queue keys.
+PROJ_QUEUE_KEY = 'p_q'
+
 LOG = logging.getLogger(__name__)
 
 
@@ -170,6 +173,47 @@ def descope_queue_name(scoped_name):
     # NOTE(kgriffs): scoped_name can be either '/', '/global-queue-name',
     # or 'project-id/queue-name'.
     return scoped_name.partition('/')[2] or None
+
+
+def parse_scoped_project_queue(scoped_name):
+    """Returns the project and queue name for a scoped catalogue entry.
+
+    :param scoped_name: a project/queue as given by :scope_queue_name:
+    :type scoped_name: six.text_type
+    :returns: (project, queue)
+    :rtype: (six.text_type, six.text_type)
+    """
+    return scoped_name.split('/')
+
+
+def scoped_query(queue, project):
+    """Returns a dict usable for querying for scoped project/queues.
+
+    :param queue: name of queue to seek
+    :type queue: six.text_type
+    :param project: namespace
+    :type project: six.text_type
+    :param key: query key to use
+    :type key: six.text_type
+    :returns: query to issue
+    :rtype: dict
+    """
+    key = PROJ_QUEUE_KEY
+    query = {}
+    scoped_name = scope_queue_name(queue, project)
+
+    if not scoped_name.startswith('/'):
+        # NOTE(kgriffs): scoped queue, e.g., 'project-id/queue-name'
+        project_prefix = '^' + project + '/'
+        query[key] = {'$regex': project_prefix, '$gt': scoped_name}
+    elif scoped_name == '/':
+        # NOTE(kgriffs): list global queues, but exclude scoped ones
+        query[key] = {'$regex': '^/'}
+    else:
+        # NOTE(kgriffs): unscoped queue, e.g., '/my-global-queue'
+        query[key] = {'$regex': '^/', '$gt': scoped_name}
+
+    return query
 
 
 def get_partition(num_partitions, queue, project=None):

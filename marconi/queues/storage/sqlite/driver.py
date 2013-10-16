@@ -215,5 +215,9 @@ class ControlDriver(storage.ControlDriverBase):
         self.run('''PRAGMA foreign_keys = ON''')
 
     @property
+    def catalogue_controller(self):
+        return controllers.CatalogueController(self)
+
+    @property
     def shards_controller(self):
         return controllers.ShardsController(self)

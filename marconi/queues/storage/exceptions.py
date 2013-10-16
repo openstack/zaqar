@@ -100,6 +100,15 @@ class ClaimDoesNotExist(DoesNotExist):
         super(ClaimDoesNotExist, self).__init__(msg)
 
 
+class QueueNotMapped(DoesNotExist):
+
+    def __init__(self, queue, project):
+        msg = (u'No shard found for '
+               u'queue %(queue)s for project %(project)s' %
+               dict(queue=queue, project=project))
+        super(QueueNotMapped, self).__init__(msg)
+
+
 class MessageIsClaimedBy(NotPermitted):
 
     def __init__(self, mid, cid):

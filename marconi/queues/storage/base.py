@@ -88,6 +88,11 @@ class ControlDriverBase(object):
         self.conf = conf
 
     @abc.abstractproperty
+    def catalogue_controller(self):
+        """Returns the driver's catalogue controller."""
+        raise NotImplementedError
+
+    @abc.abstractproperty
     def shards_controller(self):
         """Returns storage's shard management controller."""
         raise NotImplementedError
@@ -464,4 +469,95 @@ class ShardsBase(AdminControllerBase):
     @abc.abstractmethod
     def drop_all(self):
         """Deletes all shards from storage."""
+        raise NotImplementedError
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CatalogueBase(ControllerBase):
+    """A controller for managing the catalogue. The catalogue is
+    responsible for maintaining a mapping between project.queue
+    entries to their shard.
+    """
+
+    @abc.abstractmethod
+    def list(self, project):
+        """Returns a list of queue entries from the catalogue associated with
+        this project.
+
+        :param project: The project to use when filtering through queue
+                        entries.
+        :type project: six.text_type
+        :returns: [{'project': ..., 'queue': ..., 'shard': ...},]
+        :rtype: [dict]
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(self, project, queue):
+        """Returns the shard identifier for the queue registered under this
+        project.
+
+        :param project: Namespace to search for the given queue
+        :type project: six.text_type
+        :param queue: The name of the queue to search for
+        :type queue: six.text_type
+        :returns: {'shard': ...}
+        :rtype: dict
+        :raises: QueueNotMapped
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, project, queue):
+        """Determines whether the given queue exists under project.
+
+        :param project: Namespace to check.
+        :type project: six.text_type
+        :param queue: str - Particular queue to check for
+        :type queue: six.text_type
+        :return: True if the queue exists under this project
+        :rtype: bool
+        """
+
+    @abc.abstractmethod
+    def insert(self, project, queue, shard):
+        """Creates a new catalogue entry, or updates it if it already existed.
+
+        :param project: str - Namespace to insert the given queue into
+        :type project: six.text_type
+        :param queue: str - The name of the queue to insert
+        :type queue: six.text_type
+        :param shard: shard identifier to associate this queue with
+        :type shard: six.text_type
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, project, queue):
+        """Removes this entry from the catalogue.
+
+        :param project: The namespace to search for this queue
+        :type project: six.text_type
+        :param queue: The queue name to remove
+        :type queue: six.text_type
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, project, queue, shards=None):
+        """Updates the shard identifier for this queue
+
+        :param project: Namespace to search
+        :type project: six.text_type
+        :param queue: The name of the queue
+        :type queue: six.text_type
+        :param shards: The name of the shard where this project/queue lives.
+        :type shards: six.text_type
+        :raises: QueueNotMapped
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def drop_all(self):
+        """Drops all catalogue entries from storage."""
         raise NotImplementedError

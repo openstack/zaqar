@@ -19,12 +19,14 @@ import uuid
 
 import ddt
 from oslo.config import cfg
+import six
 from testtools import matchers
 
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
 from marconi.queues.storage import exceptions
 from marconi import tests as testing
+from marconi.tests import helpers
 
 
 class ControllerBaseTest(testing.TestBase):
@@ -710,6 +712,109 @@ class ShardsControllerTest(ControllerBaseTest):
             self._shard_expects(entry, str(i), i, str(i))
             self.assertIn('o', entry)
             self.assertEqual(entry['o'], {})
+
+
+class CatalogueControllerTest(ControllerBaseTest):
+    controller_base_class = storage.CatalogueBase
+
+    def setUp(self):
+        super(CatalogueControllerTest, self).setUp()
+        self.controller = self.driver.catalogue_controller
+        self.queue = six.text_type(uuid.uuid1())
+        self.project = six.text_type(uuid.uuid1())
+
+    def tearDown(self):
+        self.controller.drop_all()
+        super(CatalogueControllerTest, self).tearDown()
+
+    def _check_structure(self, entry):
+        self.assertIn('queue', entry)
+        self.assertIn('project', entry)
+        self.assertIn('shard', entry)
+        self.assertIsInstance(entry['queue'], six.text_type)
+        self.assertIsInstance(entry['project'], six.text_type)
+        self.assertIsInstance(entry['shard'], six.text_type)
+
+    def _check_value(self, entry, xqueue, xproject, xshard):
+        self.assertEqual(entry['queue'], xqueue)
+        self.assertEqual(entry['project'], xproject)
+        self.assertEqual(entry['shard'], xshard)
+
+    def test_catalogue_entry_life_cycle(self):
+        queue = self.queue
+        project = self.project
+
+        # check listing is initially empty
+        for p in self.controller.list(project):
+            self.fail('There should be no entries at this time')
+
+        # create a listing, check its length
+        with helpers.shard_entries(self.controller, 10) as expect:
+            project = expect[0][0]
+            xs = list(self.controller.list(project))
+            self.assertEqual(len(xs), 10)
+
+        # create, check existence, delete
+        with helpers.shard_entry(self.controller, project, queue, u'a'):
+            self.assertTrue(self.controller.exists(project, queue))
+
+        # verify it no longer exists
+        self.assertFalse(self.controller.exists(project, queue))
+
+        # verify it isn't listable
+        self.assertEqual(len(list(self.controller.list(project))), 0)
+
+    def test_list(self):
+        with helpers.shard_entries(self.controller, 10) as expect:
+            values = zip(self.controller.list(u'_'), expect)
+            for e, x in values:
+                p, q, s = x
+                self._check_structure(e)
+                self._check_value(e, xqueue=q, xproject=p, xshard=s)
+
+    def test_update(self):
+        with helpers.shard_entry(self.controller, self.project,
+                                 self.queue, u'a') as expect:
+            p, q, s = expect
+            self.controller.update(p, q, shard=u'b')
+            entry = self.controller.get(p, q)
+            self._check_value(entry, xqueue=q, xproject=p, xshard=u'b')
+
+    def test_update_raises_when_entry_does_not_exist(self):
+        self.assertRaises(exceptions.QueueNotMapped,
+                          self.controller.update,
+                          'not', 'not', 'a')
+
+    def test_get(self):
+        with helpers.shard_entry(self.controller,
+                                 self.project,
+                                 self.queue, u'a') as expect:
+            p, q, s = expect
+            e = self.controller.get(p, q)
+            self._check_value(e, xqueue=q, xproject=p, xshard=s)
+
+    def test_get_raises_if_does_not_exist(self):
+        with helpers.shard_entry(self.controller,
+                                 self.project,
+                                 self.queue, u'a') as expect:
+            p, q, _ = expect
+            self.assertRaises(exceptions.QueueNotMapped,
+                              self.controller.get,
+                              p, 'non_existing')
+            self.assertRaises(exceptions.QueueNotMapped,
+                              self.controller.get,
+                              'non_existing', q)
+            self.assertRaises(exceptions.QueueNotMapped,
+                              self.controller.get,
+                              'non_existing', 'non_existing')
+
+    def test_exists(self):
+        with helpers.shard_entry(self.controller,
+                                 self.project,
+                                 self.queue, u'a') as expect:
+            p, q, _ = expect
+            self.assertTrue(self.controller.exists(p, q))
+        self.assertFalse(self.controller.exists('nada', 'not_here'))
 
 
 def _insert_fixtures(controller, queue_name, project=None,

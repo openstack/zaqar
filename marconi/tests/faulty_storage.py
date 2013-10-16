@@ -43,6 +43,10 @@ class ControlDriver(storage.ControlDriverBase):
         super(ControlDriver, self).__init__(conf)
 
     @property
+    def catalogue_controller(self):
+        return None
+
+    @property
     def shards_controller(self):
         return None
 

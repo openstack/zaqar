@@ -172,19 +172,7 @@ class QueueController(storage.QueueBase):
         if limit is None:
             limit = self.driver.limits_conf.default_queue_paging
 
-        query = {}
-        scoped_name = utils.scope_queue_name(marker, project)
-
-        if not scoped_name.startswith('/'):
-            # NOTE(kgriffs): scoped queue, e.g., 'project-id/queue-name'
-            project_prefix = '^' + project + '/'
-            query['p_q'] = {'$regex': project_prefix, '$gt': scoped_name}
-        elif scoped_name == '/':
-            # NOTE(kgriffs): list global queues, but exclude scoped ones
-            query['p_q'] = {'$regex': '^/'}
-        else:
-            # NOTE(kgriffs): unscoped queue, e.g., '/my-global-queue'
-            query['p_q'] = {'$regex': '^/', '$gt': scoped_name}
+        query = utils.scoped_query(marker, project)
 
         fields = {'p_q': 1, '_id': 0}
         if detailed:
