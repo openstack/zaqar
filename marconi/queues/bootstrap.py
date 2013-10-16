@@ -48,18 +48,11 @@ class Bootstrap(object):
     manages their lifetimes.
     """
 
-    def __init__(self, config_file=None, cli_args=None):
-        default_file = None
-        if config_file is not None:
-            default_file = [config_file]
-
-        self.conf = cfg.ConfigOpts()
+    def __init__(self, conf):
+        self.conf = conf
         self.conf.register_opts(_GENERAL_OPTIONS)
         self.conf.register_opts(_DRIVER_OPTIONS, group=_DRIVER_GROUP)
         self.driver_conf = self.conf[_DRIVER_GROUP]
-
-        self.conf(project='marconi', prog='marconi-queues',
-                  args=cli_args or [], default_config_files=default_file)
 
         log.setup('marconi')
 

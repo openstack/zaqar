@@ -33,11 +33,13 @@ class TestBase(testing.TestBase):
 
         super(TestBase, self).setUp()
 
-        conf_file = self.conf_path(self.config_filename)
-        self.boot = marconi.Bootstrap(conf_file)
-        self.boot.conf.register_opts(driver._WSGI_OPTIONS,
-                                     group=driver._WSGI_GROUP)
-        self.wsgi_cfg = self.boot.conf[driver._WSGI_GROUP]
+        conf = cfg.ConfigOpts()
+        conf(default_config_files=[self.conf_path(self.config_filename)])
+        conf.register_opts(driver._WSGI_OPTIONS,
+                           group=driver._WSGI_GROUP)
+        self.wsgi_cfg = conf[driver._WSGI_GROUP]
+
+        self.boot = marconi.Bootstrap(conf)
 
         self.app = self.boot.transport.app
         self.srmock = ftest.StartResponseMock()

@@ -46,13 +46,13 @@ class FunctionalTestBase(testing.TestBase):
         if not self.cfg.run_tests:
             self.skipTest("Functional tests disabled")
 
+        self.mconf = self.load_conf(self.cfg.marconi.config)
+
         # NOTE(flaper87): Use running instances.
         if (self.cfg.marconi.run_server and not
                 self.server):
             self.server = self.server_class()
-            self.server.start(self.conf_path(self.cfg.marconi.config))
-
-        self.mconf = self.load_conf(self.cfg.marconi.config)
+            self.server.start(self.mconf)
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
@@ -124,28 +124,28 @@ class Server(object):
         self.process = None
 
     @abc.abstractmethod
-    def get_target(self, config_file):
+    def get_target(self, conf):
         """Prepares the target object
 
         This method is meant to initialize server's
         bootstrap and return a callable to run the
         server.
 
-        :param config_file: The configuration file
-                            for the bootstrap class
-        :returns: A callable object.
+        :param conf: The config instance for the
+            bootstrap class
+        :returns: A callable object
         """
 
-    def start(self, config_file):
+    def start(self, conf):
         """Starts the server process.
 
-        :param config_file: The configuration file
-                            to use for the new process
+        :param conf: The config instance to use for
+            the new process
         :returns: A `multiprocessing.Process` instance
         """
 
         # TODO(flaper87): Re-use running instances.
-        target = self.get_target(config_file)
+        target = self.get_target(conf)
 
         if not callable(target):
             raise RuntimeError("Target not callable")
@@ -175,6 +175,6 @@ class MarconiServer(Server):
 
     name = "marconi-wsgiref-test-server"
 
-    def get_target(self, config_file):
-        server = bootstrap.Bootstrap(config_file)
+    def get_target(self, conf):
+        server = bootstrap.Bootstrap(conf)
         return server.run
