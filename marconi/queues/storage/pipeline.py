@@ -15,10 +15,10 @@
 # limitations under the License.
 
 from oslo.config import cfg
+from stevedore import driver
 
 from marconi import common
 from marconi.common import decorators
-from marconi.openstack.common import importutils
 from marconi.openstack.common import log as logging
 from marconi.queues.storage import base
 
@@ -67,14 +67,14 @@ def _get_storage_pipeline(resource_name, conf):
 
     pipeline = []
     for ns in storage_conf[resource_name + '_pipeline']:
-        cls = importutils.try_import(ns)
-
-        if not cls:
-            msg = _('Pipe {0} could not be imported').format(ns)
+        try:
+            mgr = driver.DriverManager('marconi.queues.storage.pipes',
+                                       ns, invoke_on_load=True)
+            pipeline.append(mgr.driver)
+        except RuntimeError as exc:
+            msg = _('Pipe {0} could not be imported: {1}').format(ns, str(exc))
             LOG.warning(msg)
             continue
-
-        pipeline.append(cls())
 
     return common.Pipeline(pipeline)
 
