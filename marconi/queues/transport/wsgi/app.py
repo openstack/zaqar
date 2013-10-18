@@ -26,6 +26,14 @@ no common way to specify / pass configuration files
 to the WSGI app when it is called from other apps.
 """
 
+from oslo.config import cfg
+
 from marconi.queues import bootstrap
 
-app = bootstrap.Bootstrap().transport.app
+# TODO(kgriffs): For now, we have to use the global config
+# to pick up common options from openstack.common.log, since
+# that module uses the global CONF instance exclusively.
+conf = cfg.CONF
+conf(project='marconi', prog='marconi-queues', args=[])
+
+app = bootstrap.Bootstrap(conf).transport.app

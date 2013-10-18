@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+from oslo.config import cfg
 
 from marconi.common import cli
 from marconi.queues import bootstrap
@@ -21,5 +21,11 @@ from marconi.queues import bootstrap
 
 @cli.runnable
 def run():
-    server = bootstrap.Bootstrap(cli_args=sys.argv[1:])
+    # TODO(kgriffs): For now, we have to use the global config
+    # to pick up common options from openstack.common.log, since
+    # that module uses the global CONF instance exclusively.
+    conf = cfg.CONF
+    conf(project='marconi', prog='marconi-queues')
+
+    server = bootstrap.Bootstrap(conf)
     server.run()

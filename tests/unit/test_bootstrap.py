@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
-
 from marconi.common import exceptions
 import marconi.queues
 from marconi.queues.storage import pipeline
@@ -26,35 +24,30 @@ from marconi.tests import base
 
 class TestBootstrap(base.TestBase):
 
-    def test_config_missing(self):
-        self.assertRaises(cfg.ConfigFilesNotFoundError, marconi.Bootstrap, '')
+    def _bootstrap(self, conf_file):
+        conf = self.load_conf(conf_file)
+        return marconi.Bootstrap(conf)
 
     def test_storage_invalid(self):
-        conf_file = 'etc/drivers_storage_invalid.conf'
-        bootstrap = marconi.Bootstrap(conf_file)
+        bootstrap = self._bootstrap('etc/drivers_storage_invalid.conf')
         self.assertRaises(exceptions.InvalidDriver,
                           lambda: bootstrap.storage)
 
     def test_storage_sqlite(self):
-        conf_file = 'etc/wsgi_sqlite.conf'
-        bootstrap = marconi.Bootstrap(conf_file)
+        bootstrap = self._bootstrap('etc/wsgi_sqlite.conf')
         self.assertIsInstance(bootstrap.storage, pipeline.Driver)
         self.assertIsInstance(bootstrap.storage._storage, sqlite.Driver)
 
     def test_storage_sqlite_sharded(self):
         """Makes sure we can load the shard driver."""
-        conf_file = 'etc/wsgi_sqlite_sharded.conf'
-        bootstrap = marconi.Bootstrap(conf_file)
-
+        bootstrap = self._bootstrap('etc/wsgi_sqlite_sharded.conf')
         self.assertIsInstance(bootstrap.storage._storage, sharding.Driver)
 
     def test_transport_invalid(self):
-        conf_file = 'etc/drivers_transport_invalid.conf'
-        bootstrap = marconi.Bootstrap(conf_file)
+        bootstrap = self._bootstrap('etc/drivers_transport_invalid.conf')
         self.assertRaises(exceptions.InvalidDriver,
                           lambda: bootstrap.transport)
 
     def test_transport_wsgi(self):
-        bootstrap = marconi.Bootstrap('etc/wsgi_sqlite.conf')
-
+        bootstrap = self._bootstrap('etc/wsgi_sqlite.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)
