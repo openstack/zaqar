@@ -38,7 +38,8 @@ class ControllerBaseTest(testing.TestBase):
         if not issubclass(self.controller_class, self.controller_base_class):
             self.skipTest('{0} is not an instance of {1}. '
                           'Tests not supported'.format(
-                          self.controller_class, self.controller_base_class))
+                              self.controller_class,
+                              self.controller_base_class))
 
         self.driver = self.driver_class()
         self.controller = self.controller_class(self.driver)
