@@ -20,9 +20,16 @@ from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
+from marconi.queues.storage import sharding
+from marconi.queues.storage import utils as storage_utils
 from marconi.queues import transport  # NOQA
 
 LOG = log.getLogger(__name__)
+
+_GENERAL_OPTIONS = [
+    cfg.BoolOpt('sharding', default=False,
+                help='Enable sharding across multiple storage backends'),
+]
 
 _DRIVER_OPTIONS = [
     cfg.StrOpt('transport', default='wsgi',
@@ -47,6 +54,7 @@ class Bootstrap(object):
             default_file = [config_file]
 
         self.conf = cfg.ConfigOpts()
+        self.conf.register_opts(_GENERAL_OPTIONS)
         self.conf.register_opts(_DRIVER_OPTIONS, group=_DRIVER_GROUP)
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
@@ -57,18 +65,16 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        storage_name = self.driver_conf.storage
-        LOG.debug(_(u'Loading storage driver: ') + storage_name)
+        LOG.debug(_(u'Loading storage driver'))
 
-        try:
-            mgr = driver.DriverManager('marconi.queues.storage',
-                                       storage_name,
-                                       invoke_on_load=True,
-                                       invoke_args=[self.conf])
-            return pipeline.Driver(self.conf, mgr.driver)
-        except RuntimeError as exc:
-            LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+        if self.conf.sharding:
+            LOG.debug(_(u'Storage sharding enabled'))
+            storage_driver = sharding.Driver(self.conf)
+        else:
+            storage_driver = storage_utils.load_storage_driver(self.conf)
+
+        LOG.debug(_(u'Loading storage pipeline'))
+        return pipeline.Driver(self.conf, storage_driver)
 
     @decorators.lazy_property(write=False)
     def transport(self):
