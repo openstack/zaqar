@@ -87,15 +87,15 @@ class ClaimController(storage.ClaimBase):
             update_time = claim['e'] - claim['t']
             age = now - update_time
 
-            claim = {
+            claim_meta = {
                 'age': int(age),
-                'ttl': claim.pop('t'),
+                'ttl': claim['t'],
                 'id': str(claim['id']),
             }
         except StopIteration:
             raise exceptions.ClaimDoesNotExist(cid, queue, project)
 
-        return (claim, msgs)
+        return (claim_meta, msgs)
 
     @utils.raises_conn_error
     def create(self, queue, metadata, project=None, limit=None):
