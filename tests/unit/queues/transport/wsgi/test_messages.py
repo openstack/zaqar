@@ -434,7 +434,7 @@ class MessagesBaseTest(base.TestBase):
 
 class MessagesSQLiteTests(MessagesBaseTest):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
 
 # TODO(cpp-cabrera): restore sqlite sharded test suite once shards and
@@ -444,7 +444,7 @@ class MessagesSQLiteTests(MessagesBaseTest):
 @testing.requires_mongodb
 class MessagesMongoDBTests(MessagesBaseTest):
 
-    config_filename = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(MessagesMongoDBTests, self).setUp()
@@ -456,7 +456,7 @@ class MessagesMongoDBTests(MessagesBaseTest):
 @testing.requires_mongodb
 class MessagesMongoDBShardedTests(MessagesBaseTest):
 
-    config_filename = 'wsgi_mongodb_sharded.conf'
+    config_file = 'wsgi_mongodb_sharded.conf'
 
     def setUp(self):
         super(MessagesMongoDBShardedTests, self).setUp()
@@ -472,7 +472,7 @@ class MessagesMongoDBShardedTests(MessagesBaseTest):
 
 class MessagesFaultyDriverTests(base.TestBaseFaulty):
 
-    config_filename = 'wsgi_faulty.conf'
+    config_file = 'wsgi_faulty.conf'
 
     def test_simple(self):
         project_id = 'xyz'

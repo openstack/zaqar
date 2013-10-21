@@ -285,7 +285,7 @@ class ShardsBaseTest(base.TestBase):
 @testing.requires_mongodb
 class ShardsMongoDBTests(ShardsBaseTest):
 
-    config_filename = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(ShardsMongoDBTests, self).setUp()

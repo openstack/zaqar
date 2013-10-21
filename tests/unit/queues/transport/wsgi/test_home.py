@@ -23,7 +23,7 @@ import base  # noqa
 
 class TestHomeDocument(base.TestBase):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
     def test_json_response(self):
         body = self.simulate_get('/v1')

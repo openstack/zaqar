@@ -23,7 +23,7 @@ import base  # noqa
 
 class ValidationTest(base.TestBase):
 
-    config_filename = 'wsgi_sqlite_validation.conf'
+    config_file = 'wsgi_sqlite_validation.conf'
 
     def setUp(self):
         super(ValidationTest, self).setUp()

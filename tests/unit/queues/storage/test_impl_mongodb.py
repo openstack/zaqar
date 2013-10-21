@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import time
+import uuid
 
 import mock
 from pymongo import cursor
@@ -25,9 +26,21 @@ from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage import mongodb
 from marconi.queues.storage.mongodb import controllers
+from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
 from marconi import tests as testing
 from marconi.tests.queues.storage import base
+
+
+class MongodbTestMixin(object):
+
+    def _purge_databases(self):
+        """Override to clean databases."""
+        databases = (self.driver.message_databases +
+                     [self.driver.queues_database])
+
+        for db in databases:
+            self.driver.connection.drop_database(db)
 
 
 class MongodbUtilsTest(testing.TestBase):
@@ -74,38 +87,31 @@ class MongodbUtilsTest(testing.TestBase):
 
 
 @testing.requires_mongodb
-class MongodbDriverTest(testing.TestBase):
+class MongodbDriverTest(testing.TestBase, MongodbTestMixin):
 
-    def setUp(self):
-        super(MongodbDriverTest, self).setUp()
-        self._conf = self.load_conf('wsgi_mongodb.conf')
+    config_file = 'wsgi_mongodb.conf'
 
     def test_db_instance(self):
-        driver = mongodb.DataDriver(self._conf)
+        driver = mongodb.DataDriver(self.conf)
 
-        databases = driver.message_databases + [driver.queues_database]
+        databases = (driver.message_databases +
+                     [driver.queues_database])
+
         for db in databases:
             self.assertThat(db.name, matchers.StartsWith(
                 driver.mongodb_conf.database))
 
 
 @testing.requires_mongodb
-class MongodbQueueTests(base.QueueControllerTest):
+class MongodbQueueTests(base.QueueControllerTest, MongodbTestMixin):
 
     driver_class = mongodb.DataDriver
+    config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.QueueController
 
-    def setUp(self):
-        super(MongodbQueueTests, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
-
-    def tearDown(self):
-        self.controller._collection.drop()
-
-        for collection in self.message_controller._collections:
-            collection.drop()
-
-        super(MongodbQueueTests, self).tearDown()
+    def _prepare_conf(self):
+        self.config(options.MONGODB_GROUP,
+                    database=uuid.uuid4().hex)
 
     def test_indexes(self):
         collection = self.controller._collection
@@ -134,24 +140,18 @@ class MongodbQueueTests(base.QueueControllerTest):
 
 
 @testing.requires_mongodb
-class MongodbMessageTests(base.MessageControllerTest):
+class MongodbMessageTests(base.MessageControllerTest, MongodbTestMixin):
 
     driver_class = mongodb.DataDriver
+    config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.MessageController
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
 
-    def setUp(self):
-        super(MongodbMessageTests, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
-
-    def tearDown(self):
-        self.queue_controller._collection.drop()
-        for collection in self.controller._collections:
-            collection.drop()
-
-        super(MongodbMessageTests, self).tearDown()
+    def _prepare_conf(self):
+        self.config(options.MONGODB_GROUP,
+                    database=uuid.uuid4().hex)
 
     def test_indexes(self):
         for collection in self.controller._collections:
@@ -294,20 +294,15 @@ class MongodbMessageTests(base.MessageControllerTest):
 
 
 @testing.requires_mongodb
-class MongodbClaimTests(base.ClaimControllerTest):
+class MongodbClaimTests(base.ClaimControllerTest, MongodbTestMixin):
+
     driver_class = mongodb.DataDriver
+    config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.ClaimController
 
-    def setUp(self):
-        super(MongodbClaimTests, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
-
-    def tearDown(self):
-        for collection in self.message_controller._collections:
-            collection.drop()
-
-        self.queue_controller._collection.drop()
-        super(MongodbClaimTests, self).tearDown()
+    def _prepare_conf(self):
+        self.config(options.MONGODB_GROUP,
+                    database=uuid.uuid4().hex)
 
     def test_claim_doesnt_exist(self):
         """Verifies that operations fail on expired/missing claims.

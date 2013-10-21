@@ -25,7 +25,7 @@ from tests.unit.queues.transport.wsgi import base
 
 class TestBase(base.TestBase):
 
-    config_filename = "wsgi_proxy_memory.conf"
+    config_file = "wsgi_proxy_memory.conf"
 
     @classmethod
     def setUpClass(cls):

@@ -235,7 +235,7 @@ class ClaimsBaseTest(base.TestBase):
 @testing.requires_mongodb
 class ClaimsMongoDBTests(ClaimsBaseTest):
 
-    config_filename = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(ClaimsMongoDBTests, self).setUp()
@@ -254,12 +254,12 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
 
 class ClaimsSQLiteTests(ClaimsBaseTest):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
 
 class ClaimsFaultyDriverTests(base.TestBaseFaulty):
 
-    config_filename = 'wsgi_faulty.conf'
+    config_file = 'wsgi_faulty.conf'
 
     def test_simple(self):
         project_id = '480924'

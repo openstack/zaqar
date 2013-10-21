@@ -23,7 +23,7 @@ import base  # noqa
 
 class DefaultLimitsTest(base.TestBase):
 
-    config_filename = 'wsgi_sqlite_default_limits.conf'
+    config_file = 'wsgi_sqlite_default_limits.conf'
 
     def setUp(self):
         super(DefaultLimitsTest, self).setUp()

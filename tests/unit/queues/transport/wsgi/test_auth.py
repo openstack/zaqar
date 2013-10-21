@@ -25,7 +25,7 @@ import base  # noqa
 
 class TestWSGIAuth(base.TestBase):
 
-    config_filename = 'keystone_auth.conf'
+    config_file = 'keystone_auth.conf'
 
     def setUp(self):
         super(TestWSGIAuth, self).setUp()

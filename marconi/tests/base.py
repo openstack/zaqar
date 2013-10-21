@@ -28,6 +28,8 @@ class TestBase(testtools.TestCase):
     test method.
     """
 
+    config_file = None
+
     def setUp(self):
         super(TestBase, self).setUp()
 
@@ -38,8 +40,10 @@ class TestBase(testtools.TestCase):
         stderr = self.useFixture(fixtures.StringStream('stderr')).stream
         self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
-    def tearDown(self):
-        super(TestBase, self).tearDown()
+        if self.config_file:
+            self.conf = self.load_conf(self.config_file)
+        else:
+            self.conf = cfg.ConfigOpts()
 
     @classmethod
     def conf_path(cls, filename):

@@ -27,7 +27,7 @@ from marconi import tests as testing
 @ddt.ddt
 class QueueLifecycleBaseTest(base.TestBase):
 
-    config_filename = None
+    config_file = None
 
     def setUp(self):
         super(QueueLifecycleBaseTest, self).setUp()
@@ -307,7 +307,7 @@ class QueueLifecycleBaseTest(base.TestBase):
 
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
 
-    config_filename = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     @testing.requires_mongodb
     def setUp(self):
@@ -327,12 +327,12 @@ class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
 
 class QueueLifecycleSQLiteTests(QueueLifecycleBaseTest):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
 
 class QueueFaultyDriverTests(base.TestBaseFaulty):
 
-    config_filename = 'wsgi_faulty.conf'
+    config_file = 'wsgi_faulty.conf'
 
     def test_simple(self):
         path = '/v1/queues/gumshoe'

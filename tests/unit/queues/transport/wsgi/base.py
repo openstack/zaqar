@@ -23,22 +23,21 @@ from marconi import tests as testing
 
 class TestBase(testing.TestBase):
 
-    config_filename = None
+    config_file = None
 
     def setUp(self):
-        if self.config_filename is None:
-            self.skipTest('No config specified')
-
         super(TestBase, self).setUp()
 
-        self.conf = self.load_conf(self.conf_path(self.config_filename))
+        if not self.config_file:
+            self.skipTest("No config specified")
+
         self.conf.register_opts(driver._WSGI_OPTIONS,
                                 group=driver._WSGI_GROUP)
-
         self.wsgi_cfg = self.conf[driver._WSGI_GROUP]
 
         self.conf.admin_mode = True
         self.boot = bootstrap.Bootstrap(self.conf)
+
         self.app = self.boot.transport.app
 
         self.srmock = ftest.StartResponseMock()

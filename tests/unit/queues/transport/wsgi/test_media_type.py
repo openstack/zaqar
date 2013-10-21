@@ -25,7 +25,7 @@ import base  # noqa
 @ddt.ddt
 class TestWSGIMediaType(base.TestBase):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
     @ddt.data(
         ('GET', '/v1/queues'),

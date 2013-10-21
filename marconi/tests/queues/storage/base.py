@@ -18,7 +18,6 @@ import time
 import uuid
 
 import ddt
-from oslo.config import cfg
 import six
 from testtools import matchers
 
@@ -47,8 +46,22 @@ class ControllerBaseTest(testing.TestBase):
                               self.controller_class,
                               self.controller_base_class))
 
-        self.driver = self.driver_class(cfg.ConfigOpts())
+        self.driver = self.driver_class(self.conf)
+        self._prepare_conf()
+
+        self.addCleanup(self._purge_databases)
+
         self.controller = self.controller_class(self.driver)
+
+    def _prepare_conf(self):
+        """Prepare the conf before running tests
+
+        Classes overriding this method, must use
+        the `self.conf` instance and alter its state.
+        """
+
+    def _purge_databases(self):
+        """Override to clean databases."""
 
     def tearDown(self):
         timeutils.clear_time_override()

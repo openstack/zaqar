@@ -21,7 +21,7 @@ import base  # noqa
 
 class TestHealth(base.TestBase):
 
-    config_filename = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlite.conf'
 
     def test_get(self):
         response = self.simulate_get('/v1/health')
