@@ -43,3 +43,24 @@ def load_storage_driver(conf, control_mode=False):
     except RuntimeError as exc:
         LOG.exception(exc)
         raise errors.InvalidDriver(exc)
+
+
+def keyify(key, iterable):
+    """Make an iterator from an iterable of dicts compared with a key.
+
+    :param key: A key exists for all dict inside the iterable object
+    :param iterable: The input iterable object
+    """
+
+    class Keyed(object):
+        def __init__(self, obj):
+            self.obj = obj
+
+        def __cmp__(self, other):
+            return cmp(self.obj[key], other.obj[key])
+
+        # TODO(zyuan): define magic operators to make py3 work
+        #     http://code.activestate.com/recipes/576653/
+
+    for item in iterable:
+        yield Keyed(item)
