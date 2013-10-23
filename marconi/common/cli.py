@@ -17,6 +17,7 @@
 from __future__ import print_function
 import atexit
 import functools
+import os
 import sys
 import termios
 
@@ -43,6 +44,10 @@ def _enable_echo(enable):
 
     :param enable: pass True to enable echo, False to disable
     """
+    if not os.isatty(sys.stdin.fileno()):
+        # if we are not running in an interactive shell we will get
+        # termios.error: (25, 'Inappropriate ioctl for device')
+        return
 
     fd = sys.stdin.fileno()
     new_attr = termios.tcgetattr(fd)
