@@ -24,6 +24,9 @@ class DataDriver(storage.DataDriverBase):
     def default_options(self):
         return {}
 
+    def is_alive(self):
+        raise NotImplementedError()
+
     @property
     def queue_controller(self):
         return QueueController(self)

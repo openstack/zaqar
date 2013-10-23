@@ -56,6 +56,14 @@ class DataDriver(storage.DataDriverBase):
                                 group=options.MONGODB_GROUP)
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
 
+    def is_alive(self):
+        try:
+            # NOTE(zyuan): Requires admin access to mongodb
+            return 'ok' in self.connection.admin.command('ping')
+
+        except pymongo.errors.PyMongoError:
+            return False
+
     @decorators.lazy_property(write=False)
     def queues_database(self):
         """Database dedicated to the "queues" collection.

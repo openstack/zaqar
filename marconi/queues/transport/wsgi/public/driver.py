@@ -68,5 +68,5 @@ class Driver(driver.DriverBase):
 
             # Health
             ('/health',
-             health.Resource())
+             health.Resource(self._storage))
         ]

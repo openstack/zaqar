@@ -37,7 +37,8 @@ class TestShardQueues(base.TestBase):
 
         control = utils.load_storage_driver(conf, control_mode=True)
         self.shards_ctrl = control.shards_controller
-        self.controller = sharding.DataDriver(conf, control).queue_controller
+        self.driver = sharding.DataDriver(conf, control)
+        self.controller = self.driver.queue_controller
 
         # fake two shards
         for _ in xrange(2):
@@ -46,6 +47,10 @@ class TestShardQueues(base.TestBase):
     def tearDown(self):
         self.shards_ctrl.drop_all()
         super(TestShardQueues, self).tearDown()
+
+    def test_health(self):
+        health = self.driver.is_alive()
+        self.assertTrue(health)
 
     def test_listing(self):
         project = "I.G"
