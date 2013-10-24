@@ -184,6 +184,12 @@ class MessagesBaseTest(base.TestBase):
         self._post_messages('/v1/queues/nonexistent/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
+    def test_get_from_missing_queue(self):
+        self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
+                          headers={'Client-ID':
+                                   'dfcd3238-425c-11e3-8a80-28cfe91478b9'})
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
         self.simulate_post(self.queue_path + '/messages',

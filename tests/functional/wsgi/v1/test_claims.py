@@ -219,6 +219,31 @@ class TestClaims(base.FunctionalTestBase):
 
     test_patch_claim_invalid_ttl.tags = ['negative']
 
+    def test_query_non_existing_claim(self):
+        """Query Non Existing Claim."""
+        path = '/non-existing-claim'
+        result = self.client.get(path)
+        self.assertEqual(result.status_code, 404)
+
+    test_query_non_existing_claim.tags = ['negative']
+
+    def test_patch_non_existing_claim(self):
+        """Patch Non Existing Claim."""
+        path = '/non-existing-claim'
+        doc = {"ttl": 400}
+        result = self.client.patch(path, data=doc)
+        self.assertEqual(result.status_code, 404)
+
+    test_patch_non_existing_claim.tags = ['negative']
+
+    def test_delete_non_existing_claim(self):
+        """Patch Non Existing Claim."""
+        path = '/non-existing-claim'
+        result = self.client.delete(path)
+        self.assertEqual(result.status_code, 204)
+
+    test_delete_non_existing_claim.tags = ['negative']
+
     def tearDown(self):
         """Delete Queue after Claim Test."""
         super(TestClaims, self).tearDown()

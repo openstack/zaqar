@@ -208,10 +208,14 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_patch(claim['href'], body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-    def test_nonexistent(self):
+    def test_post_claim_nonexistent_queue(self):
         self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
                            body='{"ttl": 100, "grace": 60}')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+    def test_get_claim_nonexistent_queue(self):
+        self.simulate_get('/v1/queues/nonexistent/claims/aaabbbba')
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_claim_404s(self):

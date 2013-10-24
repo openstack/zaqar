@@ -301,6 +301,30 @@ class TestMessages(base.FunctionalTestBase):
 
     test_get_messages_invalid_client_id.tags = ['negative']
 
+    def test_query_non_existing_message(self):
+        """Get Non Existing Message."""
+        path = '/non-existing-message'
+        result = self.client.get(path)
+        self.assertEqual(result.status_code, 404)
+
+    test_query_non_existing_message.tags = ['negative']
+
+    def test_query_non_existing_message_set(self):
+        """Get Set of Non Existing Messages."""
+        path = '?ids=not_there1,not_there2'
+        result = self.client.get(path)
+        self.assertEqual(result.status_code, 204)
+
+    test_query_non_existing_message_set.tags = ['negative']
+
+    def test_delete_non_existing_message(self):
+        """Delete Non Existing Message."""
+        path = '/non-existing-message'
+        result = self.client.delete(path)
+        self.assertEqual(result.status_code, 204)
+
+    test_delete_non_existing_message.tags = ['negative']
+
     def tearDown(self):
         super(TestMessages, self).tearDown()
         self.client.delete(self.queue_url)
