@@ -17,6 +17,9 @@ log_file = /var/log/marconi/queues.log
 # Set to True to enable sharding across multiple storage backends
 ;sharding = False
 
+# Set to True to activate endpoints to manage the shard registry
+;admin_mode = False
+
 # ================= Syslog Options ============================
 
 # Send logs to syslog (/dev/log) instead of to file specified

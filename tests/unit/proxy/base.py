@@ -16,10 +16,9 @@
 
 from falcon import testing as ftest
 
+from marconi.common.transport import version
 from marconi.proxy.admin import bootstrap as admin
-from marconi.proxy.transport.wsgi import (
-    queues, version
-)
+from marconi.proxy.transport.wsgi import queues
 from marconi.proxy.utils import round_robin
 from tests.unit.queues.transport.wsgi import base
 

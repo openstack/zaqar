@@ -3,4 +3,4 @@
 from marconi.queues.transport.wsgi import driver
 
 # Hoist into package namespace
-Driver = driver.Driver
+Driver = driver.DriverBase

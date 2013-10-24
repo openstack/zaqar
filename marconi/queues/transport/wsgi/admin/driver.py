@@ -12,12 +12,22 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""marconi-queues (admin): interface for managing partitions."""
 
-"""health: returns the health information for this proxy."""
+from marconi.common.transport.wsgi import health
+from marconi.queues.transport.wsgi import driver
+from marconi.queues.transport.wsgi.public import driver as public_driver
 
-import falcon
 
+class Driver(driver.DriverBase):
 
-class Resource(object):
-    def on_get(self, request, response):
-        response.status = falcon.HTTP_204
+    def __init__(self, conf, storage, cache):
+        super(Driver, self).__init__(conf, storage, cache)
+        self.public = public_driver.Driver(conf, storage, cache)
+
+    @property
+    def bridge(self):
+        return self.public.bridge + [
+            ('/health',
+             health.Resource())
+        ]

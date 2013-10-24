@@ -16,6 +16,7 @@
 from oslo.config import cfg
 from stevedore import driver
 
+from marconi.common.cache import cache as oslo_cache
 from marconi.common import decorators
 from marconi.common import exceptions
 from marconi.openstack.common import log
@@ -29,6 +30,8 @@ LOG = log.getLogger(__name__)
 _GENERAL_OPTIONS = [
     cfg.BoolOpt('sharding', default=False,
                 help='Enable sharding across multiple storage backends'),
+    cfg.BoolOpt('admin_mode', default=False,
+                help='Activate endpoints to manage shard registry.'),
 ]
 
 _DRIVER_OPTIONS = [
@@ -55,6 +58,8 @@ class Bootstrap(object):
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
         log.setup('marconi')
+        mode = 'admin' if self.conf.admin_mode else 'public'
+        self._transport_type = 'marconi.queues.{0}.transport'.format(mode)
 
     @decorators.lazy_property(write=False)
     def storage(self):
@@ -70,15 +75,27 @@ class Bootstrap(object):
         return pipeline.Driver(self.conf, storage_driver)
 
     @decorators.lazy_property(write=False)
+    def cache(self):
+        LOG.debug(_(u'Loading Proxy Cache Driver'))
+        try:
+            mgr = oslo_cache.get_cache(self.conf)
+            return mgr
+        except RuntimeError as exc:
+            LOG.exception(exc)
+            raise exceptions.InvalidDriver(exc)
+
+    @decorators.lazy_property(write=False)
     def transport(self):
         transport_name = self.driver_conf.transport
         LOG.debug(_(u'Loading transport driver: ') + transport_name)
 
         try:
-            mgr = driver.DriverManager('marconi.queues.transport',
+            mgr = driver.DriverManager(self._transport_type,
                                        transport_name,
                                        invoke_on_load=True,
-                                       invoke_args=[self.conf, self.storage])
+                                       invoke_args=[self.conf,
+                                                    self.storage,
+                                                    self.cache])
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)

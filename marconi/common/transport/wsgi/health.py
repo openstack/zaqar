@@ -17,10 +17,10 @@
 import falcon
 
 
-class HealthResource(object):
+class Resource(object):
 
-    def on_get(self, req, resp, project_id):
+    def on_get(self, req, resp, **kwargs):
         resp.status = falcon.HTTP_204
 
-    def on_head(self, req, resp, project_id):
+    def on_head(self, req, resp, **kwargs):
         resp.status = falcon.HTTP_204

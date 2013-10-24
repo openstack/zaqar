@@ -13,24 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import abc
 import functools
 from wsgiref import simple_server
 
 import falcon
 from oslo.config import cfg
+import six
 
+from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
-from marconi.queues.transport import auth
-from marconi.queues.transport import validation
-from marconi.queues.transport.wsgi import claims
-from marconi.queues.transport.wsgi import health
-from marconi.queues.transport.wsgi import messages
-from marconi.queues.transport.wsgi import metadata
-from marconi.queues.transport.wsgi import queues
-from marconi.queues.transport.wsgi import stats
-from marconi.queues.transport.wsgi import v1
+from marconi.queues.transport import auth, validation
 
 _WSGI_OPTIONS = [
     cfg.StrOpt('bind', default='127.0.0.1',
@@ -48,15 +43,17 @@ _WSGI_GROUP = 'queues:drivers:transport:wsgi'
 LOG = logging.getLogger(__name__)
 
 
-class Driver(transport.DriverBase):
+@six.add_metaclass(abc.ABCMeta)
+class DriverBase(transport.DriverBase):
 
-    def __init__(self, conf, storage):
-        super(Driver, self).__init__(conf, storage)
+    def __init__(self, conf, storage, cache):
+        super(DriverBase, self).__init__(conf, storage, cache)
 
         self._conf.register_opts(_WSGI_OPTIONS, group=_WSGI_GROUP)
         self._wsgi_conf = self._conf[_WSGI_GROUP]
         self._validate = validation.Validator(self._conf)
 
+        self.app = None
         self._init_routes()
         self._init_middleware()
 
@@ -72,57 +69,9 @@ class Driver(transport.DriverBase):
         ]
 
         self.app = falcon.API(before=before_hooks)
-
-        queue_controller = self._storage.queue_controller
-        message_controller = self._storage.message_controller
-        claim_controller = self._storage.claim_controller
-
-        # Home
-        self.app.add_route('/v1', v1.V1Resource())
-
-        # Queues Endpoints
-        queue_collection = queues.CollectionResource(self._validate,
-                                                     queue_controller)
-        self.app.add_route('/v1/queues', queue_collection)
-
-        queue_item = queues.ItemResource(queue_controller, message_controller)
-        self.app.add_route('/v1/queues/{queue_name}', queue_item)
-
-        stats_endpoint = stats.Resource(queue_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/stats', stats_endpoint)
-
-        # Metadata Endpoints
-        metadata_endpoint = metadata.Resource(self._wsgi_conf, self._validate,
-                                              queue_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/metadata', metadata_endpoint)
-
-        # Messages Endpoints
-        msg_collection = messages.CollectionResource(self._wsgi_conf,
-                                                     self._validate,
-                                                     message_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/messages', msg_collection)
-
-        msg_item = messages.ItemResource(message_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/messages/{message_id}', msg_item)
-
-        # Claims Endpoints
-        claim_collection = claims.CollectionResource(self._wsgi_conf,
-                                                     self._validate,
-                                                     claim_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/claims', claim_collection)
-
-        claim_item = claims.ItemResource(self._wsgi_conf, self._validate,
-                                         claim_controller)
-        self.app.add_route('/v1/queues/{queue_name}'
-                           '/claims/{claim_id}', claim_item)
-
-        # Health
-        self.app.add_route('/v1/health', health.HealthResource())
+        version_path = version.path()
+        for route, resource in self.bridge:
+            self.app.add_route(version_path + route, resource)
 
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""
@@ -131,6 +80,17 @@ class Driver(transport.DriverBase):
         if self._conf.auth_strategy:
             strategy = auth.strategy(self._conf.auth_strategy)
             self.app = strategy.install(self.app, self._conf)
+
+    @abc.abstractproperty
+    def bridge(self):
+        """Constructs a list of route/responder pairs that can be used to
+        establish the functionality of this driver.
+
+        Note: the routes should be unversioned.
+
+        :rtype: [(str, falcon-compatible responser)]
+        """
+        raise NotImplementedError
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
