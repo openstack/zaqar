@@ -106,3 +106,10 @@ class MessageIsClaimedBy(NotPermitted):
         msg = (u'Message %(mid)s is not claimed by %(cid)s' %
                dict(cid=cid, mid=mid))
         super(MessageIsClaimedBy, self).__init__(msg)
+
+
+class ShardDoesNotExist(DoesNotExist):
+
+    def __init__(self, shard):
+        msg = u'Shard {0} does not exists'.format(shard)
+        super(ShardDoesNotExist, self).__init__(msg)

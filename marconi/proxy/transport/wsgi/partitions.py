@@ -32,33 +32,15 @@ import falcon
 import jsonschema
 import six
 
+from marconi.common.transport.wsgi import utils
 from marconi.openstack.common import log
 from marconi.proxy.storage import exceptions
-from marconi.proxy.transport import schema, utils
+from marconi.proxy.transport import schema
 from marconi.proxy.utils import lookup
-from marconi.queues.transport import utils as json_utils
 from marconi.queues.transport.wsgi import exceptions as wsgi_errors
 
 
 LOG = log.getLogger(__name__)
-
-
-def load(req):
-    """Reads request body, raising an exception if it is not JSON.
-
-    :param req: The request object to read from
-    :type req: falcon.Request
-    :return: a dictionary decoded from the JSON stream
-    :rtype: dict
-    :raises: wsgi_errors.HTTPBadRequestBody
-    """
-    try:
-        return json_utils.read_json(req.stream, req.content_length)
-    except (json_utils.MalformedJSON, json_utils.OverflowedJSONInteger) as ex:
-        LOG.exception(ex)
-        raise wsgi_errors.HTTPBadRequestBody(
-            'JSON could not be parsed.'
-        )
 
 
 class Listing(object):
@@ -135,7 +117,7 @@ class Resource(object):
             response.status = falcon.HTTP_204
             return
 
-        data = load(request)
+        data = utils.load(request)
         utils.validate(self._put_validator, data)
         self._ctrl.create(partition,
                           weight=data['weight'],
@@ -165,7 +147,7 @@ class Resource(object):
 
         """
         LOG.debug('PATCH partition - name: {0}'.format(partition))
-        data = load(request)
+        data = utils.load(request)
 
         if 'weight' not in data and 'hosts' not in data:
             LOG.debug('PATCH partition, bad params')
