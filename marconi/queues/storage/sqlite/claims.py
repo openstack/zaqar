@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from marconi.queues.storage import base
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
@@ -26,7 +26,7 @@ class ClaimController(base.ClaimBase):
 
         cid = utils.cid_decode(claim_id)
         if cid is None:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         with self.driver('deferred'):
             try:
@@ -48,7 +48,7 @@ class ClaimController(base.ClaimBase):
                 )
 
             except utils.NoResult:
-                raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+                raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
     def create(self, queue, metadata, project, limit=None):
 
@@ -61,7 +61,7 @@ class ClaimController(base.ClaimBase):
         with self.driver('immediate'):
             try:
                 qid = utils.get_qid(self.driver, queue, project)
-            except exceptions.QueueDoesNotExist:
+            except errors.QueueDoesNotExist:
                 return None, iter([])
 
             # Clean up all expired claims in this queue
@@ -115,7 +115,7 @@ class ClaimController(base.ClaimBase):
 
         id = utils.cid_decode(claim_id)
         if id is None:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         with self.driver('deferred'):
 
@@ -131,9 +131,7 @@ class ClaimController(base.ClaimBase):
             ''', metadata['ttl'], id, project, queue)
 
             if not self.driver.affected:
-                raise exceptions.ClaimDoesNotExist(claim_id,
-                                                   queue,
-                                                   project)
+                raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
             self.__update_claimed(id, metadata['ttl'])
 

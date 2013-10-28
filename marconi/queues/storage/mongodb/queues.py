@@ -26,7 +26,7 @@ import pymongo.errors
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -75,7 +75,7 @@ class QueueController(storage.QueueBase):
         queue = self._collection.find_one(_get_scoped_query(name, project),
                                           fields=fields)
         if queue is None:
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
         return queue
 
@@ -105,7 +105,7 @@ class QueueController(storage.QueueBase):
                                         fields={'c.v': 1, '_id': 0})
 
         if doc is None:
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
         return doc['c']['v']
 
@@ -123,7 +123,7 @@ class QueueController(storage.QueueBase):
             was specified, and the counter has already been updated
             within the specified time period.
 
-        :raises: storage.exceptions.QueueDoesNotExist
+        :raises: storage.errors.QueueDoesNotExist
         """
         now = timeutils.utcnow_ts()
 
@@ -147,13 +147,14 @@ class QueueController(storage.QueueBase):
                 # NOTE(kgriffs): Since we did not filter by a time window,
                 # the queue should have been found and updated. Perhaps
                 # the queue has been deleted?
-                msgtmpl = _(u'Failed to increment the message '
+                message = _(u'Failed to increment the message '
                             u'counter for queue %(name)s and '
                             u'project %(project)s')
+                message %= dict(name=name, project=project)
 
-                LOG.warning(msgtmpl, dict(name=name, project=project))
+                LOG.warning(message)
 
-                raise exceptions.QueueDoesNotExist(name, project)
+                raise errors.QueueDoesNotExist(name, project)
 
             # NOTE(kgriffs): Assume the queue existed, but the counter
             # was recently updated, causing the range query on 'c.t' to
@@ -227,7 +228,7 @@ class QueueController(storage.QueueBase):
                                       manipulate=False)
 
         if not rst['updatedExisting']:
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
     @utils.raises_conn_error
     def delete(self, name, project=None):
@@ -237,7 +238,7 @@ class QueueController(storage.QueueBase):
     @utils.raises_conn_error
     def stats(self, name, project=None):
         if not self.exists(name, project=project):
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
         controller = self.driver.message_controller
 
@@ -255,7 +256,7 @@ class QueueController(storage.QueueBase):
         try:
             oldest = controller.first(name, project=project, sort=1)
             newest = controller.first(name, project=project, sort=-1)
-        except exceptions.QueueIsEmpty:
+        except errors.QueueIsEmpty:
             pass
         else:
             now = timeutils.utcnow_ts()

@@ -28,7 +28,7 @@ from bson import objectid
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -64,7 +64,7 @@ class ClaimController(storage.ClaimBase):
         now = timeutils.utcnow_ts()
         cid = utils.to_oid(claim_id)
         if cid is None:
-            raise exceptions.ClaimDoesNotExist(queue, project, claim_id)
+            raise errors.ClaimDoesNotExist(queue, project, claim_id)
 
         def messages(msg_iter):
             msg = next(msg_iter)
@@ -93,7 +93,7 @@ class ClaimController(storage.ClaimBase):
                 'id': str(claim['id']),
             }
         except StopIteration:
-            raise exceptions.ClaimDoesNotExist(cid, queue, project)
+            raise errors.ClaimDoesNotExist(cid, queue, project)
 
         return (claim_meta, msgs)
 
@@ -195,7 +195,7 @@ class ClaimController(storage.ClaimBase):
     def update(self, queue, claim_id, metadata, project=None):
         cid = utils.to_oid(claim_id)
         if cid is None:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         now = timeutils.utcnow_ts()
         ttl = int(metadata.get('ttl', 60))
@@ -208,7 +208,7 @@ class ClaimController(storage.ClaimBase):
         try:
             next(claimed)
         except StopIteration:
-            raise exceptions.ClaimDoesNotExist(claim_id, queue, project)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         meta = {
             'id': cid,

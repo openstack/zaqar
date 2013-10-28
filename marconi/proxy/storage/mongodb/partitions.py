@@ -25,7 +25,7 @@ Schema:
 """
 
 from marconi.proxy.storage import base
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -55,7 +55,7 @@ class PartitionsController(base.PartitionsBase):
                                        fields=fields)
 
         if partition is None:
-            raise exceptions.PartitionNotFound(name)
+            raise errors.PartitionNotFound(name)
 
         return _normalize(partition)
 
@@ -94,7 +94,7 @@ class PartitionsController(base.PartitionsBase):
                                {'$set': fields},
                                upsert=False)
         if not res['updatedExisting']:
-            raise exceptions.PartitionNotFound(name)
+            raise errors.PartitionNotFound(name)
 
 
 def _normalize(entry):

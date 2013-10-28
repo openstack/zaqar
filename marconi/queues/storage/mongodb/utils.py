@@ -26,7 +26,7 @@ from pymongo import errors
 
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
-from marconi.queues.storage import exceptions as storage_exceptions
+from marconi.queues.storage import errors as storage_errors
 
 
 # BSON ObjectId gives TZ-aware datetime, so we generate a
@@ -241,7 +241,7 @@ def raises_conn_error(func):
     """Handles mongodb ConnectionFailure error
 
     This decorator catches mongodb's ConnectionFailure
-    exceptions and raises Marconi's ConnectionError instead.
+    error and raises Marconi's ConnectionError instead.
     """
 
     @functools.wraps(func)
@@ -252,7 +252,7 @@ def raises_conn_error(func):
             # NOTE(flaper87): Raise the error
             LOG.exception(ex)
             msg = u'ConnectionFailure caught'
-            raise storage_exceptions.ConnectionError(msg)
+            raise storage_errors.ConnectionError(msg)
 
     return wrapper
 

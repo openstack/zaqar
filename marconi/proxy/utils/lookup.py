@@ -18,7 +18,7 @@
 import msgpack
 
 from marconi.openstack.common import log
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 
 
 LOG = log.getLogger(__name__)
@@ -56,7 +56,7 @@ def try_cache_entry(project, queue, catalogue_controller, cache):
 
     try:
         name = catalogue_controller.get(project, queue)['partition']
-    except exceptions.EntryNotFound:
+    except errors.EntryNotFound:
         return None
 
     cache.set(key, name)
@@ -156,7 +156,7 @@ def hosts(name, partitions_controller, cache):
 
         try:
             hosts = partitions_controller.get(name)['hosts']
-        except exceptions.PartitionNotFound:
+        except errors.PartitionNotFound:
             LOG.debug('Partition not in primary storage: ' + name)
             return None
 

@@ -17,10 +17,10 @@ import falcon
 import six
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import exceptions as storage_exceptions
+from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation
-from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class CollectionResource(Resource):
         # Place JSON size restriction before parsing
         if req.content_length > self._metadata_max_length:
             description = _(u'Claim metadata size is too large.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
+            raise wsgi_errors.HTTPBadRequestBody(description)
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
@@ -74,12 +74,12 @@ class CollectionResource(Resource):
             resp_msgs = list(msgs)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be created.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Serialize claimed messages, if any. This logic assumes
         # the storage driver returned well-formed messages.
@@ -122,12 +122,12 @@ class ItemResource(Resource):
             # TODO(kgriffs): Optimize along with serialization (see below)
             meta['messages'] = list(msgs)
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be queried.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Serialize claimed messages
         # TODO(kgriffs): Optimize
@@ -153,7 +153,7 @@ class ItemResource(Resource):
         # Place JSON size restriction before parsing
         if req.content_length > self._metadata_max_length:
             description = _(u'Claim metadata size is too large.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
+            raise wsgi_errors.HTTPBadRequestBody(description)
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
@@ -170,15 +170,15 @@ class ItemResource(Resource):
             resp.status = falcon.HTTP_204
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be updated.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
     def on_delete(self, req, resp, project_id, queue_name, claim_id):
         LOG.debug(_(u'Claim item DELETE - claim: %(claim_id)s, '
@@ -196,7 +196,7 @@ class ItemResource(Resource):
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be deleted.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
 
 # TODO(kgriffs): Clean up/optimize and move to wsgi.utils

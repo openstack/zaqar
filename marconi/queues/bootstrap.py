@@ -18,7 +18,7 @@ from stevedore import driver
 
 from marconi.common.cache import cache as oslo_cache
 from marconi.common import decorators
-from marconi.common import exceptions
+from marconi.common import errors
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding
@@ -82,7 +82,7 @@ class Bootstrap(object):
             return mgr
         except RuntimeError as exc:
             LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+            raise errors.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
@@ -99,7 +99,7 @@ class Bootstrap(object):
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+            raise errors.InvalidDriver(exc)
 
     def run(self):
         self.transport.listen()

@@ -24,7 +24,7 @@ from testtools import matchers
 
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi import tests as testing
 from marconi.tests import helpers
 
@@ -179,10 +179,10 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertFalse(self.controller.exists('test', project=self.project))
 
         # Test DoesNotExist exception
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.get_metadata('test', project=self.project)
 
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.set_metadata('test', '{}', project=self.project)
 
     def test_stats_for_empty_queue(self):
@@ -251,7 +251,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.controller.delete(queue_name, created[0], project=self.project)
 
         # Test does not exist
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.get(queue_name, created[0], project=self.project)
 
     def test_get_multi(self):
@@ -343,7 +343,7 @@ class MessageControllerTest(ControllerBaseTest):
         [msg1, msg2] = msgs
 
         # A wrong claim does not ensure the message deletion
-        with testing.expect(storage.exceptions.NotPermitted):
+        with testing.expect(storage.errors.NotPermitted):
             self.controller.delete(self.queue_name, msg1['id'],
                                    project=self.project,
                                    claim=another_cid)
@@ -353,7 +353,7 @@ class MessageControllerTest(ControllerBaseTest):
                                project=self.project,
                                claim=cid)
 
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.get(self.queue_name, msg1['id'],
                                 project=self.project)
 
@@ -366,7 +366,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.claim_controller.delete(self.queue_name, cid,
                                      project=self.project)
 
-        with testing.expect(storage.exceptions.NotPermitted):
+        with testing.expect(storage.errors.NotPermitted):
             self.controller.delete(self.queue_name, msg2['id'],
                                    project=self.project,
                                    claim=cid)
@@ -386,7 +386,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         time.sleep(self.gc_interval)
 
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.get(self.queue_name, msgid,
                                 project=self.project)
 
@@ -406,7 +406,7 @@ class MessageControllerTest(ControllerBaseTest):
                                bad_message_id,
                                project=self.project)
 
-        with testing.expect(exceptions.MessageDoesNotExist):
+        with testing.expect(errors.MessageDoesNotExist):
             self.controller.get(self.queue_name,
                                 bad_message_id,
                                 project=self.project)
@@ -511,7 +511,7 @@ class ClaimControllerTest(ControllerBaseTest):
         self.controller.delete(self.queue_name, claim_id,
                                project=self.project)
 
-        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           claim_id, project=self.project)
 
@@ -576,11 +576,11 @@ class ClaimControllerTest(ControllerBaseTest):
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
 
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.get(self.queue_name, claim_id,
                                 project=self.project)
 
-        with testing.expect(storage.exceptions.DoesNotExist):
+        with testing.expect(storage.errors.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, project=self.project)
 
@@ -591,12 +591,12 @@ class ClaimControllerTest(ControllerBaseTest):
                                'illformed',
                                project=self.project)
 
-        with testing.expect(exceptions.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.get(self.queue_name,
                                 'illformed',
                                 project=self.project)
 
-        with testing.expect(exceptions.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.update(self.queue_name,
                                    'illformed',
                                    {'ttl': 40},
@@ -657,7 +657,7 @@ class ShardsControllerTest(ControllerBaseTest):
         self.assertEqual(res['o'], {})
 
     def test_get_raises_if_not_found(self):
-        self.assertRaises(storage.exceptions.ShardDoesNotExist,
+        self.assertRaises(storage.errors.ShardDoesNotExist,
                           self.shards_controller.get, 'notexists')
 
     def test_exists(self):
@@ -781,7 +781,7 @@ class CatalogueControllerTest(ControllerBaseTest):
             self._check_value(entry, xqueue=q, xproject=p, xshard=u'b')
 
     def test_update_raises_when_entry_does_not_exist(self):
-        self.assertRaises(exceptions.QueueNotMapped,
+        self.assertRaises(errors.QueueNotMapped,
                           self.controller.update,
                           'not', 'not', 'a')
 
@@ -798,13 +798,13 @@ class CatalogueControllerTest(ControllerBaseTest):
                                  self.project,
                                  self.queue, u'a') as expect:
             p, q, _ = expect
-            self.assertRaises(exceptions.QueueNotMapped,
+            self.assertRaises(errors.QueueNotMapped,
                               self.controller.get,
                               p, 'non_existing')
-            self.assertRaises(exceptions.QueueNotMapped,
+            self.assertRaises(errors.QueueNotMapped,
                               self.controller.get,
                               'non_existing', q)
-            self.assertRaises(exceptions.QueueNotMapped,
+            self.assertRaises(errors.QueueNotMapped,
                               self.controller.get,
                               'non_existing', 'non_existing')
 

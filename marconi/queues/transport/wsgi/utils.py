@@ -18,7 +18,7 @@ import uuid
 
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import utils
-from marconi.queues.transport.wsgi import exceptions
+from marconi.queues.transport.wsgi import errors
 
 
 JSONObject = dict
@@ -58,7 +58,7 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
 
     if len is None:
         description = _(u'Request body can not be empty')
-        raise exceptions.HTTPBadRequestBody(description)
+        raise errors.HTTPBadRequestBody(description)
 
     try:
         # TODO(kgriffs): read_json should stream the resulting list
@@ -69,28 +69,28 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
     except utils.MalformedJSON as ex:
         LOG.exception(ex)
         description = _(u'Request body could not be parsed.')
-        raise exceptions.HTTPBadRequestBody(description)
+        raise errors.HTTPBadRequestBody(description)
 
     except utils.OverflowedJSONInteger as ex:
         LOG.exception(ex)
         description = _(u'JSON contains integer that is too large.')
-        raise exceptions.HTTPBadRequestBody(description)
+        raise errors.HTTPBadRequestBody(description)
 
     except Exception as ex:
         # Error while reading from the network/server
         LOG.exception(ex)
         description = _(u'Request body could not be read.')
-        raise exceptions.HTTPServiceUnavailable(description)
+        raise errors.HTTPServiceUnavailable(description)
 
     if doctype is JSONObject:
         if not isinstance(document, JSONObject):
-            raise exceptions.HTTPDocumentTypeNotSupported()
+            raise errors.HTTPDocumentTypeNotSupported()
 
         return (document,) if spec is None else (filter(document, spec),)
 
     if doctype is JSONArray:
         if not isinstance(document, JSONArray):
-            raise exceptions.HTTPDocumentTypeNotSupported()
+            raise errors.HTTPDocumentTypeNotSupported()
 
         if spec is None:
             return document
@@ -146,14 +146,14 @@ def get_checked_field(document, name, value_type):
         value = document[name]
     except KeyError:
         description = _(u'Missing "{name}" field.').format(name=name)
-        raise exceptions.HTTPBadRequestBody(description)
+        raise errors.HTTPBadRequestBody(description)
 
     if value_type == '*' or isinstance(value, value_type):
         return value
 
     description = _(u'The value of the "{name}" field must be a {vtype}.')
     description = description.format(name=name, vtype=value_type.__name__)
-    raise exceptions.HTTPBadRequestBody(description)
+    raise errors.HTTPBadRequestBody(description)
 
 
 def get_client_uuid(req):
@@ -170,4 +170,4 @@ def get_client_uuid(req):
 
     except ValueError:
         description = _(u'Malformed hexadecimal UUID.')
-        raise exceptions.HTTPBadRequestAPI(description)
+        raise errors.HTTPBadRequestAPI(description)

@@ -17,10 +17,10 @@ import falcon
 import six
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import exceptions as storage_exceptions
+from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation
-from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
@@ -51,12 +51,12 @@ class CollectionResource(object):
                 project=project_id)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Message could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
         messages = list(messages)
@@ -94,15 +94,15 @@ class CollectionResource(object):
             messages = list(cursor)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Messages could not be listed.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         if not messages:
             return None
@@ -137,7 +137,7 @@ class CollectionResource(object):
         # Place JSON size restriction before parsing
         if req.content_length > self._wsgi_conf.content_max_length:
             description = _(u'Message collection size is too large.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
+            raise wsgi_errors.HTTPBadRequestBody(description)
 
         # Pull out just the fields we care about
         messages = wsgi_utils.filter_stream(
@@ -164,12 +164,12 @@ class CollectionResource(object):
                 client_uuid=client_uuid)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
-        except storage_exceptions.MessageConflict as ex:
+        except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
             partial = True
             message_ids = ex.succeeded_ids
@@ -178,12 +178,12 @@ class CollectionResource(object):
                 # TODO(kgriffs): Include error code that is different
                 # from the code used in the generic case, below.
                 description = _(u'No messages could be enqueued.')
-                raise wsgi_exceptions.HTTPServiceUnavailable(description)
+                raise wsgi_errors.HTTPServiceUnavailable(description)
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Messages could not be enqueued.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare the response
         ids_value = ','.join(message_ids)
@@ -228,12 +228,12 @@ class CollectionResource(object):
                 project=project_id)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Messages could not be deleted.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
 
@@ -257,13 +257,13 @@ class ItemResource(object):
                 message_id,
                 project=project_id)
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Message could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
         message['href'] = req.path
@@ -286,7 +286,7 @@ class ItemResource(object):
                 project=project_id,
                 claim=req.get_param('claim_id'))
 
-        except storage_exceptions.NotPermitted as ex:
+        except storage_errors.NotPermitted as ex:
             LOG.exception(ex)
             title = _(u'Unable to delete')
             description = _(u'This message is claimed; it cannot be '
@@ -296,7 +296,7 @@ class ItemResource(object):
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Message could not be deleted.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Alles guete
         resp.status = falcon.HTTP_204

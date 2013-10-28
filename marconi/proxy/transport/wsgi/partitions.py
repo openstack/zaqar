@@ -34,10 +34,10 @@ import six
 
 from marconi.common.transport.wsgi import utils
 from marconi.openstack.common import log
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 from marconi.proxy.transport import schema
 from marconi.proxy.utils import lookup
-from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 
 
 LOG = log.getLogger(__name__)
@@ -96,7 +96,7 @@ class Resource(object):
         data = None
         try:
             data = self._ctrl.get(partition)
-        except exceptions.PartitionNotFound as ex:
+        except errors.PartitionNotFound as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()
 
@@ -163,6 +163,6 @@ class Resource(object):
                           and v is not None)
 
             self._ctrl.update(partition, **fields)
-        except exceptions.PartitionNotFound as ex:
+        except errors.PartitionNotFound as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()

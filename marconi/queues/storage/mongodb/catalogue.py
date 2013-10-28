@@ -24,7 +24,7 @@ Serves to construct an association between a project + queue -> shard
 """
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import base, exceptions
+from marconi.queues.storage import base, errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -67,7 +67,7 @@ class CatalogueController(base.CatalogueBase):
                                    fields=fields)
 
         if entry is None:
-            raise exceptions.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(project, queue)
 
         return _normalize(entry)
 
@@ -90,7 +90,7 @@ class CatalogueController(base.CatalogueBase):
         res = self._insert(project, queue, shard, upsert=False)
 
         if not res['updatedExisting']:
-            raise exceptions.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(project, queue)
 
     @utils.raises_conn_error
     def drop_all(self):

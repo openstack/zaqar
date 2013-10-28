@@ -19,7 +19,7 @@ from stevedore import driver
 from marconi.common import access
 from marconi.common.cache import cache as oslo_cache
 from marconi.common import decorators
-from marconi.common import exceptions
+from marconi.common import errors
 from marconi.openstack.common import log
 from marconi.proxy import transport  # NOQA
 
@@ -68,7 +68,7 @@ class Bootstrap(object):
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+            raise errors.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def cache(self):
@@ -78,7 +78,7 @@ class Bootstrap(object):
             return mgr
         except RuntimeError as exc:
             LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+            raise errors.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
     def transport(self):
@@ -92,7 +92,7 @@ class Bootstrap(object):
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)
-            raise exceptions.InvalidDriver(exc)
+            raise errors.InvalidDriver(exc)
 
     def run(self):
         self.transport.listen()

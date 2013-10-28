@@ -16,7 +16,7 @@
 import six
 
 from marconi.proxy.storage import base
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 
 
 class PartitionsController(base.PartitionsBase):
@@ -33,7 +33,7 @@ class PartitionsController(base.PartitionsBase):
         try:
             entry = self._col[name]
         except KeyError:
-            raise exceptions.PartitionNotFound(name)
+            raise errors.PartitionNotFound(name)
 
         return _normalize(entry)
 
@@ -52,7 +52,7 @@ class PartitionsController(base.PartitionsBase):
         try:
             self._col[name].update(fields)
         except KeyError:
-            raise exceptions.PartitionNotFound(name)
+            raise errors.PartitionNotFound(name)
 
     def delete(self, name):
         try:

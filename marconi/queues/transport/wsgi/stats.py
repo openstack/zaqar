@@ -16,9 +16,9 @@
 import falcon
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import exceptions as storage_exceptions
+from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
-from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 
 
 LOG = logging.getLogger(__name__)
@@ -53,10 +53,10 @@ class Resource(object):
             resp.body = utils.to_json(resp_dict)
             # status defaults to 200
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Queue stats could not be read.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)

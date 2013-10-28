@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from marconi.queues.storage import base
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
@@ -71,7 +71,7 @@ class QueueController(base.QueueBase):
                  where project = ? and name = ?''', project, name)[0]
 
         except utils.NoResult:
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
     def create(self, name, project):
         if project is None:
@@ -105,7 +105,7 @@ class QueueController(base.QueueBase):
         ''', self.driver.pack(metadata), project, name)
 
         if not self.driver.affected:
-            raise exceptions.QueueDoesNotExist(name, project)
+            raise errors.QueueDoesNotExist(name, project)
 
     def delete(self, name, project):
         if project is None:
@@ -148,7 +148,7 @@ class QueueController(base.QueueBase):
                 message_controller = self.driver.message_controller
                 oldest = message_controller.first(name, project, sort=1)
                 newest = message_controller.first(name, project, sort=-1)
-            except exceptions.QueueIsEmpty:
+            except errors.QueueIsEmpty:
                 pass
             else:
                 message_stats['oldest'] = utils.stat_message(oldest)

@@ -15,7 +15,7 @@
 
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import base
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
@@ -27,7 +27,7 @@ class MessageController(base.MessageBase):
 
         mid = utils.msgid_decode(message_id)
         if mid is None:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+            raise errors.MessageDoesNotExist(message_id, queue, project)
 
         try:
             content, ttl, age = self.driver.get('''
@@ -39,7 +39,7 @@ class MessageController(base.MessageBase):
                 ''', mid, project, queue)
 
         except utils.NoResult:
-            raise exceptions.MessageDoesNotExist(message_id, queue, project)
+            raise errors.MessageDoesNotExist(message_id, queue, project)
 
         return {
             'id': message_id,
@@ -101,7 +101,7 @@ class MessageController(base.MessageBase):
             try:
                 id, content, ttl, created, age = next(records)
             except StopIteration:
-                raise exceptions.QueueIsEmpty(queue, project)
+                raise errors.QueueIsEmpty(queue, project)
 
             created_unix = utils.julian_to_unix(created)
             created_iso8601 = timeutils.iso8601_from_timestamp(created_unix)
@@ -239,7 +239,7 @@ class MessageController(base.MessageBase):
         ''', id)
 
         if not self.driver.affected:
-            raise exceptions.MessageIsClaimed(id)
+            raise errors.MessageIsClaimed(id)
 
     def __delete_claimed(self, id, claim):
         # Precondition: id exists in a specific queue
@@ -258,7 +258,7 @@ class MessageController(base.MessageBase):
         ''', id, cid)
 
         if not self.driver.affected:
-            raise exceptions.MessageIsClaimedBy(id, claim)
+            raise errors.MessageIsClaimedBy(id, claim)
 
     def bulk_delete(self, queue, message_ids, project):
         if project is None:

@@ -25,7 +25,7 @@ Schema:
 """
 
 from marconi.common import utils as common_utils
-from marconi.queues.storage import base, exceptions
+from marconi.queues.storage import base, errors
 from marconi.queues.storage.mongodb import utils
 
 SHARDS_INDEX = [
@@ -66,7 +66,7 @@ class ShardsController(base.ShardsBase):
         res = self._col.find_one({'n': name},
                                  _field_spec(detailed))
         if not res:
-            raise exceptions.ShardDoesNotExist(name)
+            raise errors.ShardDoesNotExist(name)
         return res
 
     @utils.raises_conn_error
@@ -92,7 +92,7 @@ class ShardsController(base.ShardsBase):
                                {'$set': fields},
                                upsert=False)
         if not res['updatedExisting']:
-            raise exceptions.ShardDoesNotExist(name)
+            raise errors.ShardDoesNotExist(name)
 
     @utils.raises_conn_error
     def delete(self, name):

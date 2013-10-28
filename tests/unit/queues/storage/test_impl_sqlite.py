@@ -32,7 +32,7 @@ class SQliteMessageTests(base.MessageControllerTest):
         queue_name = 'empty-queue-test'
         self.queue_controller.create(queue_name, None)
 
-        self.assertRaises(storage.exceptions.QueueIsEmpty,
+        self.assertRaises(storage.errors.QueueIsEmpty,
                           self.controller.first,
                           queue_name, None, sort=1)
 

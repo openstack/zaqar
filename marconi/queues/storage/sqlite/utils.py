@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 
 
 UNIX_EPOCH_AS_JULIAN_SEC = 2440587.5 * 86400.0
@@ -31,7 +31,7 @@ def get_qid(driver, queue, project):
              where project = ? and name = ?''', project, queue)[0]
 
     except NoResult:
-        raise exceptions.QueueDoesNotExist(queue, project)
+        raise errors.QueueDoesNotExist(queue, project)
 
 
 # The utilities below make the database IDs opaque to the users

@@ -17,10 +17,10 @@ import falcon
 import six
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import exceptions as storage_exceptions
+from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation
-from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
@@ -44,13 +44,13 @@ class Resource(object):
             resp_dict = self.queue_ctrl.get_metadata(queue_name,
                                                      project=project_id)
 
-        except storage_exceptions.DoesNotExist:
+        except storage_errors.DoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Queue metadata could not be retrieved.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.content_location = req.path
         resp.body = utils.to_json(resp_dict)
@@ -64,7 +64,7 @@ class Resource(object):
         # Place JSON size restriction before parsing
         if req.content_length > self._wsgi_conf.metadata_max_length:
             description = _(u'Queue metadata size is too large.')
-            raise wsgi_exceptions.HTTPBadRequestBody(description)
+            raise wsgi_errors.HTTPBadRequestBody(description)
 
         # Deserialize queue metadata
         metadata, = wsgi_utils.filter_stream(req.stream,
@@ -81,15 +81,15 @@ class Resource(object):
                                          project=project_id)
 
         except validation.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_exceptions.QueueDoesNotExist:
+        except storage_errors.QueueDoesNotExist:
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Metadata could not be updated.')
-            raise wsgi_exceptions.HTTPServiceUnavailable(description)
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
         resp.location = req.path

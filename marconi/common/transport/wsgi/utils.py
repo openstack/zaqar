@@ -19,7 +19,7 @@ import jsonschema
 
 from marconi.openstack.common import log
 from marconi.queues.transport import utils as json_utils
-from marconi.queues.transport.wsgi import exceptions as wsgi_errors
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 
 LOG = log.getLogger(__name__)
 

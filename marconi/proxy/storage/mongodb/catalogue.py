@@ -29,7 +29,7 @@ from pymongo import errors
 
 import marconi.openstack.common.log as logging
 from marconi.proxy.storage import base
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors as storage_errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -64,7 +64,7 @@ class CatalogueController(base.CatalogueBase):
                                    fields=fields)
 
         if entry is None:
-            raise exceptions.EntryNotFound(project, queue)
+            raise storage_errors.EntryNotFound(project, queue)
 
         return _normalize(entry)
 

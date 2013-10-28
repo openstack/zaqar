@@ -30,7 +30,7 @@ import pymongo.read_preferences
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 
@@ -391,7 +391,7 @@ class MessageController(storage.MessageBase):
         try:
             message = next(cursor)
         except StopIteration:
-            raise exceptions.QueueIsEmpty(queue_name, project)
+            raise errors.QueueIsEmpty(queue_name, project)
 
         return message
 
@@ -399,8 +399,8 @@ class MessageController(storage.MessageBase):
     def get(self, queue_name, message_id, project=None):
         mid = utils.to_oid(message_id)
         if mid is None:
-            raise exceptions.MessageDoesNotExist(message_id, queue_name,
-                                                 project)
+            raise errors.MessageDoesNotExist(message_id, queue_name,
+                                             project)
 
         now = timeutils.utcnow_ts()
 
@@ -413,8 +413,8 @@ class MessageController(storage.MessageBase):
         message = list(collection.find(query).limit(1).hint(ID_INDEX_FIELDS))
 
         if not message:
-            raise exceptions.MessageDoesNotExist(message_id, queue_name,
-                                                 project)
+            raise errors.MessageDoesNotExist(message_id, queue_name,
+                                             project)
 
         return _basic_message(message[0], now)
 
@@ -446,7 +446,7 @@ class MessageController(storage.MessageBase):
     @utils.raises_conn_error
     def post(self, queue_name, messages, client_uuid, project=None):
         if not self._queue_ctrl.exists(queue_name, project):
-            raise exceptions.QueueDoesNotExist(queue_name, project)
+            raise errors.QueueDoesNotExist(queue_name, project)
 
         now = timeutils.utcnow_ts()
         now_dt = datetime.datetime.utcfromtimestamp(now)
@@ -606,7 +606,8 @@ class MessageController(storage.MessageBase):
                          project=project))
 
         succeeded_ids = []
-        raise exceptions.MessageConflict(queue_name, project, succeeded_ids)
+        raise errors.MessageConflict(queue_name, project,
+                                     succeeded_ids)
 
     @utils.raises_conn_error
     def delete(self, queue_name, message_id, project=None, claim=None):
@@ -641,11 +642,11 @@ class MessageController(storage.MessageBase):
 
         if claim is None:
             if is_claimed:
-                raise exceptions.MessageIsClaimed(message_id)
+                raise errors.MessageIsClaimed(message_id)
 
         else:
             if message['c']['id'] != cid:
-                raise exceptions.MessageIsClaimedBy(message_id, claim)
+                raise errors.MessageIsClaimedBy(message_id, claim)
 
         collection.remove(query['_id'], w=0)
 

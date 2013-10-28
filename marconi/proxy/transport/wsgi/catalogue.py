@@ -21,7 +21,7 @@ import json
 import falcon
 
 from marconi.openstack.common import log
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 from marconi.proxy.utils import helpers
 
 
@@ -66,7 +66,7 @@ class Resource(object):
         entry = None
         try:
             entry = self._catalogue.get(project, queue)
-        except exceptions.EntryNotFound:
+        except errors.EntryNotFound:
             LOG.debug('Entry not found')
             raise falcon.HTTPNotFound()
 

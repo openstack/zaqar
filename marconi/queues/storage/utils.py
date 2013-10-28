@@ -16,7 +16,7 @@
 
 from stevedore import driver
 
-from marconi.common import exceptions
+from marconi.common import errors
 from marconi.openstack.common import log
 
 LOG = log.getLogger(__name__)
@@ -40,4 +40,4 @@ def load_storage_driver(conf):
 
     except RuntimeError as exc:
         LOG.exception(exc)
-        raise exceptions.InvalidDriver(exc)
+        raise errors.InvalidDriver(exc)

@@ -15,7 +15,7 @@
 import six
 
 from marconi.proxy.storage import base
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 
 
 def _idx(project, queue):
@@ -37,7 +37,7 @@ class CatalogueController(base.CatalogueBase):
         try:
             entry = self._col[_idx(project, queue)]
         except KeyError:
-            raise exceptions.EntryNotFound(project, queue)
+            raise errors.EntryNotFound(project, queue)
 
         return _normalize(entry)
 

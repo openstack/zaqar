@@ -22,7 +22,7 @@ from testtools import matchers
 
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
-from marconi.queues.storage import exceptions
+from marconi.queues.storage import errors
 from marconi.queues.storage import mongodb
 from marconi.queues.storage.mongodb import controllers
 from marconi.queues.storage.mongodb import utils
@@ -129,7 +129,8 @@ class MongodbQueueTests(base.QueueControllerTest):
             method.side_effect = error
 
             queues = next(self.controller.list())
-            self.assertRaises(storage.exceptions.ConnectionError, queues.next)
+            self.assertRaises(storage.errors.ConnectionError,
+                              queues.next)
 
 
 @testing.requires_mongodb
@@ -257,7 +258,7 @@ class MongodbMessageTests(base.MessageControllerTest):
             if testing.RUN_SLOW_TESTS:
                 method.return_value = None
 
-                with testing.expect(exceptions.MessageConflict):
+                with testing.expect(errors.MessageConflict):
                     self.controller.post(queue_name, messages, uuid)
 
         created = list(self.controller.post(queue_name,
@@ -281,7 +282,7 @@ class MongodbMessageTests(base.MessageControllerTest):
         queue_name = 'empty-queue-test'
         self.queue_controller.create(queue_name)
 
-        self.assertRaises(storage.exceptions.QueueIsEmpty,
+        self.assertRaises(storage.errors.QueueIsEmpty,
                           self.controller.first, queue_name)
 
     def test_invalid_sort_option(self):
@@ -315,7 +316,7 @@ class MongodbClaimTests(base.ClaimControllerTest):
         exists and/or has expired.
         """
         epoch = '000000000000000000000000'
-        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           epoch, project=self.project)
 
@@ -325,11 +326,11 @@ class MongodbClaimTests(base.ClaimControllerTest):
 
         # Lets let it expire
         time.sleep(1)
-        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
                           claim_id, {}, project=self.project)
 
-        self.assertRaises(storage.exceptions.ClaimDoesNotExist,
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
                           claim_id, {}, project=self.project)
 

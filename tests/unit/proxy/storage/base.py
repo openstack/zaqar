@@ -18,7 +18,7 @@ import uuid
 import six
 
 from marconi.proxy import storage
-from marconi.proxy.storage import exceptions
+from marconi.proxy.storage import errors
 from marconi import tests as testing
 from marconi.tests import helpers
 
@@ -110,7 +110,7 @@ class PartitionsControllerTest(ControllerBaseTest):
                           'a', cat='adorable')
 
     def test_update_on_nonexisting_raises(self):
-        self.assertRaises(exceptions.PartitionNotFound,
+        self.assertRaises(errors.PartitionNotFound,
                           self.controller.update,
                           'a', weight=10)
 
@@ -130,7 +130,7 @@ class PartitionsControllerTest(ControllerBaseTest):
             self._check_values(p, xname=n, xweight=w, xhosts=h)
 
     def test_get_nonexistent_throws(self):
-        self.assertRaises(exceptions.PartitionNotFound,
+        self.assertRaises(errors.PartitionNotFound,
                           self.controller.get, ('not_found'))
 
     def test_exists(self):

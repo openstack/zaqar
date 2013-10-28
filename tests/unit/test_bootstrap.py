@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import exceptions
+from marconi.common import errors
 from marconi.queues import bootstrap
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding
@@ -30,7 +30,7 @@ class TestBootstrap(base.TestBase):
 
     def test_storage_invalid(self):
         boot = self._bootstrap('etc/drivers_storage_invalid.conf')
-        self.assertRaises(exceptions.InvalidDriver,
+        self.assertRaises(errors.InvalidDriver,
                           lambda: boot.storage)
 
     def test_storage_sqlite(self):
@@ -45,7 +45,7 @@ class TestBootstrap(base.TestBase):
 
     def test_transport_invalid(self):
         boot = self._bootstrap('etc/drivers_transport_invalid.conf')
-        self.assertRaises(exceptions.InvalidDriver,
+        self.assertRaises(errors.InvalidDriver,
                           lambda: boot.transport)
 
     def test_transport_wsgi(self):

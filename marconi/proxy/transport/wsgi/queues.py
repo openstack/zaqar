@@ -42,7 +42,7 @@ from marconi.proxy.utils import (
 )
 from marconi.queues.storage import base as storage
 from marconi.queues.transport import validation as validate
-from marconi.queues.transport.wsgi import exceptions as wsgi_exceptions
+from marconi.queues.transport.wsgi import errors as wsgi_errors
 
 
 LOG = log.getLogger(__name__)
@@ -81,7 +81,7 @@ class Listing(object):
         try:
             validate.queue_listing(limit=limit)
         except validate.ValidationFailed as ex:
-            raise wsgi_exceptions.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         for queue in self._catalogue.list(project):
             queue_name = queue['name']
