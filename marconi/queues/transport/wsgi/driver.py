@@ -95,9 +95,9 @@ class DriverBase(transport.DriverBase):
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
 
-        msg = _(u'Serving on host %(bind)s:%(port)s')
-        msg %= {'bind': self._wsgi_conf.bind, 'port': self._wsgi_conf.port}
-        LOG.info(msg)
+        msgtmpl = _(u'Serving on host %(bind)s:%(port)s')
+        LOG.info(msgtmpl,
+                 {'bind': self._wsgi_conf.bind, 'port': self._wsgi_conf.port})
 
         httpd = simple_server.make_server(self._wsgi_conf.bind,
                                           self._wsgi_conf.port,

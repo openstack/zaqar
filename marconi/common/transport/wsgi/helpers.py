@@ -76,7 +76,7 @@ def validate_queue_name(validate, req, resp, params):
         queue = params['queue_name'].decode('utf-8', 'replace')
 
         LOG.warn(_(u'Invalid queue name "%(queue)s" submitted for '
-                   u'project: %(project)s') %
+                   u'project: %(project)s'),
                  {'queue': queue, 'project': project})
 
         info = six.text_type(ex) or _(u'The format of the submitted '

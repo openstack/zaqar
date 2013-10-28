@@ -43,7 +43,7 @@ class CollectionResource(Resource):
 
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Claims collection POST - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         # Check for an explicit limit on the # of messages to claim
@@ -108,7 +108,7 @@ class ItemResource(Resource):
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
         LOG.debug(_(u'Claim item GET - claim: %(claim_id)s, '
-                    u'queue: %(queue_name)s, project: %(project_id)s') %
+                    u'queue: %(queue_name)s, project: %(project_id)s'),
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})

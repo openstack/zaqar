@@ -35,7 +35,7 @@ class ItemResource(object):
 
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue item PUT - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -52,7 +52,7 @@ class ItemResource(object):
 
     def on_head(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue item exists - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         if self.queue_controller.exists(queue_name, project=project_id):
@@ -66,7 +66,7 @@ class ItemResource(object):
 
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue item DELETE - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
         try:
             self.queue_controller.delete(queue_name, project=project_id)

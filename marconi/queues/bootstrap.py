@@ -87,7 +87,7 @@ class Bootstrap(object):
     @decorators.lazy_property(write=False)
     def transport(self):
         transport_name = self.driver_conf.transport
-        LOG.debug(_(u'Loading transport driver: ') + transport_name)
+        LOG.debug(_(u'Loading transport driver: %s'), transport_name)
 
         try:
             mgr = driver.DriverManager(self._transport_type,

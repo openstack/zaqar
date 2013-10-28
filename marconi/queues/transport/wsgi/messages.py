@@ -129,7 +129,7 @@ class CollectionResource(object):
 
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Messages collection POST - queue:  %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         client_uuid = wsgi_utils.get_client_uuid(req)
@@ -196,7 +196,7 @@ class CollectionResource(object):
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Messages collection GET - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         resp.content_location = req.relative_uri
@@ -247,7 +247,7 @@ class ItemResource(object):
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         LOG.debug(_(u'Messages item GET - message: %(message)s, '
-                    u'queue: %(queue)s, project: %(project)s') %
+                    u'queue: %(queue)s, project: %(project)s'),
                   {'message': message_id,
                    'queue': queue_name,
                    'project': project_id})
@@ -275,7 +275,7 @@ class ItemResource(object):
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
         LOG.debug(_(u'Messages item DELETE - message: %(message)s, '
-                    u'queue: %(queue)s, project: %(project)s') %
+                    u'queue: %(queue)s, project: %(project)s'),
                   {'message': message_id,
                    'queue': queue_name,
                    'project': project_id})
