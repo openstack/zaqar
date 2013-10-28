@@ -25,8 +25,8 @@ from marconi.tests import base
 class TestBootstrap(base.TestBase):
 
     def _bootstrap(self, conf_file):
-        conf = self.load_conf(conf_file)
-        return bootstrap.Bootstrap(conf)
+        self.conf = self.load_conf(conf_file)
+        return bootstrap.Bootstrap(self.conf)
 
     def test_storage_invalid(self):
         boot = self._bootstrap('etc/drivers_storage_invalid.conf')

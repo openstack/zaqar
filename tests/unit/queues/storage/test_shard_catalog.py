@@ -29,7 +29,7 @@ class TestShardCatalog(base.TestBase):
         conf_file = 'etc/wsgi_sqlite_sharded.conf'
 
         conf = cfg.ConfigOpts()
-        conf(default_config_files=[conf_file])
+        conf(args=[], default_config_files=[conf_file])
 
         lookup = sharding.Catalog(conf).lookup
 

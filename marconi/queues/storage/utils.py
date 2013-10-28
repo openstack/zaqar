@@ -32,7 +32,7 @@ def load_storage_driver(conf):
     """
 
     try:
-        mgr = driver.DriverManager('marconi.queues.storage',
+        mgr = driver.DriverManager('marconi.queues.data.storage',
                                    conf['queues:drivers'].storage,
                                    invoke_on_load=True,
                                    invoke_args=[conf])

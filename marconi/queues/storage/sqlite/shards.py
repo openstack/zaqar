@@ -17,7 +17,7 @@
 from marconi.queues.storage import base
 
 
-class ShardsController(base.ShardsController):
+class ShardsController(base.ShardsBase):
 
     def list(self, marker=None, limit=10, detailed=False):
         pass

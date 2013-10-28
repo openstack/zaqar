@@ -601,6 +601,117 @@ class ClaimControllerTest(ControllerBaseTest):
                                    project=self.project)
 
 
+class ShardsControllerTest(ControllerBaseTest):
+    """Shards Controller base tests.
+
+    NOTE(flaper87): Implementations of this class should
+    override the tearDown method in order
+    to clean up storage's state.
+    """
+    controller_base_class = storage.ShardsBase
+
+    def setUp(self):
+        super(ShardsControllerTest, self).setUp()
+        self.shards_controller = self.driver.shards_controller
+
+        # Let's create one shard
+        self.shard = str(uuid.uuid1())
+        self.shards_controller.create(self.shard, 100, 'localhost', {})
+
+    def tearDown(self):
+        self.shards_controller.drop_all()
+        super(ShardsControllerTest, self).tearDown()
+
+    def test_create_succeeds(self):
+        self.shards_controller.create(str(uuid.uuid1()),
+                                      100, 'localhost', {})
+
+    def test_create_replaces_on_duplicate_insert(self):
+        name = str(uuid.uuid1())
+        self.shards_controller.create(name,
+                                      100, 'localhost', {})
+        self.shards_controller.create(name,
+                                      111, 'localhost2', {})
+        entry = self.shards_controller.get(name)
+        self._shard_expects(entry, xname=name, xweight=111,
+                            xlocation='localhost2')
+
+    def _shard_expects(self, shard, xname, xweight, xlocation):
+        self.assertIn('n', shard)
+        self.assertEqual(shard['n'], xname)
+        self.assertIn('w', shard)
+        self.assertEqual(shard['w'], xweight)
+        self.assertIn('u', shard)
+        self.assertEqual(shard['u'], xlocation)
+
+    def test_get_returns_expected_content(self):
+        res = self.shards_controller.get(self.shard)
+        self._shard_expects(res, self.shard, 100, 'localhost')
+        self.assertNotIn('o', res)
+
+    def test_detailed_get_returns_expected_content(self):
+        res = self.shards_controller.get(self.shard, detailed=True)
+        self.assertIn('o', res)
+        self.assertEqual(res['o'], {})
+
+    def test_get_raises_if_not_found(self):
+        self.assertRaises(storage.exceptions.ShardDoesNotExist,
+                          self.shards_controller.get, 'notexists')
+
+    def test_exists(self):
+        self.assertTrue(self.shards_controller.exists(self.shard))
+        self.assertFalse(self.shards_controller.exists('notexists'))
+
+    def test_update_raises_assertion_error_on_bad_fields(self):
+        self.assertRaises(AssertionError, self.shards_controller.update,
+                          self.shard)
+
+    def test_update_works(self):
+        self.shards_controller.update(self.shard, weight=101,
+                                      uri='redis://localhost',
+                                      options={'a': 1})
+        res = self.shards_controller.get(self.shard, detailed=True)
+        self._shard_expects(res, self.shard, 101, 'redis://localhost')
+        self.assertEqual(res['o'], {'a': 1})
+
+    def test_delete_works(self):
+        self.shards_controller.delete(self.shard)
+        self.assertFalse(self.shards_controller.exists(self.shard))
+
+    def test_delete_nonexistent_is_silent(self):
+        self.shards_controller.delete('nonexisting')
+
+    def test_drop_all_leads_to_empty_listing(self):
+        self.shards_controller.drop_all()
+        cursor = self.shards_controller.list()
+        self.assertRaises(StopIteration, next, cursor)
+
+    def test_listing_simple(self):
+        # NOTE(cpp-cabrera): base entry interferes with listing results
+        self.shards_controller.delete(self.shard)
+
+        for i in range(15):
+            self.shards_controller.create(str(i), i, str(i), {})
+
+        res = list(self.shards_controller.list())
+        self.assertEqual(len(res), 10)
+        for i, entry in enumerate(res):
+            self._shard_expects(entry, str(i), i, str(i))
+
+        res = list(self.shards_controller.list(limit=5))
+        self.assertEqual(len(res), 5)
+
+        res = next(self.shards_controller.list(marker='3'))
+        self._shard_expects(res, '4', 4, '4')
+
+        res = list(self.shards_controller.list(detailed=True))
+        self.assertEqual(len(res), 10)
+        for i, entry in enumerate(res):
+            self._shard_expects(entry, str(i), i, str(i))
+            self.assertIn('o', entry)
+            self.assertEqual(entry['o'], {})
+
+
 def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
 

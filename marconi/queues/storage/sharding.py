@@ -144,10 +144,14 @@ class Catalog(object):
         # TODO(kgriffs): SHARDING - Read options from catalog backend
         conf = cfg.ConfigOpts()
 
+        general_opts = [
+            cfg.BoolOpt('admin_mode', default=False)
+        ]
         options = [
-            cfg.StrOpt('storage', default='sqlite')
+            cfg.StrOpt('storage', default='sqlite'),
         ]
 
+        conf.register_opts(general_opts)
         conf.register_opts(options, group='queues:drivers')
         return utils.load_storage_driver(conf)
 
