@@ -33,6 +33,14 @@ class MessagesBaseTest(base.TestBase):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
+        if self.conf.sharding:
+            for i in range(4):
+                uri = self.conf['queues:drivers:storage:mongodb'].uri
+                doc = {'weight': 100, 'uri': uri}
+                self.simulate_put('/v1/shards/' + str(i),
+                                  body=json.dumps(doc))
+                self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
         self.project_id = '7e55e1a7e'
         self.queue_path = '/v1/queues/fizbit'
         self.messages_path = self.queue_path + '/messages'
@@ -46,6 +54,10 @@ class MessagesBaseTest(base.TestBase):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, self.project_id)
+        if self.conf.sharding:
+            for i in range(4):
+                self.simulate_delete('/v1/shards/' + str(i))
+
         super(MessagesBaseTest, self).tearDown()
 
     def _test_post(self, sample_messages):
@@ -425,9 +437,8 @@ class MessagesSQLiteTests(MessagesBaseTest):
     config_filename = 'wsgi_sqlite.conf'
 
 
-class MessagesSQLiteShardedTests(MessagesBaseTest):
-
-    config_filename = 'wsgi_sqlite_sharded.conf'
+# TODO(cpp-cabrera): restore sqlite sharded test suite once shards and
+# catalogue get an sqlite implementation.
 
 
 @testing.requires_mongodb
@@ -438,6 +449,9 @@ class MessagesMongoDBTests(MessagesBaseTest):
     def setUp(self):
         super(MessagesMongoDBTests, self).setUp()
 
+    def tearDown(self):
+        super(MessagesMongoDBTests, self).tearDown()
+
 
 @testing.requires_mongodb
 class MessagesMongoDBShardedTests(MessagesBaseTest):
@@ -446,6 +460,14 @@ class MessagesMongoDBShardedTests(MessagesBaseTest):
 
     def setUp(self):
         super(MessagesMongoDBShardedTests, self).setUp()
+
+    def tearDown(self):
+        super(MessagesMongoDBShardedTests, self).tearDown()
+
+    # TODO(cpp-cabrera): remove this skipTest once sharded queue
+    # listing is implemented
+    def test_list(self):
+        self.skipTest("Need to implement sharded queue listing.")
 
 
 class MessagesFaultyDriverTests(base.TestBaseFaulty):

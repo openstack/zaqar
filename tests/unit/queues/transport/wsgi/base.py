@@ -31,16 +31,23 @@ class TestBase(testing.TestBase):
 
         super(TestBase, self).setUp()
 
-        conf = self.load_conf(self.conf_path(self.config_filename))
-        conf.register_opts(driver._WSGI_OPTIONS,
-                           group=driver._WSGI_GROUP)
-        self.wsgi_cfg = conf[driver._WSGI_GROUP]
+        self.conf = self.load_conf(self.conf_path(self.config_filename))
+        self.conf.register_opts(driver._WSGI_OPTIONS,
+                                group=driver._WSGI_GROUP)
 
-        conf.admin_mode = True
-        self.boot = bootstrap.Bootstrap(conf)
+        self.wsgi_cfg = self.conf[driver._WSGI_GROUP]
+
+        self.conf.admin_mode = True
+        self.boot = bootstrap.Bootstrap(self.conf)
         self.app = self.boot.transport.app
 
         self.srmock = ftest.StartResponseMock()
+
+    def tearDown(self):
+        if self.conf.sharding:
+            self.boot.control.shards_controller.drop_all()
+            self.boot.control.catalogue_controller.drop_all()
+        super(TestBase, self).tearDown()
 
     def simulate_request(self, path, project_id=None, **kwargs):
         """Simulate a request.

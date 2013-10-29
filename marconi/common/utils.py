@@ -15,6 +15,7 @@
 
 """utils: general-purpose utilities."""
 
+from oslo.config import cfg
 import six
 
 
@@ -36,3 +37,29 @@ def fields(d, names, pred=lambda x: True,
     return dict((key_transform(k), value_transform(v))
                 for k, v in six.iteritems(d)
                 if k in names and pred(v))
+
+
+_pytype_to_cfgtype = {
+    six.text_type: cfg.StrOpt,
+    int: cfg.IntOpt,
+    bool: cfg.BoolOpt,
+    float: cfg.FloatOpt,
+    list: cfg.ListOpt,
+    dict: cfg.DictOpt
+}
+
+
+def dict_to_conf(options):
+    """Converts a python dictionary to a list of oslo.config.cfg.Opt
+
+    :param options: The python dictionary to convert
+    :type options: dict
+    :returns: a list of options compatible with oslo.config
+    :rtype: [oslo.config.cfg.Opt]
+    """
+    opts = []
+    for k, v in six.iteritems(options):
+        opt_type = _pytype_to_cfgtype[type(v)]
+        opts.append(opt_type(name=k, default=v))
+
+    return opts
