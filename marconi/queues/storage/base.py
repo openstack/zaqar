@@ -368,8 +368,19 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
 
+class AdminControllerBase(object):
+    """Top-level class for controllers.
+
+    :param driver: Instance of the driver
+        instantiating this controller.
+    """
+
+    def __init__(self, driver):
+        self.driver = driver
+
+
 @six.add_metaclass(abc.ABCMeta)
-class ShardsController(ControllerBase):
+class ShardsBase(AdminControllerBase):
     """A controller for managing shards."""
 
     @abc.abstractmethod
@@ -404,11 +415,13 @@ class ShardsController(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, name):
+    def get(self, name, detailed=False):
         """Returns a single shard entry.
 
         :param name: The name of this shard
         :type name: six.text_type
+        :param detailed: Should the options data be included?
+        :type detailed: bool
         :returns: weight, uri, and options for this shard
         :rtype: {}
         :raises: ShardDoesNotExist if not found

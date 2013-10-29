@@ -28,6 +28,16 @@ from marconi.queues.storage.mongodb import options
 LOG = logging.getLogger(__name__)
 
 
+def _connection(conf):
+    """MongoDB client connection instance."""
+    if conf.uri and 'replicaSet' in conf.uri:
+        MongoClient = pymongo.MongoReplicaSetClient
+    else:
+        MongoClient = pymongo.MongoClient
+
+    return MongoClient(conf.uri)
+
+
 class DataDriver(storage.DataDriverBase):
 
     def __init__(self, conf):
@@ -68,14 +78,7 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def connection(self):
-        """MongoDB client connection instance."""
-
-        if self.mongodb_conf.uri and 'replicaSet' in self.mongodb_conf.uri:
-            MongoClient = pymongo.MongoReplicaSetClient
-        else:
-            MongoClient = pymongo.MongoClient
-
-        return MongoClient(self.mongodb_conf.uri)
+        return _connection(self.mongodb_conf)
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
@@ -99,6 +102,16 @@ class ControlDriver(storage.ControlDriverBase):
                                 group=options.MONGODB_GROUP)
 
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+
+    @decorators.lazy_property(write=False)
+    def connection(self):
+        """MongoDB client connection instance."""
+        return _connection(self.mongodb_conf)
+
+    @decorators.lazy_property(write=False)
+    def shards_database(self):
+        name = self.mongodb_conf.database + '_shards'
+        return self.connection[name]
 
     @property
     def shards_controller(self):

@@ -58,7 +58,7 @@ class Bootstrap(object):
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
         log.setup('marconi')
-        mode = 'admin' if self.conf.admin_mode else 'public'
+        mode = 'admin' if conf.admin_mode else 'public'
         self._transport_type = 'marconi.queues.{0}.transport'.format(mode)
 
     @decorators.lazy_property(write=False)

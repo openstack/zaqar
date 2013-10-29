@@ -332,3 +332,16 @@ class MongodbClaimTests(base.ClaimControllerTest):
         self.assertRaises(storage.exceptions.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
                           claim_id, {}, project=self.project)
+
+
+@testing.requires_mongodb
+class MongodbShardsTests(base.ShardsControllerTest):
+    driver_class = mongodb.ControlDriver
+    controller_class = controllers.ShardsController
+
+    def setUp(self):
+        super(MongodbShardsTests, self).setUp()
+        self.load_conf('wsgi_mongodb.conf')
+
+    def tearDown(self):
+        super(MongodbShardsTests, self).tearDown()

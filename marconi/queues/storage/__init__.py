@@ -9,3 +9,4 @@ DataDriverBase = base.DataDriverBase
 ClaimBase = base.ClaimBase
 MessageBase = base.MessageBase
 QueueBase = base.QueueBase
+ShardsBase = base.ShardsBase
