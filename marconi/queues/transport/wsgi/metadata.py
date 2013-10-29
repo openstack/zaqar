@@ -37,7 +37,7 @@ class Resource(object):
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue metadata GET - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -58,7 +58,7 @@ class Resource(object):
 
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(_(u'Queue metadata PUT - queue: %(queue)s, '
-                    u'project: %(project)s') %
+                    u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
         # Place JSON size restriction before parsing

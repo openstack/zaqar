@@ -478,13 +478,15 @@ class MessageController(storage.MessageBase):
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
-                    message = _(u'%(attempts)d attempt(s) required to post '
+                    msgtmpl = _(u'%(attempts)d attempt(s) required to post '
                                 u'%(num_messages)d messages to queue '
                                 u'"%(queue)s" under project %(project)s')
-                    message %= dict(queue=queue_name, attempts=attempt+1,
-                                    num_messages=len(ids), project=project)
 
-                    LOG.debug(message)
+                    LOG.debug(msgtmpl,
+                              dict(queue=queue_name,
+                                   attempts=attempt + 1,
+                                   num_messages=len(ids),
+                                   project=project))
 
                 # Update the counter in preparation for the next batch
                 #
@@ -513,12 +515,11 @@ class MessageController(storage.MessageBase):
                 #
                 # TODO(kgriffs): Add transaction ID to help match up loglines
                 if attempt == 0:
-                    message = _(u'First attempt failed while '
+                    msgtmpl = _(u'First attempt failed while '
                                 u'adding messages to queue '
                                 u'"%(queue)s" under project %(project)s')
-                    message %= dict(queue=queue_name, project=project)
 
-                    LOG.debug(message)
+                    LOG.debug(msgtmpl, dict(queue=queue_name, project=project))
 
                 # NOTE(kgriffs): Never retry past the point that competing
                 # messages expire and are GC'd, since once they are gone,
@@ -528,11 +529,11 @@ class MessageController(storage.MessageBase):
                 # this situation can not happen.
                 elapsed = timeutils.utcnow_ts() - now
                 if elapsed > MAX_RETRY_POST_DURATION:
-                    message = _(u'Exceeded maximum retry duration for queue '
+                    msgtmpl = _(u'Exceeded maximum retry duration for queue '
                                 u'"%(queue)s" under project %(project)s')
-                    message %= dict(queue=queue_name, project=project)
 
-                    LOG.warning(message)
+                    LOG.warning(msgtmpl,
+                                dict(queue=queue_name, project=project))
                     break
 
                 # Chill out for a moment to mitigate thrashing/thundering
@@ -572,14 +573,14 @@ class MessageController(storage.MessageBase):
                     next_marker = self._queue_ctrl._get_counter(
                         queue_name, project)
                 else:
-                    message = (u'Detected a stalled message counter for '
+                    msgtmpl = (u'Detected a stalled message counter for '
                                u'queue "%(queue)s" under project %(project)s. '
                                u'The counter was incremented to %(value)d.')
-                    message %= dict(queue=queue_name,
-                                    project=project,
-                                    value=next_marker)
 
-                    LOG.warning(message)
+                    LOG.warning(msgtmpl,
+                                dict(queue=queue_name,
+                                     project=project,
+                                     value=next_marker))
 
                 for index, message in enumerate(prepared_messages):
                     message['k'] = next_marker + index
@@ -592,13 +593,13 @@ class MessageController(storage.MessageBase):
                 LOG.exception(ex)
                 raise
 
-        message = _(u'Hit maximum number of attempts (%(max)s) for queue '
+        msgtmpl = _(u'Hit maximum number of attempts (%(max)s) for queue '
                     u'"%(queue)s" under project %(project)s')
-        message %= dict(max=self.driver.mongodb_conf.max_attempts,
-                        queue=queue_name,
-                        project=project)
 
-        LOG.warning(message)
+        LOG.warning(msgtmpl,
+                    dict(max=self.driver.mongodb_conf.max_attempts,
+                         queue=queue_name,
+                         project=project))
 
         succeeded_ids = []
         raise exceptions.MessageConflict(queue_name, project, succeeded_ids)

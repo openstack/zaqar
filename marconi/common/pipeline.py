@@ -87,9 +87,9 @@ class Pipeline(object):
                     target = getattr(stage, method)
                 except AttributeError:
                     sstage = six.text_type(stage)
-                    msg = _(u"Stage {0} does not implement {1}").format(sstage,
-                                                                        method)
-                    LOG.warning(msg)
+                    msgtmpl = _(u"Stage %(stage)s does not "
+                                "implement %(method)s")
+                    LOG.warning(msgtmpl, {'stage': sstage, 'method': method})
                     continue
 
                 result = target(*args, **kwargs)
@@ -101,8 +101,8 @@ class Pipeline(object):
                     return result
 
             if target is None:
-                msg = _(u'Method {0} not found in any of '
-                        'the registered stages').format(method)
+                msg = _(u'Method %s not found in any of '
+                        'the registered stages') % method
                 LOG.error(msg)
                 raise AttributeError(msg)
 

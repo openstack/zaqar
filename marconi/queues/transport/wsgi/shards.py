@@ -64,7 +64,7 @@ class Listing(object):
 
         :returns: HTTP | [200, 204]
         """
-        LOG.debug('LIST shards')
+        LOG.debug(u'LIST shards')
         resp = list(self._ctrl.list())
 
         if not resp:
@@ -97,7 +97,7 @@ class Resource(object):
 
         :returns: HTTP | [200, 404]
         """
-        LOG.debug('GET shard - name: {0}'.format(shard))
+        LOG.debug(u'GET shard - name: %s', shard)
         data = None
         try:
             data = self._ctrl.get(shard)
@@ -119,9 +119,9 @@ class Resource(object):
 
         :returns: HTTP | [201, 204]
         """
-        LOG.debug('PUT shard - name: {0}'.format(shard))
+        LOG.debug(u'PUT shard - name: %s', shard)
         if self._ctrl.exists(shard):
-            LOG.debug('Shard {0} already exists'.format(shard))
+            LOG.debug(u'Shard %s already exists', shard)
             response.status = falcon.HTTP_204
             return
 
@@ -138,7 +138,7 @@ class Resource(object):
 
         :returns: HTTP | 204
         """
-        LOG.debug('DELETE shard - name: {0}'.format(shard))
+        LOG.debug(u'DELETE shard - name: %s', shard)
         self._ctrl.delete(shard)
         response.status = falcon.HTTP_204
 
@@ -154,12 +154,12 @@ class Resource(object):
 
         :returns: HTTP | 200,400
         """
-        LOG.debug('PATCH shard - name: {0}'.format(shard))
+        LOG.debug(u'PATCH shard - name: %s', shard)
         data = utils.load(request)
 
         EXPECT = ('weight', 'location', 'options')
         if not any([(field in data) for field in EXPECT]):
-            LOG.debug('PATCH shard, bad params')
+            LOG.debug(u'PATCH shard, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 'One of `location`, `weight`, or `options` needs '
                 'to be specified'
