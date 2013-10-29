@@ -17,8 +17,8 @@ from marconi.queues import storage
 
 
 class DataDriver(storage.DataDriverBase):
-    def __init__(self, conf):
-        super(DataDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(DataDriver, self).__init__(conf, cache)
 
     @property
     def default_options(self):
@@ -42,8 +42,8 @@ class DataDriver(storage.DataDriverBase):
 
 class ControlDriver(storage.ControlDriverBase):
 
-    def __init__(self, conf):
-        super(ControlDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(ControlDriver, self).__init__(conf, cache)
 
     @property
     def catalogue_controller(self):

@@ -32,7 +32,22 @@ _LIMITS_GROUP = 'limits:storage'
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DataDriverBase(object):
+class DriverBase(object):
+    """Base class for both data and control plane drivers
+
+    :param conf: Configuration containing options for this driver.
+    :type conf: `oslo.config.ConfigOpts`
+    :param cache: Cache instance to use for reducing latency
+        for certain lookups.
+    :type cache: `marconi.common.cache.backends.BaseCache`
+    """
+    def __init__(self, conf, cache):
+        self.conf = conf
+        self.cache = cache
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DataDriverBase(DriverBase):
     """Interface definition for storage drivers.
 
     Data plane storage drivers are responsible for implementing the
@@ -41,16 +56,15 @@ class DataDriverBase(object):
     Connection information and driver-specific options are
     loaded from the config file or the shard catalog.
 
-    :param conf: Driver configuration. Can be any
-        dict-like object containing the expected
-        options. Must at least include 'uri' which
-        provides connection options such as host and
-        port.
-
+    :param conf: Configuration containing options for this driver.
+    :type conf: `oslo.config.ConfigOpts`
+    :param cache: Cache instance to use for reducing latency
+        for certain lookups.
+    :type cache: `marconi.common.cache.backends.BaseCache`
     """
 
-    def __init__(self, conf):
-        self.conf = conf
+    def __init__(self, conf, cache):
+        super(DataDriverBase, self).__init__(conf, cache)
 
         self.conf.register_opts(_LIMITS_OPTIONS, group=_LIMITS_GROUP)
         self.limits_conf = self.conf[_LIMITS_GROUP]
@@ -77,7 +91,7 @@ class DataDriverBase(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ControlDriverBase(object):
+class ControlDriverBase(DriverBase):
     """Interface definition for control plane storage drivers.
 
     Storage drivers that work at the control plane layer allow one to
@@ -86,10 +100,13 @@ class ControlDriverBase(object):
 
     Allows access to the shard registry through a catalogue and a
     shard controller.
-    """
 
-    def __init__(self, conf):
-        self.conf = conf
+    :param conf: Configuration containing options for this driver.
+    :type conf: `oslo.config.ConfigOpts`
+    :param cache: Cache instance to use for reducing latency
+        for certain lookups.
+    :type cache: `marconi.common.cache.backends.BaseCache`
+    """
 
     @abc.abstractproperty
     def catalogue_controller(self):

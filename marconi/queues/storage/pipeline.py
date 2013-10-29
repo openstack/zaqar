@@ -82,15 +82,15 @@ def _get_storage_pipeline(resource_name, conf):
 class DataDriver(base.DataDriverBase):
     """Meta-driver for injecting pipelines in front of controllers.
 
-    :param storage_conf: For real drivers, this would be used to
-        configure the storage, but in this case it is simply ignored.
     :param conf: Configuration from which to load pipeline settings
     :param storage: Storage driver that will service requests as the
         last step in the pipeline
     """
 
     def __init__(self, conf, storage):
-        super(DataDriver, self).__init__(conf)
+        # NOTE(kgriffs): Pass None for cache since it won't ever
+        # be referenced.
+        super(DataDriver, self).__init__(conf, None)
         self._storage = storage
 
     def is_alive(self):
