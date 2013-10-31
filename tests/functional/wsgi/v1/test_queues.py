@@ -24,11 +24,14 @@ from marconi.tests.functional import helpers
 
 
 class NamedBinaryStr(six.binary_type):
+
     """Wrapper for six.binary_type to facilitate overriding __name__."""
 
 
 class NamedUnicodeStr(object):
+
     """Unicode string look-alike to facilitate overriding __name__."""
+
     def __init__(self, value):
         self.value = value
 
@@ -48,6 +51,7 @@ class NamedUnicodeStr(object):
 
 
 class NamedDict(dict):
+
     """Wrapper for dict to facilitate overriding __name__."""
 
 
@@ -65,6 +69,7 @@ def annotated(test_name, test_input):
 
 @ddt.ddt
 class TestInsertQueue(base.FunctionalTestBase):
+
     """Tests for Insert queue."""
 
     server_class = base.MarconiServer
@@ -185,6 +190,7 @@ class TestInsertQueue(base.FunctionalTestBase):
 
 @ddt.ddt
 class TestQueueMetaData(base.FunctionalTestBase):
+
     """Tests for queue metadata."""
 
     server_class = base.MarconiServer
@@ -359,7 +365,7 @@ class TestQueueMisc(base.FunctionalTestBase):
 
         stats_url = self.queue_url + '/stats'
 
-        #Get stats on an empty queue
+        # Get stats on an empty queue
         result = self.client.get(stats_url)
         self.assertEqual(result.status_code, 200)
 
@@ -376,7 +382,7 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.addCleanup(self.client.delete, self.queue_url)
         self.assertEqual(result.status_code, 201)
 
-        #Post Messages to the test queue
+        # Post Messages to the test queue
         doc = helpers.create_message_body(messagecount=
                                           self.limits.message_paging_uplimit)
         message_url = self.queue_url + '/messages'
@@ -389,7 +395,7 @@ class TestQueueMisc(base.FunctionalTestBase):
             result = self.client.post(claim_url, data=doc)
             self.assertEqual(result.status_code, 201)
 
-        #Get stats on the queue.
+        # Get stats on the queue.
         stats_url = self.queue_url + '/stats'
         result = self.client.get(stats_url)
         self.assertEqual(result.status_code, 200)
@@ -400,3 +406,59 @@ class TestQueueMisc(base.FunctionalTestBase):
 
     def tearDown(self):
         super(TestQueueMisc, self).tearDown()
+
+
+class TestQueueNonExisting(base.FunctionalTestBase):
+
+    """Test Actions on non existing queue."""
+
+    server_class = base.MarconiServer
+
+    def setUp(self):
+        super(TestQueueNonExisting, self).setUp()
+        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+                                         self.cfg.marconi.version)
+        self.queue_url = self.base_url + \
+            '/queues/0a5b1b85-4263-11e3-b034-28cfe91478b9'
+        self.client.set_base_url(self.queue_url)
+
+        self.header = helpers.create_marconi_headers(self.cfg)
+        self.headers_response_empty = set(['location'])
+        self.header = helpers.create_marconi_headers(self.cfg)
+
+    def test_get_queue(self):
+        """Get non existing Queue."""
+        result = self.client.get()
+        self.assertEqual(result.status_code, 404)
+
+    def test_get_stats(self):
+        """Get stats on non existing Queue."""
+        result = self.client.get('/stats')
+        self.assertEqual(result.status_code, 404)
+
+    def test_get_metadata(self):
+        """Get metadata on non existing Queue."""
+        result = self.client.get('/metadata')
+        self.assertEqual(result.status_code, 404)
+
+    def test_get_messages(self):
+        """Get messages on non existing Queue."""
+        result = self.client.get('/messages')
+        self.assertEqual(result.status_code, 204)
+
+    def test_post_messages(self):
+        """Post messages to a non existing Queue."""
+        doc = [{"ttl": 200, "body": {"Home": ""}}]
+        result = self.client.post('/messages', data=doc)
+        self.assertEqual(result.status_code, 404)
+
+    def test_claim_messages(self):
+        """Claim messages from a non existing Queue."""
+        doc = {"ttl": 200, "grace": 300}
+        result = self.client.post('/claims', data=doc)
+        self.assertEqual(result.status_code, 204)
+
+    def test_delete_queue(self):
+        """Delete non existing Queue."""
+        result = self.client.delete()
+        self.assertEqual(result.status_code, 204)
