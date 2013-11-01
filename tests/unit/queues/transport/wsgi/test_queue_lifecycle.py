@@ -315,11 +315,11 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
 
+@testing.requires_mongodb
 class QueueLifecycleMongoDBTests(QueueLifecycleBaseTest):
 
     config_file = 'wsgi_mongodb.conf'
 
-    @testing.requires_mongodb
     def setUp(self):
         super(QueueLifecycleMongoDBTests, self).setUp()
 

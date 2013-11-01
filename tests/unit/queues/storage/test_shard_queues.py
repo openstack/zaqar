@@ -23,14 +23,13 @@ from marconi.common.cache import cache as oslo_cache
 from marconi.queues.storage import sharding
 from marconi.queues.storage import utils
 from marconi import tests as testing
-from marconi.tests import base
 
 
-class TestShardQueues(base.TestBase):
+@testing.requires_mongodb
+class ShardQueuesTest(testing.TestBase):
 
-    @testing.requires_mongodb
     def setUp(self):
-        super(TestShardQueues, self).setUp()
+        super(ShardQueuesTest, self).setUp()
         conf = self.load_conf('wsgi_mongodb_sharded.conf')
 
         conf.register_opts([cfg.StrOpt('storage')],
@@ -48,7 +47,7 @@ class TestShardQueues(base.TestBase):
 
     def tearDown(self):
         self.shards_ctrl.drop_all()
-        super(TestShardQueues, self).tearDown()
+        super(ShardQueuesTest, self).tearDown()
 
     def test_health(self):
         health = self.driver.is_alive()
