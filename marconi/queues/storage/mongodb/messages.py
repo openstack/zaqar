@@ -646,7 +646,14 @@ class MessageController(storage.MessageBase):
 
         else:
             if message['c']['id'] != cid:
-                raise errors.MessageIsClaimedBy(message_id, claim)
+                # NOTE(kgriffs): Read from primary in case the message
+                # was just barely claimed, and claim hasn't made it to
+                # the secondary.
+                pref = pymongo.read_preferences.ReadPreference.PRIMARY
+                message = collection.find_one(query, read_preference=pref)
+
+                if message['c']['id'] != cid:
+                    raise errors.MessageIsClaimedBy(message_id, claim)
 
         collection.remove(query['_id'], w=0)
 
