@@ -29,7 +29,10 @@ LOG = log.getLogger(__name__)
 
 _GENERAL_OPTIONS = [
     cfg.BoolOpt('sharding', default=False,
-                help='Enable sharding across multiple storage backends'),
+                help=('Enable sharding across multiple storage backends. ',
+                      'If sharding is enabled, the storage driver ',
+                      'configuration is used to determine where the ',
+                      'catalogue/control plane data is kept.')),
     cfg.BoolOpt('admin_mode', default=False,
                 help='Activate endpoints to manage shard registry.'),
 ]
@@ -67,7 +70,7 @@ class Bootstrap(object):
 
         if self.conf.sharding:
             LOG.debug(_(u'Storage sharding enabled'))
-            storage_driver = sharding.DataDriver(self.conf)
+            storage_driver = sharding.DataDriver(self.conf, self.control)
         else:
             storage_driver = storage_utils.load_storage_driver(self.conf)
 

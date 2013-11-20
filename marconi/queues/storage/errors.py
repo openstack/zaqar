@@ -122,3 +122,10 @@ class ShardDoesNotExist(DoesNotExist):
     def __init__(self, shard):
         msg = u'Shard {0} does not exists'.format(shard)
         super(ShardDoesNotExist, self).__init__(msg)
+
+
+class NoShardFound(Exception):
+
+    def __init__(self):
+        msg = u'No shards registered'
+        super(NoShardFound, self).__init__(msg)

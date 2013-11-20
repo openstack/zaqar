@@ -42,9 +42,18 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf):
         super(DataDriver, self).__init__(conf)
 
-        self.conf.register_opts(options.MONGODB_OPTIONS,
-                                group=options.MONGODB_GROUP)
+        opts = options.MONGODB_OPTIONS
 
+        # NOTE(cpp-cabrera): if this data driver is being loaded
+        # dynamically, as would be the case for a sharded context,
+        # filter out the options that were given by the shard
+        # catalogue to avoid DuplicateOptErrors.
+        if 'dynamic' in conf:
+            names = conf[options.MONGODB_GROUP].keys()
+            opts = filter(lambda x: x.name not in names, opts)
+
+        self.conf.register_opts(opts,
+                                group=options.MONGODB_GROUP)
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
 
     @decorators.lazy_property(write=False)

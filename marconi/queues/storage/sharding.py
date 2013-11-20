@@ -15,9 +15,13 @@
 # limitations under the License.
 
 from oslo.config import cfg
+import six
 
 from marconi.common import decorators
+from marconi.common.storage import select
+from marconi.common import utils as common_utils
 from marconi.queues import storage
+from marconi.queues.storage import errors
 from marconi.queues.storage import utils
 
 _CATALOG_OPTIONS = [
@@ -35,9 +39,9 @@ class DataDriver(storage.DataDriverBase):
     :param catalog_conf: Options pertaining to the shard catalog
     """
 
-    def __init__(self, conf):
+    def __init__(self, conf, control):
         super(DataDriver, self).__init__(conf)
-        self._shard_catalog = Catalog(conf)
+        self._shard_catalog = Catalog(conf, control)
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
@@ -91,64 +95,228 @@ class RoutingController(storage.base.ControllerBase):
 
 
 class QueueController(RoutingController):
-    """Controller to facilitate special processing for queue operations."""
+    """Controller to facilitate special processing for queue operations.
+    """
 
     _resource_name = 'queue'
 
     def __init__(self, shard_catalog):
         super(QueueController, self).__init__(shard_catalog)
+        self._lookup = self._shard_catalog.lookup
 
     def list(self, project=None, marker=None,
-             limit=None, detailed=False):
-        # TODO(kgriffs): SHARDING - Query all shards and merge
-        # the results, then return the resulting list.
+             limit=10, detailed=False):
+        # TODO(cpp-cabrera): fill in sharded list queues
+        # implementation.
 
-        # TODO(kgriffs): Remove this placeholder code - it is
-        # only here to make tests pass in the short term!
-        target = self._shard_catalog.lookup(None, project).queue_controller
-        return target.list(project=project, marker=marker,
-                           limit=limit, detailed=detailed)
+        return []
 
     def create(self, name, project=None):
         self._shard_catalog.register(name, project)
 
-        target = self._shard_catalog.lookup(name, project).queue_controller
-        return target.create(name, project)
+        # NOTE(cpp-cabrera): This should always succeed since we just
+        # registered the project/queue. There is a race condition,
+        # however. If between the time we register a queue and go to
+        # look it up, the queue is deleted, then this assertion will
+        # fail.
+        target = self._lookup(name, project)
+        if not target:
+            raise RuntimeError('Failed to register queue')
+
+        return target.queue_controller.create(name, project)
 
     def delete(self, name, project=None):
-        self._shard_catalog.deregister(name, project)
+        # NOTE(cpp-cabrera): If we fail to find a project/queue in the
+        # catalogue for a delete, just ignore it.
+        target = self._lookup(name, project)
+        if target:
 
-        target = self._shard_catalog.lookup(name, project).queue_controller
-        return target.delete(name, project)
+            # NOTE(cpp-cabrera): Now we found the controller. First,
+            # attempt to delete it from storage. IFF the deletion is
+            # successful, then remove it from the catalogue.
+            control = target.queue_controller
+            ret = control.delete(name, project)
+            self._shard_catalog.deregister(name, project)
+            return ret
+
+        return None
+
+    def exists(self, name, project=None, **kwargs):
+        target = self._lookup(name, project)
+        if target:
+            control = target.queue_controller
+            return control.exists(name, project=project)
+        return False
+
+    def get_metadata(self, name, project=None):
+        target = self._lookup(name, project)
+        if target:
+            control = target.queue_controller
+            return control.get_metadata(name, project=project)
+        raise errors.QueueDoesNotExist(name, project)
+
+    def set_metadata(self, name, metadata, project=None):
+        target = self._lookup(name, project)
+        if target:
+            control = target.queue_controller
+            return control.set_metadata(name, metadata=metadata,
+                                        project=project)
+        raise errors.QueueDoesNotExist(name, project)
+
+    def stats(self, name, project=None):
+        target = self._lookup(name, project)
+        if target:
+            control = target.queue_controller
+            return control.stats(name, project=project)
+        raise errors.QueueDoesNotExist(name, project)
 
 
 class MessageController(RoutingController):
     _resource_name = 'message'
 
+    def __init__(self, shard_catalog):
+        super(MessageController, self).__init__(shard_catalog)
+        self._lookup = self._shard_catalog.lookup
+
+    def post(self, queue, project, messages, client_uuid):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.post(queue, project=project,
+                                messages=messages,
+                                client_uuid=client_uuid)
+        raise errors.QueueDoesNotExist(project, queue)
+
+    def delete(self, queue, project, message_id, claim):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.delete(queue, project=project,
+                                  message_id=message_id, claim=claim)
+        return None
+
+    def bulk_delete(self, queue, project, message_ids):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.bulk_delete(queue, project=project,
+                                       message_ids=message_ids)
+        return None
+
+    def bulk_get(self, queue, project, message_ids):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.bulk_get(queue, project=project,
+                                    message_ids=message_ids)
+        return []
+
+    def list(self, queue, project, marker=None, limit=10, echo=False,
+             client_uuid=None, include_claimed=False):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.list(queue, project=project,
+                                marker=marker, limit=limit,
+                                echo=echo, client_uuid=client_uuid,
+                                include_claimed=include_claimed)
+        return iter([[]])
+
+    def get(self, queue, message_id, project):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.get(queue, message_id=message_id,
+                               project=project)
+        raise errors.QueueDoesNotExist(project, queue)
+
 
 class ClaimController(RoutingController):
     _resource_name = 'claim'
+
+    def __init__(self, shard_catalog):
+        super(ClaimController, self).__init__(shard_catalog)
+        self._lookup = self._shard_catalog.lookup
+
+    def create(self, queue, metadata, project=None, limit=None):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.claim_controller
+            return control.create(queue, metadata=metadata,
+                                  project=project, limit=limit)
+        return [None, []]
+
+    def get(self, queue, claim_id, project):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.claim_controller
+            return control.get(queue, claim_id=claim_id,
+                               project=project)
+        raise errors.ClaimDoesNotExist(claim_id, queue, project)
+
+    def update(self, queue, claim_id, metadata, project):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.claim_controller
+            return control.update(queue, claim_id=claim_id,
+                                  project=project, metadata=metadata)
+        raise errors.ClaimDoesNotExist(claim_id, queue, project)
+
+    def delete(self, queue, claim_id, project):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.claim_controller
+            return control.delete(queue, claim_id=claim_id,
+                                  project=project)
+        return None
 
 
 class Catalog(object):
     """Represents the mapping between queues and shard drivers."""
 
-    def __init__(self, conf):
-        self._shards = {}
+    def __init__(self, conf, control):
+        self._drivers = {}
         self._conf = conf
 
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
+        self._shards_ctrl = control.shards_controller
+        self._catalogue_ctrl = control.catalogue_controller
 
-    def _init_shard(self, shard_id):
-        # TODO(kgriffs): SHARDING - Read options from catalog backend
+    # FIXME(cpp-cabrera): https://bugs.launchpad.net/marconi/+bug/1252791
+    def _init_driver(self, shard_id):
+        """Given a shard name, returns a storage driver.
+
+        :param shard_id: The name of a shard.
+        :type shard_id: six.text_type
+        :returns: a storage driver
+        :rtype: marconi.queues.storage.base.DataDriver
+        """
+        shard = self._shards_ctrl.get(shard_id, detailed=True)
+
+        # NOTE(cpp-cabrera): make it *very* clear to data storage
+        # drivers that we are operating in sharding mode.
+        general_dict_opts = {'dynamic': True}
+        general_opts = common_utils.dict_to_conf(general_dict_opts)
+
+        # NOTE(cpp-cabrera): parse general opts: 'queues:drivers'
+        uri = shard['uri']
+        storage_type = six.moves.urllib_parse.urlparse(uri).scheme
+        driver_dict_opts = {'storage': storage_type}
+        driver_opts = common_utils.dict_to_conf(driver_dict_opts)
+
+        # NOTE(cpp-cabrera): parse storage-specific opts:
+        # 'queues:drivers:storage:{type}'
+        storage_dict_opts = shard['options']
+        storage_dict_opts['uri'] = shard['uri']
+        storage_opts = common_utils.dict_to_conf(storage_dict_opts)
+        storage_group = u'queues:drivers:storage:%s' % storage_type
+
+        # NOTE(cpp-cabrera): register those options!
         conf = cfg.ConfigOpts()
-
-        options = [
-            cfg.StrOpt('storage', default='sqlite'),
-        ]
-
-        conf.register_opts(options, group='queues:drivers')
+        conf.register_opts(general_opts)
+        conf.register_opts(driver_opts, group=u'queues:drivers')
+        conf.register_opts(storage_opts, group=storage_group)
         return utils.load_storage_driver(conf)
 
     def register(self, queue, project=None):
@@ -164,22 +332,34 @@ class Catalog(object):
         queue's assigned backend shard.
 
         :param queue: Name of the new queue to assign to a shard
+        :type queue: six.text_type
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
+        :type project: six.text_type
+        :raises: NoShardFound
         """
-
-        # TODO(kgriffs): SHARDING - Implement this!
-        pass
+        if not self._catalogue_ctrl.exists(project, queue):
+            # NOTE(cpp-cabrera): limit=0 implies unlimited - select from
+            # all shards
+            shard = select.weighted(self._shards_ctrl.list(limit=0))
+            if not shard:
+                raise errors.NoShardFound()
+            self._catalogue_ctrl.insert(project, queue, shard['name'])
 
     def deregister(self, queue, project=None):
         """Removes a queue from the shard catalog.
 
         Call this method after successfully deleting it from a
         backend shard.
-        """
 
-        # TODO(kgriffs): SHARDING - Implement this!
-        pass
+        :param queue: Name of the new queue to assign to a shard
+        :type queue: six.text_type
+        :param project: Project to which the queue belongs, or
+            None for the "global" or "generic" project.
+        :type project: six.text_type
+        """
+        # TODO(cpp-cabrera): invalidate cache here
+        self._catalogue_ctrl.delete(project, queue)
 
     def lookup(self, queue, project=None):
         """Lookup a shard driver for the given queue and project.
@@ -190,16 +370,19 @@ class Catalog(object):
 
         :returns: A storage driver instance for the appropriate shard. If
             the driver does not exist yet, it is created and cached.
+        :rtype: Maybe DataDriver
         """
 
-        # TODO(kgriffs): SHARDING - Raise an exception if the queue
-        # does not have a mapping (it does not exist).
-
-        # TODO(kgriffs): SHARDING - Get ID from the catalog backend
-        shard_id = '[insert_id]'
+        # TODO(cpp-cabrera): add caching lookup here
         try:
-            shard = self._shards[shard_id]
-        except KeyError:
-            self._shards[shard_id] = shard = self._init_shard(shard_id)
+            shard_id = self._catalogue_ctrl.get(project, queue)['shard']
+        except errors.QueueNotMapped:
+            return None
 
-        return shard
+        # NOTE(cpp-cabrera): cache storage driver connection
+        try:
+            driver = self._drivers[shard_id]
+        except KeyError:
+            self._drivers[shard_id] = driver = self._init_driver(shard_id)
+
+        return driver

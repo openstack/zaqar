@@ -121,7 +121,7 @@ class QueueBase(ControllerBase):
 
     @abc.abstractmethod
     def list(self, project=None, marker=None, limit=10,
-             detailed=False, include_claimed=True):
+             detailed=False):
         """Base method for listing queues.
 
         :param project: Project id
@@ -129,7 +129,6 @@ class QueueBase(ControllerBase):
         :param limit: (Default 10, configurable) Max number
             queues to return.
         :param detailed: Whether metadata is included
-        :param include_claimed: Whether to list claimed messages
 
         :returns: An iterator giving a sequence of queues
             and the marker of the next page.
@@ -208,7 +207,8 @@ class MessageBase(ControllerBase):
 
     @abc.abstractmethod
     def list(self, queue, project=None, marker=None,
-             limit=10, echo=False, client_uuid=None):
+             limit=None, echo=False, client_uuid=None,
+             include_claimed=False):
         """Base method for listing messages.
 
         :param queue: Name of the queue to get the
@@ -217,9 +217,12 @@ class MessageBase(ControllerBase):
         :param marker: Tail identifier
         :param limit: (Default 10, configurable) Max number
             messages to return.
+        :type limit: Maybe int
         :param echo: (Default False) Boolean expressing whether
             or not this client should receive its own messages.
         :param client_uuid: A UUID object. Required when echo=False.
+        :param include_claimed: omit claimed messages from listing?
+        :type include_claimed: bool
 
         :returns: An iterator giving a sequence of messages and
             the marker of the next page.
