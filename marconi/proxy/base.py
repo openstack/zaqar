@@ -32,7 +32,7 @@ _bootstrap_options = [
 ]
 
 CFG = cfg.CONF
-CFG.register_opts(_bootstrap_options, group="proxy:drivers")
+CFG.register_opts(_bootstrap_options, group="drivers")
 
 LOG = log.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Proxy Storage Driver'))
         try:
             mgr = driver.DriverManager('marconi.proxy.storage',
-                                       CFG['proxy:drivers'].storage,
+                                       CFG['drivers'].storage,
                                        invoke_on_load=True)
             return mgr.driver
         except RuntimeError as exc:
@@ -85,7 +85,7 @@ class Bootstrap(object):
         LOG.debug(_(u'Loading Proxy Transport Driver'))
         try:
             mgr = driver.DriverManager(self._transport_type,
-                                       CFG['proxy:drivers'].transport,
+                                       CFG['drivers'].transport,
                                        invoke_on_load=True,
                                        invoke_args=[self.storage,
                                                     self.cache])

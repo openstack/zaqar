@@ -29,7 +29,7 @@ _TRANSPORT_LIMITS_OPTIONS = [
     cfg.IntOpt('claim_grace_max', default=43200),
 ]
 
-_TRANSPORT_LIMITS_GROUP = 'queues:limits:transport'
+_TRANSPORT_LIMITS_GROUP = 'limits:transport'
 
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.

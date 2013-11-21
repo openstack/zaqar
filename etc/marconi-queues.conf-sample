@@ -31,7 +31,7 @@ log_file = /var/log/marconi/queues.log
 
 # ================= Driver Options ============================
 
-[queues:drivers]
+[drivers]
 # Transport driver module (e.g., wsgi, zmq)
 transport = wsgi
 
@@ -47,7 +47,7 @@ storage = mongodb
 # Pipeline for operations on claim resources
 ;claim_pipeline =
 
-[queues:drivers:transport:wsgi]
+[drivers:transport:wsgi]
 ;bind = 0.0.0.0
 ;port = 8888
 
@@ -56,10 +56,10 @@ storage = mongodb
 ;metadata_max_length = 65536
 ;content_max_length = 262144
 
-;[queues:drivers:transport:zmq]
+;[drivers:transport:zmq]
 ;port = 9999
 
-[queues:drivers:storage:mongodb]
+[drivers:storage:mongodb]
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
 database = marconi
 
@@ -83,7 +83,7 @@ database = marconi
 # at the same instant.
 ;max_retry_jitter = 0.005
 
-[queues:limits:transport]
+[limits:transport]
 # The maximum number of queue records per page when listing queues
 ;queue_paging_uplimit = 20
 
@@ -102,7 +102,7 @@ database = marconi
 ;metadata_size_uplimit = 65536
 ;message_size_uplimit = 262144
 
-[queues:limits:storage]
+[limits:storage]
 # The default number of queue records per page when listing queues
 ;default_queue_paging = 10
 

@@ -28,7 +28,7 @@ _LIMITS_OPTIONS = [
                help='Default message pagination size')
 ]
 
-_LIMITS_GROUP = 'queues:limits:storage'
+_LIMITS_GROUP = 'limits:storage'
 
 
 @six.add_metaclass(abc.ABCMeta)

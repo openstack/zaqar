@@ -39,7 +39,7 @@ _WSGI_OPTIONS = [
     cfg.IntOpt('metadata_max_length', default=64 * 1024)
 ]
 
-_WSGI_GROUP = 'queues:drivers:transport:wsgi'
+_WSGI_GROUP = 'drivers:transport:wsgi'
 
 LOG = logging.getLogger(__name__)
 

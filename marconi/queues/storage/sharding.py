@@ -29,7 +29,7 @@ _CATALOG_OPTIONS = [
                help='Catalog storage driver'),
 ]
 
-_CATALOG_GROUP = 'queues:sharding:catalog'
+_CATALOG_GROUP = 'sharding:catalog'
 
 
 class DataDriver(storage.DataDriverBase):
@@ -299,23 +299,23 @@ class Catalog(object):
         general_dict_opts = {'dynamic': True}
         general_opts = common_utils.dict_to_conf(general_dict_opts)
 
-        # NOTE(cpp-cabrera): parse general opts: 'queues:drivers'
+        # NOTE(cpp-cabrera): parse general opts: 'drivers'
         uri = shard['uri']
         storage_type = six.moves.urllib_parse.urlparse(uri).scheme
         driver_dict_opts = {'storage': storage_type}
         driver_opts = common_utils.dict_to_conf(driver_dict_opts)
 
         # NOTE(cpp-cabrera): parse storage-specific opts:
-        # 'queues:drivers:storage:{type}'
+        # 'drivers:storage:{type}'
         storage_dict_opts = shard['options']
         storage_dict_opts['uri'] = shard['uri']
         storage_opts = common_utils.dict_to_conf(storage_dict_opts)
-        storage_group = u'queues:drivers:storage:%s' % storage_type
+        storage_group = u'drivers:storage:%s' % storage_type
 
         # NOTE(cpp-cabrera): register those options!
         conf = cfg.ConfigOpts()
         conf.register_opts(general_opts)
-        conf.register_opts(driver_opts, group=u'queues:drivers')
+        conf.register_opts(driver_opts, group=u'drivers')
         conf.register_opts(storage_opts, group=storage_group)
         return utils.load_storage_driver(conf)
 

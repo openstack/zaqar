@@ -44,7 +44,7 @@ _DRIVER_OPTIONS = [
                help='Storage driver to use'),
 ]
 
-_DRIVER_GROUP = 'queues:drivers'
+_DRIVER_GROUP = 'drivers'
 
 
 class Bootstrap(object):

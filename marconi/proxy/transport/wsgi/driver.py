@@ -41,10 +41,10 @@ _WSGI_OPTIONS = [
 
 cfg.CONF.register_opt(cfg.StrOpt('auth_strategy', default=''))
 cfg.CONF.register_opts(_WSGI_OPTIONS,
-                       group='proxy:drivers:transport:wsgi')
+                       group='drivers:transport:wsgi')
 
 GLOBAL_CFG = cfg.CONF
-WSGI_CFG = cfg.CONF['proxy:drivers:transport:wsgi']
+WSGI_CFG = cfg.CONF['drivers:transport:wsgi']
 
 LOG = logging.getLogger(__name__)
 

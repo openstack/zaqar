@@ -35,7 +35,7 @@ class MessagesBaseTest(base.TestBase):
 
         if self.conf.sharding:
             for i in range(4):
-                uri = self.conf['queues:drivers:storage:mongodb'].uri
+                uri = self.conf['drivers:storage:mongodb'].uri
                 doc = {'weight': 100, 'uri': uri}
                 self.simulate_put('/v1/shards/' + str(i),
                                   body=json.dumps(doc))

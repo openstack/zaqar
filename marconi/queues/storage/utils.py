@@ -28,14 +28,14 @@ def load_storage_driver(conf, control_mode=False):
     The driver's initializer will be passed conf as its only arg.
 
     :param conf: Configuration instance to use for loading the
-        driver. Must include a 'queues:drivers' group.
+        driver. Must include a 'drivers' group.
     """
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'marconi.queues.{0}.storage'.format(mode)
     try:
         mgr = driver.DriverManager(driver_type,
-                                   conf['queues:drivers'].storage,
+                                   conf['drivers'].storage,
                                    invoke_on_load=True,
                                    invoke_args=[conf])
         return mgr.driver

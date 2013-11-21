@@ -36,7 +36,7 @@ class TestShardCatalog(testing.TestBase):
         super(TestShardCatalog, self).setUp()
 
         self.conf.register_opts([cfg.StrOpt('storage')],
-                                group='queues:drivers')
+                                group='drivers')
         control = utils.load_storage_driver(self.conf, control_mode=True)
         self.catalogue_ctrl = control.catalogue_controller
         self.shards_ctrl = control.shards_controller

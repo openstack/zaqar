@@ -53,4 +53,4 @@ MONGODB_OPTIONS = [
                        'same instant.')),
 ]
 
-MONGODB_GROUP = 'queues:drivers:storage:mongodb'
+MONGODB_GROUP = 'drivers:storage:mongodb'

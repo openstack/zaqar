@@ -27,6 +27,6 @@ _MONGODB_OPTIONS = [
     cfg.StrOpt('database', default='marconi_proxy', help='Database name'),
 ]
 
-_GROUP = 'proxy:drivers:storage:mongodb'
+_GROUP = 'drivers:storage:mongodb'
 cfg.CONF.register_opts(_MONGODB_OPTIONS, group=_GROUP)
 CFG = cfg.CONF[_GROUP]

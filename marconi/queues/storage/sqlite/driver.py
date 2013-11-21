@@ -31,7 +31,7 @@ _SQLITE_OPTIONS = [
                help='Sqlite database to use.')
 ]
 
-_SQLITE_GROUP = 'queues:drivers:storage:sqlite'
+_SQLITE_GROUP = 'drivers:storage:sqlite'
 
 
 class DataDriver(storage.DataDriverBase):
