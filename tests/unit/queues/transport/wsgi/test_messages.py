@@ -420,6 +420,23 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_get(location, self.project_id)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
+    def test_no_duplicated_messages_path_in_href(self):
+        """Fixes bug 1240897
+        """
+        path = self.queue_path + '/messages'
+        self._post_messages(path, repeat=1)
+
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+
+        query_string = 'ids=%s' % msg_id
+        body = self.simulate_get(path, self.project_id,
+                                 query_string=query_string,
+                                 headers=self.headers)
+        messages = json.loads(body[0])
+
+        self.assertNotIn(self.queue_path + '/messages/messages',
+                         messages[0]['href'])
+
     def _post_messages(self, target, repeat=1):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * repeat)
         return self.simulate_post(target, self.project_id, body=doc,

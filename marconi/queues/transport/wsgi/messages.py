@@ -205,8 +205,7 @@ class CollectionResource(object):
         if ids is None:
             response = self._get(req, project_id, queue_name)
         else:
-            base_path = req.path + '/messages'
-            response = self._get_by_id(base_path, project_id, queue_name, ids)
+            response = self._get_by_id(req.path, project_id, queue_name, ids)
 
         if response is None:
             resp.status = falcon.HTTP_204
