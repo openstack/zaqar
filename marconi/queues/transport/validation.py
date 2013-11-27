@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import re
 
 from oslo.config import cfg
-import simplejson as json
 
 
 _TRANSPORT_LIMITS_OPTIONS = [
