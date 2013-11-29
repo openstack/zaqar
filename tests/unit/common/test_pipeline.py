@@ -63,7 +63,7 @@ class TestPipeLine(base.TestBase):
                                            SecondClass()])
 
     def test_attribute_error(self):
-        consumer = self.pipeline.consumer_for('does_not_exist')
+        consumer = self.pipeline.does_not_exist
         self.assertRaises(AttributeError, consumer)
 
     def test_with_args(self):
@@ -87,3 +87,9 @@ class TestPipeLine(base.TestBase):
 
     def test_calls_the_latest(self):
         self.assertTrue(self.pipeline.calls_the_latest())
+
+    def test_pipeline_context_manager(self):
+        ctxt = self.pipeline.consumer_for('does_nothing')
+
+        with ctxt as consumer:
+            self.assertIsNone(consumer())

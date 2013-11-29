@@ -30,6 +30,8 @@ At least one of the stages has to implement the calling method. If none of
 them do, an AttributeError exception will be raised.
 """
 
+import contextlib
+
 import six
 
 from marconi.common import decorators
@@ -48,8 +50,10 @@ class Pipeline(object):
 
     @decorators.cached_getattr
     def __getattr__(self, name):
-        return self.consumer_for(name)
+        with self.consumer_for(name) as consumer:
+            return consumer
 
+    @contextlib.contextmanager
     def consumer_for(self, method):
         """Creates a closure for `method`
 
@@ -106,4 +110,4 @@ class Pipeline(object):
                 LOG.error(msg)
                 raise AttributeError(msg)
 
-        return consumer
+        yield consumer
