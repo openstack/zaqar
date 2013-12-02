@@ -120,8 +120,8 @@ class QueueBase(ControllerBase):
     """
 
     @abc.abstractmethod
-    def list(self, project=None, marker=None, limit=10,
-             detailed=False):
+    def list(self, project=None, marker=None,
+             limit=None, detailed=False):
         """Base method for listing queues.
 
         :param project: Project id
@@ -335,7 +335,7 @@ class ClaimBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, queue, metadata, project=None, limit=10):
+    def create(self, queue, metadata, project=None, limit=None):
         """Base method for creating a claim.
 
         :param queue: Name of the queue this

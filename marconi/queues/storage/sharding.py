@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import heapq
+import itertools
+
 from oslo.config import cfg
 import six
 
@@ -105,11 +108,36 @@ class QueueController(RoutingController):
         self._lookup = self._shard_catalog.lookup
 
     def list(self, project=None, marker=None,
-             limit=10, detailed=False):
-        # TODO(cpp-cabrera): fill in sharded list queues
-        # implementation.
+             limit=None, detailed=False):
 
-        return []
+        def all_pages():
+            for shard in self._shard_catalog._shards_ctrl.list(limit=0):
+                yield next(self._shard_catalog.get_driver(shard['name'])
+                           .queue_controller.list(
+                               project=project,
+                               marker=marker,
+                               limit=limit,
+                               detailed=detailed))
+
+        # make a heap compared with 'name'
+        ls = heapq.merge(*[
+            utils.keyify('name', page)
+            for page in all_pages()
+        ])
+
+        if limit is None:
+            limit = self._shard_catalog._limits_conf.default_queue_paging
+
+        marker_name = {}
+
+        # limit the iterator and strip out the comparison wrapper
+        def it():
+            for queue_cmp in itertools.islice(ls, limit):
+                marker_name['next'] = queue_cmp.obj['name']
+                yield queue_cmp.obj
+
+        yield it()
+        yield marker_name['next']
 
     def create(self, name, project=None):
         self._shard_catalog.register(name, project)
@@ -211,8 +239,8 @@ class MessageController(RoutingController):
                                     message_ids=message_ids)
         return []
 
-    def list(self, queue, project, marker=None, limit=10, echo=False,
-             client_uuid=None, include_claimed=False):
+    def list(self, queue, project, marker=None, limit=None,
+             echo=False, client_uuid=None, include_claimed=False):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
@@ -280,6 +308,11 @@ class Catalog(object):
 
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
+
+        self._conf.register_opts(storage.base._LIMITS_OPTIONS,
+                                 group=storage.base._LIMITS_GROUP)
+        self._limits_conf = self._conf[storage.base._LIMITS_GROUP]
+
         self._shards_ctrl = control.shards_controller
         self._catalogue_ctrl = control.catalogue_controller
 
@@ -379,10 +412,20 @@ class Catalog(object):
         except errors.QueueNotMapped:
             return None
 
+        return self.get_driver(shard_id)
+
+    def get_driver(self, shard_id):
+        """Get storage driver, preferabaly cached, fron a shard name.
+
+        :param shard_id: The name of a shard.
+        :type shard_id: six.text_type
+        :returns: a storage driver
+        :rtype: marconi.queues.storage.base.DataDriver
+        """
+
         # NOTE(cpp-cabrera): cache storage driver connection
         try:
-            driver = self._drivers[shard_id]
+            return self._drivers[shard_id]
         except KeyError:
-            self._drivers[shard_id] = driver = self._init_driver(shard_id)
-
-        return driver
+            self._drivers[shard_id] = self._init_driver(shard_id)
+            return self._drivers[shard_id]
