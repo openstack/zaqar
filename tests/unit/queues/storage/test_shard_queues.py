@@ -33,7 +33,7 @@ class TestShardQueues(base.TestBase):
         conf = self.load_conf('wsgi_mongodb_sharded.conf')
 
         conf.register_opts([cfg.StrOpt('storage')],
-                           group='queues:drivers')
+                           group='drivers')
 
         control = utils.load_storage_driver(conf, control_mode=True)
         self.shards_ctrl = control.shards_controller
