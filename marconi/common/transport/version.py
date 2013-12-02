@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""version: version information for the proxy transport API."""
+"""version: version information for the transport API."""
 
 
 def info():
