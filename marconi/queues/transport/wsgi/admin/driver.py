@@ -30,5 +30,5 @@ class Driver(public_driver.Driver):
             ('/shards/{shard}',
              shards.Resource(shards_controller)),
             ('/health',
-             health.Resource())
+             health.Resource(self._storage))
         ]

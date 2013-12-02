@@ -93,6 +93,9 @@ class DataDriver(base.DataDriverBase):
         super(DataDriver, self).__init__(conf)
         self._storage = storage
 
+    def is_alive(self):
+        return self._storage.is_alive()
+
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         stages = _get_storage_pipeline('queue', self.conf)

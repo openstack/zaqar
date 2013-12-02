@@ -55,6 +55,11 @@ class DataDriverBase(object):
         self.conf.register_opts(_LIMITS_OPTIONS, group=_LIMITS_GROUP)
         self.limits_conf = self.conf[_LIMITS_GROUP]
 
+    @abc.abstractmethod
+    def is_alive(self):
+        """Check whether the storage is ready."""
+        raise NotImplementedError
+
     @abc.abstractproperty
     def queue_controller(self):
         """Returns the driver's queue controller."""

@@ -185,6 +185,9 @@ class DataDriver(storage.DataDriverBase):
             self.__conn.rollback()
             raise
 
+    def is_alive(self):
+        return True
+
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         return controllers.QueueController(self)

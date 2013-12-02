@@ -46,6 +46,11 @@ class DataDriver(storage.DataDriverBase):
         super(DataDriver, self).__init__(conf)
         self._shard_catalog = Catalog(conf, control)
 
+    def is_alive(self):
+        return all(self._shard_catalog.get_driver(shard['name']).is_alive()
+                   for shard in
+                   self._shard_catalog._shards_ctrl.list(limit=0))
+
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         return QueueController(self._shard_catalog)
