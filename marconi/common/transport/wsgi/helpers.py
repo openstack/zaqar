@@ -16,7 +16,6 @@
 """wsgi transport helpers."""
 
 import falcon
-import six
 
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import validation
@@ -46,11 +45,11 @@ X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
 and retry.'''))
 
 
-def validate_queue_name(validate, req, resp, params):
-    """Hook for validating the queue name specified in a request.
+def validate_queue_identification(validate, req, resp, params):
+    """Hook for validating the queue name and project id in requests.
 
-    Validation is short-circuited if 'queue_name' does not
-    exist in `params`.
+    The queue name validation is short-circuited if 'queue_name' does
+    not exist in `params`.
 
     This hook depends on the `get_project` hook, which must be
     installed upstream.
@@ -67,11 +66,12 @@ def validate_queue_name(validate, req, resp, params):
     """
 
     try:
-        validate(params['queue_name'])
+        validate(params['queue_name'],
+                 params['project_id'])
     except KeyError:
         # NOTE(kgriffs): queue_name not in params, so nothing to do
         pass
-    except validation.ValidationFailed as ex:
+    except validation.ValidationFailed:
         project = params['project_id']
         queue = params['queue_name'].decode('utf-8', 'replace')
 
@@ -79,10 +79,9 @@ def validate_queue_name(validate, req, resp, params):
                    u'project: %(project)s'),
                  {'queue': queue, 'project': project})
 
-        info = six.text_type(ex) or _(u'The format of the submitted '
-                                      u'queue name is not valid.')
-
-        raise falcon.HTTPBadRequest(_(u'Invalid queue name'), info)
+        raise falcon.HTTPBadRequest(_(u'Invalid queue identification'),
+                                    _(u'The format of the submitted queue '
+                                      u'name or project id is not valid.'))
 
 
 def require_accepts_json(req, resp, params):

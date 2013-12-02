@@ -66,8 +66,8 @@ class DriverBase(transport.DriverBase):
             helpers.extract_project_id,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
-            functools.partial(helpers.validate_queue_name,
-                              self._validate.queue_name)
+            functools.partial(helpers.validate_queue_identification,
+                              self._validate.queue_identification)
         ]
 
     def _init_routes(self):
