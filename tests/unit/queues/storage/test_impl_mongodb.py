@@ -33,15 +33,12 @@ from marconi import tests as testing
 from marconi.tests.queues.storage import base
 
 
-class MongodbTestMixin(object):
+def _cleanup_databases(controller):
+    databases = (controller.driver.message_databases +
+                 [controller.driver.queues_database])
 
-    def _purge_databases(self):
-        """Override to clean databases."""
-        databases = (self.driver.message_databases +
-                     [self.driver.queues_database])
-
-        for db in databases:
-            self.driver.connection.drop_database(db)
+    for db in databases:
+        controller.driver.connection.drop_database(db)
 
 
 class MongodbUtilsTest(testing.TestBase):
@@ -88,9 +85,12 @@ class MongodbUtilsTest(testing.TestBase):
 
 
 @testing.requires_mongodb
-class MongodbDriverTest(testing.TestBase, MongodbTestMixin):
+class MongodbDriverTest(testing.TestBase):
 
     config_file = 'wsgi_mongodb.conf'
+
+    def _purge_databases(self):
+        _cleanup_databases(self)
 
     def test_db_instance(self):
         cache = oslo_cache.get_cache(self.conf)
@@ -105,11 +105,14 @@ class MongodbDriverTest(testing.TestBase, MongodbTestMixin):
 
 
 @testing.requires_mongodb
-class MongodbQueueTests(base.QueueControllerTest, MongodbTestMixin):
+class MongodbQueueTests(base.QueueControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.QueueController
+
+    def _purge_databases(self):
+        _cleanup_databases(self)
 
     def _prepare_conf(self):
         self.config(options.MONGODB_GROUP,
@@ -142,7 +145,7 @@ class MongodbQueueTests(base.QueueControllerTest, MongodbTestMixin):
 
 
 @testing.requires_mongodb
-class MongodbMessageTests(base.MessageControllerTest, MongodbTestMixin):
+class MongodbMessageTests(base.MessageControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
@@ -150,6 +153,9 @@ class MongodbMessageTests(base.MessageControllerTest, MongodbTestMixin):
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
+
+    def _purge_databases(self):
+        _cleanup_databases(self)
 
     def _prepare_conf(self):
         self.config(options.MONGODB_GROUP,
@@ -296,11 +302,14 @@ class MongodbMessageTests(base.MessageControllerTest, MongodbTestMixin):
 
 
 @testing.requires_mongodb
-class MongodbClaimTests(base.ClaimControllerTest, MongodbTestMixin):
+class MongodbClaimTests(base.ClaimControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.ClaimController
+
+    def _purge_databases(self):
+        _cleanup_databases(self)
 
     def _prepare_conf(self):
         self.config(options.MONGODB_GROUP,
