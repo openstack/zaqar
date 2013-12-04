@@ -36,8 +36,8 @@ _SQLITE_GROUP = 'drivers:storage:sqlite'
 
 class DataDriver(storage.DataDriverBase):
 
-    def __init__(self, conf):
-        super(DataDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(DataDriver, self).__init__(conf, cache)
 
         self.conf.register_opts(_SQLITE_OPTIONS, group=_SQLITE_GROUP)
         self.sqlite_conf = self.conf[_SQLITE_GROUP]
@@ -211,8 +211,8 @@ class DataDriver(storage.DataDriverBase):
 
 class ControlDriver(storage.ControlDriverBase):
 
-    def __init__(self, conf):
-        super(ControlDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(ControlDriver, self).__init__(conf, cache)
 
         self.conf.register_opts(_SQLITE_OPTIONS, group=_SQLITE_GROUP)
         self.sqlite_conf = self.conf[_SQLITE_GROUP]

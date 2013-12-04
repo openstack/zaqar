@@ -70,9 +70,11 @@ class Bootstrap(object):
 
         if self.conf.sharding:
             LOG.debug(_(u'Storage sharding enabled'))
-            storage_driver = sharding.DataDriver(self.conf, self.control)
+            storage_driver = sharding.DataDriver(self.conf, self.cache,
+                                                 self.control)
         else:
-            storage_driver = storage_utils.load_storage_driver(self.conf)
+            storage_driver = storage_utils.load_storage_driver(
+                self.conf, self.cache)
 
         LOG.debug(_(u'Loading storage pipeline'))
         return pipeline.DataDriver(self.conf, storage_driver)
@@ -80,12 +82,12 @@ class Bootstrap(object):
     @decorators.lazy_property(write=False)
     def control(self):
         LOG.debug(_(u'Loading storage control driver'))
-        return storage_utils.load_storage_driver(self.conf,
+        return storage_utils.load_storage_driver(self.conf, self.cache,
                                                  control_mode=True)
 
     @decorators.lazy_property(write=False)
     def cache(self):
-        LOG.debug(_(u'Loading Proxy Cache Driver'))
+        LOG.debug(_(u'Loading proxy cache driver'))
         try:
             mgr = oslo_cache.get_cache(self.conf)
             return mgr

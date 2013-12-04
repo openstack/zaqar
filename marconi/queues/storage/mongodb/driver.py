@@ -39,8 +39,8 @@ def _connection(conf):
 
 class DataDriver(storage.DataDriverBase):
 
-    def __init__(self, conf):
-        super(DataDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(DataDriver, self).__init__(conf, cache)
 
         opts = options.MONGODB_OPTIONS
 
@@ -112,8 +112,8 @@ class DataDriver(storage.DataDriverBase):
 
 class ControlDriver(storage.ControlDriverBase):
 
-    def __init__(self, conf):
-        super(ControlDriver, self).__init__(conf)
+    def __init__(self, conf, cache):
+        super(ControlDriver, self).__init__(conf, cache)
 
         self.conf.register_opts(options.MONGODB_OPTIONS,
                                 group=options.MONGODB_GROUP)

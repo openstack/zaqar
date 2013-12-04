@@ -38,13 +38,16 @@ _CATALOG_GROUP = 'sharding:catalog'
 class DataDriver(storage.DataDriverBase):
     """Sharding meta-driver for routing requests to multiple backends.
 
-    :param storage_conf: Ignored, since this is a meta-driver
-    :param catalog_conf: Options pertaining to the shard catalog
+    :param conf: Configuration from which to read sharding options
+    :param cache: Cache instance that will be passed to individual
+        storage driver instances that correspond to each shard. will
+        also be used by the shard controller to reduce latency for
+        some operations.
     """
 
-    def __init__(self, conf, control):
-        super(DataDriver, self).__init__(conf)
-        self._shard_catalog = Catalog(conf, control)
+    def __init__(self, conf, cache, control):
+        super(DataDriver, self).__init__(conf, cache)
+        self._shard_catalog = Catalog(conf, cache, control)
 
     def is_alive(self):
         return all(self._shard_catalog.get_driver(shard['name']).is_alive()
@@ -307,9 +310,10 @@ class ClaimController(RoutingController):
 class Catalog(object):
     """Represents the mapping between queues and shard drivers."""
 
-    def __init__(self, conf, control):
+    def __init__(self, conf, cache, control):
         self._drivers = {}
         self._conf = conf
+        self._cache = cache
 
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
@@ -355,7 +359,7 @@ class Catalog(object):
         conf.register_opts(general_opts)
         conf.register_opts(driver_opts, group=u'drivers')
         conf.register_opts(storage_opts, group=storage_group)
-        return utils.load_storage_driver(conf)
+        return utils.load_storage_driver(conf, self._cache)
 
     def register(self, queue, project=None):
         """Register a new queue in the shard catalog.

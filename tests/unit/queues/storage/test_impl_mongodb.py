@@ -21,6 +21,7 @@ from pymongo import cursor
 import pymongo.errors
 from testtools import matchers
 
+from marconi.common.cache import cache as oslo_cache
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
 from marconi.queues.storage import errors
@@ -92,7 +93,8 @@ class MongodbDriverTest(testing.TestBase, MongodbTestMixin):
     config_file = 'wsgi_mongodb.conf'
 
     def test_db_instance(self):
-        driver = mongodb.DataDriver(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
+        driver = mongodb.DataDriver(self.conf, cache)
 
         databases = (driver.message_databases +
                      [driver.queues_database])

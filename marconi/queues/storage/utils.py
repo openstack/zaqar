@@ -22,22 +22,30 @@ from marconi.openstack.common import log
 LOG = log.getLogger(__name__)
 
 
-def load_storage_driver(conf, control_mode=False):
+def load_storage_driver(conf, cache, control_mode=False):
     """Loads a storage driver and returns it.
 
-    The driver's initializer will be passed conf as its only arg.
+    The driver's initializer will be passed conf and cache as
+    its positional args.
 
     :param conf: Configuration instance to use for loading the
         driver. Must include a 'drivers' group.
+    :param cache: Cache instance that the driver can (optionally)
+        use to reduce latency for some operations.
+    :param control_mode: (Default False). Determines which
+        driver type to load; if False, the data driver is
+        loaded. If True, the control driver is loaded.
     """
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'marconi.queues.{0}.storage'.format(mode)
+
     try:
         mgr = driver.DriverManager(driver_type,
                                    conf['drivers'].storage,
                                    invoke_on_load=True,
-                                   invoke_args=[conf])
+                                   invoke_args=[conf, cache])
+
         return mgr.driver
 
     except RuntimeError as exc:

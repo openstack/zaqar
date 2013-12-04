@@ -21,6 +21,7 @@ import ddt
 import six
 from testtools import matchers
 
+from marconi.common.cache import cache as oslo_cache
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
 from marconi.queues.storage import errors
@@ -46,7 +47,8 @@ class ControllerBaseTest(testing.TestBase):
                               self.controller_class,
                               self.controller_base_class))
 
-        self.driver = self.driver_class(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
+        self.driver = self.driver_class(self.conf, cache)
         self._prepare_conf()
 
         self.addCleanup(self._purge_databases)
