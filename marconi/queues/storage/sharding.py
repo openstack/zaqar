@@ -23,9 +23,12 @@ import six
 from marconi.common import decorators
 from marconi.common.storage import select
 from marconi.common import utils as common_utils
+from marconi.openstack.common import log
 from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage import utils
+
+LOG = log.getLogger(__name__)
 
 _CATALOG_OPTIONS = [
     cfg.IntOpt('storage', default='sqlite',
@@ -33,6 +36,24 @@ _CATALOG_OPTIONS = [
 ]
 
 _CATALOG_GROUP = 'sharding:catalog'
+
+# NOTE(kgriffs): E.g.: 'marconi-sharding:5083853/my-queue'
+_SHARD_CACHE_PREFIX = 'sharding:'
+
+# TODO(kgriffs): If a queue is migrated, everyone's
+# caches need to have the relevant entry invalidated
+# before "unfreezing" the queue, rather than waiting
+# on the TTL.
+#
+# TODO(kgriffs): Make configurable?
+_SHARD_CACHE_TTL = 10
+
+
+def _shard_cache_key(queue, project=None):
+    # NOTE(kgriffs): Use string concatenation for performance,
+    # also put project first since it is guaranteed to be
+    # unique, which should reduce lookup time.
+    return _SHARD_CACHE_PREFIX + str(project) + '/' + queue
 
 
 class DataDriver(storage.DataDriverBase):
@@ -361,6 +382,30 @@ class Catalog(object):
         conf.register_opts(storage_opts, group=storage_group)
         return utils.load_storage_driver(conf, self._cache)
 
+    def _shard_id(self, queue, project=None):
+        """Get the ID for the shard assigned to the given queue.
+
+        :param queue: name of the queue
+        :param project: project to which the queue belongs
+
+        :returns: shard id
+
+        :raises: `errors.QueueNotMapped`
+        """
+        cache_key = _shard_cache_key(queue, project)
+        shard_id = self._cache.get(cache_key)
+
+        if shard_id is None:
+            shard_id = self._catalogue_ctrl.get(project, queue)['shard']
+
+            if not self._cache.set(cache_key, shard_id, _SHARD_CACHE_TTL):
+                LOG.warn('Failed to cache shard ID')
+
+        return shard_id
+
+    def _invalidate_cached_id(self, queue, project=None):
+        self._cache.unset(_shard_cache_key(queue, project))
+
     def register(self, queue, project=None):
         """Register a new queue in the shard catalog.
 
@@ -380,12 +425,16 @@ class Catalog(object):
         :type project: six.text_type
         :raises: NoShardFound
         """
+        # NOTE(cpp-cabrera): only register a queue if the entry
+        # doesn't exist
         if not self._catalogue_ctrl.exists(project, queue):
             # NOTE(cpp-cabrera): limit=0 implies unlimited - select from
             # all shards
             shard = select.weighted(self._shards_ctrl.list(limit=0))
+
             if not shard:
-                raise errors.NoShardFound()
+                raise errors.NoShardsFound()
+
             self._catalogue_ctrl.insert(project, queue, shard['name'])
 
     def deregister(self, queue, project=None):
@@ -400,7 +449,7 @@ class Catalog(object):
             None for the "global" or "generic" project.
         :type project: six.text_type
         """
-        # TODO(cpp-cabrera): invalidate cache here
+        self._invalidate_cached_id(queue, project)
         self._catalogue_ctrl.delete(project, queue)
 
     def lookup(self, queue, project=None):
@@ -411,14 +460,20 @@ class Catalog(object):
             None to specify the "global" or "generic" project.
 
         :returns: A storage driver instance for the appropriate shard. If
-            the driver does not exist yet, it is created and cached.
+            the driver does not exist yet, it is created and cached. If the
+            queue is not mapped, returns None.
         :rtype: Maybe DataDriver
         """
 
-        # TODO(cpp-cabrera): add caching lookup here
         try:
-            shard_id = self._catalogue_ctrl.get(project, queue)['shard']
-        except errors.QueueNotMapped:
+            shard_id = self._shard_id(queue, project)
+        except errors.QueueNotMapped as ex:
+            LOG.debug(ex)
+
+            # NOTE(kgriffs): Return `None`, rather than letting the
+            # exception bubble up, so that the higher layer doesn't
+            # have to duplicate the try..except..log code all over
+            # the place.
             return None
 
         return self.get_driver(shard_id)
@@ -432,9 +487,10 @@ class Catalog(object):
         :rtype: marconi.queues.storage.base.DataDriver
         """
 
-        # NOTE(cpp-cabrera): cache storage driver connection
         try:
             return self._drivers[shard_id]
         except KeyError:
+            # NOTE(cpp-cabrera): cache storage driver connection
             self._drivers[shard_id] = self._init_driver(shard_id)
+
             return self._drivers[shard_id]

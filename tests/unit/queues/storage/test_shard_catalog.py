@@ -28,13 +28,13 @@ from marconi import tests as testing
 # TODO(cpp-cabrera): it would be wonderful to refactor this unit test
 # so that it could use multiple control storage backends once those
 # have shards/catalogue implementations.
-class TestShardCatalog(testing.TestBase):
+@testing.requires_mongodb
+class ShardCatalogTest(testing.TestBase):
 
     config_file = 'wsgi_mongodb_sharded.conf'
 
-    @testing.requires_mongodb
     def setUp(self):
-        super(TestShardCatalog, self).setUp()
+        super(ShardCatalogTest, self).setUp()
 
         self.conf.register_opts([cfg.StrOpt('storage')],
                                 group='drivers')
@@ -56,7 +56,7 @@ class TestShardCatalog(testing.TestBase):
     def tearDown(self):
         self.catalogue_ctrl.drop_all()
         self.shards_ctrl.drop_all()
-        super(TestShardCatalog, self).tearDown()
+        super(ShardCatalogTest, self).tearDown()
 
     def test_lookup_loads_correct_driver(self):
         storage = self.catalog.lookup(self.queue, self.project)
