@@ -316,7 +316,9 @@ class MessageController(storage.MessageBase):
         preference = pymongo.read_preferences.ReadPreference.PRIMARY
         collection = self._collection(queue_name, project)
         msgs = collection.find(query, sort=[('k', 1)],
-                               read_preference=preference)
+                               read_preference=preference).hint(
+                                   CLAIMED_INDEX_FIELDS
+                               )
 
         if limit is not None:
             msgs = msgs.limit(limit)
@@ -632,9 +634,11 @@ class MessageController(storage.MessageBase):
             return
 
         now = timeutils.utcnow_ts()
-        message = collection.find_one(query)
+        cursor = collection.find(query).hint(ID_INDEX_FIELDS)
 
-        if message is None:
+        try:
+            message = next(cursor)
+        except StopIteration:
             return
 
         is_claimed = (message['c']['id'] is not None and
