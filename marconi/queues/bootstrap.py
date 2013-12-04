@@ -19,6 +19,7 @@ from stevedore import driver
 from marconi.common.cache import cache as oslo_cache
 from marconi.common import decorators
 from marconi.common import errors
+from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding

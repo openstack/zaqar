@@ -27,6 +27,7 @@ import time
 import pymongo.errors
 import pymongo.read_preferences
 
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage

@@ -15,6 +15,7 @@
 
 import falcon
 
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils

@@ -20,8 +20,6 @@ try:
         _sys.stderr.write('Running from marconi source directory.\n')
         del _sys
 except NameError:
-    import gettext
-    gettext.install('marconi', unicode=1)
     import marconi.queues.bootstrap
     Bootstrap = marconi.queues.bootstrap.Bootstrap
 

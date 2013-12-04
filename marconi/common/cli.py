@@ -21,6 +21,7 @@ import os
 import sys
 import termios
 
+from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log as logging
 
 

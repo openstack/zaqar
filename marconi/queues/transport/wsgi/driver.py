@@ -24,6 +24,7 @@ import six
 from marconi.common import decorators
 from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
 from marconi.queues.transport import auth, validation

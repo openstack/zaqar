@@ -33,6 +33,7 @@ them do, an AttributeError exception will be raised.
 import six
 
 from marconi.common import decorators
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)

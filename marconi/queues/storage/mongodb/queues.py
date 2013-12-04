@@ -23,6 +23,7 @@ Field Mappings:
 
 import pymongo.errors
 
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
