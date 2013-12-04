@@ -44,15 +44,20 @@ class DataDriver(storage.DataDriverBase):
 
         self.__path = self.sqlite_conf.database
 
-        # TODO(kgriffs): SHARDING - Make use of uri
-        self.__conn = sqlite3.connect(self.__path,
-                                      detect_types=sqlite3.PARSE_DECLTYPES)
-        self.__db = self.__conn.cursor()
-        self.run('''PRAGMA foreign_keys = ON''')
+    @decorators.lazy_property(write=False)
+    def connection(self):
+        return sqlite3.connect(self.__path,
+                               detect_types=sqlite3.PARSE_DECLTYPES)
 
-        self._ensure_tables()
+    @decorators.lazy_property(write=False)
+    def database(self):
+        db = self.connection.cursor()
+        db.execute('''PRAGMA foreign_keys = ON''')
 
-    def _ensure_tables(self):
+        self._ensure_tables(db)
+        return db
+
+    def _ensure_tables(self, db):
         """Creates tables if they don't already exist."""
 
         # NOTE(kgriffs): Create tables all together rather
@@ -60,7 +65,10 @@ class DataDriver(storage.DataDriverBase):
         # in the individual controllers actually require the
         # presence of more than one table.
 
-        self.run('''
+        # NOTE(flaper87): Consider moving tables definition
+        # outside this method.
+
+        db.execute('''
             create table
             if not exists
             Messages (
@@ -75,7 +83,7 @@ class DataDriver(storage.DataDriverBase):
             )
         ''')
 
-        self.run('''
+        db.execute('''
             create table
             if not exists
             Queues (
@@ -88,7 +96,7 @@ class DataDriver(storage.DataDriverBase):
             )
         ''')
 
-        self.run('''
+        db.execute('''
             create table
             if not exists
             Claims (
@@ -100,7 +108,7 @@ class DataDriver(storage.DataDriverBase):
             )
         ''')
 
-        self.run('''
+        db.execute('''
             create table
             if not exists
             Locked (
@@ -140,7 +148,7 @@ class DataDriver(storage.DataDriverBase):
         :param sql: a query string with the '?' placeholders
         :param args: the arguments to substitute the placeholders
         """
-        return self.__db.execute(sql, args)
+        return self.database.execute(sql, args)
 
     def run_multiple(self, sql, it):
         """Iteratively perform multiple SQL queries.
@@ -149,7 +157,7 @@ class DataDriver(storage.DataDriverBase):
         :param it: an iterator which yields a sequence of arguments to
                    substitute the placeholders
         """
-        self.__db.executemany(sql, it)
+        self.database.executemany(sql, it)
 
     def get(self, sql, *args):
         """Runs %sql and returns the first entry in the results.
@@ -167,22 +175,22 @@ class DataDriver(storage.DataDriverBase):
     @property
     def affected(self):
         """Checks whether a row is affected in the last operation."""
-        assert self.__db.rowcount in (0, 1)
-        return self.__db.rowcount == 1
+        assert self.database.rowcount in (0, 1)
+        return self.database.rowcount == 1
 
     @property
     def lastrowid(self):
         """Returns the last inserted row id."""
-        return self.__db.lastrowid
+        return self.database.lastrowid
 
     @contextlib.contextmanager
     def __call__(self, isolation):
         self.run('begin ' + isolation)
         try:
             yield
-            self.__conn.commit()
+            self.connection.commit()
         except Exception:
-            self.__conn.rollback()
+            self.connection.rollback()
             raise
 
     def is_alive(self):
@@ -211,10 +219,16 @@ class ControlDriver(storage.ControlDriverBase):
 
         self.__path = self.sqlite_conf.database
 
-        # TODO(cpp-cabrera): implement this thing
-        self.__conn = sqlite3.connect(self.__path,
-                                      detect_types=sqlite3.PARSE_DECLTYPES)
-        self.__db = self.__conn.cursor()
+    @decorators.lazy_property(write=False)
+    def connection(self):
+        return sqlite3.connect(self.__path,
+                               detect_types=sqlite3.PARSE_DECLTYPES)
+
+    @decorators.lazy_property(write=False)
+    def database(self):
+        db = self.connection.cursor()
+        db.execute('''PRAGMA foreign_keys = ON''')
+        return db
 
     @property
     def catalogue_controller(self):
