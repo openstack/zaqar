@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Import guard.  No module level import during the setup procedure.
-try:
-    if __MARCONI_SETUP__:  # NOQA
-        import sys as _sys
-        _sys.stderr.write('Running from marconi source directory.\n')
-        del _sys
-except NameError:
-    import marconi.queues.bootstrap
-    Bootstrap = marconi.queues.bootstrap.Bootstrap
-
+import marconi.queues.bootstrap
 import marconi.version
+
+Bootstrap = marconi.queues.bootstrap.Bootstrap
+
 
 __version__ = marconi.version.version_info.cached_version_string()
