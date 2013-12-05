@@ -123,7 +123,8 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     @ddt.data((u'/v1/queues/non-ascii-n\u0153me', 'utf-8'),
               (u'/v1/queues/non-ascii-n\xc4me', 'iso8859-1'))
-    def test_non_ascii_name(self, (uri, enc)):
+    def test_non_ascii_name(self, uri_enc):
+        uri, enc = uri_enc
 
         if six.PY2:
             uri = uri.encode(enc)

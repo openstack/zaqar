@@ -69,7 +69,8 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data((-1, -1), (59, 60), (60, 59), (60, 43201), (43201, 60))
-    def test_unacceptable_ttl_or_grace(self, (ttl, grace)):
+    def test_unacceptable_ttl_or_grace(self, ttl_grace):
+        ttl, grace = ttl_grace
         self.simulate_post(self.claims_path, self.project_id,
                            body=json.dumps({'ttl': ttl, 'grace': grace}))
 

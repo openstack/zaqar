@@ -37,7 +37,9 @@ class TestWSGIMediaType(base.TestBase):
         ('GET', '/v1/queues/nonexistent/claims/0ad'),
         ('GET', '/v1/health'),
     )
-    def test_json_only_endpoints(self, (method, endpoint)):
+    def test_json_only_endpoints(self, method_endpoint):
+        method, endpoint = method_endpoint
+
         headers = {
             'Client-ID': str(uuid.uuid4()),
             'Accept': 'application/xml',
