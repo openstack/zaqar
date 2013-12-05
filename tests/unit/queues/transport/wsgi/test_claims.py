@@ -20,7 +20,7 @@ import ddt
 import falcon
 from testtools import matchers
 
-import base  # noqa
+from . import base  # noqa
 from marconi.openstack.common import timeutils
 from marconi import tests as testing
 

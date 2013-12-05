@@ -18,7 +18,7 @@ import json
 
 import falcon
 
-import base  # noqa
+from . import base  # noqa
 
 
 class TestHomeDocument(base.TestBase):

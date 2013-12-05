@@ -20,7 +20,7 @@ import ddt
 import falcon
 import six
 
-import base  # noqa
+from . import base  # noqa
 from marconi import tests as testing
 
 

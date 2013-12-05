@@ -19,7 +19,7 @@ import ddt
 import falcon
 from falcon import testing
 
-import base  # noqa
+from . import base  # noqa
 
 
 @ddt.ddt

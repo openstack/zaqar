@@ -24,7 +24,7 @@ import testtools
 if not six.PY3:
     from keystoneclient.middleware import auth_token
 
-import base  # noqa
+from . import base  # noqa
 
 
 @testtools.skipIf(six.PY3, "No Py3K support for keystoneclient")

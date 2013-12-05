@@ -16,7 +16,7 @@
 
 import falcon
 
-import base  # noqa
+from . import base  # noqa
 
 
 class TestHealth(base.TestBase):

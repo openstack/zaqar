@@ -21,7 +21,7 @@ import falcon
 import six
 from testtools import matchers
 
-import base  # noqa
+from . import base  # noqa
 from marconi.openstack.common import timeutils
 from marconi.queues.transport import validation
 from marconi import tests as testing
