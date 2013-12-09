@@ -68,12 +68,12 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
         document = utils.read_json(stream, len)
 
     except utils.MalformedJSON as ex:
-        LOG.exception(ex)
+        LOG.debug(ex)
         description = _(u'Request body could not be parsed.')
         raise errors.HTTPBadRequestBody(description)
 
     except utils.OverflowedJSONInteger as ex:
-        LOG.exception(ex)
+        LOG.debug(ex)
         description = _(u'JSON contains integer that is too large.')
         raise errors.HTTPBadRequestBody(description)
 
