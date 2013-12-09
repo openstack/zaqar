@@ -18,18 +18,17 @@ installed and running.
 
 2. Copy the Marconi config files to the directory ``~/.marconi``::
 
-    $ cp marconi/etc/marconi-proxy.conf-sample ~/.marconi/marconi-proxy.conf
-    $ cp marconi/etc/marconi-queues.conf-sample ~/.marconi/marconi-queues.conf
+    $ cp marconi/etc/marconi.conf-sample ~/.marconi/marconi.conf
     $ cp marconi/etc/logging.conf-sample ~/.marconi/logging.conf
 
 3. Find the ``[drivers:storage:mongodb]`` section in
-   ``~/.marconi/marconi-queues.conf`` and modify the URI to point
+   ``~/.marconi/marconi.conf`` and modify the URI to point
    to your local mongod instance::
 
     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT
 
 4. For logging, find the ``[DEFAULT]`` section in
-   ``~/.marconi/marconi-queues.conf`` and modify as desired::
+   ``~/.marconi/marconi.conf`` and modify as desired::
 
     log_file = server.log
 

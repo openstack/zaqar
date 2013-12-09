@@ -1,6 +1,6 @@
 # By default, this should line in one of:
-# ~/.marconi/marconi-queues.conf
-# /etc/marconi/marconi-queues.conf
+# ~/.marconi/marconi.conf
+# /etc/marconi/marconi.conf
 
 [DEFAULT]
 # Show more verbose log output (sets INFO log level output)
@@ -9,7 +9,7 @@
 # Show debugging output in logs (sets DEBUG log level output)
 ;debug = False
 
-# Log to this file!
+# Log to this file
 log_file = /var/log/marconi/queues.log
 
 ;auth_strategy =
