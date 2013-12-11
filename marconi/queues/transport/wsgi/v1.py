@@ -24,7 +24,7 @@ JSON_HOME = {
         # Queues
         #------------------------------------------------------------------
         'rel/queues': {
-            'href-template': '/queues{?marker,limit,detailed}',
+            'href-template': '/v1/queues{?marker,limit,detailed}',
             'href-vars': {
                 'marker': 'param/marker',
                 'limit': 'param/queue_limit',
@@ -38,7 +38,7 @@ JSON_HOME = {
             },
         },
         'rel/queue': {
-            'href-template': '/queues/{queue_name}',
+            'href-template': '/v1/queues/{queue_name}',
             'href-vars': {
                 'queue_name': 'param/queue_name',
             },
@@ -50,7 +50,7 @@ JSON_HOME = {
             },
         },
         'rel/queue-metadata': {
-            'href-template': '/queues/{queue_name}/metadata',
+            'href-template': '/v1/queues/{queue_name}/metadata',
             'href-vars': {
                 'queue_name': 'param/queue_name',
             },
@@ -62,7 +62,7 @@ JSON_HOME = {
             },
         },
         'rel/queue-stats': {
-            'href-template': '/queues/{queue_name}/stats',
+            'href-template': '/v1/queues/{queue_name}/stats',
             'href-vars': {
                 'queue_name': 'param/queue_name',
             },
@@ -78,7 +78,7 @@ JSON_HOME = {
         # Messages
         #------------------------------------------------------------------
         'rel/messages': {
-            'href-template': ('/queues/{queue_name}/messages'
+            'href-template': ('/v1/queues/{queue_name}/messages'
                               '{?marker,limit,echo,include_claimed}'),
             'href-vars': {
                 'queue_name': 'param/queue_name',
