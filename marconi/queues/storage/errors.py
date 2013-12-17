@@ -14,21 +14,30 @@
 # limitations under the License.
 
 
-class ConnectionError(Exception):
+class ExceptionBase(Exception):
+
+    msg_format = ''
+
+    def __init__(self, **kwargs):
+        msg = self.msg_format.format(**kwargs)
+        super(ExceptionBase, self).__init__(msg)
+
+
+class ConnectionError(ExceptionBase):
     """Raised when the connection with the back-end
     was lost.
     """
 
 
-class DoesNotExist(Exception):
+class DoesNotExist(ExceptionBase):
     """Resource does not exist."""
 
 
-class NotPermitted(Exception):
+class NotPermitted(ExceptionBase):
     """Operation not permitted."""
 
 
-class Conflict(Exception):
+class Conflict(ExceptionBase):
     """Resource could not be created due to a conflict
     with an existing resource.
     """
@@ -36,96 +45,99 @@ class Conflict(Exception):
 
 class MessageConflict(Conflict):
 
+    msg_format = (u'Message could not be enqueued due to a conflict '
+                  u'with another message that is already in '
+                  u'queue {queue} for project {project}')
+
     def __init__(self, queue, project, message_ids):
         """Initializes the error with contextual information.
-
         :param queue: name of the queue to which the message was posted
+
         :param project: name of the project to which the queue belongs
         :param message_ids: list of IDs for messages successfully
-            posted. Note that these must be in the same order as the
-            list of messages originally submitted to be enqueued.
+        posted. Note that these must be in the same order as the
+        list of messages originally submitted to be enqueued.
         """
-        msg = (u'Message could not be enqueued due to a conflict '
-               u'with another message that is already in '
-               u'queue %(queue)s for project %(project)s' %
-               dict(queue=queue, project=project))
-
-        super(MessageConflict, self).__init__(msg)
-
+        super(MessageConflict, self).__init__(queue=queue, project=project)
         self._succeeded_ids = message_ids
 
-    @property
-    def succeeded_ids(self):
-        return self._succeeded_ids
+        @property
+        def succeeded_ids(self):
+            return self._succeeded_ids
 
 
 class QueueDoesNotExist(DoesNotExist):
 
-    def __init__(self, name, project):
-        msg = (u'Queue %(name)s does not exist for project %(project)s' %
-               dict(name=name, project=project))
-        super(QueueDoesNotExist, self).__init__(msg)
-
-
-class QueueIsEmpty(Exception):
+    msg_format = u'Queue {name} does not exist for project {project}'
 
     def __init__(self, name, project):
-        msg = (u'Queue %(name)s in project %(project)s is empty' %
-               dict(name=name, project=project))
-        super(QueueIsEmpty, self).__init__(msg)
+        super(QueueDoesNotExist, self).__init__(name=name, project=project)
+
+
+class QueueIsEmpty(ExceptionBase):
+
+    msg_format = u'Queue {name} in project {project} is empty'
+
+    def __init__(self, name, project):
+        super(QueueIsEmpty, self).__init__(name=name, project=project)
 
 
 class MessageDoesNotExist(DoesNotExist):
 
+    msg_format = (u'Message {mid} does not exist in '
+                  u'queue {queue} for project {project}')
+
     def __init__(self, mid, queue, project):
-        msg = (u'Message %(mid)s does not exist in '
-               u'queue %(queue)s for project %(project)s' %
-               dict(mid=mid, queue=queue, project=project))
-        super(MessageDoesNotExist, self).__init__(msg)
+        super(MessageDoesNotExist, self).__init__(mid=mid, queue=queue,
+                                                  project=project)
 
 
 class MessageIsClaimed(NotPermitted):
 
+    msg_format = u'Message {mid} is claimed'
+
     def __init__(self, mid):
-        msg = (u'Message %(mid)s is claimed' % dict(mid=mid))
-        super(MessageIsClaimed, self).__init__(msg)
+        super(MessageIsClaimed, self).__init__(mid=mid)
 
 
 class ClaimDoesNotExist(DoesNotExist):
 
+    msg_format = (u'Claim {cid} does not exist in '
+                  u'queue {queue} for project {project}')
+
     def __init__(self, cid, queue, project):
-        msg = (u'Claim %(cid)s does not exist in '
-               u'queue %(queue)s for project %(project)s' %
-               dict(cid=cid, queue=queue, project=project))
-        super(ClaimDoesNotExist, self).__init__(msg)
+        super(ClaimDoesNotExist, self).__init__(cid=cid, queue=queue,
+                                                project=project)
 
 
 class QueueNotMapped(DoesNotExist):
 
+    msg_format = (u'No shard found for '
+                  u'queue {queue} for project {project}')
+
     def __init__(self, queue, project):
-        msg = (u'No shard found for '
-               u'queue %(queue)s for project %(project)s' %
-               dict(queue=queue, project=project))
-        super(QueueNotMapped, self).__init__(msg)
+        super(QueueNotMapped, self).__init__(queue=queue, project=project)
 
 
 class MessageIsClaimedBy(NotPermitted):
 
+    msg_format = u'Message {mid} is not claimed by {cid}'
+
     def __init__(self, mid, cid):
-        msg = (u'Message %(mid)s is not claimed by %(cid)s' %
-               dict(cid=cid, mid=mid))
-        super(MessageIsClaimedBy, self).__init__(msg)
+        super(MessageIsClaimedBy, self).__init__(cid=cid, mid=mid)
 
 
 class ShardDoesNotExist(DoesNotExist):
 
+    msg_format = u'Shard {shard} does not exist'
+
     def __init__(self, shard):
-        msg = u'Shard {0} does not exists'.format(shard)
-        super(ShardDoesNotExist, self).__init__(msg)
+        super(ShardDoesNotExist, self).__init__(shard=shard)
 
 
-class NoShardFound(Exception):
+class NoShardFound(ExceptionBase):
+
+    msg_format = u'No shards registered'
 
     def __init__(self):
-        msg = u'No shards registered'
-        super(NoShardFound, self).__init__(msg)
+        super(NoShardFound, self).__init__()
