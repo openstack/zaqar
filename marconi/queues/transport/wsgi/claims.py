@@ -75,6 +75,7 @@ class CollectionResource(Resource):
             resp_msgs = list(msgs)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
@@ -123,7 +124,8 @@ class ItemResource(Resource):
             # TODO(kgriffs): Optimize along with serialization (see below)
             meta['messages'] = list(msgs)
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
         except Exception as ex:
             LOG.exception(ex)
@@ -171,9 +173,11 @@ class ItemResource(Resource):
             resp.status = falcon.HTTP_204
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except Exception as ex:

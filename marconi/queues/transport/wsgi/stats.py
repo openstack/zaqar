@@ -54,7 +54,8 @@ class Resource(object):
             resp.body = utils.to_json(resp_dict)
             # status defaults to 200
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except Exception as ex:

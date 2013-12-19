@@ -103,6 +103,7 @@ class CollectionResource(object):
             results = self.queue_controller.list(project=project_id, **kwargs)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:

@@ -45,7 +45,8 @@ class Resource(object):
             resp_dict = self.queue_ctrl.get_metadata(queue_name,
                                                      project=project_id)
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
@@ -82,6 +83,7 @@ class Resource(object):
                                          project=project_id)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except storage_errors.QueueDoesNotExist:

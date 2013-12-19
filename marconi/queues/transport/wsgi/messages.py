@@ -52,6 +52,7 @@ class CollectionResource(object):
                 project=project_id)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
@@ -95,9 +96,11 @@ class CollectionResource(object):
             messages = list(cursor)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
@@ -165,9 +168,11 @@ class CollectionResource(object):
                 client_uuid=client_uuid)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except storage_errors.MessageConflict as ex:
@@ -228,6 +233,7 @@ class CollectionResource(object):
                 project=project_id)
 
         except validation.ValidationFailed as ex:
+            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         except Exception as ex:
@@ -257,7 +263,8 @@ class ItemResource(object):
                 message_id,
                 project=project_id)
 
-        except storage_errors.DoesNotExist:
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
         except Exception as ex:
