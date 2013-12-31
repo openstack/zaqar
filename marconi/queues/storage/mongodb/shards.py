@@ -27,7 +27,8 @@ Schema:
 import functools
 
 from marconi.common import utils as common_utils
-from marconi.queues.storage import base, errors
+from marconi.queues.storage import base
+from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 SHARDS_INDEX = [
