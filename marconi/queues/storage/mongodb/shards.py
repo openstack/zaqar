@@ -48,7 +48,7 @@ class ShardsController(base.ShardsBase):
     def __init__(self, *args, **kwargs):
         super(ShardsController, self).__init__(*args, **kwargs)
 
-        self._col = self.driver.shards_database.shards
+        self._col = self.driver.database.shards
         self._col.ensure_index(SHARDS_INDEX,
                                background=True,
                                name='shards_name',

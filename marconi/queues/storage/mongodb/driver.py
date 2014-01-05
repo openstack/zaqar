@@ -126,24 +126,13 @@ class ControlDriver(storage.ControlDriverBase):
         return _connection(self.mongodb_conf)
 
     @decorators.lazy_property(write=False)
-    def shards_database(self):
-        name = self.mongodb_conf.database + '_shards'
+    def database(self):
+        name = self.mongodb_conf.database
         return self.connection[name]
 
     @property
     def shards_controller(self):
         return controllers.ShardsController(self)
-
-    @decorators.lazy_property(write=False)
-    def catalogue_database(self):
-        """Database dedicated to the "queues" collection.
-
-        The queues collection is separated out into its own database
-        to avoid writer lock contention with the messages collections.
-        """
-
-        name = self.mongodb_conf.database + '_catalogue'
-        return self.connection[name]
 
     @property
     def catalogue_controller(self):

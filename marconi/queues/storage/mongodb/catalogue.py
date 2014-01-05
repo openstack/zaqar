@@ -42,7 +42,7 @@ class CatalogueController(base.CatalogueBase):
     def __init__(self, *args, **kwargs):
         super(CatalogueController, self).__init__(*args, **kwargs)
 
-        self._col = self.driver.catalogue_database.catalogue
+        self._col = self.driver.database.catalogue
         self._col.ensure_index(CATALOGUE_INDEX, unique=True)
 
     @utils.raises_conn_error
