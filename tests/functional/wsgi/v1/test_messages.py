@@ -17,12 +17,14 @@ import uuid
 
 import ddt
 
-from marconi.tests.functional import base  # noqa
+from marconi.queues.api.v1 import response
+from marconi.tests.functional import base
 from marconi.tests.functional import helpers
 
 
 @ddt.ddt
 class TestMessages(base.FunctionalTestBase):
+
     """Tests for Messages."""
 
     server_class = base.MarconiServer
@@ -40,6 +42,8 @@ class TestMessages(base.FunctionalTestBase):
 
         self.message_url = self.queue_url + '/messages'
         self.client.set_base_url(self.message_url)
+
+        self.response = response.ResponseSchema(self.limits)
 
     def test_message_single_insert(self):
         """Insert Single Message into the Queue.
@@ -101,6 +105,10 @@ class TestMessages(base.FunctionalTestBase):
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
+        # Verify that the response json schema matches the expected schema
+        expected_schema = self.response.get_schema('message_get_many')
+        self.assertSchema(result.json(), expected_schema)
+
         # Compare message metadata
         result_body = [result.json()[i]['body']
                        for i in range(len(result.json()))]
@@ -129,7 +137,8 @@ class TestMessages(base.FunctionalTestBase):
         url = ''
         params['echo'] = True
 
-        #Follow the hrefs & perform GET, till the end of messages i.e. http 204
+        # Follow the hrefs & perform GET, till the end of messages i.e. http
+        # 204
         while result.status_code in [201, 200]:
             result = self.client.get(url, params=params)
             self.assertIn(result.status_code, [200, 204])

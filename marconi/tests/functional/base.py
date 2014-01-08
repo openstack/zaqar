@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import abc
+import jsonschema
 import multiprocessing
 
 
@@ -98,6 +99,19 @@ class FunctionalTestBase(testing.TestBase):
         msg = 'More Messages returned than allowed: expected count = {0}' \
               ', actual count = {1}'.format(expectedCount, actualCount)
         self.assertTrue(actualCount <= expectedCount, msg)
+
+    def assertSchema(self, response, expectedSchema):
+        """Compares the json response with the expected schema
+
+        :param response: response json returned by the API.
+        :type response: dict
+        :param expectedSchema: expected schema definition for response.
+        :type expectedSchema: dict
+        """
+        try:
+            jsonschema.validate(response, expectedSchema)
+        except jsonschema.ValidationError as message:
+            assert False, message
 
     def assertQueueStats(self, result_json, claimed):
         """Checks the Queue Stats results
