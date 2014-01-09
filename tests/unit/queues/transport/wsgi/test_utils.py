@@ -18,6 +18,7 @@ import io
 import json
 
 import falcon
+import six
 import testtools
 
 from marconi.queues.transport.wsgi import utils
@@ -100,7 +101,7 @@ class TestWSGIutils(testtools.TestCase):
 
     def test_no_spec(self):
         obj = {u'body': {'event': 'start_backup'}, 'ttl': 300}
-        document = json.dumps(obj, ensure_ascii=False)
+        document = six.text_type(json.dumps(obj, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
         filtered = utils.filter_stream(doc_stream, len(document), spec=None)
@@ -113,7 +114,7 @@ class TestWSGIutils(testtools.TestCase):
 
     def test_no_spec_array(self):
         things = [{u'body': {'event': 'start_backup'}, 'ttl': 300}]
-        document = json.dumps(things, ensure_ascii=False)
+        document = six.text_type(json.dumps(things, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
         filtered = utils.filter_stream(doc_stream, len(document),
@@ -131,7 +132,7 @@ class TestWSGIutils(testtools.TestCase):
     def test_filter_stream_expect_obj(self):
         obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
 
-        document = json.dumps(obj, ensure_ascii=False)
+        document = six.text_type(json.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict), ('id', basestring)]
         filtered_object, = utils.filter_stream(stream, len(document), spec)
@@ -146,7 +147,7 @@ class TestWSGIutils(testtools.TestCase):
     def test_filter_stream_expect_array(self):
         array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
 
-        document = json.dumps(array, ensure_ascii=False)
+        document = six.text_type(json.dumps(array, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict)]
         filtered_objects = list(utils.filter_stream(
