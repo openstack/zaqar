@@ -12,15 +12,19 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""marconi-queues (public): handles all the routes for queuing,
-messaging, and claiming.
+"""marconi-queues public interface.
+
+Handles all the routes for queuing, messaging, and claiming.
 """
 
-
 from marconi.common.transport.wsgi import health
-from marconi.queues.transport.wsgi import (
-    claims, driver, messages, metadata, queues, stats, v1,
-)
+from marconi.queues.transport.wsgi import claims
+from marconi.queues.transport.wsgi import driver
+from marconi.queues.transport.wsgi import messages
+from marconi.queues.transport.wsgi import metadata
+from marconi.queues.transport.wsgi import queues
+from marconi.queues.transport.wsgi import stats
+from marconi.queues.transport.wsgi import v1
 
 
 class Driver(driver.DriverBase):

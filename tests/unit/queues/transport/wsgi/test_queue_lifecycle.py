@@ -357,7 +357,7 @@ class QueueFaultyDriverTests(base.TestBaseFaulty):
         result = self.simulate_get(path + '/metadata', '480924')
         result_doc = json.loads(result[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_503)
-        self.assertNotEquals(result_doc, json.loads(doc))
+        self.assertNotEqual(result_doc, json.loads(doc))
 
         self.simulate_get(path + '/stats', '480924')
         self.assertEqual(self.srmock.status, falcon.HTTP_503)

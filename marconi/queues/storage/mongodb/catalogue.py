@@ -24,7 +24,8 @@ Serves to construct an association between a project + queue -> shard
 """
 
 import marconi.openstack.common.log as logging
-from marconi.queues.storage import base, errors
+from marconi.queues.storage import base
+from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
 

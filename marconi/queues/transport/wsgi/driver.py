@@ -27,7 +27,8 @@ from marconi.common.transport.wsgi import helpers
 from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
-from marconi.queues.transport import auth, validation
+from marconi.queues.transport import auth
+from marconi.queues.transport import validation
 
 _WSGI_OPTIONS = [
     cfg.StrOpt('bind', default='127.0.0.1',
