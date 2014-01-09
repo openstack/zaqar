@@ -63,10 +63,12 @@ class Resource(object):
                     u'project: %(project)s'),
                   {'queue': queue_name, 'project': project_id})
 
-        # Place JSON size restriction before parsing
-        if req.content_length > self._wsgi_conf.metadata_max_length:
-            description = _(u'Queue metadata size is too large.')
-            raise wsgi_errors.HTTPBadRequestBody(description)
+        try:
+            # Place JSON size restriction before parsing
+            self._validate.queue_metadata_length(req.content_length)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         # Deserialize queue metadata
         metadata, = wsgi_utils.filter_stream(req.stream,
@@ -74,10 +76,6 @@ class Resource(object):
                                              spec=None)
 
         try:
-            self._validate.queue_content(
-                metadata, check_size=(
-                    self._validate._limits_conf.metadata_size_uplimit <
-                    self._wsgi_conf.metadata_max_length))
             self.queue_ctrl.set_metadata(queue_name,
                                          metadata=metadata,
                                          project=project_id)
