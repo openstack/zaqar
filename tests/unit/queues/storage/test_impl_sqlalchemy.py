@@ -18,6 +18,7 @@ import datetime
 
 import sqlalchemy as sa
 
+from marconi.queues.storage import errors
 from marconi.queues.storage import sqlalchemy
 from marconi.queues.storage.sqlalchemy import controllers
 from marconi.queues.storage.sqlalchemy import tables
@@ -53,6 +54,29 @@ class SqlalchemyTableTests(testing.TestBase):
         row = rs.fetchone()
 
         self.assertIsNone(row)
+
+
+class SqlalchemyQueueTests(base.QueueControllerTest):
+    driver_class = sqlalchemy.DataDriver
+    controller_class = controllers.QueueController
+
+
+class SqlalchemyMessageTests(base.MessageControllerTest):
+    driver_class = sqlalchemy.DataDriver
+    controller_class = controllers.MessageController
+
+    def test_empty_queue_exception(self):
+        queue_name = 'empty-queue-test'
+        self.queue_controller.create(queue_name, None)
+
+        self.assertRaises(errors.QueueIsEmpty,
+                          self.controller.first,
+                          queue_name, None, sort=1)
+
+
+class SqlalchemyClaimTests(base.ClaimControllerTest):
+    driver_class = sqlalchemy.DataDriver
+    controller_class = controllers.ClaimController
 
 
 class SqlalchemyShardsTest(base.ShardsControllerTest):

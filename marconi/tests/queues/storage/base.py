@@ -81,6 +81,7 @@ class QueueControllerTest(ControllerBaseTest):
 
     def setUp(self):
         super(QueueControllerTest, self).setUp()
+        self.queue_controller = self.driver.queue_controller
         self.message_controller = self.driver.message_controller
         self.claim_controller = self.driver.claim_controller
 
@@ -394,10 +395,6 @@ class MessageControllerTest(ControllerBaseTest):
     def test_expired_messages(self):
         messages = [{'body': 3.14, 'ttl': 0}]
         client_uuid = uuid.uuid4()
-
-        [msgid] = self.controller.post(self.queue_name, messages,
-                                       project=self.project,
-                                       client_uuid=client_uuid)
 
         [msgid] = self.controller.post(self.queue_name, messages,
                                        project=self.project,

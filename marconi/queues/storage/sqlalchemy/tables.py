@@ -16,23 +16,13 @@
 
 import sqlalchemy as sa
 
+from marconi.openstack.common import timeutils
+
 metadata = sa.MetaData()
 
+now = timeutils.utcnow
 
-'''
-create table
-if not exists
-Messages (
-    id INTEGER,
-    qid INTEGER,
-    ttl INTEGER,
-    body DOCUMENT,
-    client TEXT,
-    created DATETIME,
-    PRIMARY KEY(id),
-    FOREIGN KEY(qid) references Queues(id) on delete cascade
-)
-'''
+
 Messages = sa.Table('Messages', metadata,
                     sa.Column('id', sa.INTEGER, primary_key=True),
                     sa.Column('qid', sa.INTEGER,
@@ -41,21 +31,13 @@ Messages = sa.Table('Messages', metadata,
                     sa.Column('ttl', sa.INTEGER),
                     sa.Column('body', sa.LargeBinary),
                     sa.Column('client', sa.TEXT),
-                    sa.Column('created', sa.DATETIME),
+                    sa.Column('created', sa.TIMESTAMP,
+                              default=now, onupdate=now),
+                    sa.Column('cid', sa.INTEGER,
+                              sa.ForeignKey("Claims.id", ondelete='SET NULL')),
                     )
 
 
-'''
-create table
-if not exists
-Claims (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    qid INTEGER,
-    ttl INTEGER,
-    created DATETIME,
-    FOREIGN KEY(qid) references Queues(id) on delete cascade
-)
-'''
 Claims = sa.Table('Claims', metadata,
                   sa.Column('id', sa.INTEGER, primary_key=True,
                             autoincrement=True),
@@ -63,22 +45,11 @@ Claims = sa.Table('Claims', metadata,
                             sa.ForeignKey("Queues.id", ondelete="CASCADE"),
                             nullable=False),
                   sa.Column('ttl', sa.INTEGER),
-                  sa.Column('created', sa.DATETIME),
+                  sa.Column('created', sa.TIMESTAMP,
+                            default=now, onupdate=now),
                   )
 
 
-'''
-create table
-if not exists
-Queues (
-    id INTEGER,
-    project TEXT,
-    name TEXT,
-    metadata DOCUMENT,
-    PRIMARY KEY(id),
-    UNIQUE(project, name)
-)
-'''
 Queues = sa.Table('Queues', metadata,
                   sa.Column('id', sa.INTEGER, primary_key=True),
                   sa.Column('project', sa.String),
@@ -88,30 +59,12 @@ Queues = sa.Table('Queues', metadata,
                   )
 
 
-'''
-create table
-if not exists
-Locked (
-    cid INTEGER,
-    msgid INTEGER,
-    FOREIGN KEY(cid) references Claims(id) on delete cascade,
-    FOREIGN KEY(msgid) references Messages(id) on delete cascade
-)
-'''
-Locked = sa.Table('Locked', metadata,
-                  sa.Column('cid', sa.INTEGER,
-                            sa.ForeignKey("Claims.id", ondelete="CASCADE"),
-                            nullable=False),
-                  sa.Column('msgid', sa.INTEGER,
-                            sa.ForeignKey("Messages.id", ondelete="CASCADE"),
-                            nullable=False),
-                  )
-
 Shards = sa.Table('Shards', metadata,
                   sa.Column('name', sa.String, primary_key=True),
                   sa.Column('uri', sa.String, nullable=False),
                   sa.Column('weight', sa.INTEGER, nullable=False),
                   sa.Column('options', sa.BINARY))
+
 
 Catalogue = sa.Table('Catalogue', metadata,
                      sa.Column('shard', sa.String,
