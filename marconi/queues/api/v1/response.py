@@ -37,7 +37,7 @@ class ResponseSchema(api.Api):
                         "ttl": {
                             "type": "number",
                             "minimum": 1,
-                            "maximum": self.limits.message_ttl_max
+                            "maximum": self.limits.max_message_ttl
                         },
                         "age": {
                             "type": "number",
@@ -50,6 +50,6 @@ class ResponseSchema(api.Api):
                     "required": ["href", "ttl", "age", "body"]
                 },
                 "minItems": 1,
-                "maxItems": self.limits.message_paging_uplimit
+                "maxItems": self.limits.max_messages_per_page
             }
         }

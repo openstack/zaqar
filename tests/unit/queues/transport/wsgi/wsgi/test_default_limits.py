@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import json
 import uuid
 
 import falcon
 
 from . import base  # noqa
+
+from marconi.queues import storage
 
 
 class DefaultLimitsTest(base.TestBase):
@@ -39,25 +42,19 @@ class DefaultLimitsTest(base.TestBase):
         super(DefaultLimitsTest, self).tearDown()
 
     def test_queue_listing(self):
-        default_queue_paging = 1
-
         # 2 queues to list
         self.simulate_put('/v1/queues/q2')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        result = self.simulate_get('/v1/queues')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        with self._prepare_queues(storage.DEFAULT_QUEUES_PER_PAGE + 1):
+            result = self.simulate_get('/v1/queues')
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        queues = json.loads(result[0])['queues']
-        self.assertEqual(len(queues), default_queue_paging)
-
-        self.simulate_delete('/v1/queues/q2')
+            queues = json.loads(result[0])['queues']
+            self.assertEqual(len(queues), storage.DEFAULT_QUEUES_PER_PAGE)
 
     def test_message_listing(self):
-        default_message_paging = 2
-
-        # 10 messages to list
-        self.__prepare_messages(10)
+        self._prepare_messages(storage.DEFAULT_MESSAGES_PER_PAGE + 1)
 
         result = self.simulate_get(self.messages_path,
                                    headers={'Client-ID': str(uuid.uuid4())})
@@ -65,13 +62,10 @@ class DefaultLimitsTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         messages = json.loads(result[0])['messages']
-        self.assertEqual(len(messages), default_message_paging)
+        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_PAGE)
 
     def test_claim_creation(self):
-        default_message_paging = 2
-
-        # 5 messages to claim
-        self.__prepare_messages(5)
+        self._prepare_messages(storage.DEFAULT_MESSAGES_PER_CLAIM + 1)
 
         result = self.simulate_post(self.claims_path,
                                     body='{"ttl": 60, "grace": 60}')
@@ -79,9 +73,23 @@ class DefaultLimitsTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         messages = json.loads(result[0])
-        self.assertEqual(len(messages), default_message_paging)
+        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
 
-    def __prepare_messages(self, count):
+    @contextlib.contextmanager
+    def _prepare_queues(self, count):
+        queue_paths = ['/v1/queues/multi-{0}'.format(i)
+                       for i in range(count)]
+
+        for path in queue_paths:
+            self.simulate_put(path)
+            self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+        yield
+
+        for path in queue_paths:
+            self.simulate_delete(path)
+
+    def _prepare_messages(self, count):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * count)
         self.simulate_post(self.messages_path, body=doc,
                            headers={'Client-ID': 'poster'})

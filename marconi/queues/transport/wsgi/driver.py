@@ -38,9 +38,6 @@ _WSGI_OPTIONS = [
 
     cfg.IntOpt('port', default=8888,
                help='Port on which the self-hosting server will listen'),
-
-    cfg.IntOpt('content_max_length', default=256 * 1024),
-    cfg.IntOpt('metadata_max_length', default=64 * 1024)
 ]
 
 _WSGI_GROUP = 'drivers:transport:wsgi'

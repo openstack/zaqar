@@ -383,8 +383,9 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.assertEqual(result.status_code, 201)
 
         # Post Messages to the test queue
-        doc = helpers.create_message_body(messagecount=
-                                          self.limits.message_paging_uplimit)
+        doc = helpers.create_message_body(
+            messagecount=self.limits.max_messages_per_claim)
+
         message_url = self.queue_url + '/messages'
         result = self.client.post(message_url, data=doc)
         self.assertEqual(result.status_code, 201)

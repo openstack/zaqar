@@ -43,9 +43,9 @@ class TestClaims(base.FunctionalTestBase):
 
         #Post Messages
         url = self.queue_url + '/messages'
-        doc = helpers.create_message_body(messagecount=
-                                          self.limits.message_paging_uplimit)
-        for i in range(25):
+        doc = helpers.create_message_body(messagecount=50)
+
+        for i in range(10):
             self.client.post(url, data=doc)
 
     @ddt.data({}, dict(limit=2))
@@ -84,9 +84,9 @@ class TestClaims(base.FunctionalTestBase):
     def test_claim_more_than_allowed(self):
         """Claim more than max allowed per request.
 
-        Marconi allows a maximum of 20 messages per claim.
+        Marconi allows a maximum of 20 messages per claim by default.
         """
-        params = {"limit": self.limits.message_paging_uplimit + 1}
+        params = {"limit": self.limits.max_messages_per_claim + 1}
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)

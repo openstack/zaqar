@@ -92,20 +92,6 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_post(self.claims_path, self.project_id, body=doc)
         return self.srmock.headers_dict['Location']
 
-    def test_too_much_metadata(self):
-        doc = '{"ttl": 100, "grace": 60}'
-        long_doc = doc + (' ' *
-                          (self.wsgi_cfg.metadata_max_length - len(doc) + 1))
-
-        self.simulate_post(self.claims_path, self.project_id, body=long_doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
-        self.simulate_post(self.claims_path, self.project_id, body=doc)
-        href = self.srmock.headers_dict['Location']
-
-        self.simulate_patch(href, self.project_id, body=long_doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
     def test_lifecycle(self):
         doc = '{"ttl": 100, "grace": 60}'
 

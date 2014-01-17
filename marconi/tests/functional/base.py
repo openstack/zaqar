@@ -133,7 +133,7 @@ class FunctionalTestBase(testing.TestBase):
         :param result_json: json response returned for Queue Stats.
         :param claimed: expected number of claimed messages.
         """
-        total = self.limits.message_paging_uplimit
+        total = self.limits.max_messages_per_claim
         free = total - claimed
 
         self.assertEqual(result_json['messages']['claimed'], claimed)
@@ -163,7 +163,7 @@ class FunctionalTestBase(testing.TestBase):
 
         # Verify that age has valid values
         age = message['age']
-        self.assertTrue(0 <= age <= self.limits.message_ttl_max,
+        self.assertTrue(0 <= age <= self.limits.max_message_ttl,
                         msg='Invalid Age {0}'.format(age))
 
         # Verify that GET on href returns 200

@@ -18,24 +18,11 @@
 import abc
 import six
 
-from oslo.config import cfg
+DEFAULT_QUEUES_PER_PAGE = 10
+DEFAULT_MESSAGES_PER_PAGE = 10
+DEFAULT_SHARDS_PER_PAGE = 10
 
-from marconi.common import utils
-
-
-_LIMITS_OPTIONS = [
-    cfg.IntOpt('default_queue_paging', default=10,
-               help='Default queue pagination size'),
-
-    cfg.IntOpt('default_message_paging', default=10,
-               help='Default message pagination size')
-]
-
-_LIMITS_GROUP = 'limits:storage'
-
-
-def _config_options():
-    return utils.options_iter(_LIMITS_OPTIONS, _LIMITS_GROUP)
+DEFAULT_MESSAGES_PER_CLAIM = 10
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -72,9 +59,6 @@ class DataDriverBase(DriverBase):
 
     def __init__(self, conf, cache):
         super(DataDriverBase, self).__init__(conf, cache)
-
-        self.conf.register_opts(_LIMITS_OPTIONS, group=_LIMITS_GROUP)
-        self.limits_conf = self.conf[_LIMITS_GROUP]
 
     @abc.abstractmethod
     def is_alive(self):
@@ -150,13 +134,12 @@ class Queue(ControllerBase):
 
     @abc.abstractmethod
     def list(self, project=None, marker=None,
-             limit=None, detailed=False):
+             limit=DEFAULT_QUEUES_PER_PAGE, detailed=False):
         """Base method for listing queues.
 
         :param project: Project id
         :param marker: The last queue name
-        :param limit: (Default 10, configurable) Max number
-            queues to return.
+        :param limit: (Default 10) Max number of queues to return
         :param detailed: Whether metadata is included
 
         :returns: An iterator giving a sequence of queues
@@ -236,7 +219,8 @@ class Message(ControllerBase):
 
     @abc.abstractmethod
     def list(self, queue, project=None, marker=None,
-             limit=None, echo=False, client_uuid=None,
+             limit=DEFAULT_MESSAGES_PER_PAGE,
+             echo=False, client_uuid=None,
              include_claimed=False):
         """Base method for listing messages.
 
@@ -244,8 +228,7 @@ class Message(ControllerBase):
             message from.
         :param project: Project id
         :param marker: Tail identifier
-        :param limit: (Default 10, configurable) Max number
-            messages to return.
+        :param limit: (Default 10) Max number of messages to return.
         :type limit: Maybe int
         :param echo: (Default False) Boolean expressing whether
             or not this client should receive its own messages.
@@ -295,7 +278,8 @@ class Message(ControllerBase):
         :param project: Project id
         :param message_ids: A sequence of message IDs.
 
-        :returns: An iterable, yielding dicts containing message details
+        :returns: An iterable, yielding dicts containing
+            message details
         """
         raise NotImplementedError
 
@@ -364,7 +348,8 @@ class Claim(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, queue, metadata, project=None, limit=None):
+    def create(self, queue, metadata, project=None,
+               limit=DEFAULT_MESSAGES_PER_CLAIM):
         """Base method for creating a claim.
 
         :param queue: Name of the queue this
@@ -372,7 +357,7 @@ class Claim(ControllerBase):
         :param metadata: Claim's parameters
             to be stored.
         :param project: Project id
-        :param limit: (Default 10, configurable) Max number
+        :param limit: (Default 10) Max number
             of messages to claim.
 
         :returns: (Claim ID, claimed messages)
@@ -409,12 +394,13 @@ class ShardsBase(ControllerBase):
     """A controller for managing shards."""
 
     @abc.abstractmethod
-    def list(self, marker=None, limit=10, detailed=False):
+    def list(self, marker=None, limit=DEFAULT_SHARDS_PER_PAGE,
+             detailed=False):
         """Lists all registered shards.
 
         :param marker: used to determine which shard to start with
         :type marker: six.text_type
-        :param limit: how many results to return
+        :param limit: (Default 10) Max number of results to return
         :type limit: int
         :param detailed: whether to include options
         :type detailed: bool

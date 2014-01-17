@@ -20,6 +20,8 @@ from marconi.queues import bootstrap
 from marconi.queues.transport.wsgi import driver
 from marconi import tests as testing
 
+from marconi.queues.transport import validation
+
 
 class TestBase(testing.TestBase):
 
@@ -30,6 +32,10 @@ class TestBase(testing.TestBase):
 
         if not self.config_file:
             self.skipTest("No config specified")
+
+        self.conf.register_opts(validation._TRANSPORT_LIMITS_OPTIONS,
+                                group=validation._TRANSPORT_LIMITS_GROUP)
+        self.transport_cfg = self.conf[validation._TRANSPORT_LIMITS_GROUP]
 
         self.conf.register_opts(driver._WSGI_OPTIONS,
                                 group=driver._WSGI_GROUP)

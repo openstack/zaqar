@@ -14,12 +14,12 @@
 # limitations under the License.
 
 from marconi.openstack.common import timeutils
-from marconi.queues.storage import base
+from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class MessageController(base.Message):
+class MessageController(storage.Message):
 
     def get(self, queue, message_id, project):
         if project is None:
@@ -114,11 +114,9 @@ class MessageController(base.Message):
                 'body': content,
             }
 
-    def list(self, queue, project, marker=None, limit=None,
+    def list(self, queue, project, marker=None,
+             limit=storage.DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None, include_claimed=False):
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_message_paging
 
         if project is None:
             project = ''

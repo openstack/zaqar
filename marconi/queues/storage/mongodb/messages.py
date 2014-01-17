@@ -394,11 +394,9 @@ class MessageController(storage.Message):
     # Public interface
     #-----------------------------------------------------------------------
 
-    def list(self, queue_name, project=None, marker=None, limit=None,
+    def list(self, queue_name, project=None, marker=None,
+             limit=storage.DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None, include_claimed=False):
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_message_paging
 
         if marker is not None:
             try:

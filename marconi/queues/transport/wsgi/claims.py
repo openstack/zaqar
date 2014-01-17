@@ -32,11 +32,10 @@ CLAIM_PATCH_SPEC = (('ttl', int),)
 
 class Resource(object):
 
-    __slots__ = ('claim_controller', '_metadata_max_length', '_validate')
+    __slots__ = ('claim_controller', '_validate')
 
     def __init__(self, wsgi_conf, validate, claim_controller):
         self.claim_controller = claim_controller
-        self._metadata_max_length = wsgi_conf.metadata_max_length
         self._validate = validate
 
 
@@ -51,11 +50,6 @@ class CollectionResource(Resource):
         limit = req.get_param_as_int('limit')
         claim_options = {} if limit is None else {'limit': limit}
 
-        # Place JSON size restriction before parsing
-        if req.content_length > self._metadata_max_length:
-            description = _(u'Claim metadata size is too large.')
-            raise wsgi_errors.HTTPBadRequestBody(description)
-
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
@@ -63,7 +57,7 @@ class CollectionResource(Resource):
 
         # Claim some messages
         try:
-            self._validate.claim_creation(metadata, **claim_options)
+            self._validate.claim_creation(metadata, limit=limit)
             cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
@@ -101,11 +95,10 @@ class CollectionResource(Resource):
 
 class ItemResource(Resource):
 
-    __slots__ = ('claim_controller', '_metadata_max_length', '_validate')
+    __slots__ = ('claim_controller', '_validate')
 
     def __init__(self, wsgi_conf, validate, claim_controller):
         self.claim_controller = claim_controller
-        self._metadata_max_length = wsgi_conf.metadata_max_length
         self._validate = validate
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
@@ -152,11 +145,6 @@ class ItemResource(Resource):
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
-
-        # Place JSON size restriction before parsing
-        if req.content_length > self._metadata_max_length:
-            description = _(u'Claim metadata size is too large.')
-            raise wsgi_errors.HTTPBadRequestBody(description)
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.

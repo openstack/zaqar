@@ -128,10 +128,6 @@ class MessagesBaseTest(base.TestBase):
         self._post_messages(self.messages_path)
         msg_id = self._get_msg_id(self.srmock.headers_dict)
 
-        # Posting restriction
-        self._post_messages(self.messages_path, repeat=23)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
         # Bulk GET restriction
         query_string = 'ids=' + ','.join([msg_id] * 21)
         self.simulate_get(self.messages_path, self.project_id,
@@ -239,8 +235,9 @@ class MessagesBaseTest(base.TestBase):
     def test_exceeded_message_posting(self):
         # Total (raw request) size
         doc = json.dumps([{'body': "some body", 'ttl': 100}] * 20, indent=4)
-        long_doc = doc + (' ' *
-                          (self.wsgi_cfg.content_max_length - len(doc) + 1))
+
+        max_len = self.transport_cfg.max_message_size
+        long_doc = doc + (' ' * (max_len - len(doc) + 1))
 
         self.simulate_post(self.queue_path + '/messages',
                            body=long_doc,

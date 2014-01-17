@@ -169,10 +169,7 @@ class QueueController(storage.Queue):
     #-----------------------------------------------------------------------
 
     def list(self, project=None, marker=None,
-             limit=None, detailed=False):
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_queue_paging
+             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         query = utils.scoped_query(marker, project)
 

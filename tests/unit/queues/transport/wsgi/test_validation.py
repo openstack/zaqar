@@ -50,14 +50,14 @@ class ValidationTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Too long
-        metadata_size_uplimit = 64
+        max_queue_metadata = 64
 
         doc_tmpl = '{{"Dragon Torc":"{0}"}}'
         doc_tmpl_ws = '{{ "Dragon Torc" : "{0}" }}'  # with whitespace
-        envelop_length = len(doc_tmpl.format(''))
+        envelope_length = len(doc_tmpl.format(''))
 
         for tmpl in doc_tmpl, doc_tmpl_ws:
-            gen = '0' * (metadata_size_uplimit - envelop_length + 1)
+            gen = '0' * (max_queue_metadata - envelope_length + 1)
             doc = tmpl.format(gen)
             self.simulate_put(self.queue_path + '/metadata',
                               self.project_id,
@@ -75,13 +75,13 @@ class ValidationTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # Both messages' size are too long
-        message_size_uplimit = 256
+        max_message_size = 256
 
         obj = {'a': 0, 'b': ''}
-        envelop_length = len(json.dumps(obj, separators=(',', ':')))
-        obj['b'] = 'x' * (message_size_uplimit - envelop_length + 1)
+        envelope_length = len(json.dumps(obj, separators=(',', ':')))
+        obj['b'] = 'x' * (max_message_size - envelope_length + 1)
 
-        for long_body in ('a' * (message_size_uplimit - 2 + 1), obj):
+        for long_body in ('a' * (max_message_size - 2 + 1), obj):
             doc = json.dumps([{'body': long_body, 'ttl': 100}])
             self.simulate_post(self.queue_path + '/messages',
                                self.project_id,

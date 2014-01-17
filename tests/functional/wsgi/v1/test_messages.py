@@ -45,6 +45,22 @@ class TestMessages(base.FunctionalTestBase):
 
         self.response = response.ResponseSchema(self.limits)
 
+    def tearDown(self):
+        self.client.delete(self.queue_url)
+        super(TestMessages, self).tearDown()
+
+    def _post_large_bulk_insert(self, offset):
+        """Insert just under than max allowed messages."""
+
+        doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
+        overhead = len(doc.format('', ''))
+
+        half_size = (self.limits.max_message_size - overhead) / 2
+        doc = doc.format(helpers.generate_random_string(half_size),
+                         helpers.generate_random_string(half_size + offset))
+
+        return self.client.post(data=doc)
+
     def test_message_single_insert(self):
         """Insert Single Message into the Queue.
 
@@ -93,7 +109,7 @@ class TestMessages(base.FunctionalTestBase):
 
     def test_message_bulk_insert(self):
         """Bulk Insert Messages into the Queue."""
-        message_count = self.limits.message_paging_uplimit
+        message_count = self.limits.max_messages_per_page
         doc = helpers.create_message_body(messagecount=message_count)
 
         result = self.client.post(data=doc)
@@ -133,7 +149,7 @@ class TestMessages(base.FunctionalTestBase):
 
         # Test Setup
         doc = helpers.create_message_body(messagecount=
-                                          self.limits.message_paging_uplimit)
+                                          self.limits.max_messages_per_page)
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
@@ -235,17 +251,36 @@ class TestMessages(base.FunctionalTestBase):
 
     test_message_partial_get.tags = ['negative']
 
-    def test_message_bulk_insert_60(self):
-        """Insert more than max allowed messages.
+    @ddt.data(-10, -1, 0)
+    def test_message_bulk_insert_large_bodies(self, offset):
+        """Insert just under than max allowed messages."""
+        result = self._post_large_bulk_insert(offset)
+        self.assertEqual(result.status_code, 201)
 
-        Marconi allows  a maximum of 50 message per POST.
-        """
-        doc = helpers.create_message_body(messagecount=60)
+    test_message_bulk_insert_large_bodies.tags = ['positive']
+
+    @ddt.data(1, 10)
+    def test_message_bulk_insert_large_bodies(self, offset):
+        """Insert just under than max allowed messages."""
+        result = self._post_large_bulk_insert(offset)
+        self.assertEqual(result.status_code, 400)
+
+    test_message_bulk_insert_large_bodies.tags = ['negative']
+
+    def test_message_bulk_insert_oversized(self):
+        """Insert more than max allowed size."""
+
+        doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
+        overhead = len(doc.format('', ''))
+
+        half_size = (self.limits.max_message_size - overhead) / 2
+        doc = doc.format(helpers.generate_random_string(half_size),
+                         helpers.generate_random_string(half_size + 1))
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 400)
 
-    test_message_bulk_insert_60.tags = ['negative']
+    test_message_bulk_insert_oversized.tags = ['negative']
 
     @ddt.data(10000000000000000000, -100, 0, 30, -10000000000000000000)
     def test_message_get_invalid_limit(self, limit):
@@ -267,7 +302,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
-                       range(self.limits.message_paging_uplimit + 1))
+                       range(self.limits.max_messages_per_page + 1))
         result = self.client.delete(url)
 
         self.assertEqual(result.status_code, 400)
@@ -282,7 +317,7 @@ class TestMessages(base.FunctionalTestBase):
         """
         url = self.message_url + '?ids=' \
             + ','.join(str(i) for i in
-                       range(self.limits.message_paging_uplimit + 1))
+                       range(self.limits.max_messages_per_page + 1))
         result = self.client.get(url)
 
         self.assertEqual(result.status_code, 400)
@@ -336,7 +371,3 @@ class TestMessages(base.FunctionalTestBase):
         self.assertEqual(result.status_code, 204)
 
     test_delete_non_existing_message.tags = ['negative']
-
-    def tearDown(self):
-        super(TestMessages, self).tearDown()
-        self.client.delete(self.queue_url)

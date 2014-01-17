@@ -14,21 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.queues.storage import base
+from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class QueueController(base.Queue):
+class QueueController(storage.Queue):
 
     def list(self, project, marker=None,
-             limit=None, detailed=False):
+             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         if project is None:
             project = ''
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_queue_paging
 
         sql = (('''
             select name from Queues''' if not detailed

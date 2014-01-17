@@ -20,18 +20,40 @@ from oslo.config import cfg
 from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 
+MIN_MESSAGE_TTL = 60
+MIN_CLAIM_TTL = 60
+MIN_CLAIM_GRACE = 60
+
 
 _TRANSPORT_LIMITS_OPTIONS = [
-    cfg.IntOpt('queue_paging_uplimit', default=20),
-    cfg.IntOpt('metadata_size_uplimit', default=64 * 1024),
-    cfg.IntOpt('message_paging_uplimit', default=20),
-    cfg.IntOpt('message_size_uplimit', default=256 * 1024),
-    cfg.IntOpt('message_ttl_max', default=1209600),
-    cfg.IntOpt('claim_ttl_max', default=43200),
-    cfg.IntOpt('claim_grace_max', default=43200),
+    cfg.IntOpt('max_queues_per_page', default=20,
+               deprecated_name='queue_paging_uplimit',
+               deprecated_group='limits:transport'),
+    cfg.IntOpt('max_messages_per_page', default=20,
+               deprecated_name='message_paging_uplimit',
+               deprecated_group='limits:transport'),
+
+    cfg.IntOpt('max_messages_per_claim', default=20),
+
+    cfg.IntOpt('max_queue_metadata', default=64 * 1024,
+               deprecated_name='metadata_size_uplimit',
+               deprecated_group='limits:transport'),
+    cfg.IntOpt('max_message_size', default=256 * 1024,
+               deprecated_name='message_size_uplimit',
+               deprecated_group='limits:transport'),
+
+    cfg.IntOpt('max_message_ttl', default=1209600,
+               deprecated_name='message_ttl_max',
+               deprecated_group='limits:transport'),
+    cfg.IntOpt('max_claim_ttl', default=43200,
+               deprecated_name='claim_ttl_max',
+               deprecated_group='limits:transport'),
+    cfg.IntOpt('max_claim_grace', default=43200,
+               deprecated_name='claim_grace_max',
+               deprecated_group='limits:transport'),
 ]
 
-_TRANSPORT_LIMITS_GROUP = 'limits:transport'
+_TRANSPORT_LIMITS_GROUP = 'transport'
 
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.
@@ -47,6 +69,10 @@ def _config_options():
 
 class ValidationFailed(ValueError):
     """User input did not follow API restrictions."""
+
+    def __init__(self, msg, *args, **kwargs):
+        msg = msg.format(*args, **kwargs)
+        super(ValidationFailed, self).__init__(msg)
 
 
 class Validator(object):
@@ -68,19 +94,17 @@ class Validator(object):
         """
 
         if project is not None and len(project) > PROJECT_ID_MAX_LEN:
-            raise ValidationFailed(
-                'Project ids may not be more than %d characters long.'
-                % PROJECT_ID_MAX_LEN)
+            msg = _(u'Project ids may not be more than {0} characters long.')
+            raise ValidationFailed(msg, PROJECT_ID_MAX_LEN)
 
         if len(queue) > QUEUE_NAME_MAX_LEN:
-            raise ValidationFailed(
-                'Queue names may not be more than %d characters long.'
-                % QUEUE_NAME_MAX_LEN)
+            msg = _(u'Queue names may not be more than {0} characters long.')
+            raise ValidationFailed(msg, QUEUE_NAME_MAX_LEN)
 
         if not QUEUE_NAME_REGEX.match(queue):
             raise ValidationFailed(
-                'Queue names may only contain ASCII letters, digits, '
-                'underscores, and dashes.')
+                _(u'Queue names may only contain ASCII letters, digits, '
+                  'underscores, and dashes.'))
 
     def queue_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of queues.
@@ -90,11 +114,10 @@ class Validator(object):
         :raises: ValidationFailed if the limit is exceeded
         """
 
-        uplimit = self._limits_conf.queue_paging_uplimit
+        uplimit = self._limits_conf.max_queues_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            raise ValidationFailed(
-                'Limit must be at least 1 and no greater than %d.' %
-                self._limits_conf.queue_paging_uplimit)
+            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            raise ValidationFailed(msg, self._limits_conf.max_queues_per_page)
 
     def queue_metadata_length(self, content_length):
         """Restrictions on queue's length.
@@ -102,20 +125,21 @@ class Validator(object):
         :param content_length: Queue request's length.
         :raises: ValidationFailed if the metadata is oversize.
         """
-        if content_length > self._limits_conf.metadata_size_uplimit:
-            error = _(u'Queue request size is too large. Max size %s')
-            raise ValidationFailed(error %
-                                   self._limits_conf.metadata_size_uplimit)
+
+        if content_length > self._limits_conf.max_queue_metadata:
+            msg = _(u'Queue metadata is too large. Max size: {0}')
+            raise ValidationFailed(msg, self._limits_conf.max_queue_metadata)
 
     def message_posting(self, messages):
         """Restrictions on a list of messages.
 
         :param messages: A list of messages
         :raises: ValidationFailed if any message has a out-of-range
-            TTL, or an oversize message body.
+            TTL.
         """
 
-        self.message_listing(limit=len(messages))
+        if not messages:
+            raise ValidationFailed(_(u'No messages to enqueu.'))
 
         for msg in messages:
             self.message_content(msg)
@@ -126,19 +150,22 @@ class Validator(object):
         :param content_length: Queue request's length.
         :raises: ValidationFailed if the metadata is oversize.
         """
-        if content_length > self._limits_conf.message_size_uplimit:
-            error = _(u'Message collection size is too large. Max size %s')
-            raise ValidationFailed(error %
-                                   self._limits_conf.message_size_uplimit)
+        if content_length > self._limits_conf.max_message_size:
+            raise ValidationFailed(
+                _(u'Message collection size is too large. Max size {0}'),
+                self._limits_conf.max_message_size)
 
     def message_content(self, message):
         """Restrictions on each message."""
 
-        if not (60 <= message['ttl'] <= self._limits_conf.message_ttl_max):
+        ttl = message['ttl']
+
+        if not (MIN_MESSAGE_TTL <= ttl <= self._limits_conf.max_message_ttl):
+            msg = _(u'The TTL for a message may not exceed {0} seconds, and '
+                    'must be at least {1} seconds long.')
+
             raise ValidationFailed(
-                ('The TTL for a message may not exceed %d seconds, and '
-                 'must be at least 60 seconds long.') %
-                self._limits_conf.message_ttl_max)
+                msg, self._limits_conf.max_message_ttl, MIN_MESSAGE_TTL)
 
     def message_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of messages.
@@ -148,40 +175,54 @@ class Validator(object):
         :raises: ValidationFailed if the limit is exceeded
         """
 
-        uplimit = self._limits_conf.message_paging_uplimit
+        uplimit = self._limits_conf.max_messages_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            raise ValidationFailed(
-                'Limit must be at least 1 and may not be greater than %d. ' %
-                self._limits_conf.message_paging_uplimit)
+            msg = _(u'Limit must be at least 1 and may not '
+                    'be greater than {0}.')
 
-    def claim_creation(self, metadata, **kwargs):
+            raise ValidationFailed(
+                msg, self._limits_conf.max_messages_per_page)
+
+    def claim_creation(self, metadata, limit=None):
         """Restrictions on the claim parameters upon creation.
 
         :param metadata: The claim metadata
-        :param kwargs: Other arguments passed to storage API
+        :param limit: The number of messages to claim
         :raises: ValidationFailed if either TTL or grace is out of range,
             or the expected number of messages exceed the limit.
         """
 
-        self.message_listing(**kwargs)
         self.claim_updating(metadata)
 
-        if not (60 <= metadata['grace'] <= self._limits_conf.claim_grace_max):
+        uplimit = self._limits_conf.max_messages_per_claim
+        if limit is not None and not (0 < limit <= uplimit):
+            msg = _(u'Limit must be at least 1 and may not '
+                    'be greater than {0}.')
+
             raise ValidationFailed(
-                ('Grace must be at least 60 seconds and cannot '
-                 'exceed %d.') %
-                self._limits_conf.claim_grace_max)
+                msg, self._limits_conf.max_messages_per_claim)
+
+        grace = metadata['grace']
+
+        if not (MIN_CLAIM_GRACE <= grace <= self._limits_conf.max_claim_grace):
+            msg = _(u'The grace for a claim may not exceed {0} seconds, and '
+                    'must be at least {1} seconds long.')
+
+            raise ValidationFailed(
+                msg, self._limits_conf.max_claim_grace, MIN_CLAIM_GRACE)
 
     def claim_updating(self, metadata):
         """Restrictions on the claim TTL.
 
         :param metadata: The claim metadata
-        :param kwargs: Ignored arguments passed to storage API
         :raises: ValidationFailed if the TTL is out of range
         """
 
-        if not (60 <= metadata['ttl'] <= self._limits_conf.claim_ttl_max):
+        ttl = metadata['ttl']
+
+        if not (MIN_CLAIM_TTL <= ttl <= self._limits_conf.max_claim_ttl):
+            msg = _(u'The TTL for a claim may not exceed {0} seconds, and '
+                    'must be at least {1} seconds long.')
+
             raise ValidationFailed(
-                ('The TTL for a claim may not exceed %d seconds, and must be '
-                 'at least 60 seconds long.') %
-                self._limits_conf.claim_ttl_max)
+                msg, self._limits_conf.max_message_ttl, MIN_CLAIM_TTL)

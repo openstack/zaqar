@@ -98,7 +98,8 @@ class ClaimController(storage.Claim):
         return (claim_meta, msgs)
 
     @utils.raises_conn_error
-    def create(self, queue, metadata, project=None, limit=None):
+    def create(self, queue, metadata, project=None,
+               limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
         """Creates a claim.
 
         This implementation was done in a best-effort fashion.
@@ -117,9 +118,6 @@ class ClaimController(storage.Claim):
         time being, to execute an update on a limited number of records.
         """
         msg_ctrl = self.driver.message_controller
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_message_paging
 
         ttl = metadata['ttl']
         grace = metadata['grace']

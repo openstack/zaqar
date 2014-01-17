@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.queues.storage import base
+from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class ClaimController(base.Claim):
+class ClaimController(storage.Claim):
 
     def get(self, queue, claim_id, project):
         if project is None:
@@ -50,13 +50,11 @@ class ClaimController(base.Claim):
             except utils.NoResult:
                 raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
-    def create(self, queue, metadata, project, limit=None):
+    def create(self, queue, metadata, project,
+               limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
 
         if project is None:
             project = ''
-
-        if limit is None:
-            limit = self.driver.limits_conf.default_message_paging
 
         with self.driver('immediate'):
             try:

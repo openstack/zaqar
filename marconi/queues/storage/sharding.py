@@ -140,7 +140,7 @@ class QueueController(RoutingController):
         self._lookup = self._shard_catalog.lookup
 
     def list(self, project=None, marker=None,
-             limit=None, detailed=False):
+             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         def all_pages():
             for shard in self._shard_catalog._shards_ctrl.list(limit=0):
@@ -156,9 +156,6 @@ class QueueController(RoutingController):
             utils.keyify('name', page)
             for page in all_pages()
         ])
-
-        if limit is None:
-            limit = self._shard_catalog._limits_conf.default_queue_paging
 
         marker_name = {}
 
@@ -341,10 +338,6 @@ class Catalog(object):
 
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
-
-        self._conf.register_opts(storage.base._LIMITS_OPTIONS,
-                                 group=storage.base._LIMITS_GROUP)
-        self._limits_conf = self._conf[storage.base._LIMITS_GROUP]
 
         self._shards_ctrl = control.shards_controller
         self._catalogue_ctrl = control.catalogue_controller
