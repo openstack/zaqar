@@ -15,8 +15,3 @@ testtools>=0.9.32
 
 # Functional Tests
 requests>=1.1
-
-# Test runner
-nose
-nose-exclude
-openstack.nose_plugin>=0.7
