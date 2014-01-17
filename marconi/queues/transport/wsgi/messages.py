@@ -138,10 +138,12 @@ class CollectionResource(object):
 
         client_uuid = wsgi_utils.get_client_uuid(req)
 
-        # Place JSON size restriction before parsing
-        if req.content_length > self._wsgi_conf.content_max_length:
-            description = _(u'Message collection size is too large.')
-            raise wsgi_errors.HTTPBadRequestBody(description)
+        try:
+            # Place JSON size restriction before parsing
+            self._validate.message_length(req.content_length)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         # Pull out just the fields we care about
         messages = wsgi_utils.filter_stream(
@@ -154,12 +156,7 @@ class CollectionResource(object):
         partial = False
 
         try:
-            # No need to check each message's size if it
-            # can not exceed the request size limit
-            self._validate.message_posting(
-                messages, check_size=(
-                    self._validate._limits_conf.message_size_uplimit <
-                    self._wsgi_conf.content_max_length))
+            self._validate.message_posting(messages)
 
             message_ids = self.message_controller.post(
                 queue_name,

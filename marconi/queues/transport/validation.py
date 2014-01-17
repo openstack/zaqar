@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import re
 
 from oslo.config import cfg
+
+from marconi.openstack.common.gettextutils import _
 
 
 _TRANSPORT_LIMITS_OPTIONS = [
@@ -89,28 +90,21 @@ class Validator(object):
                 'Limit must be at least 1 and no greater than %d.' %
                 self._limits_conf.queue_paging_uplimit)
 
-    def queue_content(self, metadata, check_size):
-        """Restrictions on queue metadata.
+    def queue_metadata_length(self, content_length):
+        """Restrictions on queue's length.
 
-        :param metadata: Metadata as a Python dict
-        :param check_size: Whether this size checking is required
+        :param content_length: Queue request's length.
         :raises: ValidationFailed if the metadata is oversize.
         """
+        if content_length > self._limits_conf.metadata_size_uplimit:
+            error = _(u'Queue request size is too large. Max size %s')
+            raise ValidationFailed(error %
+                                   self._limits_conf.metadata_size_uplimit)
 
-        if check_size:
-            length = _compact_json_length(metadata)
-            if length > self._limits_conf.metadata_size_uplimit:
-                raise ValidationFailed(
-                    ('Queue metadata may not exceed %d characters, '
-                     'excluding whitespace.') %
-                    self._limits_conf.metadata_size_uplimit)
-
-    def message_posting(self, messages, check_size=True):
+    def message_posting(self, messages):
         """Restrictions on a list of messages.
 
         :param messages: A list of messages
-        :param check_size: Whether the size checking for each message
-            is required
         :raises: ValidationFailed if any message has a out-of-range
             TTL, or an oversize message body.
         """
@@ -118,9 +112,20 @@ class Validator(object):
         self.message_listing(limit=len(messages))
 
         for msg in messages:
-            self.message_content(msg, check_size)
+            self.message_content(msg)
 
-    def message_content(self, message, check_size):
+    def message_length(self, content_length):
+        """Restrictions on message post length.
+
+        :param content_length: Queue request's length.
+        :raises: ValidationFailed if the metadata is oversize.
+        """
+        if content_length > self._limits_conf.message_size_uplimit:
+            error = _(u'Message collection size is too large. Max size %s')
+            raise ValidationFailed(error %
+                                   self._limits_conf.message_size_uplimit)
+
+    def message_content(self, message):
         """Restrictions on each message."""
 
         if not (60 <= message['ttl'] <= self._limits_conf.message_ttl_max):
@@ -128,14 +133,6 @@ class Validator(object):
                 ('The TTL for a message may not exceed %d seconds, and '
                  'must be at least 60 seconds long.') %
                 self._limits_conf.message_ttl_max)
-
-        if check_size:
-            body_length = _compact_json_length(message['body'])
-            if body_length > self._limits_conf.message_size_uplimit:
-                raise ValidationFailed(
-                    ('Message bodies may not exceed %d characters, '
-                     'excluding whitespace.') %
-                    self._limits_conf.message_size_uplimit)
 
     def message_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of messages.
@@ -182,12 +179,3 @@ class Validator(object):
                 ('The TTL for a claim may not exceed %d seconds, and must be '
                  'at least 60 seconds long.') %
                 self._limits_conf.claim_ttl_max)
-
-
-def _compact_json_length(obj):
-    # UTF-8 encoded, without whitespace
-    # TODO(zyuan): Replace this redundent re-serialization
-    # with a sizing-only parser.
-    return len(json.dumps(obj,
-                          ensure_ascii=False,
-                          separators=(',', ':')))
