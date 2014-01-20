@@ -23,6 +23,7 @@ Field Mappings:
 
 import pymongo.errors
 
+from marconi.common import decorators
 from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
@@ -30,8 +31,32 @@ from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
-
 LOG = logging.getLogger(__name__)
+
+# NOTE(kgriffs): E.g.: 'marconi-queuecontroller:5083853/my-queue'
+_QUEUE_CACHE_PREFIX = 'queuecontroller:'
+
+# NOTE(kgriffs): This causes some race conditions, but they are
+# harmless. If a queue was deleted, but we are still returning
+# that it exists, some messages may get inserted without the
+# client getting an error. In this case, those messages would
+# be orphaned and expire eventually according to their TTL.
+#
+# What this means for the client is that they have a bug; they
+# deleted a queue and then immediately tried to post messages
+# to it. If they keep trying to use the queue, they will
+# eventually start getting an error, once the cache entry
+# expires, which should clue them in on what happened.
+#
+# TODO(kgriffs): Make dynamic?
+_QUEUE_CACHE_TTL = 5
+
+
+def _queue_exists_key(queue, project=None):
+    # NOTE(kgriffs): Use string concatenation for performance,
+    # also put project first since it is guaranteed to be
+    # unique, which should reduce lookup time.
+    return _QUEUE_CACHE_PREFIX + 'exists:' + str(project) + '/' + queue
 
 
 class QueueController(storage.Queue):
@@ -59,6 +84,7 @@ class QueueController(storage.Queue):
     def __init__(self, *args, **kwargs):
         super(QueueController, self).__init__(*args, **kwargs)
 
+        self._cache = self.driver.cache
         self._collection = self.driver.queues_database.queues
 
         # NOTE(flaper87): This creates a unique index for
@@ -224,8 +250,11 @@ class QueueController(storage.Queue):
         else:
             return True
 
+    # NOTE(kgriffs): Only cache when it exists; if it doesn't exist, and
+    # someone creates it, we want it to be immediately visible.
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
+    @decorators.caches(_queue_exists_key, _QUEUE_CACHE_TTL, lambda v: v)
     def exists(self, name, project=None):
         query = _get_scoped_query(name, project)
         return self._collection.find_one(query) is not None
@@ -243,6 +272,7 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
+    @exists.purges
     def delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
         self._collection.remove(_get_scoped_query(name, project))
