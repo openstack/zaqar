@@ -249,10 +249,8 @@ def raises_conn_error(func):
         try:
             return func(*args, **kwargs)
         except errors.ConnectionFailure as ex:
-            # NOTE(flaper87): Raise the error
             LOG.exception(ex)
-            msg = u'ConnectionFailure caught'
-            raise storage_errors.ConnectionError(msg)
+            raise storage_errors.ConnectionError()
 
     return wrapper
 
