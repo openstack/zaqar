@@ -38,7 +38,7 @@ class ShardCatalogTest(testing.TestBase):
 
         self.conf.register_opts([cfg.StrOpt('storage')],
                                 group='drivers')
-        cache = oslo_cache.get_cache(self.conf)
+        cache = oslo_cache.get_cache()
         control = utils.load_storage_driver(self.conf, cache,
                                             control_mode=True)
 

@@ -41,6 +41,7 @@ def fields(d, names, pred=lambda x: True,
 
 _pytype_to_cfgtype = {
     six.text_type: cfg.StrOpt,
+    str: cfg.StrOpt,
     int: cfg.IntOpt,
     bool: cfg.BoolOpt,
     float: cfg.FloatOpt,

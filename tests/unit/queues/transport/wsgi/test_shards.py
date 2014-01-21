@@ -53,7 +53,7 @@ def shard(test, name, weight, uri, options={}):
 
 
 @contextlib.contextmanager
-def shards(test, count):
+def shards(test, count, uri):
     """A context manager for constructing shards for use in testing.
 
     Deletes the shards after exiting the context.
@@ -66,16 +66,16 @@ def shards(test, count):
     """
     base = '/v1/shards/'
     args = [(base + str(i), i,
-             str(i), {str(i): i})
+             {str(i): i})
             for i in range(count)]
-    for path, weight, uri, option in args:
+    for path, weight, option in args:
         doc = {'weight': weight, 'uri': uri, 'options': option}
         test.simulate_put(path, body=json.dumps(doc))
 
     try:
         yield args
     finally:
-        for path, _, _, _ in args:
+        for path, _, _ in args:
             test.simulate_delete(path)
 
 
@@ -84,7 +84,7 @@ class ShardsBaseTest(base.TestBase):
 
     def setUp(self):
         super(ShardsBaseTest, self).setUp()
-        self.doc = {'weight': 100, 'uri': 'localhost'}
+        self.doc = {'weight': 100, 'uri': 'sqlite://memory'}
         self.shard = '/v1/shards/' + str(uuid.uuid1())
         self.simulate_put(self.shard, body=json.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -96,7 +96,8 @@ class ShardsBaseTest(base.TestBase):
 
     def test_put_shard_works(self):
         name = str(uuid.uuid1())
-        with shard(self, name, 100, 'localhost'):
+        weight, uri = self.doc['weight'], self.doc['uri']
+        with shard(self, name, weight, uri):
             self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def test_put_raises_if_missing_fields(self):
@@ -104,7 +105,7 @@ class ShardsBaseTest(base.TestBase):
         self.simulate_put(path, body=json.dumps({'weight': 100}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-        self.simulate_put(path, body=json.dumps({'uri': 'localhost'}))
+        self.simulate_put(path, body=json.dumps({'uri': 'sqlite://memory'}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, 'big')
@@ -115,7 +116,7 @@ class ShardsBaseTest(base.TestBase):
                           body=json.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-    @ddt.data(-1, 2**32+1, [])
+    @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
         path = '/v1/shards/' + str(uuid.uuid1())
         self.simulate_put(path,
@@ -130,16 +131,17 @@ class ShardsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_put_existing_overwrites(self):
-        doc = {'weight': 20, 'uri': 'awesome'}
+        # NOTE(cabrera): setUp creates default shard
+        expect = {'weight': 20, 'uri': 'sqlite://other'}
         self.simulate_put(self.shard,
-                          body=json.dumps(doc))
+                          body=json.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         result = self.simulate_get(self.shard)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         doc = json.loads(result[0])
-        self.assertEqual(doc['weight'], 20)
-        self.assertEqual(doc['uri'], 'awesome')
+        self.assertEqual(doc['weight'], expect['weight'])
+        self.assertEqual(doc['uri'], expect['uri'])
 
     def test_delete_works(self):
         self.simulate_delete(self.shard)
@@ -196,11 +198,11 @@ class ShardsBaseTest(base.TestBase):
         self.assertEqual(shard['options'], doc['options'])
 
     def test_patch_works(self):
-        doc = {'weight': 101, 'uri': 'remotehost', 'options': {'a': 1}}
+        doc = {'weight': 101, 'uri': 'sqlite://memory', 'options': {'a': 1}}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
-        doc = {'weight': 101, 'uri': 'remotehost', 'options': {'a': 1},
+        doc = {'weight': 101, 'uri': 'sqlite://memory', 'options': {'a': 1},
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)
 
@@ -210,7 +212,7 @@ class ShardsBaseTest(base.TestBase):
                             body=json.dumps({'weight': weight}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-    @ddt.data(-1, 2**32+1, [])
+    @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_patch_raises_400_on_invalid_uri(self, uri):
         self.simulate_patch(self.shard,
                             body=json.dumps({'uri': uri}))
@@ -241,7 +243,7 @@ class ShardsBaseTest(base.TestBase):
         if marker:
             query += '&marker={2}'.format(marker)
 
-        with shards(self, count) as expected:
+        with shards(self, count, self.doc['uri']) as expected:
             result = self.simulate_get('/v1/shards',
                                        query_string=query)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
@@ -251,8 +253,8 @@ class ShardsBaseTest(base.TestBase):
             shard_list = results['shards']
             self.assertEqual(len(shard_list), min(limit, count))
             for (i, s), expect in zip(enumerate(shard_list), expected):
-                path, weight, uri = expect[:3]
-                self._shard_expect(s, path, weight, uri)
+                path, weight = expect[:2]
+                self._shard_expect(s, path, weight, self.doc['uri'])
                 if detailed:
                     self.assertIn('options', s)
                     self.assertEqual(s['options'], expect[-1])
@@ -272,14 +274,14 @@ class ShardsBaseTest(base.TestBase):
     def test_listing_marker_is_respected(self):
         self.simulate_delete(self.shard)
 
-        with shards(self, 10) as expected:
+        with shards(self, 10, self.doc['uri']) as expected:
             result = self.simulate_get('/v1/shards',
                                        query_string='?marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
             shard_list = json.loads(result[0])['shards']
             self.assertEqual(len(shard_list), 6)
-            path, weight, uri = expected[4][:3]
-            self._shard_expect(shard_list[0], path, weight, uri)
+            path, weight = expected[4][:2]
+            self._shard_expect(shard_list[0], path, weight, self.doc['uri'])
 
 
 @testing.requires_mongodb

@@ -94,7 +94,7 @@ class MongodbDriverTest(testing.TestBase):
         _cleanup_databases(self)
 
     def test_db_instance(self):
-        cache = oslo_cache.get_cache(self.conf)
+        cache = oslo_cache.get_cache()
         driver = mongodb.DataDriver(self.conf, cache)
 
         databases = (driver.message_databases +

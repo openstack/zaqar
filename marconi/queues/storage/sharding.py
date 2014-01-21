@@ -18,7 +18,6 @@ import heapq
 import itertools
 
 from oslo.config import cfg
-import six
 
 from marconi.common import decorators
 from marconi.common.storage import select
@@ -360,33 +359,7 @@ class Catalog(object):
         :rtype: marconi.queues.storage.base.DataDriver
         """
         shard = self._shards_ctrl.get(shard_id, detailed=True)
-
-        # NOTE(cpp-cabrera): make it *very* clear to data storage
-        # drivers that we are operating in sharding mode.
-        general_dict_opts = {'dynamic': True}
-        general_opts = common_utils.dict_to_conf(general_dict_opts)
-
-        # NOTE(cpp-cabrera): parse general opts: 'drivers'
-        uri = shard['uri']
-
-        # pylint: disable=no-member
-        storage_type = six.moves.urllib_parse.urlparse(uri).scheme
-
-        driver_dict_opts = {'storage': storage_type}
-        driver_opts = common_utils.dict_to_conf(driver_dict_opts)
-
-        # NOTE(cpp-cabrera): parse storage-specific opts:
-        # 'drivers:storage:{type}'
-        storage_dict_opts = shard['options']
-        storage_dict_opts['uri'] = shard['uri']
-        storage_opts = common_utils.dict_to_conf(storage_dict_opts)
-        storage_group = u'drivers:storage:%s' % storage_type
-
-        # NOTE(cpp-cabrera): register those options!
-        conf = cfg.ConfigOpts()
-        conf.register_opts(general_opts)
-        conf.register_opts(driver_opts, group=u'drivers')
-        conf.register_opts(storage_opts, group=storage_group)
+        conf = utils.dynamic_conf(shard['uri'], shard['options'])
         return utils.load_storage_driver(conf, self._cache)
 
     def _shard_id(self, queue, project=None):
@@ -411,7 +384,7 @@ class Catalog(object):
         return shard_id
 
     def _invalidate_cached_id(self, queue, project=None):
-        self._cache.unset(_shard_cache_key(queue, project))
+        self._cache.unset_many([_shard_cache_key(queue, project)])
 
     def register(self, queue, project=None):
         """Register a new queue in the shard catalog.

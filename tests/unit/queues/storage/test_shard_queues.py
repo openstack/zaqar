@@ -35,7 +35,7 @@ class ShardQueuesTest(testing.TestBase):
         conf.register_opts([cfg.StrOpt('storage')],
                            group='drivers')
 
-        cache = oslo_cache.get_cache(self.conf)
+        cache = oslo_cache.get_cache()
         control = utils.load_storage_driver(conf, cache, control_mode=True)
         self.shards_ctrl = control.shards_controller
         self.driver = sharding.DataDriver(conf, cache, control)

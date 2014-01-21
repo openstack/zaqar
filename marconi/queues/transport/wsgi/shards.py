@@ -41,6 +41,7 @@ from marconi.common.transport.wsgi import utils
 from marconi.common import utils as common_utils
 from marconi.openstack.common import log
 from marconi.queues.storage import errors
+from marconi.queues.storage import utils as storage_utils
 from marconi.queues.transport import utils as transport_utils
 from marconi.queues.transport.wsgi import errors as wsgi_errors
 
@@ -139,6 +140,10 @@ class Resource(object):
 
         data = utils.load(request)
         utils.validate(self._validators['create'], data)
+        if not storage_utils.can_connect(data['uri']):
+            raise wsgi_errors.HTTPBadRequestBody(
+                'cannot connect to %s' % data['uri']
+            )
         self._ctrl.create(shard, weight=data['weight'],
                           uri=data['uri'],
                           options=data.get('options', {}))
@@ -180,6 +185,10 @@ class Resource(object):
         for field in EXPECT:
             utils.validate(self._validators[field], data)
 
+        if 'uri' in data and not storage_utils.can_connect(data['uri']):
+            raise wsgi_errors.HTTPBadRequestBody(
+                'cannot connect to %s' % data['uri']
+            )
         fields = common_utils.fields(data, EXPECT,
                                      pred=lambda v: v is not None)
 
