@@ -37,7 +37,7 @@ class Driver(driver.DriverBase):
         return [
             # Home
             ('/',
-             v1.V1Resource()),
+             v1.Resource()),
 
             # Queues Endpoints
             ('/queues',

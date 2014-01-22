@@ -7,7 +7,7 @@ from marconi.queues.storage import errors  # NOQA
 ControlDriverBase = base.ControlDriverBase
 DataDriverBase = base.DataDriverBase
 CatalogueBase = base.CatalogueBase
-ClaimBase = base.ClaimBase
-MessageBase = base.MessageBase
-QueueBase = base.QueueBase
+Claim = base.Claim
+Message = base.Message
+Queue = base.Queue
 ShardsBase = base.ShardsBase

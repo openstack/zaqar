@@ -19,7 +19,7 @@ from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class MessageController(base.MessageBase):
+class MessageController(base.Message):
 
     def get(self, queue, message_id, project):
         if project is None:

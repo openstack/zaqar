@@ -130,7 +130,7 @@ JSON_HOME = {
 }
 
 
-class V1Resource(object):
+class Resource(object):
 
     def __init__(self):
         document = json.dumps(JSON_HOME, ensure_ascii=False, indent=4)

@@ -54,7 +54,7 @@ class ControlDriver(storage.ControlDriverBase):
         return None
 
 
-class QueueController(storage.QueueBase):
+class QueueController(storage.Queue):
     def __init__(self, driver):
         pass
 
@@ -80,7 +80,7 @@ class QueueController(storage.QueueBase):
         raise NotImplementedError()
 
 
-class MessageController(storage.MessageBase):
+class MessageController(storage.Message):
     def __init__(self, driver):
         pass
 

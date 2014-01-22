@@ -18,7 +18,7 @@ from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class ClaimController(base.ClaimBase):
+class ClaimController(base.Claim):
 
     def get(self, queue, claim_id, project):
         if project is None:

@@ -108,7 +108,7 @@ TRANSACTION_INDEX_FIELDS = [
 ]
 
 
-class MessageController(storage.MessageBase):
+class MessageController(storage.Message):
     """Implements message resource operations using MongoDB.
 
     Messages are scoped by project + queue.

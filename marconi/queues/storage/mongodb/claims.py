@@ -35,7 +35,7 @@ from marconi.queues.storage.mongodb import utils
 LOG = logging.getLogger(__name__)
 
 
-class ClaimController(storage.ClaimBase):
+class ClaimController(storage.Claim):
     """Implements claim resource operations using MongoDB.
 
     No dedicated collection is being used

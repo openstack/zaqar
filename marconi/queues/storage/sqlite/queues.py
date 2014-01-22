@@ -19,7 +19,7 @@ from marconi.queues.storage import errors
 from marconi.queues.storage.sqlite import utils
 
 
-class QueueController(base.QueueBase):
+class QueueController(base.Queue):
 
     def list(self, project, marker=None,
              limit=None, detailed=False):
