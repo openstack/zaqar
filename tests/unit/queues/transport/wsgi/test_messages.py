@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import json
 import uuid
 
 import ddt
 import falcon
+import mock
 import six
 from testtools import matchers
 
@@ -83,31 +85,32 @@ class MessagesBaseTest(base.TestBase):
 
         # Test GET on the message resource directly
         # NOTE(cpp-cabrera): force the passing of time to age a message
-        timeutils.set_time_override(timeutils.utcnow())
-        timeutils.advance_time_seconds(10)
-        for msg_id in msg_ids:
-            message_uri = self.messages_path + '/' + msg_id
+        timeutils_utcnow = 'marconi.openstack.common.timeutils.utcnow'
+        now = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now
+            for msg_id in msg_ids:
+                message_uri = self.messages_path + '/' + msg_id
 
-            # Wrong project ID
-            self.simulate_get(message_uri, '777777')
-            self.assertEqual(self.srmock.status, falcon.HTTP_404)
+                # Wrong project ID
+                self.simulate_get(message_uri, '777777')
+                self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-            # Correct project ID
-            result = self.simulate_get(message_uri, self.project_id)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
-            self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                             message_uri)
+                # Correct project ID
+                result = self.simulate_get(message_uri, self.project_id)
+                self.assertEqual(self.srmock.status, falcon.HTTP_200)
+                self.assertEqual(self.srmock.headers_dict['Content-Location'],
+                                 message_uri)
 
-            # Check message properties
-            message = json.loads(result[0])
-            self.assertEqual(message['href'], message_uri)
-            self.assertEqual(message['body'], lookup[message['ttl']])
+                # Check message properties
+                message = json.loads(result[0])
+                self.assertEqual(message['href'], message_uri)
+                self.assertEqual(message['body'], lookup[message['ttl']])
 
-            # no negative age
-            # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
-            self.assertThat(message['age'],
-                            matchers.GreaterThan(-1))
-        timeutils.clear_time_override()
+                # no negative age
+                # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
+                self.assertThat(message['age'],
+                                matchers.GreaterThan(-1))
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)
@@ -275,7 +278,7 @@ class MessagesBaseTest(base.TestBase):
     def test_bulk_delete(self):
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=5)
-        [target, params] = self.srmock.headers_dict['Location'].split('?')
+        [target, params] = self.srmock.headers_dict['location'].split('?')
 
         # Deleting the whole collection is denied
         self.simulate_delete(path, self.project_id)
@@ -378,7 +381,7 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_post(path + '/claims', self.project_id,
                            body='{"ttl": 100, "grace": 100}')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
-        location = self.srmock.headers_dict['Location']
+        location = self.srmock.headers_dict['location']
 
         # release claim
         self.simulate_delete(location, self.project_id)
@@ -446,7 +449,7 @@ class MessagesBaseTest(base.TestBase):
         return self._get_msg_ids(headers)[0]
 
     def _get_msg_ids(self, headers):
-        return headers['Location'].rsplit('=', 1)[-1].split(',')
+        return headers['location'].rsplit('=', 1)[-1].split(',')
 
 
 class MessagesSQLiteTests(MessagesBaseTest):
