@@ -18,6 +18,8 @@
 
 from oslo.config import cfg
 
+from marconi.common import utils
+
 
 MONGODB_OPTIONS = [
     cfg.StrOpt('uri', help='Mongodb Connection URI'),
@@ -54,3 +56,7 @@ MONGODB_OPTIONS = [
 ]
 
 MONGODB_GROUP = 'drivers:storage:mongodb'
+
+
+def _config_options():
+    return utils.options_iter(MONGODB_OPTIONS, MONGODB_GROUP)

@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
+
 from oslo.config import cfg
 from stevedore import driver
 
 from marconi.common import decorators
 from marconi.common import errors
+from marconi.common import utils
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log
@@ -46,6 +49,11 @@ _DRIVER_OPTIONS = [
 ]
 
 _DRIVER_GROUP = 'drivers'
+
+
+def _config_options():
+    return itertools.chain(utils.options_iter(_GENERAL_OPTIONS),
+                           utils.options_iter(_DRIVER_OPTIONS, _DRIVER_GROUP))
 
 
 class Bootstrap(object):

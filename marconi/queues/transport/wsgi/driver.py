@@ -15,6 +15,7 @@
 
 import abc
 import functools
+import itertools
 from wsgiref import simple_server
 
 import falcon
@@ -24,6 +25,7 @@ import six
 from marconi.common import decorators
 from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
+from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.queues import transport
@@ -44,6 +46,10 @@ _WSGI_OPTIONS = [
 _WSGI_GROUP = 'drivers:transport:wsgi'
 
 LOG = logging.getLogger(__name__)
+
+
+def _config_options():
+    return itertools.chain(utils.options_iter(_WSGI_OPTIONS, _WSGI_GROUP))
 
 
 @six.add_metaclass(abc.ABCMeta)

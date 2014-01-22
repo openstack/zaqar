@@ -17,6 +17,7 @@ import re
 
 from oslo.config import cfg
 
+from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 
 
@@ -37,6 +38,11 @@ _TRANSPORT_LIMITS_GROUP = 'limits:transport'
 QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-]+$')
 QUEUE_NAME_MAX_LEN = 64
 PROJECT_ID_MAX_LEN = 256
+
+
+def _config_options():
+    return utils.options_iter(_TRANSPORT_LIMITS_OPTIONS,
+                              _TRANSPORT_LIMITS_GROUP)
 
 
 class ValidationFailed(ValueError):

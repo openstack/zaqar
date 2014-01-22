@@ -19,6 +19,7 @@ from stevedore import driver
 
 from marconi import common
 from marconi.common import decorators
+from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log as logging
 from marconi.queues.storage import base
@@ -38,6 +39,10 @@ _PIPELINE_CONFIGS = [
 ]
 
 _PIPELINE_GROUP = 'storage'
+
+
+def _config_options():
+    return utils.options_iter(_PIPELINE_CONFIGS, _PIPELINE_GROUP)
 
 
 def _get_storage_pipeline(resource_name, conf):

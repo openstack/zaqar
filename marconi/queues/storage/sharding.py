@@ -49,6 +49,10 @@ _SHARD_CACHE_PREFIX = 'sharding:'
 _SHARD_CACHE_TTL = 10
 
 
+def _config_options():
+    return common_utils.options_iter(_CATALOG_OPTIONS, _CATALOG_GROUP)
+
+
 def _shard_cache_key(queue, project=None):
     # NOTE(kgriffs): Use string concatenation for performance,
     # also put project first since it is guaranteed to be

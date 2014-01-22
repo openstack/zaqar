@@ -20,6 +20,9 @@ import six
 
 from oslo.config import cfg
 
+from marconi.common import utils
+
+
 _LIMITS_OPTIONS = [
     cfg.IntOpt('default_queue_paging', default=10,
                help='Default queue pagination size'),
@@ -29,6 +32,10 @@ _LIMITS_OPTIONS = [
 ]
 
 _LIMITS_GROUP = 'limits:storage'
+
+
+def _config_options():
+    return utils.options_iter(_LIMITS_OPTIONS, _LIMITS_GROUP)
 
 
 @six.add_metaclass(abc.ABCMeta)

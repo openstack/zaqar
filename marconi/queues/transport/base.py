@@ -18,9 +18,15 @@ import six
 
 from oslo.config import cfg
 
+from marconi.common import utils
+
 _TRANSPORT_OPTIONS = [
     cfg.StrOpt('auth_strategy', default='')
 ]
+
+
+def _config_options():
+    return utils.options_iter(_TRANSPORT_OPTIONS)
 
 
 @six.add_metaclass(abc.ABCMeta)
