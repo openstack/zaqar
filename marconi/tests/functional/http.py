@@ -19,6 +19,22 @@ import json
 import requests
 
 
+def _build_url(method):
+
+    @functools.wraps(method)
+    def wrapper(self, url='', **kwargs):
+
+        if not url.startswith("http"):
+            if not self.base_url:
+                raise RuntimeError("Base url not set")
+
+            url = self.base_url + url or ''
+
+        return method(self, url, **kwargs)
+
+    return wrapper
+
+
 class Client(object):
 
     def __init__(self):
@@ -30,19 +46,6 @@ class Client(object):
 
     def set_headers(self, headers):
         self.session.headers.update(headers)
-
-    def _build_url(method):
-
-        @functools.wraps(method)
-        def wrapper(self, url='', **kwargs):
-
-            if not url.startswith("http"):
-                if not self.base_url:
-                    raise RuntimeError("Base url not set")
-                url = self.base_url + url or ''
-
-            return method(self, url, **kwargs)
-        return wrapper
 
     @_build_url
     def get(self, url=None, **kwargs):
