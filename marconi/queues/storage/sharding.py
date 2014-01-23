@@ -368,7 +368,10 @@ class Catalog(object):
 
         # NOTE(cpp-cabrera): parse general opts: 'drivers'
         uri = shard['uri']
+
+        # pylint: disable=no-member
         storage_type = six.moves.urllib_parse.urlparse(uri).scheme
+
         driver_dict_opts = {'storage': storage_type}
         driver_opts = common_utils.dict_to_conf(driver_dict_opts)
 
@@ -437,7 +440,7 @@ class Catalog(object):
             shard = select.weighted(self._shards_ctrl.list(limit=0))
 
             if not shard:
-                raise errors.NoShardsFound()
+                raise errors.NoShardFound()
 
             self._catalogue_ctrl.insert(project, queue, shard['name'])
 

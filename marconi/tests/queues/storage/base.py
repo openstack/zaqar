@@ -49,11 +49,14 @@ class ControllerBaseTest(testing.TestBase):
 
         oslo_cache.register_oslo_configs(self.conf)
         cache = oslo_cache.get_cache(self.conf.cache_url)
+
+        # pylint: disable=not-callable
         self.driver = self.driver_class(self.conf, cache)
         self._prepare_conf()
 
         self.addCleanup(self._purge_databases)
 
+        # pylint: disable=not-callable
         self.controller = self.controller_class(self.driver)
 
     def _prepare_conf(self):

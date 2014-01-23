@@ -52,6 +52,6 @@ class DriverBase(object):
         self._conf.register_opts(_TRANSPORT_OPTIONS)
 
     @abc.abstractmethod
-    def listen():
+    def listen(self):
         """Start listening for client requests (self-hosting mode)."""
         raise NotImplementedError
