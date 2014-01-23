@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import contextlib
+import json
 import sqlite3
 import uuid
 
-import msgpack
 from oslo.config import cfg
 
 from marconi.common import decorators
@@ -126,10 +126,10 @@ class DataDriver(storage.DataDriverBase):
         :param o: a Python str, unicode, int, long, float, bool, None
                   or a dict or list of %o
         """
-        return sqlite3.Binary(msgpack.dumps(o))
+        return sqlite3.Binary(json.dumps(o))
 
     sqlite3.register_converter('DOCUMENT', lambda s:
-                               msgpack.loads(s, encoding='utf-8'))
+                               json.loads(s, encoding='utf-8'))
 
     @staticmethod
     def uuid(o):

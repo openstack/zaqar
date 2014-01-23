@@ -77,10 +77,9 @@ class QueueController(base.QueueBase):
         if project is None:
             project = ''
 
-        # msgpack of {} is "\x80"
         self.driver.run('''
             insert or ignore into Queues
-            values (null, ?, ?, "\x80")
+            values (null, ?, ?, "{}")
         ''', project, name)
 
         return self.driver.affected
