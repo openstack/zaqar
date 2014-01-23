@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import json
 import uuid
 
 import ddt
 import falcon
+import mock
 from testtools import matchers
 
 from . import base  # noqa
@@ -137,12 +139,12 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertEqual(len(listed['messages']), len(claimed))
 
-        # Check the claim's metadata
-        ## NOTE(cpp-cabrera): advance time to force claim aging
-        timeutils.set_time_override(timeutils.utcnow())
-        timeutils.advance_time_seconds(10)
-        body = self.simulate_get(claim_href, self.project_id)
-        timeutils.clear_time_override()
+        now = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        timeutils_utcnow = 'marconi.openstack.common.timeutils.utcnow'
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now
+            body = self.simulate_get(claim_href, self.project_id)
+
         claim = json.loads(body[0])
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
