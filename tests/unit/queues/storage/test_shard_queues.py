@@ -19,7 +19,7 @@ import uuid
 
 from oslo.config import cfg
 
-from marconi.common.cache import cache as oslo_cache
+from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.queues.storage import sharding
 from marconi.queues.storage import utils
 from marconi import tests as testing

@@ -16,9 +16,9 @@
 from oslo.config import cfg
 from stevedore import driver
 
-from marconi.common.cache import cache as oslo_cache
 from marconi.common import decorators
 from marconi.common import errors
+from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
@@ -90,7 +90,8 @@ class Bootstrap(object):
     def cache(self):
         LOG.debug(_(u'Loading proxy cache driver'))
         try:
-            mgr = oslo_cache.get_cache(self.conf)
+            oslo_cache.register_oslo_configs(self.conf)
+            mgr = oslo_cache.get_cache(self.conf.cache_url)
             return mgr
         except RuntimeError as exc:
             LOG.exception(exc)

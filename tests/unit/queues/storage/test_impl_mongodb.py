@@ -21,7 +21,7 @@ from pymongo import cursor
 import pymongo.errors
 from testtools import matchers
 
-from marconi.common.cache import cache as oslo_cache
+from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
 from marconi.queues.storage import errors
