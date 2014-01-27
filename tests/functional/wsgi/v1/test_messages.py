@@ -105,6 +105,9 @@ class TestMessages(base.FunctionalTestBase):
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
+        self.skipTest('Bug #1273335 - Get set of messages returns wrong hrefs '
+                      '(happens randomly)')
+
         # Verify that the response json schema matches the expected schema
         expected_schema = self.response.get_schema('message_get_many')
         self.assertSchema(result.json(), expected_schema)
