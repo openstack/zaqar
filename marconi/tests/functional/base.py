@@ -52,10 +52,10 @@ class FunctionalTestBase(testing.TestBase):
         self.mconf = self.load_conf(self.cfg.marconi.config)
 
         # NOTE(flaper87): Use running instances.
-        if (self.cfg.marconi.run_server and not
-                self.server):
-            self.server = self.server_class()
-            self.server.start(self.mconf)
+        if self.cfg.marconi.run_server:
+            if not (self.server and self.server.is_alive()):
+                self.server = self.server_class()
+                self.server.start(self.mconf)
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
@@ -179,7 +179,6 @@ class Server(object):
 
     __metaclass__ = abc.ABCMeta
 
-    servers = {}
     name = "marconi-functional-test-server"
 
     def __init__(self):
@@ -197,6 +196,14 @@ class Server(object):
             bootstrap class
         :returns: A callable object
         """
+
+    def is_alive(self):
+        """Returns True IFF the server is running."""
+
+        if self.process is None:
+            return False
+
+        return self.process.is_alive()
 
     def start(self, conf):
         """Starts the server process.
