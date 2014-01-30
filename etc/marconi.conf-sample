@@ -99,6 +99,9 @@ storage = mongodb
 uri = mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test&ssl=true&w=majority
 database = marconi
 
+[drivers:storage:sqlalchemy]
+;uri = sqlite:///:memory:
+
 # Number of databases across which to partition message data,
 # in order to reduce writer lock %. DO NOT change this setting
 # after initial deployment. It MUST remain static. Also,
