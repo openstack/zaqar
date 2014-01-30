@@ -53,6 +53,16 @@ MONGODB_OPTIONS = [
                        'sleep interval, in order to decrease probability '
                        'that parallel requests will retry at the '
                        'same instant.')),
+
+    cfg.IntOpt('max_reconnect_attempts', default=10,
+               help=('Maximum number of times to retry an operation that '
+                     'failed due to a primary node failover.')),
+
+    cfg.FloatOpt('reconnect_sleep', default=0.020,
+                 help=('Base sleep interval between attempts to reconnect '
+                       'after a primary node failover. '
+                       'The actual sleep time increases exponentially (power '
+                       'of 2) each time the operation is retried.')),
 ]
 
 MONGODB_GROUP = 'drivers:storage:mongodb'

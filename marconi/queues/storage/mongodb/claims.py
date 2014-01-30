@@ -57,6 +57,7 @@ class ClaimController(storage.Claim):
     """
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def get(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
 
@@ -97,7 +98,14 @@ class ClaimController(storage.Claim):
 
         return (claim_meta, msgs)
 
+    # NOTE(kgriffs): If we get an autoreconnect or any other connection error,
+    # the worst that can happen is you get an orphaned claim, but it will
+    # expire eventually and free up those messages to be claimed again. We
+    # might consider setting a "claim valid" flag similar to how posting
+    # messages works, in order to avoid this situation if it turns out to
+    # be a real problem for users.
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def create(self, queue, metadata, project=None,
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
         """Creates a claim.
@@ -190,6 +198,7 @@ class ClaimController(storage.Claim):
         return (str(oid), messages)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def update(self, queue, claim_id, metadata, project=None):
         cid = utils.to_oid(claim_id)
         if cid is None:
@@ -233,6 +242,7 @@ class ClaimController(storage.Claim):
                           upsert=False, multi=True)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def delete(self, queue, claim_id, project=None):
         msg_ctrl = self.driver.message_controller
         msg_ctrl._unclaim(queue, claim_id, project=project)

@@ -192,12 +192,23 @@ class QueueController(storage.Queue):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def get_metadata(self, name, project=None):
         queue = self._get(name, project)
         return queue.get('m', {})
 
     @utils.raises_conn_error
+    # @utils.retries_on_autoreconnect
     def create(self, name, project=None):
+        # NOTE(flaper87): If the connection fails after it was called
+        # and we retry to insert the queue, we could end up returning
+        # `False` because of the `DuplicatedKeyError` although the
+        # queue was indeed created by this API call.
+        #
+        # TODO(kgriffs): Commented out `retries_on_autoreconnect` for
+        # now due to the above issue, since creating a queue is less
+        # important to make super HA.
+
         try:
             # NOTE(kgriffs): Start counting at 1, and assume the first
             # message ever posted will succeed and set t to a UNIX
@@ -214,11 +225,13 @@ class QueueController(storage.Queue):
             return True
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def exists(self, name, project=None):
         query = _get_scoped_query(name, project)
         return self._collection.find_one(query) is not None
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def set_metadata(self, name, metadata, project=None):
         rst = self._collection.update(_get_scoped_query(name, project),
                                       {'$set': {'m': metadata}},
@@ -229,11 +242,13 @@ class QueueController(storage.Queue):
             raise errors.QueueDoesNotExist(name, project)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
         self._collection.remove(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def stats(self, name, project=None):
         if not self.exists(name, project=project):
             raise errors.QueueDoesNotExist(name, project)
