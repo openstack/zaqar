@@ -34,7 +34,7 @@ from marconi.queues.storage.mongodb import utils
 LOG = logging.getLogger(__name__)
 
 
-class QueueController(storage.QueueBase):
+class QueueController(storage.Queue):
     """Implements queue resource operations using MongoDB.
 
     Queues are scoped by project, which is prefixed to the

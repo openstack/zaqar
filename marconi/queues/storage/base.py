@@ -138,7 +138,7 @@ class ControllerBase(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class QueueBase(ControllerBase):
+class Queue(ControllerBase):
     """This class is responsible for managing queues.
 
     Queue operations include CRUD, monitoring, etc.
@@ -231,7 +231,7 @@ class QueueBase(ControllerBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class MessageBase(ControllerBase):
+class Message(ControllerBase):
     """This class is responsible for managing message CRUD."""
 
     @abc.abstractmethod
@@ -347,7 +347,7 @@ class MessageBase(ControllerBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ClaimBase(ControllerBase):
+class Claim(ControllerBase):
 
     @abc.abstractmethod
     def get(self, queue, claim_id, project=None):

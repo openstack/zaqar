@@ -77,7 +77,7 @@ class ControllerBaseTest(testing.TestBase):
 @ddt.ddt
 class QueueControllerTest(ControllerBaseTest):
     """Queue Controller base tests."""
-    controller_base_class = storage.QueueBase
+    controller_base_class = storage.Queue
 
     def setUp(self):
         super(QueueControllerTest, self).setUp()
@@ -227,7 +227,7 @@ class MessageControllerTest(ControllerBaseTest):
     to clean up storage's state.
     """
     queue_name = 'test_queue'
-    controller_base_class = storage.MessageBase
+    controller_base_class = storage.Message
 
     # Specifies how often expired messages are purged, in sec.
     gc_interval = 0
@@ -461,7 +461,7 @@ class ClaimControllerTest(ControllerBaseTest):
     to clean up storage's state.
     """
     queue_name = 'test_queue'
-    controller_base_class = storage.ClaimBase
+    controller_base_class = storage.Claim
 
     def setUp(self):
         super(ClaimControllerTest, self).setUp()
