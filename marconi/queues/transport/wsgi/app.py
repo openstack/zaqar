@@ -18,7 +18,7 @@
 This app should be used by external WSGI
 containers. For example:
 
-    $ gunicorn marconi.queues.transport.wsgi.public.app:app
+    $ gunicorn marconi.queues.transport.wsgi.app:app
 
 NOTE: As for external containers, it is necessary
 to put config files in the standard paths. There's
