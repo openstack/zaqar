@@ -17,19 +17,27 @@
 import abc
 import jsonschema
 import multiprocessing
-
+import os
 
 from marconi.openstack.common import timeutils
 from marconi.queues import bootstrap
-# NOTE(flaper87): This is necessary to register,
+# TODO(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
 # refactored as part of the work for this blueprint
 from marconi.queues.transport import validation
 from marconi.queues.transport import wsgi  # noqa
+from marconi.queues.transport.wsgi import app
 from marconi import tests as testing
 from marconi.tests.functional import config
 from marconi.tests.functional import helpers
 from marconi.tests.functional import http
+
+# TODO(kgriffs): Run functional tests to a devstack gate job and
+# set this using an environment variable or something.
+#
+# TODO(kgriffs): Find a more general way to do this; we seem to be
+# using this environ flag pattern over and over againg.
+_TEST_INTEGRATION = os.environ.get('MARCONI_TEST_INTEGRATION') is not None
 
 
 class FunctionalTestBase(testing.TestBase):
@@ -51,19 +59,24 @@ class FunctionalTestBase(testing.TestBase):
 
         self.mconf = self.load_conf(self.cfg.marconi.config)
 
-        # NOTE(flaper87): Use running instances.
-        if self.cfg.marconi.run_server:
-            if not (self.server and self.server.is_alive()):
-                # pylint: disable=not-callable
-                self.server = self.server_class()
-                self.server.start(self.mconf)
-
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
 
-        # NOTE(flaper87): Create client
-        # for this test unit.
-        self.client = http.Client()
+        if _TEST_INTEGRATION:
+            # TODO(kgriffs): This code should be replaced to use
+            # an external wsgi server instance.
+
+            # NOTE(flaper87): Use running instances.
+            if self.cfg.marconi.run_server:
+                if not (self.server and self.server.is_alive()):
+                    # pylint: disable=not-callable
+                    self.server = self.server_class()
+                    self.server.start(self.mconf)
+
+            self.client = http.Client()
+        else:
+            self.client = http.WSGIClient(app.app)
+
         self.headers = helpers.create_marconi_headers(self.cfg)
 
         if self.cfg.auth.auth_on:
