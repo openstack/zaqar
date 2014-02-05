@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.queues.storage.sqlalchemy import driver
+from marconi.queues.storage.sqlalchemy import shards
 
-# Hoist classes into package namespace
-ControlDriver = driver.ControlDriver
-DataDriver = driver.DataDriver
+
+ShardsController = shards.ShardsController

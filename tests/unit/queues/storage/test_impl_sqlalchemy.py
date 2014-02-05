@@ -18,8 +18,11 @@ import datetime
 
 import sqlalchemy as sa
 
+from marconi.queues.storage import sqlalchemy
+from marconi.queues.storage.sqlalchemy import controllers
 from marconi.queues.storage.sqlalchemy import tables
 from marconi import tests as testing
+from marconi.tests.queues.storage import base
 
 
 class SqlalchemyTableTests(testing.TestBase):
@@ -50,3 +53,15 @@ class SqlalchemyTableTests(testing.TestBase):
         row = rs.fetchone()
 
         self.assertIsNone(row)
+
+
+class SqlalchemyShardsTest(base.ShardsControllerTest):
+    driver_class = sqlalchemy.ControlDriver
+    controller_class = controllers.ShardsController
+
+    def setUp(self):
+        super(SqlalchemyShardsTest, self).setUp()
+        self.load_conf('wsgi_sqlalchemy.conf')
+
+    def tearDown(self):
+        super(SqlalchemyShardsTest, self).tearDown()

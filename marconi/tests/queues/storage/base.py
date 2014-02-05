@@ -711,25 +711,26 @@ class ShardsControllerTest(ControllerBaseTest):
         # NOTE(cpp-cabrera): base entry interferes with listing results
         self.shards_controller.delete(self.shard)
 
+        name_gen = lambda i: chr(ord('A') + i)
         for i in range(15):
-            self.shards_controller.create(str(i), i, str(i), {})
+            self.shards_controller.create(name_gen(i), i, str(i), {})
 
         res = list(self.shards_controller.list())
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
-            self._shard_expects(entry, str(i), i, str(i))
+            self._shard_expects(entry, name_gen(i), i, str(i))
             self.assertNotIn('options', entry)
 
         res = list(self.shards_controller.list(limit=5))
         self.assertEqual(len(res), 5)
 
-        res = next(self.shards_controller.list(marker='3'))
-        self._shard_expects(res, '4', 4, '4')
+        res = next(self.shards_controller.list(marker=name_gen(3)))
+        self._shard_expects(res, name_gen(4), 4, '4')
 
         res = list(self.shards_controller.list(detailed=True))
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
-            self._shard_expects(entry, str(i), i, str(i))
+            self._shard_expects(entry, name_gen(i), i, str(i))
             self.assertIn('options', entry)
             self.assertEqual(entry['options'], {})
 
