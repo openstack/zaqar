@@ -1,4 +1,6 @@
-*~
+*.bak
+*.DS_Store
+target/
 *.pyc
 *.dat
 TAGS

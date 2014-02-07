@@ -1,0 +1,2 @@
+GET /v1 HTTP/1.1
+Host: queues.api.openstack.org

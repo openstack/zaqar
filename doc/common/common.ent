@@ -1,0 +1,49 @@
+<!ENTITY ndash "&#8211;">
+<!ENTITY mdash "&#8212;">
+<!ENTITY GET    '<command xmlns="http://docbook.org/ns/docbook">GET</command>'>
+<!ENTITY PUT    '<command xmlns="http://docbook.org/ns/docbook">PUT</command>'>
+<!ENTITY POST   '<command xmlns="http://docbook.org/ns/docbook">POST</command>'>
+<!ENTITY DELETE '<command xmlns="http://docbook.org/ns/docbook">DELETE</command>'>
+<!ENTITY PATCH '<command xmlns="http://docbook.org/ns/docbook">PATCH</command>'>
+ <!--
+         A collection of common faults. These are pretty much expected
+         in every request.
+ -->
+     <!ENTITY commonFaults '
+        <response status="400" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:badRequest"/>
+            <representation mediaType="application/json"/>
+        </response>
+        <response status="401" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:unauthorized"/>
+            <representation mediaType="application/json"/>
+        </response>
+        <response status="406" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:unauthorized"/>
+            <representation mediaType="application/json"/>
+        </response>
+        <response status="429" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:tooManyRequests"/>
+            <representation mediaType="application/json"/>
+        </response>
+        <response status="503" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:serviceUnavailable"/>
+            <representation mediaType="application/json"/>
+        </response>'>
+<!--
+          Faults on DELETE
+-->
+<!ENTITY deleteFaults '
+        <response status="403" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:forbidden"/>
+            <representation mediaType="application/json"/>
+        </response>'>
+
+<!--
+          Faults on GET
+-->
+<!ENTITY getFaults '
+        <response status="404" xmlns="http://wadl.dev.java.net/2009/02">
+            <representation mediaType="application/xml" element="queues:itemNotFound"/>
+            <representation mediaType="application/json"/>
+        </response>'>

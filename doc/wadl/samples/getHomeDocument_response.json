@@ -1,0 +1,119 @@
+{
+    "resources": {
+        "rel/queue": {
+            "href-template": "/queues/{queue_name}",
+            "href-vars": {
+                "queue_name": "param/queue_name"
+            },
+            "hints": {
+                "allow": [
+                    "GET",
+                    "HEAD",
+                    "PUT",
+                    "DELETE"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/queue-metadata": {
+            "href-template": "/queues/{queue_name}/metadata",
+            "href-vars": {
+                "queue_name": "param/queue_name"
+            },
+            "hints": {
+                "allow": [
+                    "GET",
+                    "PUT"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/queue-stats": {
+            "href-template": "/queues/{queue_name}/stats",
+            "href-vars": {
+                "queue_name": "param/queue_name"
+            },
+            "hints": {
+                "allow": [
+                    "GET"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/queues": {
+            "href-template": "/queues{?marker,limit,detailed}",
+            "href-vars": {
+                "marker": "param/marker",
+                "detailed": "param/detailed",
+                "limit": "param/queue_limit"
+            },
+            "hints": {
+                "allow": [
+                    "GET"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/post-messages": {
+            "href-template": "/v1/queues/{queue_name}/messages",
+            "href-vars": {
+                "queue_name": "param/queue_name"
+            },
+            "hints": {
+                "accept-post": [
+                    "application/json"
+                ],
+                "allow": [
+                    "POST"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/messages": {
+            "href-template": "/queues/{queue_name}/messages{?marker,limit,echo,include_claimed}",
+            "href-vars": {
+                "marker": "param/marker",
+                "include_claimed": "param/include_claimed",
+                "queue_name": "param/queue_name",
+                "limit": "param/messages_limit",
+                "echo": "param/echo"
+            },
+            "hints": {
+                "allow": [
+                    "GET"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        },
+        "rel/claim": {
+            "href-template": "/v1/queues/{queue_name}/claims{?limit}",
+            "href-vars": {
+                "queue_name": "param/queue_name",
+                "limit": "param/claim_limit"
+            },
+            "hints": {
+                "accept-post": [
+                    "application/json"
+                ],
+                "allow": [
+                    "POST"
+                ],
+                "formats": {
+                    "application/json": {}
+                }
+            }
+        }
+    }
+}

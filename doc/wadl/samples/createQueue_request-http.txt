@@ -1,0 +1,5 @@
+PUT /v1/queues/demoqueue HTTP/1.1
+Host: queues.api.openstack.org
+X-Auth-Token: eaaafd18-0fed-4b3a-81b4-663c99ec1cbb
+Accept: application/json
+X-Project-Id: <project_id>

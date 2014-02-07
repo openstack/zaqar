@@ -1,0 +1,3 @@
+GET /v1/queues/demoqueue HTTP/1.1
+Host: queues.api.openstack.org
+X-Project-Id: <project_id>
