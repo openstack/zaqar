@@ -51,7 +51,7 @@ Running the Functional Tests (Without Tox)
 #. If leaving keystone auth enabled, update system-tests.conf with a
    valid set of credentials.
 
-#. Now, to run the sytem tests, simply use the nosetests commands, e.g.:
+#. Now, to run the system tests, simply use the nosetests commands, e.g.:
 
     Run all test suites: ::
 

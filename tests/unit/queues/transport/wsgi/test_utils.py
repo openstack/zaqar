@@ -57,12 +57,12 @@ class TestWSGIutils(testtools.TestCase):
                           utils.get_checked_field, doc, 'openstack', list)
 
     def test_get_checked_field(self):
-        doc = {'hello': 'world', 'teh answer': 42, 'question': []}
+        doc = {'hello': 'world', 'the answer': 42, 'question': []}
 
         value = utils.get_checked_field(doc, 'hello', str)
         self.assertEqual(value, 'world')
 
-        value = utils.get_checked_field(doc, 'teh answer', int)
+        value = utils.get_checked_field(doc, 'the answer', int)
         self.assertEqual(value, 42)
 
         value = utils.get_checked_field(doc, 'question', list)
