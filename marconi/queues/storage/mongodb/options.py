@@ -22,12 +22,12 @@ from marconi.common import utils
 
 
 MONGODB_OPTIONS = [
-    cfg.StrOpt('uri', help='Mongodb Connection URI'),
+    cfg.StrOpt('uri', help='Mongodb Connection URI.'),
 
     # Database name
     # TODO(kgriffs): Consider local sharding across DBs to mitigate
     # per-DB locking latency.
-    cfg.StrOpt('database', default='marconi', help='Database name'),
+    cfg.StrOpt('database', default='marconi', help='Database name.'),
 
     cfg.IntOpt('partitions', default=2,
                help=('Number of databases across which to '
@@ -40,7 +40,7 @@ MONGODB_OPTIONS = [
                      'MongoDB on SSD storage.')),
 
     cfg.IntOpt('max_attempts', default=1000,
-               help=('Maximum number of times to retry a failed operation.'
+               help=('Maximum number of times to retry a failed operation. '
                      'Currently only used for retrying a message post.')),
 
     cfg.FloatOpt('max_retry_sleep', default=0.1,
