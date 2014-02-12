@@ -112,3 +112,12 @@ Shards = sa.Table('Shards', metadata,
                   sa.Column('uri', sa.String, nullable=False),
                   sa.Column('weight', sa.INTEGER, nullable=False),
                   sa.Column('options', sa.BINARY))
+
+Catalogue = sa.Table('Catalogue', metadata,
+                     sa.Column('shard', sa.String,
+                               sa.ForeignKey('Shards.name',
+                                             ondelete='CASCADE'),
+                               primary_key=True),
+                     sa.Column('project', sa.String, nullable=False),
+                     sa.Column('queue', sa.String, nullable=False),
+                     sa.UniqueConstraint('project', 'queue'))

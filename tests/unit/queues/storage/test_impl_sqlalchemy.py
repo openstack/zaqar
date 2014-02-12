@@ -65,3 +65,15 @@ class SqlalchemyShardsTest(base.ShardsControllerTest):
 
     def tearDown(self):
         super(SqlalchemyShardsTest, self).tearDown()
+
+
+class SqlalchemyCatalogueTest(base.CatalogueControllerTest):
+    driver_class = sqlalchemy.ControlDriver
+    controller_class = controllers.CatalogueController
+
+    def setUp(self):
+        super(SqlalchemyCatalogueTest, self).setUp()
+        self.load_conf('wsgi_sqlalchemy.conf')
+
+    def tearDown(self):
+        super(SqlalchemyCatalogueTest, self).tearDown()

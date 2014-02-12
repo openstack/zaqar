@@ -100,4 +100,4 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def catalogue_controller(self):
-        raise NotImplementedError()
+        return controllers.CatalogueController(self)
