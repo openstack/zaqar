@@ -15,9 +15,9 @@
 # limitations under the License.
 
 import json
-import urlparse
 
 import falcon
+import six.moves.urllib.parse as urlparse
 
 from . import base  # noqa
 
