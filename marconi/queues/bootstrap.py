@@ -70,8 +70,6 @@ class Bootstrap(object):
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
         log.setup('marconi')
-        mode = 'admin' if conf.admin_mode else 'public'
-        self._transport_type = 'marconi.queues.{0}.transport'.format(mode)
 
     @decorators.lazy_property(write=False)
     def storage(self):
@@ -110,9 +108,15 @@ class Bootstrap(object):
         transport_name = self.driver_conf.transport
         LOG.debug(_(u'Loading transport driver: %s'), transport_name)
 
-        args = [self.conf, self.storage, self.cache, self.control]
+        args = [
+            self.conf,
+            self.storage,
+            self.cache,
+            self.control,
+        ]
+
         try:
-            mgr = driver.DriverManager(self._transport_type,
+            mgr = driver.DriverManager('marconi.queues.transport',
                                        transport_name,
                                        invoke_on_load=True,
                                        invoke_args=args)

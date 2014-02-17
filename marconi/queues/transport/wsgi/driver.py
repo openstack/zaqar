@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 import functools
 import itertools
 from wsgiref import simple_server
 
 import falcon
 from oslo.config import cfg
-import six
 
 from marconi.common import decorators
-from marconi.common.transport import version
 from marconi.common.transport.wsgi import helpers
 from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
@@ -31,6 +28,8 @@ import marconi.openstack.common.log as logging
 from marconi.queues import transport
 from marconi.queues.transport import auth
 from marconi.queues.transport import validation
+from marconi.queues.transport.wsgi import v1_0
+from marconi.queues.transport.wsgi import v1_1
 
 _WSGI_OPTIONS = [
     cfg.StrOpt('bind', default='127.0.0.1',
@@ -49,11 +48,10 @@ def _config_options():
     return itertools.chain(utils.options_iter(_WSGI_OPTIONS, _WSGI_GROUP))
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DriverBase(transport.DriverBase):
+class Driver(transport.DriverBase):
 
     def __init__(self, conf, storage, cache, control):
-        super(DriverBase, self).__init__(conf, storage, cache, control)
+        super(Driver, self).__init__(conf, storage, cache, control)
 
         self._conf.register_opts(_WSGI_OPTIONS, group=_WSGI_GROUP)
         self._wsgi_conf = self._conf[_WSGI_GROUP]
@@ -77,10 +75,23 @@ class DriverBase(transport.DriverBase):
 
     def _init_routes(self):
         """Initialize hooks and URI routes to resources."""
+
+        catalog = [
+            ('/v1', v1_0.public_endpoints(self)),
+            ('/v1.1', v1_1.public_endpoints(self)),
+        ]
+
+        if self._conf.admin_mode:
+            catalog.extend([
+                ('/v1', v1_0.private_endpoints(self)),
+                ('/v1.1', v1_1.private_endpoints(self)),
+            ])
+
         self.app = falcon.API(before=self.before_hooks)
-        version_path = version.path()
-        for route, resource in self.bridge:
-            self.app.add_route(version_path + route, resource)
+
+        for version_path, endpoints in catalog:
+            for route, resource in endpoints:
+                self.app.add_route(version_path + route, resource)
 
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""
@@ -89,17 +100,6 @@ class DriverBase(transport.DriverBase):
         if self._conf.auth_strategy:
             strategy = auth.strategy(self._conf.auth_strategy)
             self.app = strategy.install(self.app, self._conf)
-
-    @abc.abstractproperty
-    def bridge(self):
-        """Constructs a list of route/responder pairs that can be used to
-        establish the functionality of this driver.
-
-        Note: the routes should be unversioned.
-
-        :rtype: [(str, falcon-compatible responser)]
-        """
-        raise NotImplementedError
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
