@@ -452,7 +452,7 @@ class Catalog(object):
         return self.get_driver(shard_id)
 
     def get_driver(self, shard_id):
-        """Get storage driver, preferabaly cached, fron a shard name.
+        """Get storage driver, preferably cached, from a shard name.
 
         :param shard_id: The name of a shard.
         :type shard_id: six.text_type
