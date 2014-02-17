@@ -18,6 +18,7 @@ import abc
 import jsonschema
 import multiprocessing
 import os
+import six
 
 from marconi.openstack.common import timeutils
 from marconi.queues import bootstrap
@@ -189,9 +190,8 @@ class FunctionalTestBase(testing.TestBase):
         self.assertTrue(0 <= delta <= 6000, msg)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Server(object):
-
-    __metaclass__ = abc.ABCMeta
 
     name = "marconi-functional-test-server"
 
