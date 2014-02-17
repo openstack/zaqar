@@ -24,8 +24,8 @@ from marconi.queues.storage.sqlalchemy import tables
 
 
 _SQLALCHEMY_OPTIONS = [
-    cfg.StrOpt('database', default=':memory:',
-               help='Sqlalchemy database to use.')
+    cfg.StrOpt('uri', default='sqlite:///:memory:',
+               help='An sqlalchemy URL')
 ]
 
 _SQLALCHEMY_GROUP = 'drivers:storage:sqlalchemy'
@@ -36,17 +36,19 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(_SQLALCHEMY_OPTIONS, group=_SQLALCHEMY_GROUP)
+        self.conf.register_opts(_SQLALCHEMY_OPTIONS,
+                                group=_SQLALCHEMY_GROUP)
         self.sqlalchemy_conf = self.conf[_SQLALCHEMY_GROUP]
-
-        self.__path = self.sqlalchemy_conf.database
 
     @decorators.lazy_property(write=False)
     def engine(self, *args, **kwargs):
-        engine = sa.create_engine(*args, **kwargs)
+        engine = sa.create_engine(self.sqlalchemy_conf.uri, **kwargs)
         tables.metadata.create_all(engine, checkfirst=True)
         return engine
 
+    # TODO(cpp-cabrera): expose connect/close as a context manager
+    # that acquires the connection to the DB for the desired scope and
+    # closes it once the operations are completed
     @decorators.lazy_property(write=False)
     def connection(self):
         return self.engine.connect()
@@ -56,12 +58,45 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        return None
+        raise NotImplementedError()
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return None
+        raise NotImplementedError()
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return None
+        raise NotImplementedError()
+
+
+class ControlDriver(storage.ControlDriverBase):
+
+    def __init__(self, conf, cache):
+        super(ControlDriver, self).__init__(conf, cache)
+        self.conf.register_opts(_SQLALCHEMY_OPTIONS,
+                                group=_SQLALCHEMY_GROUP)
+        self.sqlalchemy_conf = self.conf[_SQLALCHEMY_GROUP]
+
+    @decorators.lazy_property(write=False)
+    def engine(self, *args, **kwargs):
+        engine = sa.create_engine(self.sqlalchemy_conf.uri, **kwargs)
+        tables.metadata.create_all(engine, checkfirst=True)
+        return engine
+
+    # TODO(cpp-cabrera): expose connect/close as a context manager
+    # that acquires the connection to the DB for the desired scope and
+    # closes it once the operations are completed
+    @decorators.lazy_property(write=False)
+    def connection(self):
+        return self.engine.connect()
+
+    def close_connection(self):
+        self.connection.close()
+
+    @property
+    def shards_controller(self):
+        raise NotImplementedError()
+
+    @property
+    def catalogue_controller(self):
+        raise NotImplementedError()
