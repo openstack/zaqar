@@ -31,7 +31,7 @@ LOG = log.getLogger(__name__)
 
 _CATALOG_OPTIONS = [
     cfg.IntOpt('storage', default='sqlite',
-               help='Catalog storage driver'),
+               help='Catalog storage driver.'),
 ]
 
 _CATALOG_GROUP = 'sharding:catalog'
