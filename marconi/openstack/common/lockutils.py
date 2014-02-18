@@ -74,7 +74,7 @@ class _InterProcessLock(object):
         self.lockfile = None
         self.fname = name
 
-    def __enter__(self):
+    def acquire(self):
         basedir = os.path.dirname(self.fname)
 
         if not os.path.exists(basedir):
@@ -91,23 +91,36 @@ class _InterProcessLock(object):
                 # to have a laughable 10 attempts "blocking" mechanism.
                 self.trylock()
                 LOG.debug(_('Got file lock "%s"'), self.fname)
-                return self
+                return True
             except IOError as e:
                 if e.errno in (errno.EACCES, errno.EAGAIN):
                     # external locks synchronise things like iptables
                     # updates - give it some time to prevent busy spinning
                     time.sleep(0.01)
                 else:
-                    raise
+                    raise threading.ThreadError(_("Unable to acquire lock on"
+                                                  " `%(filename)s` due to"
+                                                  " %(exception)s") %
+                                                {
+                                                    'filename': self.fname,
+                                                    'exception': e,
+                                                })
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def release(self):
         try:
             self.unlock()
             self.lockfile.close()
+            LOG.debug(_('Released file lock "%s"'), self.fname)
         except IOError:
             LOG.exception(_("Could not release the acquired lock `%s`"),
                           self.fname)
-        LOG.debug(_('Released file lock "%s"'), self.fname)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
 
     def trylock(self):
         raise NotImplementedError()
