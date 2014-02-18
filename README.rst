@@ -41,9 +41,10 @@ installed and running.
 
     $ pip install -e .
 
-7. Start the Marconi server::
+7. Start the Marconi server with logging level set to INFO so you can see
+   the port on which the server is listening::
 
-    $ marconi-server
+    $ marconi-server -v
 
 8. Test out that Marconi is working by creating a queue::
 
