@@ -49,9 +49,9 @@ class ShardQueuesTest(testing.TestBase):
         self.shards_ctrl.drop_all()
         super(ShardQueuesTest, self).tearDown()
 
-    def test_health(self):
-        health = self.driver.is_alive()
-        self.assertTrue(health)
+    def test_ping(self):
+        ping = self.driver.is_alive()
+        self.assertTrue(ping)
 
     def test_listing(self):
         project = "I.G"

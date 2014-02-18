@@ -3,6 +3,7 @@ from marconi.queues.transport.wsgi.v1_1 import health
 from marconi.queues.transport.wsgi.v1_1 import homedoc
 from marconi.queues.transport.wsgi.v1_1 import messages
 from marconi.queues.transport.wsgi.v1_1 import metadata
+from marconi.queues.transport.wsgi.v1_1 import ping
 from marconi.queues.transport.wsgi.v1_1 import queues
 from marconi.queues.transport.wsgi.v1_1 import shards
 from marconi.queues.transport.wsgi.v1_1 import stats
@@ -51,7 +52,11 @@ def public_endpoints(driver):
 
         # Health
         ('/health',
-         health.Resource(driver._storage))
+         health.Resource(driver._storage)),
+
+        # Ping
+        ('/ping',
+         ping.Resource(driver._storage))
     ]
 
 
