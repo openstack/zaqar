@@ -235,15 +235,6 @@ class TestQueueMisc(base.V1_1FunctionalTestBase):
 
     test_list_queue_invalid_limit.tags = ['negative']
 
-    def test_check_health(self):
-        """Test health endpoint."""
-
-        result = self.client.get('/{0}/health'
-                                 .format("v1.1"))
-        self.assertEqual(result.status_code, 204)
-
-    test_check_health.tags = ['positive']
-
     def test_check_queue_exists(self):
         """Checks if queue exists."""
 

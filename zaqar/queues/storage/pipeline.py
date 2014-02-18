@@ -99,6 +99,9 @@ class DataDriver(base.DataDriverBase):
     def is_alive(self):
         return self._storage.is_alive()
 
+    def _health(self):
+        return self._storage._health()
+
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         stages = _get_storage_pipeline('queue', self.conf)

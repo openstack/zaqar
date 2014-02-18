@@ -121,19 +121,12 @@ class TestPing(base.V1_1Base):
         self.assertEqual(response, [])
 
 
-class TestHealth(base.V1_1Base):
+class TestHealthMongoDB(v1_1.TestHealthMongoDB):
+    url_prefix = URL_PREFIX
 
-    config_file = 'wsgi_sqlalchemy.conf'
 
-    def test_get(self):
-        response = self.simulate_get('/v1.1/health')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-        self.assertEqual(response, [])
-
-    def test_head(self):
-        response = self.simulate_head('/v1.1/health')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-        self.assertEqual(response, [])
+class TestHealthFaultyDriver(v1_1.TestHealthFaultyDriver):
+    url_prefix = URL_PREFIX
 
 
 @ddt.ddt

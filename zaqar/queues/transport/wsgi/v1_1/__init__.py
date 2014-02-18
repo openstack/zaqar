@@ -67,10 +67,6 @@ def public_endpoints(driver):
                              driver._validate,
                              claim_controller)),
 
-        # Health
-        ('/health',
-         health.Resource(driver._storage)),
-
         # Ping
         ('/ping',
          ping.Resource(driver._storage))
@@ -85,4 +81,7 @@ def private_endpoints(driver):
          pools.Listing(pools_controller)),
         ('/pools/{pool}',
          pools.Resource(pools_controller)),
+        # Health
+        ('/health',
+         health.Resource(driver._storage)),
     ]

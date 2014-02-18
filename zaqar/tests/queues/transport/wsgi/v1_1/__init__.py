@@ -15,6 +15,7 @@
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_auth
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_claims
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_default_limits
+from zaqar.tests.queues.transport.wsgi.v1_1 import test_health
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_home
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_media_type
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_messages
@@ -27,6 +28,8 @@ TestClaimsFaultyDriver = test_claims.TestClaimsFaultyDriver
 TestClaimsMongoDB = test_claims.TestClaimsMongoDB
 TestClaimsSqlalchemy = test_claims.TestClaimsSqlalchemy
 TestDefaultLimits = test_default_limits.TestDefaultLimits
+TestHealthMongoDB = test_health.TestHealthMongoDB
+TestHealthFaultyDriver = test_health.TestHealthFaultyDriver
 TestHomeDocument = test_home.TestHomeDocument
 TestMediaType = test_media_type.TestMediaType
 TestMessagesFaultyDriver = test_messages.TestMessagesFaultyDriver
