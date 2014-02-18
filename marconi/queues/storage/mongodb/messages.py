@@ -240,7 +240,7 @@ class MessageController(storage.Message):
             client_uuid
         :param client_uuid: (Default None) UUID for the client that
             originated this request
-        :param fields: (Default None) Fields to include in emmitted
+        :param fields: (Default None) Fields to include in emitted
             documents
         :param include_claimed: (Default False) Whether to include
             claimed messages, not just active ones
@@ -570,7 +570,7 @@ class MessageController(storage.Message):
 
                 # NOTE(kgriffs): This can be used in conjunction with the
                 # log line, above, that is emitted after all messages have
-                # been posted, to guage how long it is taking for messages
+                # been posted, to gauge how long it is taking for messages
                 # to be posted to a given queue, or overall.
                 #
                 # TODO(kgriffs): Add transaction ID to help match up loglines
