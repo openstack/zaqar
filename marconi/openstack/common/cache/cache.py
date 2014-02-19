@@ -20,9 +20,8 @@ Supported configuration options:
 `key_namespace`: Namespace under which keys will be created.
 """
 
+from six.moves.urllib import parse
 from stevedore import driver
-
-from marconi.openstack.common.py3kcompat import urlutils
 
 
 def _get_olso_configs():
@@ -36,7 +35,7 @@ def _get_olso_configs():
 
     return [
         cfg.StrOpt('cache_url', default='memory://',
-                   help='Url to connect to the cache backend.')
+                   help='URL to connect to the cache back end.')
     ]
 
 
@@ -58,7 +57,7 @@ def get_cache(url='memory://'):
     :param conf: Configuration instance to use
     """
 
-    parsed = urlutils.urlparse(url)
+    parsed = parse.urlparse(url)
     backend = parsed.scheme
 
     query = parsed.query
@@ -69,7 +68,7 @@ def get_cache(url='memory://'):
     # http://hg.python.org/cpython/rev/79e6ff3d9afd
     if not query and '?' in parsed.path:
         query = parsed.path.split('?', 1)[-1]
-    parameters = urlutils.parse_qsl(query)
+    parameters = parse.parse_qsl(query)
     kwargs = {'options': dict(parameters)}
 
     mgr = driver.DriverManager('marconi.openstack.common.cache.backends', backend,
