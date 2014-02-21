@@ -134,7 +134,7 @@ class TestWSGIutils(testtools.TestCase):
 
         document = six.text_type(json.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
-        spec = [('body', dict), ('id', basestring)]
+        spec = [('body', dict), ('id', six.string_types)]
         filtered_object, = utils.filter_stream(stream, len(document), spec)
 
         self.assertEqual(filtered_object, obj)
