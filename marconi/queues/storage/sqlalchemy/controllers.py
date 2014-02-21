@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from marconi.queues.storage.sqlalchemy import catalogue
 from marconi.queues.storage.sqlalchemy import shards
 
 
+CatalogueController = catalogue.CatalogueController
 ShardsController = shards.ShardsController
