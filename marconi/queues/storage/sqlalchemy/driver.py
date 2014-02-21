@@ -20,6 +20,7 @@ from oslo.config import cfg
 
 from marconi.common import decorators
 from marconi.queues import storage
+from marconi.queues.storage.sqlalchemy import controllers
 from marconi.queues.storage.sqlalchemy import tables
 
 
@@ -95,7 +96,7 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def shards_controller(self):
-        raise NotImplementedError()
+        return controllers.ShardsController(self)
 
     @property
     def catalogue_controller(self):

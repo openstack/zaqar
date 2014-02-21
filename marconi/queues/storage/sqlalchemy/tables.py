@@ -106,3 +106,9 @@ Locked = sa.Table('Locked', metadata,
                             sa.ForeignKey("Messages.id", ondelete="CASCADE"),
                             nullable=False),
                   )
+
+Shards = sa.Table('Shards', metadata,
+                  sa.Column('name', sa.String, primary_key=True),
+                  sa.Column('uri', sa.String, nullable=False),
+                  sa.Column('weight', sa.INTEGER, nullable=False),
+                  sa.Column('options', sa.BINARY))
