@@ -74,7 +74,7 @@ class MessagesBaseTest(base.TestBase):
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
         self.assertEqual(len(msg_ids), len(sample_messages))
 
-        expected_resources = [unicode(self.messages_path + '/' + id)
+        expected_resources = [six.text_type(self.messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEqual(expected_resources, result_doc['resources'])
         self.assertFalse(result_doc['partial'])
