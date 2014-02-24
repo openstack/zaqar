@@ -24,12 +24,12 @@ from . import base  # noqa
 from marconi.queues import storage
 
 
-class DefaultLimitsTest(base.TestBase):
+class TestDefaultLimits(base.TestBase):
 
     config_file = 'wsgi_sqlite_default_limits.conf'
 
     def setUp(self):
-        super(DefaultLimitsTest, self).setUp()
+        super(TestDefaultLimits, self).setUp()
 
         self.queue_path = '/v1/queues/q1'
         self.messages_path = self.queue_path + '/messages'
@@ -39,7 +39,7 @@ class DefaultLimitsTest(base.TestBase):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path)
-        super(DefaultLimitsTest, self).tearDown()
+        super(TestDefaultLimits, self).tearDown()
 
     def test_queue_listing(self):
         # 2 queues to list
@@ -92,4 +92,6 @@ class DefaultLimitsTest(base.TestBase):
     def _prepare_messages(self, count):
         doc = json.dumps([{'body': 239, 'ttl': 300}] * count)
         self.simulate_post(self.messages_path, body=doc,
-                           headers={'Client-ID': 'poster'})
+                           headers={'Client-ID': str(uuid.uuid4())})
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
