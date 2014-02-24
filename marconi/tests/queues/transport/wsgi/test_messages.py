@@ -39,12 +39,16 @@ class MessagesBaseTest(base.TestBase):
             for i in range(4):
                 uri = self.conf['drivers:storage:mongodb'].uri
                 doc = {'weight': 100, 'uri': uri}
-                self.simulate_put('/v1/shards/' + str(i),
+                self.simulate_put(self.url_prefix + '/shards/' + str(i),
                                   body=json.dumps(doc))
                 self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         self.project_id = '7e55e1a7e'
-        self.queue_path = '/v1/queues/fizbit'
+
+        # TODO(kgriffs): Add support in self.simulate_* for a "base path"
+        # so that we don't have to concatenate against self.url_prefix
+        # all over the place.
+        self.queue_path = self.url_prefix + '/queues/fizbit'
         self.messages_path = self.queue_path + '/messages'
 
         doc = '{"_ttl": 60}'
@@ -58,7 +62,7 @@ class MessagesBaseTest(base.TestBase):
         self.simulate_delete(self.queue_path, self.project_id)
         if self.conf.sharding:
             for i in range(4):
-                self.simulate_delete('/v1/shards/' + str(i))
+                self.simulate_delete(self.url_prefix + '/shards/' + str(i))
 
         super(MessagesBaseTest, self).tearDown()
 
@@ -170,7 +174,7 @@ class MessagesBaseTest(base.TestBase):
         # embedded queue name params go through the validation
         # hook, regardless of the target resource.
 
-        path = u'/v1/queues/non-ascii-n\u0153me/messages'
+        path = self.url_prefix + u'/queues/non-ascii-n\u0153me/messages'
 
         if six.PY2:
             path = path.encode('utf-8')
@@ -183,20 +187,23 @@ class MessagesBaseTest(base.TestBase):
         # embedded queue name params go through the validation
         # hook, regardless of the target resource.
 
+        queues_path = self.url_prefix + '/queues/'
+
         game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
-        self._post_messages('/v1/queues/' + game_title + '/messages')
+        self._post_messages(queues_path + game_title + '/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         game_title += 'v'
-        self._post_messages('/v1/queues/' + game_title + '/messages')
+        self._post_messages(queues_path + game_title + '/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_post_to_missing_queue(self):
-        self._post_messages('/v1/queues/nonexistent/messages')
+        self._post_messages(self.url_prefix + '/queues/nonexistent/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_from_missing_queue(self):
-        self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
+        self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
+                          self.project_id,
                           headers={'Client-ID':
                                    'dfcd3238-425c-11e3-8a80-28cfe91478b9'})
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
@@ -344,7 +351,8 @@ class MessagesBaseTest(base.TestBase):
                             matchers.MatchesRegex(expected_pattern))
 
         # NOTE(kgriffs): Try to get messages for a missing queue
-        self.simulate_get('/v1/queues/nonexistent/messages', self.project_id,
+        self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
+                          self.project_id,
                           headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
@@ -392,21 +400,18 @@ class MessagesBaseTest(base.TestBase):
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_message_404s(self):
-        path = '/v1/queues/notthere'
-
-        self.simulate_get(path + '/messages/a')
+        path = self.url_prefix + '/queues/notthere/messages/a'
+        self.simulate_get(path)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_multiple_invalid_messages_204s(self):
-        path = '/v1/queues/notthere'
-
-        self.simulate_get(path + '/messages', query_string='ids=a,b,c')
+        path = self.url_prefix + '/queues/notthere/messages'
+        self.simulate_get(path, query_string='ids=a,b,c')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_delete_multiple_invalid_messages_204s(self):
-        path = '/v1/queues/notthere'
-
-        self.simulate_delete(path + '/messages', query_string='ids=a,b,c')
+        path = self.url_prefix + '/queues/notthere/messages'
+        self.simulate_delete(path, query_string='ids=a,b,c')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_delete_message_with_invalid_claim_doesnt_delete_message(self):
@@ -449,7 +454,7 @@ class MessagesBaseTest(base.TestBase):
         return headers['location'].rsplit('=', 1)[-1].split(',')
 
 
-class MessagesSQLiteTests(MessagesBaseTest):
+class TestMessagesSQLite(MessagesBaseTest):
 
     config_file = 'wsgi_sqlite.conf'
 
@@ -458,28 +463,28 @@ class MessagesSQLiteTests(MessagesBaseTest):
 # catalogue get an sqlite implementation.
 
 
-@testing.requires_mongodb
-class MessagesMongoDBTests(MessagesBaseTest):
+class TestMessagesMongoDB(MessagesBaseTest):
 
     config_file = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(MessagesMongoDBTests, self).setUp()
+        super(TestMessagesMongoDB, self).setUp()
 
     def tearDown(self):
-        super(MessagesMongoDBTests, self).tearDown()
+        super(TestMessagesMongoDB, self).tearDown()
 
 
-@testing.requires_mongodb
-class MessagesMongoDBShardedTests(MessagesBaseTest):
+class TestMessagesMongoDBSharded(MessagesBaseTest):
 
     config_file = 'wsgi_mongodb_sharded.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(MessagesMongoDBShardedTests, self).setUp()
+        super(TestMessagesMongoDBSharded, self).setUp()
 
     def tearDown(self):
-        super(MessagesMongoDBShardedTests, self).tearDown()
+        super(TestMessagesMongoDBSharded, self).tearDown()
 
     # TODO(cpp-cabrera): remove this skipTest once sharded queue
     # listing is implemented
@@ -487,13 +492,13 @@ class MessagesMongoDBShardedTests(MessagesBaseTest):
         self.skipTest("Need to implement sharded queue listing.")
 
 
-class MessagesFaultyDriverTests(base.TestBaseFaulty):
+class TestMessagesFaultyDriver(base.TestBaseFaulty):
 
     config_file = 'wsgi_faulty.conf'
 
     def test_simple(self):
         project_id = 'xyz'
-        path = '/v1/queues/fizbit/messages'
+        path = self.url_prefix + '/queues/fizbit/messages'
         doc = '[{"body": 239, "ttl": 100}]'
         headers = {
             'Client-ID': str(uuid.uuid4()),

@@ -34,7 +34,7 @@ class ClaimsBaseTest(base.TestBase):
         super(ClaimsBaseTest, self).setUp()
 
         self.project_id = '480924'
-        self.queue_path = '/v1/queues/fizbit'
+        self.queue_path = self.url_prefix + '/queues/fizbit'
         self.claims_path = self.queue_path + '/claims'
         self.messages_path = self.queue_path + '/messages'
 
@@ -198,12 +198,14 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_post_claim_nonexistent_queue(self):
-        self.simulate_post('/v1/queues/nonexistent/claims', self.project_id,
+        path = self.url_prefix + '/queues/nonexistent/claims'
+        self.simulate_post(path, self.project_id,
                            body='{"ttl": 100, "grace": 60}')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_get_claim_nonexistent_queue(self):
-        self.simulate_get('/v1/queues/nonexistent/claims/aaabbbba')
+        path = self.url_prefix + '/queues/nonexistent/claims/aaabbbba'
+        self.simulate_get(path)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
@@ -221,13 +223,13 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
 
-@testing.requires_mongodb
-class ClaimsMongoDBTests(ClaimsBaseTest):
+class TestClaimsMongoDB(ClaimsBaseTest):
 
     config_file = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(ClaimsMongoDBTests, self).setUp()
+        super(TestClaimsMongoDB, self).setUp()
 
     def tearDown(self):
         storage = self.boot.storage._storage
@@ -238,21 +240,21 @@ class ClaimsMongoDBTests(ClaimsBaseTest):
         for db in storage.message_databases:
             connection.drop_database(db)
 
-        super(ClaimsMongoDBTests, self).tearDown()
+        super(TestClaimsMongoDB, self).tearDown()
 
 
-class ClaimsSQLiteTests(ClaimsBaseTest):
+class TestClaimsSQLite(ClaimsBaseTest):
 
     config_file = 'wsgi_sqlite.conf'
 
 
-class ClaimsFaultyDriverTests(base.TestBaseFaulty):
+class TestClaimsFaultyDriver(base.TestBaseFaulty):
 
     config_file = 'wsgi_faulty.conf'
 
     def test_simple(self):
         project_id = '480924'
-        claims_path = '/v1/queues/fizbit/claims'
+        claims_path = self.url_prefix + '/queues/fizbit/claims'
         doc = '{"ttl": 100, "grace": 60}'
 
         self.simulate_post(claims_path, project_id, body=doc)

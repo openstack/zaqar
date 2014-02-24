@@ -41,7 +41,7 @@ def shard(test, name, weight, uri, options={}):
     :rtype: see above
     """
     doc = {'weight': weight, 'uri': uri, 'options': options}
-    path = '/v1/shards/' + name
+    path = test.url_prefix + '/shards/' + name
 
     test.simulate_put(path, body=json.dumps(doc))
 
@@ -64,7 +64,7 @@ def shards(test, count, uri):
     :returns: (paths, weights, uris, options)
     :rtype: ([six.text_type], [int], [six.text_type], [dict])
     """
-    base = '/v1/shards/'
+    base = test.url_prefix + '/shards/'
     args = [(base + str(i), i,
              {str(i): i})
             for i in range(count)]
@@ -85,7 +85,7 @@ class ShardsBaseTest(base.TestBase):
     def setUp(self):
         super(ShardsBaseTest, self).setUp()
         self.doc = {'weight': 100, 'uri': 'sqlite://memory'}
-        self.shard = '/v1/shards/' + str(uuid.uuid1())
+        self.shard = self.url_prefix + '/shards/' + str(uuid.uuid1())
         self.simulate_put(self.shard, body=json.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
@@ -101,7 +101,7 @@ class ShardsBaseTest(base.TestBase):
             self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def test_put_raises_if_missing_fields(self):
-        path = '/v1/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         self.simulate_put(path, body=json.dumps({'weight': 100}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
@@ -110,7 +110,7 @@ class ShardsBaseTest(base.TestBase):
 
     @ddt.data(-1, 2**32+1, 'big')
     def test_put_raises_if_invalid_weight(self, weight):
-        path = '/v1/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         doc = {'weight': weight, 'uri': 'a'}
         self.simulate_put(path,
                           body=json.dumps(doc))
@@ -118,14 +118,14 @@ class ShardsBaseTest(base.TestBase):
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
-        path = '/v1/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         self.simulate_put(path,
                           body=json.dumps({'weight': 1, 'uri': uri}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_options(self, options):
-        path = '/v1/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         doc = {'weight': 1, 'uri': 'a', 'options': options}
         self.simulate_put(path, body=json.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -151,7 +151,7 @@ class ShardsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_nonexisting_raises_404(self):
-        self.simulate_get('/v1/shards/nonexisting')
+        self.simulate_get(self.url_prefix + '/shards/nonexisting')
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def _shard_expect(self, shard, xhref, xweight, xuri):
@@ -225,13 +225,13 @@ class ShardsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_patch_raises_404_if_shard_not_found(self):
-        self.simulate_patch('/v1/shards/notexists',
+        self.simulate_patch(self.url_prefix + '/shards/notexists',
                             body=json.dumps({'weight': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_empty_listing_returns_204(self):
         self.simulate_delete(self.shard)
-        self.simulate_get('/v1/shards')
+        self.simulate_get(self.url_prefix + '/shards')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def _listing_test(self, count=10, limit=10,
@@ -244,7 +244,7 @@ class ShardsBaseTest(base.TestBase):
             query += '&marker={2}'.format(marker)
 
         with shards(self, count, self.doc['uri']) as expected:
-            result = self.simulate_get('/v1/shards',
+            result = self.simulate_get(self.url_prefix + '/shards',
                                        query_string=query)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
             results = json.loads(result[0])
@@ -275,7 +275,7 @@ class ShardsBaseTest(base.TestBase):
         self.simulate_delete(self.shard)
 
         with shards(self, 10, self.doc['uri']) as expected:
-            result = self.simulate_get('/v1/shards',
+            result = self.simulate_get(self.url_prefix + '/shards',
                                        query_string='?marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
             shard_list = json.loads(result[0])['shards']
@@ -284,10 +284,10 @@ class ShardsBaseTest(base.TestBase):
             self._shard_expect(shard_list[0], path, weight, self.doc['uri'])
 
 
-@testing.requires_mongodb
-class ShardsMongoDBTests(ShardsBaseTest):
+class TestShardsMongoDB(ShardsBaseTest):
 
     config_file = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(ShardsMongoDBTests, self).setUp()
+        super(TestShardsMongoDB, self).setUp()

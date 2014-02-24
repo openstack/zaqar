@@ -31,7 +31,7 @@ class TestDefaultLimits(base.TestBase):
     def setUp(self):
         super(TestDefaultLimits, self).setUp()
 
-        self.queue_path = '/v1/queues/q1'
+        self.queue_path = self.url_prefix + '/queues/q1'
         self.messages_path = self.queue_path + '/messages'
         self.claims_path = self.queue_path + '/claims'
 
@@ -43,11 +43,11 @@ class TestDefaultLimits(base.TestBase):
 
     def test_queue_listing(self):
         # 2 queues to list
-        self.simulate_put('/v1/queues/q2')
+        self.simulate_put(self.url_prefix + '/queues/q2')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         with self._prepare_queues(storage.DEFAULT_QUEUES_PER_PAGE + 1):
-            result = self.simulate_get('/v1/queues')
+            result = self.simulate_get(self.url_prefix + '/queues')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
             queues = json.loads(result[0])['queues']
@@ -77,7 +77,7 @@ class TestDefaultLimits(base.TestBase):
 
     @contextlib.contextmanager
     def _prepare_queues(self, count):
-        queue_paths = ['/v1/queues/multi-{0}'.format(i)
+        queue_paths = [self.url_prefix + '/queues/multi-{0}'.format(i)
                        for i in range(count)]
 
         for path in queue_paths:
