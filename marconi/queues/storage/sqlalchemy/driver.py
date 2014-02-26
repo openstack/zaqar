@@ -42,9 +42,22 @@ class DataDriver(storage.DataDriverBase):
                                 group=_SQLALCHEMY_GROUP)
         self.sqlalchemy_conf = self.conf[_SQLALCHEMY_GROUP]
 
+    def _sqlite_on_connect(self, conn, record):
+        # NOTE(flaper87): This is necesary in order
+        # to ensure FK are treated correctly by sqlite.
+        conn.execute('pragma foreign_keys=ON')
+
     @decorators.lazy_property(write=False)
     def engine(self, *args, **kwargs):
-        engine = sa.create_engine(self.sqlalchemy_conf.uri, **kwargs)
+        uri = self.sqlalchemy_conf.uri
+        engine = sa.create_engine(uri, **kwargs)
+
+        # TODO(flaper87): Find a better way
+        # to do this.
+        if uri.startswith('sqlite://'):
+            sa.event.listen(engine, 'connect',
+                            self._sqlite_on_connect)
+
         tables.metadata.create_all(engine, checkfirst=True)
         return engine
 
