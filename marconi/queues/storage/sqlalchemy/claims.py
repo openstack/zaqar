@@ -165,7 +165,13 @@ class ClaimController(storage.Claim):
             return
 
         with self.driver.trans() as trans:
-            qid = utils.get_qid(self.driver, queue, project)
+            try:
+                # NOTE(flaper87): This could probably use some
+                # joins and be just 1 query.
+                qid = utils.get_qid(self.driver, queue, project)
+            except errors.QueueDoesNotExist:
+                return
+
             and_stmt = sa.and_(tables.Claims.c.id == cid,
                                tables.Claims.c.qid == qid)
             dlt = tables.Claims.delete().where(and_stmt)
