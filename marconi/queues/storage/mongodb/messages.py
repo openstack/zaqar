@@ -287,8 +287,10 @@ class MessageController(storage.Message):
             query['c.e'] = {'$lte': now}
 
         # Construct the request
-        cursor = collection.find(query, fields=fields,
-                                 sort=[('k', sort)], limit=limit)
+        cursor = collection.find(query, fields=fields, sort=[('k', sort)])
+
+        if limit is not None:
+            cursor.limit(limit)
 
         # NOTE(flaper87): Suggest the index to use for this query to
         # ensure the most performant one is chosen.
