@@ -84,7 +84,7 @@ class ShardsBaseTest(base.TestBase):
 
     def setUp(self):
         super(ShardsBaseTest, self).setUp()
-        self.doc = {'weight': 100, 'uri': 'sqlite://memory'}
+        self.doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
         self.shard = self.url_prefix + '/shards/' + str(uuid.uuid1())
         self.simulate_put(self.shard, body=json.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -105,7 +105,7 @@ class ShardsBaseTest(base.TestBase):
         self.simulate_put(path, body=json.dumps({'weight': 100}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-        self.simulate_put(path, body=json.dumps({'uri': 'sqlite://memory'}))
+        self.simulate_put(path, body=json.dumps({'uri': 'sqlite://:memory:'}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, 'big')
@@ -132,7 +132,7 @@ class ShardsBaseTest(base.TestBase):
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default shard
-        expect = {'weight': 20, 'uri': 'sqlite://other'}
+        expect = {'weight': 20, 'uri': 'sqlalchemy://other'}
         self.simulate_put(self.shard,
                           body=json.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -198,11 +198,11 @@ class ShardsBaseTest(base.TestBase):
         self.assertEqual(shard['options'], doc['options'])
 
     def test_patch_works(self):
-        doc = {'weight': 101, 'uri': 'sqlite://memory', 'options': {'a': 1}}
+        doc = {'weight': 101, 'uri': 'sqlite://:memory:', 'options': {'a': 1}}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
-        doc = {'weight': 101, 'uri': 'sqlite://memory', 'options': {'a': 1},
+        doc = {'weight': 101, 'uri': 'sqlite://:memory:', 'options': {'a': 1},
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)
 

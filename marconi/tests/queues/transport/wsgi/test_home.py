@@ -24,7 +24,7 @@ from . import base  # noqa
 
 class TestHomeDocument(base.TestBase):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
     def test_json_response(self):
         body = self.simulate_get(self.url_prefix)

@@ -92,7 +92,7 @@ class TestShardsMongoDB(wsgi.TestShardsMongoDB):
 
 class TestHealth(wsgi.TestBase):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
     def test_get(self):
         response = self.simulate_get('/v1/health')

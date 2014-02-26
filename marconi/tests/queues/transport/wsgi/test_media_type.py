@@ -23,7 +23,7 @@ from . import base  # noqa
 
 class TestMediaType(base.TestBase):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
     def test_json_only_endpoints(self):
         endpoints = (

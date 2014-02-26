@@ -17,7 +17,7 @@ from marconi.common import errors
 from marconi.queues import bootstrap
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding
-from marconi.queues.storage import sqlite
+from marconi.queues.storage import sqlalchemy
 from marconi.queues.transport import wsgi
 from marconi.tests import base
 
@@ -33,14 +33,15 @@ class TestBootstrap(base.TestBase):
         self.assertRaises(errors.InvalidDriver,
                           lambda: bootstrap.storage)
 
-    def test_storage_sqlite(self):
-        bootstrap = self._bootstrap('wsgi_sqlite.conf')
+    def test_storage_sqlalchemy(self):
+        bootstrap = self._bootstrap('wsgi_sqlalchemy.conf')
         self.assertIsInstance(bootstrap.storage, pipeline.DataDriver)
-        self.assertIsInstance(bootstrap.storage._storage, sqlite.DataDriver)
+        self.assertIsInstance(bootstrap.storage._storage,
+                              sqlalchemy.DataDriver)
 
-    def test_storage_sqlite_sharded(self):
+    def test_storage_sqlalchemy_sharded(self):
         """Makes sure we can load the shard driver."""
-        bootstrap = self._bootstrap('wsgi_sqlite_sharded.conf')
+        bootstrap = self._bootstrap('wsgi_sqlalchemy_sharded.conf')
         self.assertIsInstance(bootstrap.storage._storage, sharding.DataDriver)
 
     def test_transport_invalid(self):
@@ -49,5 +50,5 @@ class TestBootstrap(base.TestBase):
                           lambda: bootstrap.transport)
 
     def test_transport_wsgi(self):
-        bootstrap = self._bootstrap('wsgi_sqlite.conf')
+        bootstrap = self._bootstrap('wsgi_sqlalchemy.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)

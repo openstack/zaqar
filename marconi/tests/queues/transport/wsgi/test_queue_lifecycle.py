@@ -354,7 +354,7 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
 
 class TestQueueLifecycleSQLite(QueueLifecycleBaseTest):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
 
 class TestQueueLifecycleFaultyDriver(base.TestBaseFaulty):

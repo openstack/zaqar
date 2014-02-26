@@ -20,7 +20,7 @@ from oslo.config import cfg
 
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.queues.storage import sharding
-from marconi.queues.storage import sqlite
+from marconi.queues.storage import sqlalchemy
 from marconi.queues.storage import utils
 from marconi import tests as testing
 
@@ -49,7 +49,7 @@ class ShardCatalogTest(testing.TestBase):
         self.shard = str(uuid.uuid1())
         self.queue = str(uuid.uuid1())
         self.project = str(uuid.uuid1())
-        self.shards_ctrl.create(self.shard, 100, 'sqlite://memory')
+        self.shards_ctrl.create(self.shard, 100, 'sqlite://:memory:')
         self.catalogue_ctrl.insert(self.project, self.queue, self.shard)
         self.catalog = sharding.Catalog(self.conf, cache, control)
 
@@ -60,7 +60,7 @@ class ShardCatalogTest(testing.TestBase):
 
     def test_lookup_loads_correct_driver(self):
         storage = self.catalog.lookup(self.queue, self.project)
-        self.assertIsInstance(storage, sqlite.DataDriver)
+        self.assertIsInstance(storage, sqlalchemy.DataDriver)
 
     def test_lookup_returns_none_if_queue_not_mapped(self):
         self.assertIsNone(self.catalog.lookup('not', 'mapped'))
@@ -72,4 +72,4 @@ class ShardCatalogTest(testing.TestBase):
     def test_register_leads_to_successful_lookup(self):
         self.catalog.register('not_yet', 'mapped')
         storage = self.catalog.lookup('not_yet', 'mapped')
-        self.assertIsInstance(storage, sqlite.DataDriver)
+        self.assertIsInstance(storage, sqlalchemy.DataDriver)

@@ -94,7 +94,7 @@ class TestShardsMongoDB(wsgi.TestShardsMongoDB):
 
 class TestPing(wsgi.TestBase):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
     def test_get(self):
         # TODO(kgriffs): Make use of setUp for setting the URL prefix
@@ -114,7 +114,7 @@ class TestPing(wsgi.TestBase):
 
 class TestHealth(wsgi.TestBase):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
     def test_get(self):
         response = self.simulate_get('/v1.1/health')

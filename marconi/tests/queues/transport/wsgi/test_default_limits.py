@@ -26,7 +26,7 @@ from marconi.queues import storage
 
 class TestDefaultLimits(base.TestBase):
 
-    config_file = 'wsgi_sqlite_default_limits.conf'
+    config_file = 'wsgi_sqlalchemy_default_limits.conf'
 
     def setUp(self):
         super(TestDefaultLimits, self).setUp()

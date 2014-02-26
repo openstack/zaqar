@@ -245,7 +245,7 @@ class TestClaimsMongoDB(ClaimsBaseTest):
 
 class TestClaimsSQLite(ClaimsBaseTest):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
 
 class TestClaimsFaultyDriver(base.TestBaseFaulty):

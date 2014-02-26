@@ -23,7 +23,7 @@ from marconi.tests.queues.transport.wsgi import base
 
 class ValidationTest(base.TestBase):
 
-    config_file = 'wsgi_sqlite_validation.conf'
+    config_file = 'wsgi_sqlalchemy_validation.conf'
 
     def setUp(self):
         super(ValidationTest, self).setUp()

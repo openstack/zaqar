@@ -456,11 +456,11 @@ class MessagesBaseTest(base.TestBase):
 
 class TestMessagesSQLite(MessagesBaseTest):
 
-    config_file = 'wsgi_sqlite.conf'
+    config_file = 'wsgi_sqlalchemy.conf'
 
 
-# TODO(cpp-cabrera): restore sqlite sharded test suite once shards and
-# catalogue get an sqlite implementation.
+# TODO(cpp-cabrera): restore sqlalchemy sharded test suite once shards and
+# catalogue get an sqlalchemy implementation.
 
 
 class TestMessagesMongoDB(MessagesBaseTest):

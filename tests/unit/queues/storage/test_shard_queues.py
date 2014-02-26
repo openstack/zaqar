@@ -43,7 +43,8 @@ class ShardQueuesTest(testing.TestBase):
 
         # fake two shards
         for _ in xrange(2):
-            self.shards_ctrl.create(str(uuid.uuid1()), 100, 'sqlite://memory')
+            self.shards_ctrl.create(str(uuid.uuid1()), 100,
+                                    'sqlite://:memory:')
 
     def tearDown(self):
         self.shards_ctrl.drop_all()
