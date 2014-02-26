@@ -15,11 +15,8 @@
 # limitations under the License.
 
 from __future__ import print_function
-import atexit
 import functools
-import os
 import sys
-import termios
 
 from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log as logging
@@ -40,26 +37,6 @@ def _fail(returncode, ex):
     sys.exit(returncode)
 
 
-def _enable_echo(enable):
-    """Enables or disables terminal echo.
-
-    :param enable: pass True to enable echo, False to disable
-    """
-    if not os.isatty(sys.stdin.fileno()):
-        # if we are not running in an interactive shell we will get
-        # termios.error: (25, 'Inappropriate ioctl for device')
-        return
-
-    fd = sys.stdin.fileno()
-    new_attr = termios.tcgetattr(fd)
-    if enable:
-        new_attr[3] |= termios.ECHO
-    else:
-        new_attr[3] &= ~termios.ECHO
-
-    termios.tcsetattr(fd, termios.TCSANOW, new_attr)
-
-
 def runnable(func):
     """Entry point wrapper.
 
@@ -69,9 +46,6 @@ def runnable(func):
 
     @functools.wraps(func)
     def _wrapper():
-        atexit.register(_enable_echo, True)
-        _enable_echo(False)
-
         try:
             logging.setup('marconi')
             func()
