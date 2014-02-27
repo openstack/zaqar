@@ -76,8 +76,8 @@ def validate_queue_identification(validate, req, resp, params):
         project = params['project_id']
         queue = params['queue_name'].decode('utf-8', 'replace')
 
-        LOG.debug(_(u'Invalid queue name "%(queue)s" submitted for '
-                    u'project: %(project)s'),
+        LOG.debug(u'Invalid queue name "%(queue)s" submitted for '
+                  u'project: %(project)s',
                   {'queue': queue, 'project': project})
 
         raise falcon.HTTPBadRequest(_(u'Invalid queue identification'),

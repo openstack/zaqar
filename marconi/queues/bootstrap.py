@@ -22,7 +22,6 @@ from marconi.common import decorators
 from marconi.common import errors
 from marconi.common import utils
 from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import sharding
@@ -73,28 +72,28 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        LOG.debug(_(u'Loading storage driver'))
+        LOG.debug(u'Loading storage driver')
 
         if self.conf.sharding:
-            LOG.debug(_(u'Storage sharding enabled'))
+            LOG.debug(u'Storage sharding enabled')
             storage_driver = sharding.DataDriver(self.conf, self.cache,
                                                  self.control)
         else:
             storage_driver = storage_utils.load_storage_driver(
                 self.conf, self.cache)
 
-        LOG.debug(_(u'Loading storage pipeline'))
+        LOG.debug(u'Loading storage pipeline')
         return pipeline.DataDriver(self.conf, storage_driver)
 
     @decorators.lazy_property(write=False)
     def control(self):
-        LOG.debug(_(u'Loading storage control driver'))
+        LOG.debug(u'Loading storage control driver')
         return storage_utils.load_storage_driver(self.conf, self.cache,
                                                  control_mode=True)
 
     @decorators.lazy_property(write=False)
     def cache(self):
-        LOG.debug(_(u'Loading proxy cache driver'))
+        LOG.debug(u'Loading proxy cache driver')
         try:
             oslo_cache.register_oslo_configs(self.conf)
             mgr = oslo_cache.get_cache(self.conf.cache_url)
@@ -106,7 +105,7 @@ class Bootstrap(object):
     @decorators.lazy_property(write=False)
     def transport(self):
         transport_name = self.driver_conf.transport
-        LOG.debug(_(u'Loading transport driver: %s'), transport_name)
+        LOG.debug(u'Loading transport driver: %s', transport_name)
 
         args = [
             self.conf,
