@@ -18,29 +18,24 @@ import uuid
 
 import falcon
 from falcon import testing
-import six
-import testtools
-
-if not six.PY3:
-    from keystoneclient.middleware import auth_token
+from keystoneclient.middleware import auth_token
 
 from . import base  # noqa
 
 
-@testtools.skipIf(six.PY3, "No Py3K support for keystoneclient")
-class TestWSGIAuth(base.TestBase):
+class TestAuth(base.TestBase):
 
     config_file = 'keystone_auth.conf'
 
     def setUp(self):
-        super(TestWSGIAuth, self).setUp()
+        super(TestAuth, self).setUp()
         self.headers = {'Client-ID': str(uuid.uuid4())}
 
     def test_auth_install(self):
         self.assertIsInstance(self.app, auth_token.AuthProtocol)
 
     def test_non_authenticated(self):
-        env = testing.create_environ('/v1/480924/queues/',
+        env = testing.create_environ(self.url_prefix + '/480924/queues/',
                                      method='GET',
                                      headers=self.headers)
 

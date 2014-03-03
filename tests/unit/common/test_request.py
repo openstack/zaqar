@@ -19,9 +19,6 @@ from marconi.common import request
 from marconi.tests import base
 
 
-HREF = '/v1/queue/'
-
-
 class TestRequest(base.TestBase):
 
     def test_request_deserialized(self):

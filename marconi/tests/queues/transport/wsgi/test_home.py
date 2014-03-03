@@ -27,7 +27,7 @@ class TestHomeDocument(base.TestBase):
     config_file = 'wsgi_sqlite.conf'
 
     def test_json_response(self):
-        body = self.simulate_get('/v1')
+        body = self.simulate_get(self.url_prefix)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         content_type = self.srmock.headers_dict['Content-Type']
@@ -39,22 +39,22 @@ class TestHomeDocument(base.TestBase):
             self.fail('Home document is not valid JSON')
 
     def test_href_template(self):
-        body = self.simulate_get('/v1')
+        body = self.simulate_get(self.url_prefix)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         resp = json.loads(body[0])
         queue_href_template = resp['resources']['rel/queue']['href-template']
-        path_1 = 'https://marconi.example.com/v1'
-        path_2 = 'https://marconi.example.com/v1/'
+        path_1 = 'https://marconi.example.com' + self.url_prefix
+        path_2 = 'https://marconi.example.com' + self.url_prefix + '/'
 
-        # verify all the href template start with /v1
+        # Verify all the href template start with the correct version prefix
         for resource in list(resp['resources']):
             self.assertTrue(resp['resources'][resource]['href-template'].
-                            startswith('/v1'))
+                            startswith(self.url_prefix))
 
         url = urlparse.urljoin(path_1, queue_href_template)
-        self.assertEqual(url.format(queue_name='foo'),
-                         'https://marconi.example.com/v1/queues/foo')
+        expected = ('https://marconi.example.com' + self.url_prefix +
+                    '/queues/foo')
+        self.assertEqual(url.format(queue_name='foo'), expected)
 
         url = urlparse.urljoin(path_2, queue_href_template)
-        self.assertEqual(url.format(queue_name='foo'),
-                         'https://marconi.example.com/v1/queues/foo')
+        self.assertEqual(url.format(queue_name='foo'), expected)

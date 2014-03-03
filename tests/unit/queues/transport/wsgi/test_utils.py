@@ -24,7 +24,7 @@ import testtools
 from marconi.queues.transport.wsgi import utils
 
 
-class TestWSGIutils(testtools.TestCase):
+class TestUtils(testtools.TestCase):
 
     def test_get_checked_field_missing(self):
         doc = {}

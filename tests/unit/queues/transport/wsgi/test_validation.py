@@ -18,7 +18,7 @@ import uuid
 
 import falcon
 
-from . import base  # noqa
+from marconi.tests.queues.transport.wsgi import base
 
 
 class ValidationTest(base.TestBase):
@@ -29,6 +29,10 @@ class ValidationTest(base.TestBase):
         super(ValidationTest, self).setUp()
 
         self.project_id = '7e55e1a7e'
+
+        # NOTE(kgriffs): ATM, validation logic does not key off
+        # the API version. Therefore, we just pick '/v1' arbitrarily
+        # as the url prefix.
         self.queue_path = '/v1/queues/noein'
 
         self.simulate_put(self.queue_path, self.project_id)
