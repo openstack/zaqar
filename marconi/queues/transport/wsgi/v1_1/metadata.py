@@ -37,8 +37,8 @@ class Resource(object):
         self.queue_ctrl = queue_controller
 
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(_(u'Queue metadata GET - queue: %(queue)s, '
-                    u'project: %(project)s'),
+        LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
+                  u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -59,8 +59,8 @@ class Resource(object):
         # status defaults to 200
 
     def on_put(self, req, resp, project_id, queue_name):
-        LOG.debug(_(u'Queue metadata PUT - queue: %(queue)s, '
-                    u'project: %(project)s'),
+        LOG.debug(u'Queue metadata PUT - queue: %(queue)s, '
+                  u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:

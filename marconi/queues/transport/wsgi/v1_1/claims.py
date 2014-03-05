@@ -42,8 +42,8 @@ class Resource(object):
 class CollectionResource(Resource):
 
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(_(u'Claims collection POST - queue: %(queue)s, '
-                    u'project: %(project)s'),
+        LOG.debug(u'Claims collection POST - queue: %(queue)s, '
+                  u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         # Check for an explicit limit on the # of messages to claim
@@ -102,8 +102,8 @@ class ItemResource(Resource):
         self._validate = validate
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(_(u'Claim item GET - claim: %(claim_id)s, '
-                    u'queue: %(queue_name)s, project: %(project_id)s'),
+        LOG.debug(u'Claim item GET - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project: %(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -140,8 +140,8 @@ class ItemResource(Resource):
         # status defaults to 200
 
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(_(u'Claim Item PATCH - claim: %(claim_id)s, '
-                    u'queue: %(queue_name)s, project:%(project_id)s') %
+        LOG.debug(u'Claim Item PATCH - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project:%(project_id)s' %
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -174,8 +174,8 @@ class ItemResource(Resource):
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
     def on_delete(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(_(u'Claim item DELETE - claim: %(claim_id)s, '
-                    u'queue: %(queue_name)s, project: %(project_id)s') %
+        LOG.debug(u'Claim item DELETE - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project: %(project_id)s' %
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
