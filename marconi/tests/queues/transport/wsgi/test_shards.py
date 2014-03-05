@@ -132,7 +132,7 @@ class ShardsBaseTest(base.TestBase):
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default shard
-        expect = {'weight': 20, 'uri': 'sqlalchemy://other'}
+        expect = self.doc
         self.simulate_put(self.shard,
                           body=json.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)

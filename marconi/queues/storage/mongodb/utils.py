@@ -18,12 +18,14 @@ import collections
 import datetime
 import functools
 import random
+import time
 
 from bson import errors as berrors
 from bson import objectid
 from bson import tz_util
 from pymongo import errors
 
+from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import errors as storage_errors
@@ -238,9 +240,9 @@ def get_partition(num_partitions, queue, project=None):
 
 
 def raises_conn_error(func):
-    """Handles mongodb ConnectionFailure error
+    """Handles the MongoDB ConnectionFailure error.
 
-    This decorator catches mongodb's ConnectionFailure
+    This decorator catches MongoDB's ConnectionFailure
     error and raises Marconi's ConnectionError instead.
     """
 
@@ -251,6 +253,46 @@ def raises_conn_error(func):
         except errors.ConnectionFailure as ex:
             LOG.exception(ex)
             raise storage_errors.ConnectionError()
+
+    return wrapper
+
+
+def retries_on_autoreconnect(func):
+    """Causes the wrapped function to be re-called on AutoReconnect.
+
+    This decorator catches MongoDB's AutoReconnect error and retries
+    the function call.
+
+    .. Note::
+       Assumes that the decorated function has defined self.driver.mongodb_conf
+       so that `max_reconnect_attempts` and `reconnect_sleep` can be taken
+       into account.
+
+    .. Warning:: The decorated function must be idempotent.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # TODO(kgriffs): Figure out a way to not have to rely on the
+        # presence of `mongodb_conf`
+        max_attemps = self.driver.mongodb_conf.max_reconnect_attempts
+        sleep_sec = self.driver.mongodb_conf.reconnect_sleep
+
+        for attempt in range(max_attemps):
+            try:
+                return func(self, *args, **kwargs)
+                break
+
+            except errors.AutoReconnect as ex:
+                LOG.warn(_(u'Caught AutoReconnect, retrying the '
+                           'call to {0}').format(func))
+
+                time.sleep(sleep_sec * (2 ** attempt))
+        else:
+            LOG.error(_(u'Caught AutoReconnect, maximum attempts '
+                        'to {0} exceeded.').format(func))
+
+            raise ex
 
     return wrapper
 

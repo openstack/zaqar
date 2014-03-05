@@ -425,6 +425,7 @@ class MessageController(storage.Message):
         yield str(marker_id['next'])
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def first(self, queue_name, project=None, sort=1):
         cursor = self._list(queue_name, project=project,
                             include_claimed=True, sort=sort,
@@ -437,6 +438,7 @@ class MessageController(storage.Message):
         return message
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def get(self, queue_name, message_id, project=None):
         mid = utils.to_oid(message_id)
         if mid is None:
@@ -460,6 +462,7 @@ class MessageController(storage.Message):
         return _basic_message(message[0], now)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def bulk_get(self, queue_name, message_ids, project=None):
         message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
         if not message_ids:
@@ -485,7 +488,13 @@ class MessageController(storage.Message):
         return utils.HookedCursor(messages, denormalizer)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def post(self, queue_name, messages, client_uuid, project=None):
+        # NOTE(flaper87): This method should be safe to retry on
+        # autoreconnect, since we've a 2-step insert for messages.
+        # The worst-case scenario is that we'll increase the counter
+        # several times and we'd end up with some non-active messages.
+
         if not self._queue_ctrl.exists(queue_name, project):
             raise errors.QueueDoesNotExist(queue_name, project)
 
@@ -664,6 +673,7 @@ class MessageController(storage.Message):
                                      succeeded_ids)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def delete(self, queue_name, message_id, project=None, claim=None):
         # NOTE(cpp-cabrera): return early - this is an invalid message
         # id so we won't be able to find it any way
@@ -714,6 +724,7 @@ class MessageController(storage.Message):
         collection.remove(query['_id'], w=0)
 
     @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
     def bulk_delete(self, queue_name, message_ids, project=None):
         message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
         query = {

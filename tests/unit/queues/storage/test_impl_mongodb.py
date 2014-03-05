@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import datetime
 import time
 import uuid
@@ -43,6 +44,20 @@ def _cleanup_databases(controller):
 
 
 class MongodbUtilsTest(testing.TestBase):
+
+    config_file = 'wsgi_mongodb.conf'
+
+    def setUp(self):
+        super(MongodbUtilsTest, self).setUp()
+
+        self.conf.register_opts(options.MONGODB_OPTIONS,
+                                group=options.MONGODB_GROUP)
+
+        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+
+        MockDriver = collections.namedtuple('MockDriver', 'mongodb_conf')
+
+        self.driver = MockDriver(self.mongodb_conf)
 
     def test_scope_queue_name(self):
         self.assertEqual(utils.scope_queue_name('my-q'), '/my-q')
@@ -83,6 +98,34 @@ class MongodbUtilsTest(testing.TestBase):
         self.assertRaises(ValueError, utils.calculate_backoff, -1, 10, 2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, 10, 10, 2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, 11, 10, 2, 0)
+
+    def test_retries_on_autoreconnect(self):
+        num_calls = [0]
+
+        @utils.retries_on_autoreconnect
+        def _raises_autoreconnect(self):
+            num_calls[0] += 1
+            raise pymongo.errors.AutoReconnect()
+
+        self.assertRaises(pymongo.errors.AutoReconnect,
+                          _raises_autoreconnect, self)
+        self.assertEqual(num_calls, [self.mongodb_conf.max_reconnect_attempts])
+
+    def test_retries_on_autoreconnect_neg(self):
+        num_calls = [0]
+
+        @utils.retries_on_autoreconnect
+        def _raises_autoreconnect(self):
+            num_calls[0] += 1
+
+            # NOTE(kgriffs): Don't exceed until the last attempt
+            if num_calls[0] < self.mongodb_conf.max_reconnect_attempts:
+                raise pymongo.errors.AutoReconnect()
+
+        # NOTE(kgriffs): Test that this does *not* raise AutoReconnect
+        _raises_autoreconnect(self)
+
+        self.assertEqual(num_calls, [self.mongodb_conf.max_reconnect_attempts])
 
 
 @testing.requires_mongodb
