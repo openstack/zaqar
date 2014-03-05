@@ -27,7 +27,7 @@ class TestUtils(testing.TestBase):
         self.assertTrue(utils.can_connect('mongodb://localhost:27017'))
 
     def test_can_connect_suceeds_if_good_uri_sqlite(self):
-        self.assertTrue(utils.can_connect('sqlite://memory'))
+        self.assertTrue(utils.can_connect('sqlite://:memory:'))
 
     @ddt.data(
         'mongodb://localhost:27018',  # wrong port
