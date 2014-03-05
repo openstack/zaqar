@@ -352,7 +352,7 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
         super(TestQueueLifecycleMongoDB, self).tearDown()
 
 
-class TestQueueLifecycleSQLite(QueueLifecycleBaseTest):
+class TestQueueLifecycleSqlalchemy(QueueLifecycleBaseTest):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

@@ -454,7 +454,7 @@ class MessagesBaseTest(base.TestBase):
         return headers['location'].rsplit('=', 1)[-1].split(',')
 
 
-class TestMessagesSQLite(MessagesBaseTest):
+class TestMessagesSqlalchemy(MessagesBaseTest):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

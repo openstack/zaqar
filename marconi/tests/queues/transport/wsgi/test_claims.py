@@ -243,7 +243,7 @@ class TestClaimsMongoDB(ClaimsBaseTest):
         super(TestClaimsMongoDB, self).tearDown()
 
 
-class TestClaimsSQLite(ClaimsBaseTest):
+class TestClaimsSqlalchemy(ClaimsBaseTest):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

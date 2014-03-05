@@ -38,7 +38,7 @@ class TestClaimsMongoDB(wsgi.TestClaimsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsSQLite(wsgi.TestClaimsSQLite):
+class TestClaimsSqlalchemy(wsgi.TestClaimsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
@@ -66,7 +66,7 @@ class TestMessagesMongoDBSharded(wsgi.TestMessagesMongoDBSharded):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesSQLite(wsgi.TestMessagesSQLite):
+class TestMessagesSqlalchemy(wsgi.TestMessagesSqlalchemy):
     url_prefix = URL_PREFIX
 
 
@@ -80,7 +80,7 @@ class TestQueueLifecycleMongoDB(wsgi.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestQueueLifecycleSQLite(wsgi.TestQueueLifecycleSQLite):
+class TestQueueLifecycleSqlalchemy(wsgi.TestQueueLifecycleSqlalchemy):
     url_prefix = URL_PREFIX
 
 
