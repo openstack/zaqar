@@ -47,6 +47,12 @@ class DataDriver(storage.DataDriverBase):
         # to ensure FK are treated correctly by sqlite.
         conn.execute('pragma foreign_keys=ON')
 
+    def _mysql_on_connect(self, conn, record):
+        # NOTE(flaper87): This is necesary in order
+        # to ensure that all date operations in mysql
+        # happen in UTC, `now()` for example.
+        conn.query('SET time_zone = "+0:00"')
+
     @decorators.lazy_property(write=False)
     def engine(self, *args, **kwargs):
         uri = self.sqlalchemy_conf.uri
@@ -57,6 +63,10 @@ class DataDriver(storage.DataDriverBase):
         if uri.startswith('sqlite://'):
             sa.event.listen(engine, 'connect',
                             self._sqlite_on_connect)
+
+        if uri.startswith('mysql://'):
+            sa.event.listen(engine, 'connect',
+                            self._mysql_on_connect)
 
         tables.metadata.create_all(engine, checkfirst=True)
         return engine
