@@ -86,6 +86,10 @@ class TestShardsMongoDB(wsgi.TestShardsMongoDB):
     url_prefix = URL_PREFIX
 
 
+class TestShardsSqlalchemy(wsgi.TestShardsSqlalchemy):
+    url_prefix = URL_PREFIX
+
+
 #----------------------------------------------------------------------------
 # v1.0 only
 #----------------------------------------------------------------------------

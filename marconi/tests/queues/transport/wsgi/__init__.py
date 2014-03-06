@@ -44,3 +44,4 @@ TestQueueFaultyDriver = lc.TestQueueLifecycleFaultyDriver
 TestQueueLifecycleMongoDB = lc.TestQueueLifecycleMongoDB
 TestQueueLifecycleSqlalchemy = lc.TestQueueLifecycleSqlalchemy
 TestShardsMongoDB = test_shards.TestShardsMongoDB
+TestShardsSqlalchemy = test_shards.TestShardsSqlalchemy

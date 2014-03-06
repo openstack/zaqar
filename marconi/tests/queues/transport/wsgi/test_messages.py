@@ -459,10 +459,6 @@ class TestMessagesSqlalchemy(MessagesBaseTest):
     config_file = 'wsgi_sqlalchemy.conf'
 
 
-# TODO(cpp-cabrera): restore sqlalchemy sharded test suite once shards and
-# catalogue get an sqlalchemy implementation.
-
-
 class TestMessagesMongoDB(MessagesBaseTest):
 
     config_file = 'wsgi_mongodb.conf'

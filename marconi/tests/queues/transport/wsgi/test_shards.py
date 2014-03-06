@@ -252,7 +252,14 @@ class ShardsBaseTest(base.TestBase):
             self.assertIn('shards', results)
             shard_list = results['shards']
             self.assertEqual(len(shard_list), min(limit, count))
-            for (i, s), expect in zip(enumerate(shard_list), expected):
+            for s in shard_list:
+                # NOTE(flwang): It can't assumed that both sqlalchemy and
+                # mongodb can return query result with the same order. Just
+                # like the order they're inserted. Actually, sqlalchemy can't
+                # guarantee that. So we're leveraging the relationship between
+                # shard weight and the index of shards fixture to get the
+                # right shard to verify.
+                expect = expected[s['weight']]
                 path, weight = expect[:2]
                 self._shard_expect(s, path, weight, self.doc['uri'])
                 if detailed:
@@ -291,3 +298,11 @@ class TestShardsMongoDB(ShardsBaseTest):
     @testing.requires_mongodb
     def setUp(self):
         super(TestShardsMongoDB, self).setUp()
+
+
+class TestShardsSqlalchemy(ShardsBaseTest):
+
+    config_file = 'wsgi_sqlalchemy.conf'
+
+    def setUp(self):
+        super(TestShardsSqlalchemy, self).setUp()
