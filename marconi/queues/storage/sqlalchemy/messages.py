@@ -107,7 +107,7 @@ class MessageController(storage.Message):
         records = self.driver.run(statement)
         for id, body, ttl, created in records:
             yield {
-                'id': utils.msgid_encode(id),
+                'id': utils.msgid_encode(int(id)),
                 'ttl': ttl,
                 'age': now - calendar.timegm(created.timetuple()),
                 'body': json.loads(body),
@@ -144,7 +144,7 @@ class MessageController(storage.Message):
 
         created_iso = timeutils.isotime(created)
         return {
-            'id': utils.msgid_encode(id),
+            'id': utils.msgid_encode(int(id)),
             'ttl': ttl,
             'created': created_iso,
             'age': int((timeutils.utcnow() - created).seconds),

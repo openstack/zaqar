@@ -25,7 +25,7 @@ from marconi.queues.storage.sqlalchemy import utils
 
 class ClaimController(storage.Claim):
 
-    def __get(self, cid):
+    def __get(self, cid, trans):
         # NOTE(flaper87): This probably needs to
         # join on `Claim` to check the claim ttl.
         sel = sa.sql.select([tables.Messages.c.id,
@@ -39,11 +39,11 @@ class ClaimController(storage.Claim):
                                 #utils.get_age(tables.Claims.c.created),
                                 tables.Messages.c.cid == cid
                             ))
-        records = self.driver.run(sel)
+        records = trans.execute(sel)
 
         for id, body, ttl, created in records:
             yield {
-                'id': utils.msgid_encode(id),
+                'id': utils.msgid_encode(int(id)),
                 'ttl': ttl,
                 'age': (timeutils.utcnow() - created).seconds,
                 'body': body,
@@ -77,7 +77,7 @@ class ClaimController(storage.Claim):
                 {'id': claim_id,
                  'ttl': ttl,
                  'age': (timeutils.utcnow() - created).seconds},
-                self.__get(cid)
+                list(self.__get(cid, trans))
             )
 
     def create(self, queue, metadata, project=None,
@@ -93,7 +93,6 @@ class ClaimController(storage.Claim):
                 return None, iter([])
 
             # Clean up all expired claims in this queue
-
             dlt = tables.Claims.delete().where(sa.and_(
                 tables.Claims.c.ttl <=
                 utils.get_age(tables.Claims.c.created),
@@ -125,7 +124,7 @@ class ClaimController(storage.Claim):
                           tables.Messages.c.cid == cid)))
             trans.execute(update)
 
-            return (utils.cid_encode(cid), self.__get(cid))
+            return (utils.cid_encode(int(cid)), list(self.__get(cid, trans)))
 
     def update(self, queue, claim_id, metadata, project=None):
         if project is None:
