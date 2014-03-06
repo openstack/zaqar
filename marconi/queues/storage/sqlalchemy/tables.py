@@ -52,25 +52,25 @@ Claims = sa.Table('Claims', metadata,
 
 Queues = sa.Table('Queues', metadata,
                   sa.Column('id', sa.INTEGER, primary_key=True),
-                  sa.Column('project', sa.String),
-                  sa.Column('name', sa.String),
+                  sa.Column('project', sa.String(64)),
+                  sa.Column('name', sa.String(64)),
                   sa.Column('metadata', sa.LargeBinary),
                   sa.UniqueConstraint('project', 'name'),
                   )
 
 
 Shards = sa.Table('Shards', metadata,
-                  sa.Column('name', sa.String, primary_key=True),
-                  sa.Column('uri', sa.String, nullable=False),
+                  sa.Column('name', sa.String(64), primary_key=True),
+                  sa.Column('uri', sa.String(255), nullable=False),
                   sa.Column('weight', sa.INTEGER, nullable=False),
                   sa.Column('options', sa.BINARY))
 
 
 Catalogue = sa.Table('Catalogue', metadata,
-                     sa.Column('shard', sa.String,
+                     sa.Column('shard', sa.String(64),
                                sa.ForeignKey('Shards.name',
                                              ondelete='CASCADE'),
                                primary_key=True),
-                     sa.Column('project', sa.String, nullable=False),
-                     sa.Column('queue', sa.String, nullable=False),
+                     sa.Column('project', sa.String(64), nullable=False),
+                     sa.Column('queue', sa.String(64), nullable=False),
                      sa.UniqueConstraint('project', 'queue'))
