@@ -69,10 +69,6 @@ class ControllerBaseTest(testing.TestBase):
     def _purge_databases(self):
         """Override to clean databases."""
 
-    def tearDown(self):
-        timeutils.clear_time_override()
-        super(ControllerBaseTest, self).tearDown()
-
 
 @ddt.ddt
 class QueueControllerTest(ControllerBaseTest):
