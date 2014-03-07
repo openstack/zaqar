@@ -40,7 +40,9 @@ log_file = /var/log/marconi/queues.log
 # Transport driver module (e.g., wsgi, zmq)
 transport = wsgi
 
-# Storage driver module (e.g., mongodb, sqlite)
+# Storage driver module (e.g., mongodb, sqlalchemy)
+# sqlite has been deprecated, though it still works given the backward
+# compatibility support.
 storage = mongodb
 
 # ======================================================================
