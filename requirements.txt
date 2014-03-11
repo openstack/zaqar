@@ -7,6 +7,7 @@ jsonschema>=2.0.0,<3.0.0
 iso8601>=0.1.8
 msgpack-python
 MySQL-python
+posix_ipc
 pymongo>=2.4
 python-keystoneclient>=0.6.0
 python-memcached>=1.48
