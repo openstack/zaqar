@@ -1,0 +1,11 @@
+export OSLO_CONFIG_GENERATOR_EXTRA_MODULES=""
+export OSLO_CONFIG_GENERATOR_EXTRA_LIBRARIES="marconi.bootstrap
+                                              marconi.storage.base
+                                              marconi.storage.pipeline
+                                              marconi.storage.sharding
+                                              marconi.storage.mongodb
+                                              marconi.storage.sqlalchemy
+                                              marconi.transport.wsgi
+                                              marconi.transport.base
+                                              marconi.transport.validation"
+

@@ -1,0 +1,203 @@
+[DEFAULT]
+
+#
+# Options defined in marconi.transport.base
+#
+
+#  (string value)
+#auth_strategy=
+
+
+#
+# Options defined in marconi.bootstrap
+#
+
+# ('Enable sharding across multiple storage backends. ', 'If
+# sharding is enabled, the storage driver ', 'configuration is
+# used to determine where the ', 'catalogue/control plane data
+# is kept.') (boolean value)
+#sharding=false
+
+# Activate endpoints to manage shard registry. (boolean value)
+#admin_mode=false
+
+
+#
+# Options defined in marconi.openstack.common.lockutils
+#
+
+# Whether to disable inter-process locks (boolean value)
+#disable_process_locking=false
+
+# Directory to use for lock files. (string value)
+#lock_path=<None>
+
+
+#
+# Options defined in marconi.openstack.common.log
+#
+
+# Print debugging output (set logging level to DEBUG instead
+# of default WARNING level). (boolean value)
+#debug=false
+
+# Print more verbose output (set logging level to INFO instead
+# of default WARNING level). (boolean value)
+#verbose=false
+
+# Log output to standard error (boolean value)
+#use_stderr=true
+
+# Format string to use for log messages with context (string
+# value)
+#logging_context_format_string=%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s
+
+# Format string to use for log messages without context
+# (string value)
+#logging_default_format_string=%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [-] %(instance)s%(message)s
+
+# Data to append to log format when level is DEBUG (string
+# value)
+#logging_debug_format_suffix=%(funcName)s %(pathname)s:%(lineno)d
+
+# Prefix each line of exception output with this format
+# (string value)
+#logging_exception_prefix=%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s %(instance)s
+
+# List of logger=LEVEL pairs (list value)
+#default_log_levels=amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN
+
+# Publish error events (boolean value)
+#publish_errors=false
+
+# Make deprecations fatal (boolean value)
+#fatal_deprecations=false
+
+# If an instance is passed with the log message, format it
+# like this (string value)
+#instance_format="[instance: %(uuid)s] "
+
+# If an instance UUID is passed with the log message, format
+# it like this (string value)
+#instance_uuid_format="[instance: %(uuid)s] "
+
+# The name of logging configuration file. It does not disable
+# existing loggers, but just appends specified logging
+# configuration to any other existing logging options. Please
+# see the Python logging module documentation for details on
+# logging configuration files. (string value)
+# Deprecated group/name - [DEFAULT]/log_config
+#log_config_append=<None>
+
+# DEPRECATED. A logging.Formatter log message format string
+# which may use any of the available logging.LogRecord
+# attributes. This option is deprecated.  Please use
+# logging_context_format_string and
+# logging_default_format_string instead. (string value)
+#log_format=<None>
+
+# Format string for %%(asctime)s in log records. Default:
+# %(default)s (string value)
+#log_date_format=%Y-%m-%d %H:%M:%S
+
+# (Optional) Name of log file to output to. If no default is
+# set, logging will go to stdout. (string value)
+# Deprecated group/name - [DEFAULT]/logfile
+#log_file=<None>
+
+# (Optional) The base directory used for relative --log-file
+# paths (string value)
+# Deprecated group/name - [DEFAULT]/logdir
+#log_dir=<None>
+
+# Use syslog for logging. Existing syslog format is DEPRECATED
+# during I, and then will be changed in J to honor RFC5424
+# (boolean value)
+#use_syslog=false
+
+# (Optional) Use syslog rfc5424 format for logging. If
+# enabled, will add APP-NAME (RFC5424) before the MSG part of
+# the syslog message.  The old format without APP-NAME is
+# deprecated in I, and will be removed in J. (boolean value)
+#use_syslog_rfc_format=false
+
+# Syslog facility to receive log lines (string value)
+#syslog_log_facility=LOG_USER
+
+
+[drivers]
+
+#
+# Options defined in marconi.bootstrap
+#
+
+# Transport driver to use. (string value)
+#transport=wsgi
+
+# Storage driver to use. (string value)
+#storage=sqlite
+
+
+[drivers:storage:mongodb]
+
+#
+# Options defined in marconi.storage.mongodb
+#
+
+# Mongodb Connection URI. (string value)
+#uri=<None>
+
+# Database name. (string value)
+#database=marconi
+
+# Number of databases across which to partition message data,
+# in order to reduce writer lock %. DO NOT change this setting
+# after initial deployment. It MUST remain static. Also, you
+# should not need a large number of partitions to improve
+# performance, esp. if deploying MongoDB on SSD storage.
+# (integer value)
+#partitions=2
+
+# Maximum number of times to retry a failed operation.
+# Currently only used for retrying a message post. (integer
+# value)
+#max_attempts=1000
+
+# Maximum sleep interval between retries (actual sleep time
+# increases linearly according to number of attempts
+# performed). (floating point value)
+#max_retry_sleep=0.1
+
+# Maximum jitter interval, to be added to the sleep interval,
+# in order to decrease probability that parallel requests will
+# retry at the same instant. (floating point value)
+#max_retry_jitter=0.005
+
+# Maximum number of times to retry an operation that failed
+# due to a primary node failover. (integer value)
+#max_reconnect_attempts=10
+
+# Base sleep interval between attempts to reconnect after a
+# primary node failover. The actual sleep time increases
+# exponentially (power of 2) each time the operation is
+# retried. (floating point value)
+#reconnect_sleep=0.02
+
+
+[drivers:storage:sqlalchemy]
+
+#
+# Options defined in marconi.storage.sqlalchemy
+#
+
+# An sqlalchemy URL (string value)
+#uri=sqlite:///:memory:
+
+
+[sharding:catalog]
+
+#
+# Options defined in marconi.storage.sharding
+#
+
+# Catalog storage driver. (integer value)
