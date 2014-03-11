@@ -89,6 +89,8 @@ class CollectionResource(object):
         self._validate = validate
 
     def on_get(self, req, resp, project_id):
+        LOG.debug(u'Queue collection GET - project: %(project)s',
+                  {'project': project_id})
 
         kwargs = {}
 
