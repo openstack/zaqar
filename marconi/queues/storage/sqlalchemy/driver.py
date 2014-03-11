@@ -16,21 +16,14 @@
 
 import contextlib
 
-from oslo.config import cfg
 import sqlalchemy as sa
 
 from marconi.common import decorators
 from marconi.queues import storage
 from marconi.queues.storage.sqlalchemy import controllers
+from marconi.queues.storage.sqlalchemy import options
 from marconi.queues.storage.sqlalchemy import tables
 from marconi.queues.storage.sqlalchemy import utils
-
-_SQLALCHEMY_OPTIONS = [
-    cfg.StrOpt('uri', default='sqlite:///:memory:',
-               help='An sqlalchemy URL')
-]
-
-_SQLALCHEMY_GROUP = 'drivers:storage:sqlalchemy'
 
 
 class DataDriver(storage.DataDriverBase):
@@ -38,9 +31,10 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(_SQLALCHEMY_OPTIONS,
-                                group=_SQLALCHEMY_GROUP)
-        self.sqlalchemy_conf = self.conf[_SQLALCHEMY_GROUP]
+        opts = options.SQLALCHEMY_OPTIONS
+        self.conf.register_opts(opts,
+                                group=options.SQLALCHEMY_GROUP)
+        self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
 
     def _sqlite_on_connect(self, conn, record):
         # NOTE(flaper87): This is necesary in order
@@ -127,9 +121,9 @@ class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
-        self.conf.register_opts(_SQLALCHEMY_OPTIONS,
-                                group=_SQLALCHEMY_GROUP)
-        self.sqlalchemy_conf = self.conf[_SQLALCHEMY_GROUP]
+        self.conf.register_opts(options.SQLALCHEMY_OPTIONS,
+                                group=options.SQLALCHEMY_GROUP)
+        self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
 
     @decorators.lazy_property(write=False)
     def engine(self, *args, **kwargs):
