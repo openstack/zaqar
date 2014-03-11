@@ -19,7 +19,6 @@ from stevedore import driver
 
 from marconi import common
 from marconi.common import decorators
-from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 from marconi.openstack.common import log as logging
 from marconi.queues.storage import base
@@ -28,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 _PIPELINE_RESOURCES = ('queue', 'message', 'claim')
 
-_PIPELINE_CONFIGS = [
+_PIPELINE_CONFIGS = tuple((
     cfg.ListOpt(resource + '_pipeline', default=[],
                 help=_('Pipeline to use for processing {0} operations. '
                        'This pipeline will be consumed before calling '
@@ -36,13 +35,13 @@ _PIPELINE_CONFIGS = [
                        'which will always be appended to this '
                        'pipeline.').format(resource))
     for resource in _PIPELINE_RESOURCES
-]
+))
 
 _PIPELINE_GROUP = 'storage'
 
 
 def _config_options():
-    return utils.options_iter(_PIPELINE_CONFIGS, _PIPELINE_GROUP)
+    return [(_PIPELINE_GROUP, _PIPELINE_CONFIGS)]
 
 
 def _get_storage_pipeline(resource_name, conf):

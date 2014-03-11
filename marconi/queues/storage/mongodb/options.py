@@ -18,10 +18,8 @@
 
 from oslo.config import cfg
 
-from marconi.common import utils
 
-
-MONGODB_OPTIONS = [
+MONGODB_OPTIONS = (
     cfg.StrOpt('uri', help='Mongodb Connection URI.'),
 
     # Database name
@@ -63,10 +61,10 @@ MONGODB_OPTIONS = [
                        'after a primary node failover. '
                        'The actual sleep time increases exponentially (power '
                        'of 2) each time the operation is retried.')),
-]
+)
 
 MONGODB_GROUP = 'drivers:storage:mongodb'
 
 
 def _config_options():
-    return utils.options_iter(MONGODB_OPTIONS, MONGODB_GROUP)
+    return [(MONGODB_GROUP, MONGODB_OPTIONS)]

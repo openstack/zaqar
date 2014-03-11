@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
-
 from oslo.config import cfg
 from stevedore import driver
 
 from marconi.common import decorators
 from marconi.common import errors
-from marconi.common import utils
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
@@ -30,7 +27,7 @@ from marconi.queues import transport  # NOQA
 
 LOG = log.getLogger(__name__)
 
-_GENERAL_OPTIONS = [
+_GENERAL_OPTIONS = (
     cfg.BoolOpt('sharding', default=False,
                 help=('Enable sharding across multiple storage backends. ',
                       'If sharding is enabled, the storage driver ',
@@ -38,21 +35,21 @@ _GENERAL_OPTIONS = [
                       'catalogue/control plane data is kept.')),
     cfg.BoolOpt('admin_mode', default=False,
                 help='Activate endpoints to manage shard registry.'),
-]
+)
 
-_DRIVER_OPTIONS = [
+_DRIVER_OPTIONS = (
     cfg.StrOpt('transport', default='wsgi',
                help='Transport driver to use.'),
     cfg.StrOpt('storage', default='sqlite',
                help='Storage driver to use.'),
-]
+)
 
 _DRIVER_GROUP = 'drivers'
 
 
 def _config_options():
-    return itertools.chain(utils.options_iter(_GENERAL_OPTIONS),
-                           utils.options_iter(_DRIVER_OPTIONS, _DRIVER_GROUP))
+    return [(None, _GENERAL_OPTIONS),
+            (_DRIVER_GROUP, _DRIVER_OPTIONS)]
 
 
 class Bootstrap(object):

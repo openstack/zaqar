@@ -21,7 +21,6 @@ from oslo.config import cfg
 
 from marconi.common import decorators
 from marconi.common.storage import select
-from marconi.common import utils as common_utils
 from marconi.openstack.common import log
 from marconi.queues import storage
 from marconi.queues.storage import errors
@@ -29,10 +28,10 @@ from marconi.queues.storage import utils
 
 LOG = log.getLogger(__name__)
 
-_CATALOG_OPTIONS = [
+_CATALOG_OPTIONS = (
     cfg.IntOpt('storage', default='sqlite',
                help='Catalog storage driver.'),
-]
+)
 
 _CATALOG_GROUP = 'sharding:catalog'
 
@@ -49,7 +48,7 @@ _SHARD_CACHE_TTL = 10
 
 
 def _config_options():
-    return common_utils.options_iter(_CATALOG_OPTIONS, _CATALOG_GROUP)
+    return [(_CATALOG_GROUP, _CATALOG_OPTIONS)]
 
 
 def _shard_cache_key(queue, project=None):

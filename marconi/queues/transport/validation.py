@@ -17,7 +17,6 @@ import re
 
 from oslo.config import cfg
 
-from marconi.common import utils
 from marconi.openstack.common.gettextutils import _
 
 MIN_MESSAGE_TTL = 60
@@ -25,7 +24,7 @@ MIN_CLAIM_TTL = 60
 MIN_CLAIM_GRACE = 60
 
 
-_TRANSPORT_LIMITS_OPTIONS = [
+_TRANSPORT_LIMITS_OPTIONS = (
     cfg.IntOpt('max_queues_per_page', default=20,
                deprecated_name='queue_paging_uplimit',
                deprecated_group='limits:transport'),
@@ -51,7 +50,7 @@ _TRANSPORT_LIMITS_OPTIONS = [
     cfg.IntOpt('max_claim_grace', default=43200,
                deprecated_name='claim_grace_max',
                deprecated_group='limits:transport'),
-]
+)
 
 _TRANSPORT_LIMITS_GROUP = 'transport'
 
@@ -63,8 +62,7 @@ PROJECT_ID_MAX_LEN = 256
 
 
 def _config_options():
-    return utils.options_iter(_TRANSPORT_LIMITS_OPTIONS,
-                              _TRANSPORT_LIMITS_GROUP)
+    return [(_TRANSPORT_LIMITS_GROUP, _TRANSPORT_LIMITS_OPTIONS)]
 
 
 class ValidationFailed(ValueError):

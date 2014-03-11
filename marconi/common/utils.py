@@ -64,18 +64,3 @@ def dict_to_conf(options):
         opts.append(opt_type(name=k, default=v))
 
     return opts
-
-
-def options_iter(options, group=None):
-    """Returns an options iterable
-
-    This function returns an iterable of
-    (option, config) pairs.
-
-    :param options: Iterable of options
-    :type options: iter
-    :param group: Group `options` belong to
-    :type group: six.text_type
-    """
-    for opt in options:
-        yield (opt, group)

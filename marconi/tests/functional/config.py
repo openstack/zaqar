@@ -18,31 +18,31 @@ import os
 from oslo.config import cfg
 
 
-_DEFAULT = [
+_DEFAULT = (
     cfg.BoolOpt("run_tests", default=True),
-]
+)
 
-_AUTH_OPTIONS = [
+_AUTH_OPTIONS = (
     cfg.BoolOpt("auth_on", default=False),
     cfg.StrOpt("url", default="https://127.0.0.1:5000/v2.0/tokens"),
     cfg.StrOpt("username", default=None),
     cfg.StrOpt("password", default=None),
-]
+)
 
 
-_MARCONI_OPTIONS = [
+_MARCONI_OPTIONS = (
     cfg.BoolOpt("run_server", default=True),
     cfg.StrOpt("url", default="http://127.0.0.1:8888"),
     cfg.StrOpt("version", default="v1"),
     cfg.StrOpt("config", default="functional-marconi.conf"),
-]
+)
 
 
-_HEADERS_OPTIONS = [
+_HEADERS_OPTIONS = (
     cfg.StrOpt("host", default="example.com"),
     cfg.StrOpt("user_agent", default="FunctionalTests"),
     cfg.StrOpt("project_id", default="123456"),
-]
+)
 
 
 def load_config():
