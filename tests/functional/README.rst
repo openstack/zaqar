@@ -40,7 +40,7 @@ Running the Functional Tests (Without Tox)
 
 #. cd to the marconi/tests/functional directory
 
-#. Copy marconi/tests/etc/functional-tests.conf-sample to one of the following locations::
+#. Copy tests/etc/functional-marconi.conf to one of the following locations::
 
      ~/.marconi/functional-tests.conf
      /etc/marconi/functional-tests.conf
