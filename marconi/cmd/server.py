@@ -12,7 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 from oslo.config import cfg
 
 from marconi.common import cli
@@ -28,4 +28,32 @@ def run():
     conf(project='marconi', prog='marconi-queues')
 
     server = bootstrap.Bootstrap(conf)
+
+    # The following code is to daemonize marconi-server to avoid
+    # an issue with wsgiref writing to stdout/stderr when we don't
+    # want it to.  This is specifically needed to allow marconi to
+    # run under devstack, but it may also be useful for other scenarios.
+    # Open /dev/zero and /dev/null for redirection.
+    zerofd = os.open('/dev/zero', os.O_RDONLY)
+    nullfd = os.open('/dev/null', os.O_WRONLY)
+
+    # Close the stdthings and reassociate them with a non terminal
+    os.dup2(zerofd, 0)
+    os.dup2(nullfd, 1)
+    os.dup2(nullfd, 2)
+
+    # Detach process context, this requires 2 forks.
+    try:
+        pid = os.fork()
+        if pid > 0:
+            os._exit(0)
+    except OSError:
+        os._exit(1)
+
+    try:
+        pid = os.fork()
+        if pid > 0:
+            os._exit(0)
+    except OSError:
+        os._exit(2)
     server.run()
