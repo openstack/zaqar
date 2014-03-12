@@ -89,7 +89,7 @@ class QueueControllerTest(ControllerBaseTest):
         project_alt = self.project if project is None else None
 
         num = 15
-        for queue in xrange(num):
+        for queue in six.moves.xrange(num):
             self.controller.create(str(queue), project=project)
             self.controller.create(str(queue), project=project_alt)
 
@@ -835,7 +835,7 @@ def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
 
     def messages():
-        for n in xrange(num):
+        for n in six.moves.xrange(num):
             yield {
                 'ttl': ttl,
                 'body': {
