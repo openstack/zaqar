@@ -1,7 +1,8 @@
 Marconi
 =======
 
-Message queuing service for `OpenStack`_
+Message queuing service for `OpenStack`_.
+To find more information read our `wiki`_.
 
 Running a local Marconi server with MongoDB
 -------------------------------------------
@@ -21,9 +22,13 @@ installed and running.
     $ cp marconi/etc/marconi.conf-sample ~/.marconi/marconi.conf
     $ cp marconi/etc/logging.conf-sample ~/.marconi/logging.conf
 
-3. Find the ``[drivers:storage:mongodb]`` section in
-   ``~/.marconi/marconi.conf`` and modify the URI to point
-   to your local mongod instance::
+3. Find ``[drivers]`` section in ``~/.marconi/marconi.conf``
+   and specify to use mongodb storage::
+
+    storage = mongodb
+
+   Then find the ``[drivers:storage:mongodb]`` section
+   and modify the URI to point to your local mongod instance::
 
     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT
 
@@ -49,7 +54,7 @@ installed and running.
 8. Test out that Marconi is working by creating a queue::
 
     $ curl -i -X PUT http://127.0.0.1:8888/v1/queues/samplequeue -H
-    "Content-type: application/json" -d '{"metadata": "Sample Queue"}'
+    "Content-type: application/json"
 
 You should get an **HTTP 201** along with some headers that will look
 similar to this::
@@ -60,9 +65,23 @@ similar to this::
     Content-Length: 0
     Location: /v1/queues/samplequeue
 
+Running tests
+-------------
+
+First install additional requirements::
+
+    pip install tox
+
+And then run tests::
+
+    tox -e py27
+
+You can read more about running functional tests in separate `TESTS_README`_.
 
 .. _`OpenStack` : http://openstack.org/
 .. _`MongoDB` : http://docs.mongodb.org/manual/installation/
 .. _`pyenv` : https://github.com/yyuu/pyenv/
 .. _`virtualenv` : https://pypi.python.org/pypi/virtualenv/
+.. _`wiki` : https://wiki.openstack.org/wiki/Marconi/
+.. _`TESTS_README` : https://github.com/openstack/marconi/blob/master/tests/functional/README.rst
 

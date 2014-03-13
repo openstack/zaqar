@@ -66,5 +66,5 @@ Adding New Tests
     messages/test_messages.py
     claim/test_claims.py
 
-.. _README : https://github.com/stackforge/marconi/blob/master/README.rst
+.. _README : https://github.com/openstack/marconi/blob/master/README.rst
 .. _requests : https://pypi.python.org/pypi/requests
