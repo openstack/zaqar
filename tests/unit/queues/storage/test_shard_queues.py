@@ -18,6 +18,7 @@ import random
 import uuid
 
 from oslo.config import cfg
+import six
 
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.queues.storage import sharding
@@ -42,7 +43,7 @@ class ShardQueuesTest(testing.TestBase):
         self.controller = self.driver.queue_controller
 
         # fake two shards
-        for _ in xrange(2):
+        for _ in six.moves.xrange(2):
             self.shards_ctrl.create(str(uuid.uuid1()), 100,
                                     'sqlite://:memory:')
 
@@ -63,7 +64,7 @@ class ShardQueuesTest(testing.TestBase):
 
         self.assertEqual(len(queues), 0)
 
-        for n in xrange(10):
+        for n in six.moves.xrange(10):
             name = 'queue_%d' % n
             self.controller.create(name, project=project)
             self.controller.set_metadata(name,
@@ -88,9 +89,9 @@ class ShardQueuesTest(testing.TestBase):
 
         # ordered by name as a whole
         self.assertTrue(all(queues[i]['name'] <= queues[i + 1]['name']
-                            for i in xrange(len(queues) - 1)))
+                            for i in six.moves.xrange(len(queues) - 1)))
 
-        for n in xrange(10):
+        for n in six.moves.xrange(10):
             self.controller.delete('queue_%d' % n, project=project)
 
         interaction = self.controller.list(project=project,
