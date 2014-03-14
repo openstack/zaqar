@@ -20,7 +20,7 @@ installed and running.
 2. Copy the Marconi config files to the directory ``~/.marconi``::
 
     $ cp marconi/etc/marconi.conf.sample ~/.marconi/marconi.conf
-    $ cp marconi/etc/logging.conf-sample ~/.marconi/logging.conf
+    $ cp marconi/etc/logging.conf.sample ~/.marconi/logging.conf
 
 3. Find ``[drivers]`` section in ``~/.marconi/marconi.conf``
    and specify to use mongodb storage::
