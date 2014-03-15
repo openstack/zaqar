@@ -244,31 +244,35 @@ class MessageControllerTest(ControllerBaseTest):
     def test_message_lifecycle(self):
         queue_name = self.queue_name
 
-        messages = [
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce'
-                }
-            },
-        ]
+        message = {
+            'ttl': 60,
+            'body': {
+                'event': 'BackupStarted',
+                'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce'
+            }
+        }
 
         # Test Message Creation
-        created = list(self.controller.post(queue_name, messages,
+        created = list(self.controller.post(queue_name, [message],
                                             project=self.project,
                                             client_uuid=uuid.uuid4()))
         self.assertEqual(len(created), 1)
+        message_id = created[0]
 
         # Test Message Get
-        self.controller.get(queue_name, created[0], project=self.project)
+        message_out = self.controller.get(queue_name, message_id,
+                                          project=self.project)
+        self.assertEqual(set(message_out), set(('id', 'body', 'ttl', 'age')))
+        self.assertEqual(message_out['id'], message_id)
+        self.assertEqual(message_out['body'], message['body'])
+        self.assertEqual(message_out['ttl'], message['ttl'])
 
         # Test Message Deletion
-        self.controller.delete(queue_name, created[0], project=self.project)
+        self.controller.delete(queue_name, message_id, project=self.project)
 
         # Test does not exist
         with testing.expect(storage.errors.DoesNotExist):
-            self.controller.get(queue_name, created[0], project=self.project)
+            self.controller.get(queue_name, message_id, project=self.project)
 
     def test_get_multi(self):
         client_uuid = uuid.uuid4()
@@ -309,6 +313,7 @@ class MessageControllerTest(ControllerBaseTest):
                                                 project=self.project)
 
         for idx, message in enumerate(messages_out):
+            self.assertEqual(set(message), set(('id', 'body', 'ttl', 'age')))
             self.assertEqual(message['body'], idx)
 
         self.controller.bulk_delete(self.queue_name, ids,
@@ -444,6 +449,32 @@ class MessageControllerTest(ControllerBaseTest):
         messages = list(next(interaction))
 
         self.assertEqual(messages, [])
+
+    def test_sort_for_first(self):
+        client_uuid = uuid.uuid4()
+
+        [msgid_first] = self.controller.post(self.queue_name,
+                                             [{'body': {}, 'ttl': 120}],
+                                             project=self.project,
+                                             client_uuid=client_uuid)
+
+        _insert_fixtures(self.controller, self.queue_name,
+                         project=self.project, client_uuid=client_uuid, num=10)
+
+        [msgid_last] = self.controller.post(self.queue_name,
+                                            [{'body': {}, 'ttl': 120}],
+                                            project=self.project,
+                                            client_uuid=client_uuid)
+
+        msg_asc = self.controller.first(self.queue_name,
+                                        self.project,
+                                        1)
+        self.assertEqual(msg_asc['id'], msgid_first)
+
+        msg_desc = self.controller.first(self.queue_name,
+                                         self.project,
+                                         -1)
+        self.assertEqual(msg_desc['id'], msgid_last)
 
 
 class ClaimControllerTest(ControllerBaseTest):
