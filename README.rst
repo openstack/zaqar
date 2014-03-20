@@ -32,6 +32,10 @@ installed and running.
 
     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT
 
+   By default, you will have::
+
+    uri = mongodb://127.0.0.1:27017
+
 4. For logging, find the ``[DEFAULT]`` section in
    ``~/.marconi/marconi.conf`` and modify as desired::
 
