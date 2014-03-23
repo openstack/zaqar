@@ -131,12 +131,12 @@ def oid_ts(oid):
 
 def stat_message(message, now):
     """Creates a stat document from the given message, relative to now."""
-    oid = message['_id']
-    created = oid_ts(oid)
+    msg_id = message['id']
+    created = oid_ts(to_oid(msg_id))
     age = now - created
 
     return {
-        'id': str(oid),
+        'id': msg_id,
         'age': int(age),
         'created': timeutils.iso8601_from_timestamp(created),
     }
