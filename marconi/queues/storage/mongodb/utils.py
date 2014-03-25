@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import division
 import binascii
 import collections
 import datetime
@@ -97,7 +98,7 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
     if not (0 <= attempt < max_attempts):
         raise ValueError(u'attempt value is out of range')
 
-    ratio = float(attempt) / float(max_attempts)
+    ratio = attempt / max_attempts
     backoff_sec = ratio * max_sleep
     jitter_sec = random.random() * max_jitter
 
