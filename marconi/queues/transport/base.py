@@ -20,7 +20,11 @@ from oslo.config import cfg
 
 
 _TRANSPORT_OPTIONS = (
-    cfg.StrOpt('auth_strategy', default=''),
+    cfg.StrOpt('auth_strategy', default='',
+               help=('Backend to use for authentication. '
+                     'For no auth, keep it empty. '
+                     'Existing strategies: keystone. '
+                     'See also the keystone_authtoken section below')),
 )
 
 

@@ -4,7 +4,9 @@
 # Options defined in marconi.transport.base
 #
 
-#  (string value)
+# Backend to use for authentication. For no auth, keep it
+# empty. Existing strategies: keystone. See also the
+# keystone_authtoken section below (string value)
 #auth_strategy=
 
 
