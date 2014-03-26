@@ -15,10 +15,7 @@
 
 """Middleware for handling authorization and authentication."""
 
-import six
-
-if not six.PY3:
-    from keystoneclient.middleware import auth_token
+from keystoneclient.middleware import auth_token
 
 from marconi.openstack.common import log
 
@@ -49,8 +46,7 @@ class KeystoneAuth(object):
         return auth_token.AuthProtocol(app, conf=conf)
 
 
-if not six.PY3:
-    STRATEGIES['keystone'] = KeystoneAuth
+STRATEGIES['keystone'] = KeystoneAuth
 
 
 def strategy(strategy):
