@@ -159,10 +159,10 @@ class TestInsertQueue(base.FunctionalTestBase):
     def test_insert_queue_header_asterisk(self):
         """Insert Queue with 'Accept': '*/*'."""
         path = '/queues/asteriskinheader'
-        self.addCleanup(self.client.delete, path)
+        headers = {"Accept": '*/*'}
+        self.addCleanup(self.client.delete, url=path, headers=headers)
 
-        header = {"Accept": '*/*'}
-        result = self.client.put(path, headers=header)
+        result = self.client.put(path, headers=headers)
         self.assertEqual(result.status_code, 201)
 
     test_insert_queue_header_asterisk.tags = ['positive']
