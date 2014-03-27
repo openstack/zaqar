@@ -435,7 +435,8 @@ class MessageController(storage.Message):
         except StopIteration:
             raise errors.QueueIsEmpty(queue_name, project)
 
-        return message
+        now = timeutils.utcnow_ts()
+        return _basic_message(message, now)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
