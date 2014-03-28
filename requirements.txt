@@ -9,7 +9,7 @@ msgpack-python
 MySQL-python
 posix_ipc
 pymongo>=2.4
-python-keystoneclient>=0.6.0
+python-keystoneclient>=0.7.0
 python-memcached>=1.48
 WebOb>=1.2.3
 stevedore>=0.14
