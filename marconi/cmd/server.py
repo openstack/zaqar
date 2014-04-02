@@ -34,26 +34,29 @@ def run():
     # want it to.  This is specifically needed to allow marconi to
     # run under devstack, but it may also be useful for other scenarios.
     # Open /dev/zero and /dev/null for redirection.
-    zerofd = os.open('/dev/zero', os.O_RDONLY)
-    nullfd = os.open('/dev/null', os.O_WRONLY)
+    # Daemonizing marconi-server is needed *just* when running under devstack
+    # and when `USE_SCREEN` is set to False.
+    if os.environ.get('USE_SCREEN', '').lower() == 'false':
+        zerofd = os.open('/dev/zero', os.O_RDONLY)
+        nullfd = os.open('/dev/null', os.O_WRONLY)
 
-    # Close the stdthings and reassociate them with a non terminal
-    os.dup2(zerofd, 0)
-    os.dup2(nullfd, 1)
-    os.dup2(nullfd, 2)
+        # Close the stdthings and reassociate them with a non terminal
+        os.dup2(zerofd, 0)
+        os.dup2(nullfd, 1)
+        os.dup2(nullfd, 2)
 
-    # Detach process context, this requires 2 forks.
-    try:
-        pid = os.fork()
-        if pid > 0:
-            os._exit(0)
-    except OSError:
-        os._exit(1)
+        # Detach process context, this requires 2 forks.
+        try:
+            pid = os.fork()
+            if pid > 0:
+                os._exit(0)
+        except OSError:
+            os._exit(1)
 
-    try:
-        pid = os.fork()
-        if pid > 0:
-            os._exit(0)
-    except OSError:
-        os._exit(2)
+        try:
+            pid = os.fork()
+            if pid > 0:
+                os._exit(0)
+        except OSError:
+            os._exit(2)
     server.run()
