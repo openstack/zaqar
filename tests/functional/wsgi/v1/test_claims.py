@@ -43,7 +43,8 @@ class TestClaims(base.FunctionalTestBase):
 
         #Post Messages
         url = self.queue_url + '/messages'
-        doc = helpers.create_message_body(messagecount=50)
+        doc = helpers.create_message_body(
+            messagecount=self.limits.max_messages_per_page)
 
         for i in range(10):
             self.client.post(url, data=doc)
