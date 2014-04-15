@@ -27,7 +27,6 @@ from marconi.queues import bootstrap
 # refactored as part of the work for this blueprint
 from marconi.queues.transport import validation
 from marconi.queues.transport import wsgi  # noqa
-from marconi.queues.transport.wsgi import app
 from marconi import tests as testing
 from marconi.tests.functional import config
 from marconi.tests.functional import helpers
@@ -76,7 +75,8 @@ class FunctionalTestBase(testing.TestBase):
 
             self.client = http.Client()
         else:
-            self.client = http.WSGIClient(app.app)
+            self.client = http.WSGIClient(
+                bootstrap.Bootstrap(config.cfg.CONF).transport.app)
 
         self.headers = helpers.create_marconi_headers(self.cfg)
 
