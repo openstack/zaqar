@@ -6,7 +6,6 @@ falcon>=0.1.6,<0.2.0
 jsonschema>=2.0.0,<3.0.0
 iso8601>=0.1.9
 msgpack-python
-MySQL-python
 posix_ipc
 pymongo>=2.4
 python-keystoneclient>=0.7.0
