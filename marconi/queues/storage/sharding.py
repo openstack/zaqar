@@ -185,12 +185,18 @@ class QueueController(RoutingController):
         target = self._lookup(name, project)
         if target:
 
-            # NOTE(cpp-cabrera): Now we found the controller. First,
-            # attempt to delete it from storage. IFF the deletion is
-            # successful, then remove it from the catalogue.
+            # NOTE(cpp-cabrera): delete from the catalogue first. If
+            # marconi crashes in the middle of these two operations,
+            # it is desirable that the entry be missing from the
+            # catalogue and present in storage, rather than the
+            # reverse. The former case leads to all operations
+            # behaving as expected: 404s across the board, and a
+            # functionally equivalent 204 on a create queue. The
+            # latter case is more difficult to reason about, and may
+            # yield 500s in some operations.
             control = target.queue_controller
-            ret = control.delete(name, project)
             self._shard_catalog.deregister(name, project)
+            ret = control.delete(name, project)
             return ret
 
         return None
