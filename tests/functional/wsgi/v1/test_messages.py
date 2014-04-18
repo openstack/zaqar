@@ -17,7 +17,6 @@ import uuid
 
 import ddt
 
-from marconi.queues.api.v1 import response
 from marconi.tests.functional import base
 from marconi.tests.functional import helpers
 
@@ -42,8 +41,6 @@ class TestMessages(base.FunctionalTestBase):
 
         self.message_url = self.queue_url + '/messages'
         self.client.set_base_url(self.message_url)
-
-        self.response = response.ResponseSchema(self.limits)
 
     def tearDown(self):
         self.client.delete(self.queue_url)
@@ -125,8 +122,7 @@ class TestMessages(base.FunctionalTestBase):
                       '(happens randomly)')
 
         # Verify that the response json schema matches the expected schema
-        expected_schema = self.response.get_schema('message_get_many')
-        self.assertSchema(result.json(), expected_schema)
+        self.assertSchema(result.json(), 'message_get_many')
 
         # Compare message metadata
         result_body = [result.json()[i]['body']
