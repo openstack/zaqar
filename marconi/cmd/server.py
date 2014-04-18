@@ -35,8 +35,8 @@ def run():
     # run under devstack, but it may also be useful for other scenarios.
     # Open /dev/zero and /dev/null for redirection.
     # Daemonizing marconi-server is needed *just* when running under devstack
-    # and when `USE_SCREEN` is set to False.
-    if os.environ.get('USE_SCREEN', '').lower() == 'false':
+    # and when marconi is invoked with `daemon` command line option.
+    if conf.daemon:
         zerofd = os.open('/dev/zero', os.O_RDONLY)
         nullfd = os.open('/dev/null', os.O_WRONLY)
 

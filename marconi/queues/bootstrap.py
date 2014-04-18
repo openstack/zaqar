@@ -27,6 +27,16 @@ from marconi.queues import transport  # NOQA
 
 LOG = log.getLogger(__name__)
 
+_CLI_OPTIONS = (
+    cfg.BoolOpt('daemon', default=False,
+                help='Run Marconi server in background.'),
+)
+
+# NOTE (Obulpathi): Register daemon command line option for
+# marconi-server
+CONF = cfg.CONF
+CONF.register_cli_opts(_CLI_OPTIONS)
+
 _GENERAL_OPTIONS = (
     cfg.BoolOpt('sharding', default=False,
                 help=('Enable sharding across multiple storage backends. ',
