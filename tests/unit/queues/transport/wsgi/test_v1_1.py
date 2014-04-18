@@ -76,10 +76,42 @@ class TestQueueFaultyDriver(wsgi.TestQueueFaultyDriver):
 # sort of a pain; is there a better way?
 class TestQueueLifecycleMongoDB(wsgi.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
+    metadata_support = False
+
+    def test_no_metadata(self):
+        """Metadata deprecated."""
+
+    def test_too_much_metadata(self):
+        """Metadata deprecated."""
+
+    def test_way_too_much_metadata(self):
+        """Metadata deprecated."""
+
+    def test_custom_metadata(self):
+        """Metadata deprecated."""
+
+    def test_update_metadata(self):
+        """Metadata deprecated."""
 
 
 class TestQueueLifecycleSqlalchemy(wsgi.TestQueueLifecycleSqlalchemy):
     url_prefix = URL_PREFIX
+    metadata_support = False
+
+    def test_no_metadata(self):
+        """Metadata deprecated."""
+
+    def test_too_much_metadata(self):
+        """Metadata deprecated."""
+
+    def test_way_too_much_metadata(self):
+        """Metadata deprecated."""
+
+    def test_custom_metadata(self):
+        """Metadata deprecated."""
+
+    def test_update_metadata(self):
+        """Metadata deprecated."""
 
 
 class TestShardsMongoDB(wsgi.TestShardsMongoDB):

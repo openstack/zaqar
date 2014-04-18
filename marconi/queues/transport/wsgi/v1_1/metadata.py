@@ -14,15 +14,12 @@
 # limitations under the License.
 
 import falcon
-import six
 
 from marconi.openstack.common.gettextutils import _
 import marconi.openstack.common.log as logging
 from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
-from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import errors as wsgi_errors
-from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -63,34 +60,8 @@ class Resource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
-        try:
-            # Place JSON size restriction before parsing
-            self._validate.queue_metadata_length(req.content_length)
-        except validation.ValidationFailed as ex:
-            LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
-        # Deserialize queue metadata
-        metadata, = wsgi_utils.filter_stream(req.stream,
-                                             req.content_length,
-                                             spec=None)
-
-        try:
-            self.queue_ctrl.set_metadata(queue_name,
-                                         metadata=metadata,
-                                         project=project_id)
-
-        except validation.ValidationFailed as ex:
-            LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
-        except storage_errors.QueueDoesNotExist:
-            raise falcon.HTTPNotFound()
-
-        except Exception as ex:
-            LOG.exception(ex)
-            description = _(u'Metadata could not be updated.')
-            raise wsgi_errors.HTTPServiceUnavailable(description)
-
-        resp.status = falcon.HTTP_204
+        resp.status = falcon.HTTP_405
         resp.location = req.path
+        resp.body = ("Queue's metadata has been deprecated. "
+                     "It will be removed completely in the next "
+                     "version of the API.")
