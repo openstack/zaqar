@@ -159,3 +159,31 @@ class TestHealth(wsgi.TestBase):
         response = self.simulate_head('/v1.1/health')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
         self.assertEqual(response, [])
+
+
+class TestDeprecated(wsgi.TestBase):
+
+    config_file = 'wsgi_sqlalchemy.conf'
+    queue_path = '/v1.1/queues/test-queue'
+
+    def setUp(self):
+        super(TestDeprecated, self).setUp()
+
+        self.simulate_put(self.queue_path)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+    def tearDown(self):
+        self.simulate_delete(self.queue_path)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        super(TestDeprecated, self).tearDown()
+
+    def test_queue_metadata(self):
+        self.simulate_get(self.queue_path + '/metadata')
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        # NOTE(kgriffs): Ensure that metadata created in v1.0
+        # is read-only in v1.1.
+        self.simulate_put(self.queue_path + '/metadata')
+        self.assertEqual(self.srmock.status, falcon.HTTP_405)
+        self.assertEqual(self.srmock.headers_dict['Allow'], 'GET')

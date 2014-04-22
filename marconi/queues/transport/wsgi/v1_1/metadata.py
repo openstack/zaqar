@@ -60,8 +60,16 @@ class Resource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
-        resp.status = falcon.HTTP_405
         resp.location = req.path
-        resp.body = ("Queue's metadata has been deprecated. "
-                     "It will be removed completely in the next "
-                     "version of the API.")
+
+        description = ("Queue metadata has been deprecated. "
+                       "It will be removed completely in the next "
+                       "version of the API.")
+
+        # TODO(kgriffs): There is a falcon bug that causes
+        # HTTPMethodNotAllowed to always ignore the kwargs, such
+        # as "description". Once that is fixed, we can use
+        # that class instead of the generic error.
+        raise falcon.HTTPError(falcon.HTTP_405, 'Method not allowed',
+                               headers={'Allow': 'GET'},
+                               description=description)
