@@ -277,10 +277,7 @@ class TestQueueMisc(base.FunctionalTestBase):
         result = self.client.get('/{0}/queues'
                                  .format(self.cfg.marconi.version))
         self.assertEqual(result.status_code, 200)
-
-        response_keys = result.json().keys()
-        for key in ['links', 'queues']:
-            self.assertIn(key, response_keys)
+        self.assertSchema(result.json(), 'queue_list')
 
     test_list_queues.tags = ['smoke', 'positive']
 
@@ -295,10 +292,10 @@ class TestQueueMisc(base.FunctionalTestBase):
                                  .format(self.cfg.marconi.version),
                                  params=params)
         self.assertEqual(result.status_code, 200)
+        self.assertSchema(result.json(), 'queue_list')
 
         response_keys = result.json()['queues'][0].keys()
-        for key in ['href', 'metadata', 'name']:
-            self.assertIn(key, response_keys)
+        self.assertIn('metadata', response_keys)
 
     test_list_queues_detailed.tags = ['smoke', 'positive']
 

@@ -21,6 +21,7 @@ import os
 import six
 
 from marconi.openstack.common import timeutils
+from marconi.queues.api.v1 import response
 from marconi.queues import bootstrap
 # TODO(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
@@ -61,6 +62,7 @@ class FunctionalTestBase(testing.TestBase):
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
+        self.response = response.ResponseSchema(self.limits)
 
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
@@ -115,15 +117,16 @@ class FunctionalTestBase(testing.TestBase):
               ', actual count = {1}'.format(expectedCount, actualCount)
         self.assertTrue(actualCount <= expectedCount, msg)
 
-    def assertSchema(self, response, expectedSchema):
+    def assertSchema(self, response, expectedSchemaName):
         """Compares the json response with the expected schema
 
         :param response: response json returned by the API.
         :type response: dict
         :param expectedSchema: expected schema definition for response.
-        :type expectedSchema: dict
+        :type expectedSchema: string
         """
         try:
+            expectedSchema = self.response.get_schema(expectedSchemaName)
             jsonschema.validate(response, expectedSchema)
         except jsonschema.ValidationError as message:
             assert False, message
