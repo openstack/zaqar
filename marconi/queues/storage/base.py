@@ -330,6 +330,17 @@ class Message(ControllerBase):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def pop(self, queue, limit, project=None):
+        """Base method for popping messages.
+
+        :param queue: Name of the queue to pop
+            message from.
+        :param limit: Number of messages to pop.
+        :param project: Project id
+        """
+        raise NotImplementedError
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Claim(ControllerBase):

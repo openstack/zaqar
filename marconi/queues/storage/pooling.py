@@ -254,12 +254,19 @@ class MessageController(RoutingController):
                                   message_id=message_id, claim=claim)
         return None
 
-    def bulk_delete(self, queue, message_ids, project=None):
+    def bulk_delete(self, queue, message_ids=None, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
             return control.bulk_delete(queue, project=project,
                                        message_ids=message_ids)
+        return None
+
+    def pop(self, queue, limit, project=None):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.pop(queue, project=project, limit=limit)
         return None
 
     def bulk_get(self, queue, message_ids, project=None):

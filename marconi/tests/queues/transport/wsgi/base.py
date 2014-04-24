@@ -133,7 +133,7 @@ class V1_1Base(TestBase):
     def _empty_message_list(self, body):
         self.assertEqual(jsonutils.loads(body[0])['messages'], [])
 
-    def simulate_request(self, path, **kwargs):
+    def simulate_request(self, path, project_id=None, **kwargs):
         """Simulate a request.
 
         Simulates a WSGI request to the API for testing.
@@ -143,6 +143,11 @@ class V1_1Base(TestBase):
 
         :returns: standard WSGI iterable response
         """
+        if project_id is not None:
+            headers = dict(kwargs['headers']) if 'headers' in kwargs else {}
+            headers['X-Project-ID'] = project_id
+            kwargs['headers'] = headers
+
         return self.app(ftest.create_environ(path=path, **kwargs),
                         self.srmock)
 

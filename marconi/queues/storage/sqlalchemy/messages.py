@@ -156,7 +156,6 @@ class MessageController(storage.Message):
 
         if project is None:
             project = ''
-
         with self.driver.trans() as trans:
             sel = sa.sql.select([tables.Messages.c.id,
                                  tables.Messages.c.body,
@@ -294,3 +293,49 @@ class MessageController(storage.Message):
                         tables.Messages.c.qid == qid]
 
             trans.execute(statement.where(sa.and_(*and_stmt)))
+
+    def pop(self, queue_name, limit, project=None):
+        if project is None:
+            project = ''
+
+        with self.driver.trans() as trans:
+            sel = sa.sql.select([tables.Messages.c.id,
+                                 tables.Messages.c.body,
+                                 tables.Messages.c.ttl,
+                                 tables.Messages.c.created])
+
+            j = sa.join(tables.Messages, tables.Queues,
+                        tables.Messages.c.qid == tables.Queues.c.id)
+
+            sel = sel.select_from(j)
+            and_clause = [tables.Queues.c.name == queue_name,
+                          tables.Queues.c.project == project]
+
+            and_clause.append(tables.Messages.c.cid == (None))
+
+            sel = sel.where(sa.and_(*and_clause))
+            sel = sel.limit(limit)
+
+            records = trans.execute(sel)
+            now = timeutils.utcnow_ts()
+            messages = []
+            message_ids = []
+            for id, body, ttl, created in records:
+                messages.append({
+                    'id': utils.msgid_encode(id),
+                    'ttl': ttl,
+                    'age': now - calendar.timegm(created.timetuple()),
+                    'body': utils.json_decode(body),
+                })
+                message_ids.append(id)
+
+            statement = tables.Messages.delete()
+
+            qid = utils.get_qid(self.driver, queue_name, project)
+
+            and_stmt = [tables.Messages.c.id.in_(message_ids),
+                        tables.Messages.c.qid == qid]
+
+            trans.execute(statement.where(sa.and_(*and_stmt)))
+
+            return messages

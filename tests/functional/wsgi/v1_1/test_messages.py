@@ -43,73 +43,12 @@ class TestMessages(base.V1_1FunctionalTestBase):
         self.client.headers = self.headers
 
         self.client.put(self.queue_url)  # Create the queue
-        self.message_url = self.queue_url+'/messages'
+        self.message_url = self.queue_url + '/messages'
         self.client.set_base_url(self.message_url)
 
     def tearDown(self):
         self.client.delete(self.queue_url)  # Remove the queue
         super(TestMessages, self).tearDown()
-
-    # TODO(abettadapur) Not sure if return format is right
-    def test_message_single_pop(self):
-        """Pop a message."""
-        # Setup
-        self.skipTest("Not supported")
-        doc = helpers.create_message_body(messagecount=1)
-        result = self.client.post(data=doc)
-        href = result.json()['links'][0]['href']
-        index = href.find('/')
-        id = href[index+1:]
-        self.assertEqual(result.status_code, 200)
-
-        # Pop a message, compare the HREFs. They should be the same
-        url = self.message_url+'?pop=1'
-        result = self.client.delete(url)
-        claimid = result.json()['messages'][0]['id']
-        self.assertEqual(claimid, id)
-        # Make sure there are no messages left in the queue
-        result = self.client.get(self.message_url)
-        self.assertEqual(result.status_code, 204)
-
-    # TODO(abettadapur) Not sure if return format is right
-    def test_message_bulk_pop(self):
-        """Pop multiple messages."""
-        # Setup
-        self.skipTest("Not supported")
-        doc = helpers.create_message_body(messagecount=10)
-        result = self.client.post(data=doc)
-        links = result.json()["links"]
-
-        # Gather inserted ids
-        ids = []
-        for item in links:
-            href = item['href']
-            index = href.find('/')
-            ids.append(href[index:])
-
-        # Pop the 10 messages
-        url = self.message_url+'?pop=10'
-        result = self.client.delete(url)
-        self.assertEqual(result.status_code, 200)
-        claims = result.json()
-
-        # compare the HREFS
-        match = True
-        for i in range(0, 10):
-            if ids[i] != claims['messages'][i]['id']:
-                match = False
-                break
-
-        self.assertEqual(match, True)
-        # Make sure there are no messages left in the queue
-        result = self.client.get(self.message_url)
-        self.assertEqual(result.status_code, 204)
-
-    def test_message_pop_too_high(self):
-        self.skipTest("Not supported")
-        url = self.message_url+'?pop=21'
-        result = self.client.delete(url)
-        self.assertEqual(result.status_code, 400)
 
     def _post_large_bulk_insert(self, offset):
         """Insert just under than max allowed messages."""
@@ -300,6 +239,117 @@ class TestMessages(base.V1_1FunctionalTestBase):
         self.assertEqual(result.status_code, 204)
 
     test_message_partial_delete.tags = ['negative']
+
+    @ddt.data(5, 1)
+    def test_messages_pop(self, limit=5):
+        """Pop messages from a queue."""
+        doc = helpers.create_message_body(messagecount=limit)
+        result = self.client.post(data=doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        # Pop messages
+        url = self.message_url + '?pop=' + str(limit)
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 200)
+
+        params = {'echo': True}
+
+        result = self.client.get(self.message_url, params=params)
+        self.assertEqual(result.status_code, 200)
+
+        messages = result.json()['messages']
+        self.assertEqual(messages, [])
+
+    test_messages_pop.tags = ['smoke', 'positive']
+
+    @ddt.data(10000000, 0, -1)
+    def test_messages_pop_invalid(self, limit):
+        """Pop messages from a queue."""
+        doc = helpers.create_message_body(
+            messagecount=self.limits.max_messages_per_page)
+        result = self.client.post(data=doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        # Pop messages
+        url = self.message_url + '?pop=' + str(limit)
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 400)
+
+        params = {'echo': True}
+        result = self.client.get(self.message_url, params=params)
+        self.assertEqual(result.status_code, 200)
+
+        messages = result.json()['messages']
+        self.assertNotEqual(messages, [])
+
+    test_messages_pop_invalid.tags = ['smoke', 'negative']
+
+    def test_messages_delete_pop_and_id(self):
+        """Delete messages with pop & id params in the request."""
+        doc = helpers.create_message_body(
+            messagecount=1)
+        result = self.client.post(data=doc)
+
+        self.assertEqual(result.status_code, 201)
+        location = result.headers['Location']
+
+        # Pop messages
+        url = self.cfg.marconi.url + location + '&pop=1'
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 400)
+
+        params = {'echo': True}
+
+        result = self.client.get(self.message_url, params=params)
+        self.assertEqual(result.status_code, 200)
+
+        messages = result.json()['messages']
+        self.assertNotEqual(messages, [])
+
+    test_messages_delete_pop_and_id.tags = ['smoke', 'negative']
+
+    def test_messages_pop_empty_queue(self):
+        """Pop messages from an empty queue."""
+        url = self.message_url + '?pop=2'
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 200)
+
+        messages = result.json()['messages']
+        self.assertEqual(messages, [])
+
+    test_messages_pop_empty_queue.tags = ['smoke', 'positive']
+
+    def test_messages_pop_one(self):
+        """Pop single messages from a queue."""
+        doc = helpers.create_message_body(
+            messagecount=self.limits.max_messages_per_page)
+        result = self.client.post(data=doc)
+
+        self.assertEqual(result.status_code, 201)
+
+        # Pop Single Message
+        url = self.message_url + '?pop=1'
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 200)
+
+        # Get messages from the queue & verify message count
+        params = {'echo': True, 'limit': self.limits.max_messages_per_page}
+
+        result = self.client.get(self.message_url, params=params)
+        self.assertEqual(result.status_code, 200)
+
+        expected_msg_count = self.limits.max_messages_per_page - 1
+        actual_msg_count = len(result.json()['messages'])
+        self.assertEqual(expected_msg_count, actual_msg_count)
+
+    test_messages_pop_one.tags = ['smoke', 'positive']
 
     def test_message_partial_get(self):
         """Get Messages will be partially successful."""

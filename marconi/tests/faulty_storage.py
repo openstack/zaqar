@@ -100,6 +100,9 @@ class MessageController(storage.Message):
     def post(self, queue, messages, project=None):
         raise NotImplementedError()
 
+    def pop(self, queue, pop_limit, project=None):
+        raise NotImplementedError()
+
     def delete(self, queue, message_id, project=None, claim=None):
         raise NotImplementedError()
 

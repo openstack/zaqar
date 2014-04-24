@@ -168,7 +168,7 @@ class ResponseSchema(api.Api):
                         "type": "array",
                         "items": message,
                         "minItems": 1,
-                        "maxItems": self.limits.max_messages_per_claim
+                        "maxItems": self.limits.max_messages_per_claim_or_pop
                     }
                 }
             },

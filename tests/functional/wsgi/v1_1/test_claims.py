@@ -55,7 +55,8 @@ class TestClaims(base.V1_1FunctionalTestBase):
     @ddt.data({}, {'limit': 2})
     def test_claim_messages(self, params):
         """Claim messages."""
-        message_count = params.get('limit', self.limits.max_messages_per_claim)
+        message_count = params.get('limit',
+                                   self.limits.max_messages_per_claim_or_pop)
 
         doc = {"ttl": 300, "grace": 100}
 
@@ -90,7 +91,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
         Marconi allows a maximum of 20 messages per claim by default.
         """
-        params = {"limit": self.limits.max_messages_per_claim + 1}
+        params = {"limit": self.limits.max_messages_per_claim_or_pop + 1}
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)

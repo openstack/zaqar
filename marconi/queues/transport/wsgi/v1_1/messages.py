@@ -230,27 +230,65 @@ class CollectionResource(object):
         # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name):
-        # NOTE(zyuan): Attempt to delete the whole message collection
-        # (without an "ids" parameter) is not allowed
-        ids = req.get_param_as_list('ids', required=True)
+        LOG.debug(u'Messages collection DELETE - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
 
+        ids = req.get_param_as_list('ids')
+        pop_limit = req.get_param_as_int('pop')
         try:
-            self._validate.message_listing(limit=len(ids))
-            self.message_controller.bulk_delete(
-                queue_name,
-                message_ids=ids,
-                project=project_id)
+            self._validate.message_deletion(ids, pop_limit)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+
+        if ids:
+            resp.status = self._delete_messages_by_id(queue_name, ids,
+                                                      project_id)
+
+        elif pop_limit:
+            resp.status, resp.body = self._pop_messages(queue_name,
+                                                        project_id,
+                                                        pop_limit)
+
+    def _delete_messages_by_id(self, queue_name, ids, project_id):
+        try:
+            self.message_controller.bulk_delete(
+                queue_name,
+                message_ids=ids,
+                project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Messages could not be deleted.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        resp.status = falcon.HTTP_204
+        return falcon.HTTP_204
+
+    def _pop_messages(self, queue_name, project_id, pop_limit):
+        try:
+            LOG.debug(u'POP messages - queue: %(queue)s, '
+                      u'project: %(project)s',
+                      {'queue': queue_name, 'project': project_id})
+
+            messages = self.message_controller.pop(
+                queue_name,
+                project=project_id,
+                limit=pop_limit)
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _(u'Messages could not be popped.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)
+
+        # Prepare response
+        if not messages:
+            messages = []
+        body = {'messages': messages}
+        body = utils.to_json(body)
+
+        return falcon.HTTP_200, body
 
 
 class ItemResource(object):
@@ -290,6 +328,7 @@ class ItemResource(object):
         # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
+
         LOG.debug(u'Messages item DELETE - message: %(message)s, '
                   u'queue: %(queue)s, project: %(project)s',
                   {'message': message_id,

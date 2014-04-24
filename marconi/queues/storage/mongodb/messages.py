@@ -22,6 +22,7 @@ Field Mappings:
 """
 
 import datetime
+import itertools
 import time
 
 from bson import objectid
@@ -406,7 +407,7 @@ class MessageController(storage.Message):
                 yield iter([])
 
         messages = self._list(queue_name, project=project, marker=marker,
-                              client_uuid=client_uuid,  echo=echo,
+                              client_uuid=client_uuid, echo=echo,
                               include_claimed=include_claimed, limit=limit)
 
         marker_id = {}
@@ -734,6 +735,33 @@ class MessageController(storage.Message):
 
         collection = self._collection(queue_name, project)
         collection.remove(query, w=0)
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def pop(self, queue_name, limit, project=None):
+        query = {
+            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
+        }
+
+        # Only include messages that are not part of
+        # any claim, or are part of an expired claim.
+        now = timeutils.utcnow_ts()
+        query['c.e'] = {'$lte': now}
+
+        collection = self._collection(queue_name, project)
+        fields = {'_id': 1, 't': 1, 'b': 1}
+
+        messages = (collection.find_and_modify(query,
+                                               fields=fields,
+                                               remove=True)
+                    for _ in range(limit))
+
+        messages = itertools.ifilter(None, messages)
+
+        final_messages = [_basic_message(message, now)
+                          for message in messages]
+
+        return final_messages
 
 
 def _basic_message(msg, now):

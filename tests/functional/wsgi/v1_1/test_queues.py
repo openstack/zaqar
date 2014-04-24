@@ -308,7 +308,7 @@ class TestQueueMisc(base.V1_1FunctionalTestBase):
 
         # Post Messages to the test queue
         doc = helpers.create_message_body(
-            messagecount=self.limits.max_messages_per_claim)
+            messagecount=self.limits.max_messages_per_claim_or_pop)
 
         message_url = self.queue_url + '/messages'
         result = self.client.post(message_url, data=doc)

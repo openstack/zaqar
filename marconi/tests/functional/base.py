@@ -121,7 +121,7 @@ class FunctionalTestBase(testing.TestBase):
         :param result_json: json response returned for Queue Stats.
         :param claimed: expected number of claimed messages.
         """
-        total = self.limits.max_messages_per_claim
+        total = self.limits.max_messages_per_claim_or_pop
         free = total - claimed
 
         self.assertEqual(result_json['messages']['claimed'], claimed)

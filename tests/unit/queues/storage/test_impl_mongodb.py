@@ -334,6 +334,38 @@ class MongodbMessageTests(base.MessageControllerTest):
 
         self.assertEqual(actual_ids, expected_ids)
 
+    def test_pop_messages(self):
+        queue_name = 'pop-queue-test'
+        self.queue_controller.create(queue_name, self.project)
+        messages = [
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'd378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'e378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+        ]
+        self.controller.post(queue_name, messages, uuid.uuid1(), self.project)
+        message_popped = self.controller.pop(queue_name,
+                                             limit=1,
+                                             project=self.project)
+        self.assertEqual(len(message_popped), 1)
+
     def test_empty_queue_exception(self):
         self.assertRaises(storage.errors.QueueIsEmpty,
                           self.controller.first,
