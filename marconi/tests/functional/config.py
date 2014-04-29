@@ -39,7 +39,6 @@ _MARCONI_OPTIONS = (
 
 
 _HEADERS_OPTIONS = (
-    cfg.StrOpt("host", default="example.com"),
     cfg.StrOpt("user_agent", default="FunctionalTests"),
     cfg.StrOpt("project_id", default="123456"),
 )
