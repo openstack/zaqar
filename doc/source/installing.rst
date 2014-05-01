@@ -17,23 +17,24 @@ Installing and Configuring
 System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
-Before you install OpenStack Queuing Service, you must meet the following system requirements.lst::
+Before you install the OpenStack Queuing Service, you must meet the following system requirements::
 
 - OpenStack Compute Installation.
 - Enable the Identity Service for user and project management.
 - Python 2.6 or 2.7
 
-Installing from packages
+Installing from Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before you install and configure queuing service, meet the requirements in the
-section called "System Requirements". Below samples are installing the packages on
-RedHat operating system.
+Before you install and configure queuing service, ensure you meet the
+requirements in the section above called "System Requirements". The following
+instructions assume installation on a RedHat based operating system (CentOS,
+Fedora, etc.).
 
-Install mongoDB on Database Servers
+Install MongoDB on Database Servers
 ###################################
 
-Install mongoDB on three servers and setup the replica-set.
+Install MongoDB on three servers and setup the replica-set.
 
 Configure Package Management System (YUM)
 #########################################
@@ -79,28 +80,29 @@ Edit ``/etc/sysconfig/mongod``::
     slowms = 200
     oplogSize = 2048
 
-Start mongoDB on all database servers::
+Start MongoDB on all database servers::
 
-    #service mongodb start
+    mydb# service mongodb start
 
 Configure Replica Set
 #####################
 
-Assuming that primary mongodb servers hostname is ``mydb0.example-queues.net``,
-once you install mongoDB on three servers go to ``mydb0`` and run the commands below;::
+Once you've installed MongoDB on three servers and assuming that the primary
+MongoDB server hostname is ``mydb0.example-queues.net``, go to ``mydb0``
+and run these commands::
 
     mydb0# mongo local --eval "printjson(rs.initiate())"
     mydb0# rs.add("mydb1.example-queues.net")
     mydb0# rs.add("mydb2.example-queues.net")
 
-To check if replica-set is established run this command;::
+To check if the replica-set is established run this command::
 
-    mydb0:~# mongo local --eval "printjson(rs.status())"
+    mydb0# mongo local --eval "printjson(rs.status())"
 
 Install memcached on Web Servers
 ################################
 
-Install memcached on web servers in order to cache identity tokens and catalog mappings.::
+Install memcached on web servers in order to cache identity tokens and catalog mappings::
 
     web# yum install memcached
 
@@ -108,7 +110,7 @@ Start memcached service::
 
     web# service memcached start
 
-Install uwsgi on Web Servers::
+Install uwsgi on web servers::
 
     web# yum -y install python-pip
     web# pip install uwsgi
@@ -116,12 +118,12 @@ Install uwsgi on Web Servers::
 Configure OpenStack Marconi
 ###########################
 
-On web servers run these commands::
+On the web servers run these commands::
 
     web# git clone https://github.com/openstack/marconi.git .
     web# pip install . -r ./requirements.txt --upgrade --log /tmp/marconi-pip.log
 
-Create ``/srv/marconi`` folder to store related configurations files.
+Create ``/srv/marconi`` folder to store related configuration files.
 
 Create ``/srv/marconi/marconi_uwsgi.py`` with the following content::
 
@@ -145,7 +147,7 @@ Create ``/srv/marconi/uwsgi.ini`` file with the following content::
 
 The uwsgi configuration options above can be modified for different performance requirements.
 
-Create marconi configuration file ``/etc/marconi.conf``::
+Create a Marconi configuration file ``/etc/marconi.conf`` with the following content::
 
     [DEFAULT]
     # Show more verbose log output (sets INFO log level output)
@@ -232,7 +234,7 @@ Create marconi configuration file ``/etc/marconi.conf``::
     default_queue_paging = 10
     default_message_paging = 10
 
-Start queuing service::
+Start the queuing service::
 
     #/usr/bin/uwsgi --ini /srv/marconi/uwsgi.ini
 
@@ -245,8 +247,9 @@ web servers run this command::
 
     curl -i -X PUT -H 'X-Auth-Token: $TOKEN' -d '{"weight": 100, "uri": "mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=catalog&w=2&readPreference=secondaryPreferred", "options": {"partitions": 8}}' http://localhost:8888/v1/shards/shard1
 
-Above ``$TOKEN`` is the authentication token retrieved from identity service.
-If you choose not to enable keystone authentication you won't have to pass a token.
+The above ``$TOKEN`` variable is the authentication token retrieved from
+identity service. If you choose not to enable Keystone authentication you won't
+have to pass a token.
 
 Reminder: In larger deployments, catalog database and queues databases (shards)
-are going to be on different mongoDB replica-sets.
+are going to be on different MongoDB replica-sets.
