@@ -14,6 +14,7 @@
 
 from falcon import testing as ftest
 
+from marconi.openstack.common import jsonutils
 from marconi.queues import bootstrap
 from marconi.queues.transport.wsgi import driver
 from marconi import tests as testing
@@ -123,9 +124,12 @@ class V1BaseFaulty(TestBaseFaulty):
 
 
 class V1_1Base(TestBase):
-    """Base class for V1 API Tests.
+    """Base class for V1.1 API Tests.
     Should contain methods specific to V1.1 of the API
     """
+
+    def _empty_message_list(self, body):
+        self.assertEqual(jsonutils.loads(body[0])['messages'], [])
 
     def simulate_request(self, path, **kwargs):
         """Simulate a request.

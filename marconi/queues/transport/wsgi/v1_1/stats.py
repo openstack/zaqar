@@ -54,6 +54,17 @@ class Resource(object):
             resp.body = utils.to_json(resp_dict)
             # status defaults to 200
 
+        except storage_errors.QueueDoesNotExist as ex:
+            resp_dict = {
+                'messages': {
+                    'claimed': 0,
+                    'free': 0,
+                    'total': 0
+                }
+            }
+            resp.content_location = req.path
+            resp.body = utils.to_json(resp_dict)
+
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
             raise falcon.HTTPNotFound()

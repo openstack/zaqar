@@ -31,6 +31,7 @@ from marconi.tests.queues.transport.wsgi import base
 
 @ddt.ddt
 class MessagesBaseTest(base.V1_1Base):
+
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
@@ -194,7 +195,7 @@ class MessagesBaseTest(base.V1_1Base):
 
         game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
         self._post_messages(queues_path + game_title + '/messages')
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         game_title += 'v'
         self._post_messages(queues_path + game_title + '/messages')
@@ -202,12 +203,14 @@ class MessagesBaseTest(base.V1_1Base):
 
     def test_post_to_missing_queue(self):
         self._post_messages(self.url_prefix + '/queues/nonexistent/messages')
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def test_get_from_missing_queue(self):
-        self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
-                          headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        body = self.simulate_get(self.url_prefix +
+                                 '/queues/nonexistent/messages',
+                                 headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
@@ -235,7 +238,7 @@ class MessagesBaseTest(base.V1_1Base):
     def test_unacceptable_ttl(self, ttl):
         self.simulate_post(self.queue_path + '/messages',
                            body=jsonutils.dumps([{'ttl': ttl,
-                                             'body': None}]),
+                                                  'body': None}]),
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -294,7 +297,7 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         self.simulate_get(target, query_string=params, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, query_string=params, headers=self.headers)
@@ -321,7 +324,7 @@ class MessagesBaseTest(base.V1_1Base):
                          path + '?' + query_string)
 
         cnt = 0
-        while self.srmock.status == falcon.HTTP_200:
+        while jsonutils.loads(body[0])['messages'] != []:
             contents = jsonutils.loads(body[0])
             [target, params] = contents['links'][0]['href'].split('?')
 
@@ -335,7 +338,8 @@ class MessagesBaseTest(base.V1_1Base):
             cnt += 1
 
         self.assertEqual(cnt, 4)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
         # Stats
         body = self.simulate_get(self.queue_path + '/stats',
@@ -354,20 +358,23 @@ class MessagesBaseTest(base.V1_1Base):
                             matchers.MatchesRegex(expected_pattern))
 
         # NOTE(kgriffs): Try to get messages for a missing queue
-        self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
-                          headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        body = self.simulate_get(self.url_prefix +
+                                 '/queues/nonexistent/messages',
+                                 headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
     def test_list_with_bad_marker(self):
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=5)
 
         query_string = 'limit=3&echo=true&marker=sfhlsfdjh2048'
-        self.simulate_get(path,
-                          query_string=query_string,
-                          headers=self.headers)
+        body = self.simulate_get(path,
+                                 query_string=query_string,
+                                 headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
     def test_no_uuid(self):
         headers = {
@@ -412,11 +419,11 @@ class MessagesBaseTest(base.V1_1Base):
         self.simulate_get(path, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-    def test_get_multiple_invalid_messages_204s(self):
+    def test_get_multiple_invalid_messages_404s(self):
         path = self.url_prefix + '/queues/notthere/messages'
         self.simulate_get(path, query_string='ids=a,b,c',
                           headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_delete_multiple_invalid_messages_204s(self):
         path = self.url_prefix + '/queues/notthere/messages'

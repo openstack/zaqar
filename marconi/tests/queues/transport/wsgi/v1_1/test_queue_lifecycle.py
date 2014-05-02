@@ -67,9 +67,9 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         gumshoe_queue_path_metadata = self.gumshoe_queue_path + '/metadata'
         gumshoe_queue_path_stats = self.gumshoe_queue_path + '/stats'
 
-        # Stats not found - queue not created yet
+        # Stats are empty - queue not created yet
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         # Metadata not found - queue not created yet
         self.simulate_get(gumshoe_queue_path_metadata, headers=headers)
@@ -114,7 +114,7 @@ class QueueLifecycleBaseTest(base.V1_1Base):
 
         # Get non-existent stats
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         # Get non-existent metadata
         self.simulate_get(gumshoe_queue_path_metadata, headers=headers)

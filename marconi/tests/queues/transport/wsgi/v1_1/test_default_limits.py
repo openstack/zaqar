@@ -78,7 +78,8 @@ class TestDefaultLimits(base.V1_1Base):
                                    headers=self.headers,
                                    query_string='echo=false')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(result)
 
         self._prepare_messages(storage.DEFAULT_MESSAGES_PER_PAGE + 1)
         result = self.simulate_get(self.messages_path,

@@ -50,7 +50,8 @@ def public_endpoints(driver):
         ('/queues/{queue_name}/messages',
          messages.CollectionResource(driver._wsgi_conf,
                                      driver._validate,
-                                     message_controller)),
+                                     message_controller,
+                                     queue_controller)),
         ('/queues/{queue_name}/messages/{message_id}',
          messages.ItemResource(message_controller)),
 

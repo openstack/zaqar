@@ -31,12 +31,15 @@ MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
 
 class CollectionResource(object):
 
-    __slots__ = ('message_controller', '_wsgi_conf', '_validate')
+    __slots__ = ('message_controller', '_wsgi_conf', '_validate',
+                 'queue_controller')
 
-    def __init__(self, wsgi_conf, validate, message_controller):
+    def __init__(self, wsgi_conf, validate, message_controller,
+                 queue_controller):
         self._wsgi_conf = wsgi_conf
         self._validate = validate
         self.message_controller = message_controller
+        self.queue_controller = queue_controller
 
     #-----------------------------------------------------------------------
     # Helpers
@@ -109,13 +112,14 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         if not messages:
-            return None
+            messages = []
 
-        # Found some messages, so prepare the response
-        kwargs['marker'] = next(results)
-        for each_message in messages:
-            each_message['href'] = req.path + '/' + each_message['id']
-            del each_message['id']
+        else:
+            # Found some messages, so prepare the response
+            kwargs['marker'] = next(results)
+            for each_message in messages:
+                each_message['href'] = req.path + '/' + each_message['id']
+                del each_message['id']
 
         return {
             'messages': messages,
@@ -157,6 +161,9 @@ class CollectionResource(object):
 
         try:
             self._validate.message_posting(messages)
+
+            if not self.queue_controller.exists(queue_name, project_id):
+                self.queue_controller.create(queue_name, project_id)
 
             message_ids = self.message_controller.post(
                 queue_name,
@@ -205,16 +212,21 @@ class CollectionResource(object):
         resp.content_location = req.relative_uri
 
         ids = req.get_param_as_list('ids')
+
         if ids is None:
             response = self._get(req, project_id, queue_name)
+
         else:
             response = self._get_by_id(req.path, project_id, queue_name, ids)
 
         if response is None:
-            resp.status = falcon.HTTP_204
-            return
+            # NOTE(TheSriram): Trying to get a message by id, should
+            # return the message if its present, otherwise a 404 since
+            # the message might have been deleted.
+            resp.status = falcon.HTTP_404
 
-        resp.body = utils.to_json(response)
+        else:
+            resp.body = utils.to_json(response)
         # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name):
