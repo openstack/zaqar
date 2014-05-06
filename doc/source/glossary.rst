@@ -73,5 +73,5 @@ protocol, which is one of the main requirements in today’s scalable applicatio
 
    Catalog Database
      If sharding is enabled, catalog database has to be created. Catalog database
-     maintains ```queues``` to ```queues database``` mapping. Storage layer has
+     maintains ``queues`` to ``queues database`` mapping. Storage layer has
      to guarantee durability and availability of data.

@@ -21,8 +21,8 @@ is the storage layer which keeps all the data and meta-data about queues and mes
 For a HA setup, a load balancer has to be placed in front of the web servers.
 Load balancer setup is out of scope in this document.
 
-For storage we will use ```mongoDB``` in order to provide high availability with
-minimum administration overhead. For transport, we will use ```wsgi```.
+For storage we will use ``mongoDB`` in order to provide high availability with
+minimum administration overhead. For transport, we will use ``wsgi``.
 
 To have a small footprint while providing HA, we will use 2 web servers which
 will host the application and 3 mongoDB servers (configured as replica-sets)

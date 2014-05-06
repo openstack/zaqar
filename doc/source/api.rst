@@ -61,4 +61,4 @@ Create the queue::
     content-length: 0
     location: /v1/queues/test-queue
 
-```HTTP/1.1 201 Created``` response proves that service is functioning properly.
+``HTTP/1.1 201 Created`` response proves that service is functioning properly.

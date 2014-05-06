@@ -38,7 +38,7 @@ Install mongoDB on three servers and setup the replica-set.
 Configure Package Management System (YUM)
 #########################################
 
-Create a ```/etc/yum.repos.d/mongodb.repo``` file to hold the following
+Create a ``/etc/yum.repos.d/mongodb.repo`` file to hold the following
 configuration information for the MongoDB repository:
 
 If you are running a 64-bit system, use the following configuration::
@@ -66,7 +66,7 @@ version of MongoDB and the associated tools::
 
     #yum install mongo-10gen mongo-10gen-server
 
-Edit ```/etc/sysconfig/mongod```::
+Edit ``/etc/sysconfig/mongod``::
 
     logpath=/var/log/mongo/mongod.log
     logappend=true
@@ -86,8 +86,8 @@ Start mongoDB on all database servers::
 Configure Replica Set
 #####################
 
-Assuming that primary mongodb servers hostname is ```mydb0.example-queues.net```,
-once you install mongoDB on three servers go to ```mydb0``` and run the commands below;::
+Assuming that primary mongodb servers hostname is ``mydb0.example-queues.net``,
+once you install mongoDB on three servers go to ``mydb0`` and run the commands below;::
 
     mydb0# mongo local --eval "printjson(rs.initiate())"
     mydb0# rs.add("mydb1.example-queues.net")
@@ -121,16 +121,16 @@ On web servers run these commands::
     web# git clone https://github.com/openstack/marconi.git .
     web# pip install . -r ./requirements.txt --upgrade --log /tmp/marconi-pip.log
 
-Create ```/srv/marconi``` folder to store related configurations files.
+Create ``/srv/marconi`` folder to store related configurations files.
 
-Create ```/srv/marconi/marconi_uwsgi.py``` with the following content::
+Create ``/srv/marconi/marconi_uwsgi.py`` with the following content::
 
     from keystoneclient.middleware import auth_token
     from marconi.transport.wsgi import app
 
     app = auth_token.AuthProtocol(app.app, {})
 
-Create ```/srv/marconi/uwsgi.ini``` file with the following content::
+Create ``/srv/marconi/uwsgi.ini`` file with the following content::
 
     [uwsgi]
     http = 192.168.192.168:80
@@ -145,7 +145,7 @@ Create ```/srv/marconi/uwsgi.ini``` file with the following content::
 
 The uwsgi configuration options above can be modified for different performance requirements.
 
-Create marconi configuration file ```/etc/marconi.conf```::
+Create marconi configuration file ``/etc/marconi.conf``::
 
     [DEFAULT]
     # Show more verbose log output (sets INFO log level output)
@@ -245,7 +245,7 @@ web servers run this command::
 
     curl -i -X PUT -H 'X-Auth-Token: $TOKEN' -d '{"weight": 100, "uri": "mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=catalog&w=2&readPreference=secondaryPreferred", "options": {"partitions": 8}}' http://localhost:8888/v1/shards/shard1
 
-Above ```$TOKEN``` is the authentication token retrieved from identity service.
+Above ``$TOKEN`` is the authentication token retrieved from identity service.
 If you choose not to enable keystone authentication you won't have to pass a token.
 
 Reminder: In larger deployments, catalog database and queues databases (shards)
