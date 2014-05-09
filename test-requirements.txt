@@ -19,5 +19,5 @@ requests>=1.1
 # Documentation
 sphinx>=1.1.2,<1.2
 oslosphinx
-openstack-doc-tools>=0.11
+openstack-doc-tools>=0.13
 
