@@ -369,6 +369,7 @@ class TestQueueMisc(base.FunctionalTestBase):
         expected_response = {'messages':
                              {'claimed': 0, 'total': 0, 'free': 0}}
         self.assertEqual(result.json(), expected_response)
+        self.assertSchema(result.json(), 'queue_stats')
 
     test_get_stats_empty_queue.tags = ['positive']
 
@@ -399,6 +400,7 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.assertEqual(result.status_code, 200)
 
         self.assertQueueStats(result.json(), claimed)
+        self.assertSchema(result.json(), 'queue_stats')
 
     test_get_queue_stats_claimed.tags = ['positive']
 

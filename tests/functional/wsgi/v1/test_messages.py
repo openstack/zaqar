@@ -137,7 +137,7 @@ class TestMessages(base.FunctionalTestBase):
 
     test_message_bulk_insert.tags = ['smoke', 'positive']
 
-    @ddt.data({}, {'limit': 5})
+    @ddt.data({'limit': 10}, {'limit': 5})
     def test_get_message(self, params):
         """Get Messages."""
 
@@ -161,6 +161,7 @@ class TestMessages(base.FunctionalTestBase):
             if result.status_code == 200:
                 actual_msg_count = len(result.json()['messages'])
                 self.assertMessageCount(actual_msg_count, expected_msg_count)
+                self.assertSchema(result.json(), 'message_list')
 
                 href = result.json()['links'][0]['href']
                 url = self.cfg.marconi.url + href
@@ -244,6 +245,7 @@ class TestMessages(base.FunctionalTestBase):
         url += ',nonexisting'
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
+        self.assertSchema(result.json(), "message_get_many")
 
     test_message_partial_get.tags = ['negative']
 
