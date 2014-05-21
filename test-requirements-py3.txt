@@ -1,0 +1,23 @@
+# Metrics and style
+hacking>=0.8.0,<0.9
+
+# Packaging
+mock>=1.0
+
+# Unit testing
+ddt>=0.4.0
+discover
+fixtures>=0.3.14
+httpretty>=0.8.0
+python-subunit>=0.0.18
+testrepository>=0.0.18
+testtools>=0.9.34
+
+# Functional Tests
+requests>=1.1
+
+# Documentation
+sphinx>=1.1.2,<1.2
+oslosphinx
+openstack-doc-tools>=0.11
+
