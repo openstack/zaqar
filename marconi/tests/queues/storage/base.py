@@ -84,7 +84,7 @@ class QueueControllerTest(ControllerBaseTest):
     @ddt.data(None, ControllerBaseTest.project)
     def test_list(self, project):
         # NOTE(kgriffs): Ensure we mix global and scoped queues
-        # in order to verify that queue records are exluded that
+        # in order to verify that queue records are excluded that
         # are not at the same level.
         project_alt = self.project if project is None else None
 

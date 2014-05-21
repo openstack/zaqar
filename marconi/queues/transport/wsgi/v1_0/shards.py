@@ -163,7 +163,7 @@ class Resource(object):
         """Allows one to update a shard's weight, uri, and/or options.
 
         This method expects the user to submit a JSON object
-        containing atleast one of: 'uri', 'weight', 'options'. If
+        containing at least one of: 'uri', 'weight', 'options'. If
         none are found, the request is flagged as bad. There is also
         strict format checking through the use of
         jsonschema. Appropriate errors are returned in each case for
