@@ -27,15 +27,6 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     config_file = None
 
-    # NOTE(flaper87): This is temporary. Ideally, each version
-    # of the API should have its own lifecycle tests. The v1.1
-    # of our API removes the support for the API. Although most of
-    # the test methods were overwritten in the test definition, there
-    # are some that need to be disabled in-lieu for other tests to be
-    # excuted. Also, ddt plays dirty and makes it impossible to override
-    # a test case.
-    metadata_support = True
-
     def setUp(self):
         super(QueueLifecycleBaseTest, self).setUp()
 
@@ -82,18 +73,17 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
         # Add metadata
-        if self.metadata_support:
-            doc = '{"messages": {"ttl": 600}}'
-            self.simulate_put(gumshoe_queue_path_metadata,
-                              project_id, body=doc)
-            self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        doc = '{"messages": {"ttl": 600}}'
+        self.simulate_put(gumshoe_queue_path_metadata,
+                          project_id, body=doc)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-            # Fetch metadata
-            result = self.simulate_get(gumshoe_queue_path_metadata,
-                                       project_id)
-            result_doc = json.loads(result[0])
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
-            self.assertEqual(result_doc, json.loads(doc))
+        # Fetch metadata
+        result = self.simulate_get(gumshoe_queue_path_metadata,
+                                   project_id)
+        result_doc = json.loads(result[0])
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(result_doc, json.loads(doc))
 
         # Stats empty queue
         self.simulate_get(gumshoe_queue_path_stats, project_id)
@@ -112,9 +102,8 @@ class QueueLifecycleBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Get non-existent metadata
-        if self.metadata_support:
-            self.simulate_get(gumshoe_queue_path_metadata, project_id)
-            self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.simulate_get(gumshoe_queue_path_metadata, project_id)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_name_restrictions(self):
         self.simulate_put(self.queue_path + '/Nice-Boat_2')
@@ -169,9 +158,6 @@ class QueueLifecycleBaseTest(base.TestBase):
 
     @ddt.data('{', '[]', '.', '  ', '')
     def test_bad_metadata(self, document):
-        if not self.metadata_support:
-            return
-
         self.simulate_put(self.fizbat_queue_path, '7e55e1a7e')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
@@ -275,8 +261,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         def create_queue(name, project_id, body):
             uri = self.queue_path + '/' + name
             self.simulate_put(uri, project_id)
-            if self.metadata_support:
-                self.simulate_put(uri + '/metadata', project_id, body=body)
+            self.simulate_put(uri + '/metadata', project_id, body=body)
 
         create_queue('g1', None, '{"answer": 42}')
         create_queue('g2', None, '{"answer": 42}')
@@ -295,9 +280,8 @@ class QueueLifecycleBaseTest(base.TestBase):
         queues = result_doc['queues']
         self.assertEqual(len(queues), 2)
 
-        if self.metadata_support:
-            for queue in queues:
-                self.assertEqual(queue['metadata'], {'answer': 42})
+        for queue in queues:
+            self.assertEqual(queue['metadata'], {'answer': 42})
 
         # List (limit)
         result = self.simulate_get(self.queue_path, project_id,
@@ -338,12 +322,11 @@ class QueueLifecycleBaseTest(base.TestBase):
         result_doc = json.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
-        if self.metadata_support:
-            queue = result_doc['queues'][0]
-            result = self.simulate_get(queue['href'] + '/metadata', project_id)
-            result_doc = json.loads(result[0])
-            self.assertEqual(result_doc, queue['metadata'])
-            self.assertEqual(result_doc, {'node': 31})
+        queue = result_doc['queues'][0]
+        result = self.simulate_get(queue['href'] + '/metadata', project_id)
+        result_doc = json.loads(result[0])
+        self.assertEqual(result_doc, queue['metadata'])
+        self.assertEqual(result_doc, {'node': 31})
 
         # List tail
         self.simulate_get(target, project_id, query_string=params)
