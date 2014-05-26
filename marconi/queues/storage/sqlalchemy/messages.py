@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import calendar
-import json
 
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
@@ -76,7 +75,7 @@ class MessageController(storage.Message):
             'id': message_id,
             'ttl': ttl,
             'age': now - calendar.timegm(created.timetuple()),
-            'body': json.loads(body),
+            'body': utils.json_decode(body),
         }
 
     def bulk_get(self, queue, message_ids, project):
@@ -110,7 +109,7 @@ class MessageController(storage.Message):
                 'id': utils.msgid_encode(int(id)),
                 'ttl': ttl,
                 'age': now - calendar.timegm(created.timetuple()),
-                'body': json.loads(body),
+                'body': utils.json_decode(body),
             }
 
     def first(self, queue, project=None, sort=1):
@@ -203,7 +202,7 @@ class MessageController(storage.Message):
                         'id': utils.msgid_encode(id),
                         'ttl': ttl,
                         'age': now - calendar.timegm(created.timetuple()),
-                        'body': json.loads(body),
+                        'body': utils.json_decode(body),
                     }
 
             yield it()
@@ -229,7 +228,7 @@ class MessageController(storage.Message):
                 for m in messages:
                     yield dict(qid=qid,
                                ttl=m['ttl'],
-                               body=json.dumps(m['body']),
+                               body=utils.json_encode(m['body']),
                                client=str(client_uuid))
 
             result = trans.execute(tables.Messages.insert(), list(it()))

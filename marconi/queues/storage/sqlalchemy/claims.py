@@ -46,7 +46,7 @@ class ClaimController(storage.Claim):
                 'id': utils.msgid_encode(int(id)),
                 'ttl': ttl,
                 'age': (timeutils.utcnow() - created).seconds,
-                'body': body,
+                'body': utils.json_decode(body),
             }
 
     def get(self, queue, claim_id, project=None):
