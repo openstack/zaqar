@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-"""shards: an implementation of the shard management storage
+"""pools: an implementation of the pool management storage
 controller for sqlalchemy.
 
 Schema:
@@ -33,10 +33,10 @@ from marconi.queues.storage.sqlalchemy import tables
 from marconi.queues.storage.sqlalchemy import utils
 
 
-class ShardsController(base.ShardsBase):
+class PoolsController(base.PoolsBase):
 
     def __init__(self, *args, **kwargs):
-        super(ShardsController, self).__init__(*args, **kwargs)
+        super(PoolsController, self).__init__(*args, **kwargs)
 
         self._conn = self.driver.connection
 
@@ -47,8 +47,8 @@ class ShardsController(base.ShardsBase):
         # TODO(cpp-cabrera): optimization - limit the columns returned
         # when detailed=False by specifying them in the select()
         # clause
-        stmt = sa.sql.select([tables.Shards]).where(
-            tables.Shards.c.name > marker
+        stmt = sa.sql.select([tables.Pools]).where(
+            tables.Pools.c.name > marker
         ).limit(limit)
         cursor = self._conn.execute(stmt)
 
@@ -57,15 +57,15 @@ class ShardsController(base.ShardsBase):
 
     @utils.raises_conn_error
     def get(self, name, detailed=False):
-        stmt = sa.sql.select([tables.Shards]).where(
-            tables.Shards.c.name == name
+        stmt = sa.sql.select([tables.Pools]).where(
+            tables.Pools.c.name == name
         )
 
-        shard = self._conn.execute(stmt).fetchone()
-        if shard is None:
-            raise errors.ShardDoesNotExist(name)
+        pool = self._conn.execute(stmt).fetchone()
+        if pool is None:
+            raise errors.PoolDoesNotExist(name)
 
-        return _normalize(shard, detailed)
+        return _normalize(pool, detailed)
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
@@ -73,7 +73,7 @@ class ShardsController(base.ShardsBase):
         opts = None if options is None else utils.json_encode(options)
 
         try:
-            stmt = sa.sql.expression.insert(tables.Shards).values(
+            stmt = sa.sql.expression.insert(tables.Pools).values(
                 name=name, weight=weight, uri=uri, options=opts
             )
             self._conn.execute(stmt)
@@ -86,8 +86,8 @@ class ShardsController(base.ShardsBase):
 
     @utils.raises_conn_error
     def exists(self, name):
-        stmt = sa.sql.select([tables.Shards.c.name]).where(
-            tables.Shards.c.name == name
+        stmt = sa.sql.select([tables.Pools.c.name]).where(
+            tables.Pools.c.name == name
         ).limit(1)
         return self._conn.execute(stmt).fetchone() is not None
 
@@ -105,34 +105,34 @@ class ShardsController(base.ShardsBase):
         if 'options' in fields:
             fields['options'] = utils.json_encode(fields['options'])
 
-        stmt = sa.sql.update(tables.Shards).where(
-            tables.Shards.c.name == name).values(**fields)
+        stmt = sa.sql.update(tables.Pools).where(
+            tables.Pools.c.name == name).values(**fields)
 
         res = self._conn.execute(stmt)
         if res.rowcount == 0:
-            raise errors.ShardDoesNotExist(name)
+            raise errors.PoolDoesNotExist(name)
 
     @utils.raises_conn_error
     def delete(self, name):
-        stmt = sa.sql.expression.delete(tables.Shards).where(
-            tables.Shards.c.name == name
+        stmt = sa.sql.expression.delete(tables.Pools).where(
+            tables.Pools.c.name == name
         )
         self._conn.execute(stmt)
 
     @utils.raises_conn_error
     def drop_all(self):
-        stmt = sa.sql.expression.delete(tables.Shards)
+        stmt = sa.sql.expression.delete(tables.Pools)
         self._conn.execute(stmt)
 
 
-def _normalize(shard, detailed=False):
+def _normalize(pool, detailed=False):
     ret = {
-        'name': shard[0],
-        'uri': shard[1],
-        'weight': shard[2],
+        'name': pool[0],
+        'uri': pool[1],
+        'weight': pool[2],
     }
     if detailed:
-        opts = shard[3]
+        opts = pool[3]
         ret['options'] = utils.json_decode(opts) if opts else None
 
     return ret

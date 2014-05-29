@@ -45,8 +45,8 @@ class DataDriver(storage.DataDriverBase):
         opts = options.MONGODB_OPTIONS
 
         # NOTE(cpp-cabrera): if this data driver is being loaded
-        # dynamically, as would be the case for a sharded context,
-        # filter out the options that were given by the shard
+        # dynamically, as would be the case for a pooled context,
+        # filter out the options that were given by the pool
         # catalogue to avoid DuplicateOptErrors.
         if 'dynamic' in conf:
             names = conf[options.MONGODB_GROUP].keys()
@@ -131,8 +131,8 @@ class ControlDriver(storage.ControlDriverBase):
         return self.connection[name]
 
     @property
-    def shards_controller(self):
-        return controllers.ShardsController(self)
+    def pools_controller(self):
+        return controllers.PoolsController(self)
 
     @property
     def catalogue_controller(self):

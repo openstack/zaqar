@@ -57,16 +57,16 @@ Queues = sa.Table('Queues', metadata,
                   )
 
 
-Shards = sa.Table('Shards', metadata,
-                  sa.Column('name', sa.String(64), primary_key=True),
-                  sa.Column('uri', sa.String(255), nullable=False),
-                  sa.Column('weight', sa.INTEGER, nullable=False),
-                  sa.Column('options', sa.BINARY))
+Pools = sa.Table('Pools', metadata,
+                 sa.Column('name', sa.String(64), primary_key=True),
+                 sa.Column('uri', sa.String(255), nullable=False),
+                 sa.Column('weight', sa.INTEGER, nullable=False),
+                 sa.Column('options', sa.BINARY))
 
 
 Catalogue = sa.Table('Catalogue', metadata,
-                     sa.Column('shard', sa.String(64),
-                               sa.ForeignKey('Shards.name',
+                     sa.Column('pool', sa.String(64),
+                               sa.ForeignKey('Pools.name',
                                              ondelete='CASCADE'),
                                primary_key=True),
                      sa.Column('project', sa.String(64), nullable=False),

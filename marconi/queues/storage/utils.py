@@ -26,9 +26,9 @@ LOG = log.getLogger(__name__)
 def dynamic_conf(uri, options):
     """Given metadata, yields a dynamic configuration.
 
-    :param uri: shard location
+    :param uri: pool location
     :type uri: six.text_type
-    :param options: additional shard metadata
+    :param options: additional pool metadata
     :type options: dict
     :returns: Configuration object suitable for constructing storage
               drivers

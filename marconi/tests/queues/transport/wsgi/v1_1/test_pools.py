@@ -18,20 +18,19 @@ import uuid
 import ddt
 import falcon
 
-
 from marconi.openstack.common import jsonutils
 from marconi import tests as testing
 from marconi.tests.queues.transport.wsgi import base
 
 
 @contextlib.contextmanager
-def shard(test, name, weight, uri, options={}):
-    """A context manager for constructing a shard for use in testing.
+def pool(test, name, weight, uri, options={}):
+    """A context manager for constructing a pool for use in testing.
 
-    Deletes the shard after exiting the context.
+    Deletes the pool after exiting the context.
 
     :param test: Must expose simulate_* methods
-    :param name: Name for this shard
+    :param name: Name for this pool
     :type name: six.text_type
     :type weight: int
     :type uri: six.text_type
@@ -40,7 +39,7 @@ def shard(test, name, weight, uri, options={}):
     :rtype: see above
     """
     doc = {'weight': weight, 'uri': uri, 'options': options}
-    path = test.url_prefix + '/shards/' + name
+    path = test.url_prefix + '/pools/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
 
@@ -52,18 +51,18 @@ def shard(test, name, weight, uri, options={}):
 
 
 @contextlib.contextmanager
-def shards(test, count, uri):
-    """A context manager for constructing shards for use in testing.
+def pools(test, count, uri):
+    """A context manager for constructing pools for use in testing.
 
-    Deletes the shards after exiting the context.
+    Deletes the pools after exiting the context.
 
     :param test: Must expose simulate_* methods
-    :param count: Number of shards to create
+    :param count: Number of pools to create
     :type count: int
     :returns: (paths, weights, uris, options)
     :rtype: ([six.text_type], [int], [six.text_type], [dict])
     """
-    base = test.url_prefix + '/shards/'
+    base = test.url_prefix + '/pools/'
     args = [(base + str(i), i,
              {str(i): i})
             for i in range(count)]
@@ -79,28 +78,28 @@ def shards(test, count, uri):
 
 
 @ddt.ddt
-class ShardsBaseTest(base.V1Base):
+class PoolsBaseTest(base.V1_1Base):
 
     def setUp(self):
-        super(ShardsBaseTest, self).setUp()
+        super(PoolsBaseTest, self).setUp()
         self.doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
-        self.shard = self.url_prefix + '/shards/' + str(uuid.uuid1())
-        self.simulate_put(self.shard, body=jsonutils.dumps(self.doc))
+        self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
-        super(ShardsBaseTest, self).tearDown()
-        self.simulate_delete(self.shard)
+        super(PoolsBaseTest, self).tearDown()
+        self.simulate_delete(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-    def test_put_shard_works(self):
+    def test_put_pool_works(self):
         name = str(uuid.uuid1())
         weight, uri = self.doc['weight'], self.doc['uri']
-        with shard(self, name, weight, uri):
+        with pool(self, name, weight, uri):
             self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def test_put_raises_if_missing_fields(self):
-        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(path, body=jsonutils.dumps({'weight': 100}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
@@ -111,7 +110,7 @@ class ShardsBaseTest(base.V1Base):
 
     @ddt.data(-1, 2**32+1, 'big')
     def test_put_raises_if_invalid_weight(self, weight):
-        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         doc = {'weight': weight, 'uri': 'a'}
         self.simulate_put(path,
                           body=jsonutils.dumps(doc))
@@ -119,84 +118,84 @@ class ShardsBaseTest(base.V1Base):
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
-        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(path,
                           body=jsonutils.dumps({'weight': 1, 'uri': uri}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_options(self, options):
-        path = self.url_prefix + '/shards/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         doc = {'weight': 1, 'uri': 'a', 'options': options}
         self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_put_existing_overwrites(self):
-        # NOTE(cabrera): setUp creates default shard
+        # NOTE(cabrera): setUp creates default pool
         expect = self.doc
-        self.simulate_put(self.shard,
+        self.simulate_put(self.pool,
                           body=jsonutils.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        result = self.simulate_get(self.shard)
+        result = self.simulate_get(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         doc = jsonutils.loads(result[0])
         self.assertEqual(doc['weight'], expect['weight'])
         self.assertEqual(doc['uri'], expect['uri'])
 
     def test_delete_works(self):
-        self.simulate_delete(self.shard)
+        self.simulate_delete(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-        self.simulate_get(self.shard)
+        self.simulate_get(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_nonexisting_raises_404(self):
-        self.simulate_get(self.url_prefix + '/shards/nonexisting')
+        self.simulate_get(self.url_prefix + '/pools/nonexisting')
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-    def _shard_expect(self, shard, xhref, xweight, xuri):
-        self.assertIn('href', shard)
-        self.assertEqual(shard['href'], xhref)
-        self.assertIn('weight', shard)
-        self.assertEqual(shard['weight'], xweight)
-        self.assertIn('uri', shard)
-        self.assertEqual(shard['uri'], xuri)
+    def _pool_expect(self, pool, xhref, xweight, xuri):
+        self.assertIn('href', pool)
+        self.assertEqual(pool['href'], xhref)
+        self.assertIn('weight', pool)
+        self.assertEqual(pool['weight'], xweight)
+        self.assertIn('uri', pool)
+        self.assertEqual(pool['uri'], xuri)
 
     def test_get_works(self):
-        result = self.simulate_get(self.shard)
+        result = self.simulate_get(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = jsonutils.loads(result[0])
-        self._shard_expect(shard, self.shard, self.doc['weight'],
-                           self.doc['uri'])
+        pool = jsonutils.loads(result[0])
+        self._pool_expect(pool, self.pool, self.doc['weight'],
+                          self.doc['uri'])
 
     def test_detailed_get_works(self):
-        result = self.simulate_get(self.shard,
+        result = self.simulate_get(self.pool,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = jsonutils.loads(result[0])
-        self._shard_expect(shard, self.shard, self.doc['weight'],
-                           self.doc['uri'])
-        self.assertIn('options', shard)
-        self.assertEqual(shard['options'], {})
+        pool = jsonutils.loads(result[0])
+        self._pool_expect(pool, self.pool, self.doc['weight'],
+                          self.doc['uri'])
+        self.assertIn('options', pool)
+        self.assertEqual(pool['options'], {})
 
     def test_patch_raises_if_missing_fields(self):
-        self.simulate_patch(self.shard,
+        self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'location': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def _patch_test(self, doc):
-        self.simulate_patch(self.shard,
+        self.simulate_patch(self.pool,
                             body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        result = self.simulate_get(self.shard,
+        result = self.simulate_get(self.pool,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = jsonutils.loads(result[0])
-        self._shard_expect(shard, self.shard, doc['weight'],
-                           doc['uri'])
-        self.assertEqual(shard['options'], doc['options'])
+        pool = jsonutils.loads(result[0])
+        self._pool_expect(pool, self.pool, doc['weight'],
+                          doc['uri'])
+        self.assertEqual(pool['options'], doc['options'])
 
     def test_patch_works(self):
         doc = {'weight': 101, 'uri': 'sqlite://:memory:', 'options': {'a': 1}}
@@ -209,60 +208,60 @@ class ShardsBaseTest(base.V1Base):
 
     @ddt.data(-1, 2**32+1, 'big')
     def test_patch_raises_400_on_invalid_weight(self, weight):
-        self.simulate_patch(self.shard,
+        self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'weight': weight}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_patch_raises_400_on_invalid_uri(self, uri):
-        self.simulate_patch(self.shard,
+        self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'uri': uri}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_patch_raises_400_on_invalid_options(self, options):
-        self.simulate_patch(self.shard,
+        self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'options': options}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-    def test_patch_raises_404_if_shard_not_found(self):
-        self.simulate_patch(self.url_prefix + '/shards/notexists',
+    def test_patch_raises_404_if_pool_not_found(self):
+        self.simulate_patch(self.url_prefix + '/pools/notexists',
                             body=jsonutils.dumps({'weight': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_empty_listing_returns_204(self):
-        self.simulate_delete(self.shard)
-        self.simulate_get(self.url_prefix + '/shards')
+        self.simulate_delete(self.pool)
+        self.simulate_get(self.url_prefix + '/pools')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def _listing_test(self, count=10, limit=10,
                       marker=None, detailed=False):
-        # NOTE(cpp-cabrera): delete initial shard - it will interfere
+        # NOTE(cpp-cabrera): delete initial pool - it will interfere
         # with listing tests
-        self.simulate_delete(self.shard)
+        self.simulate_delete(self.pool)
         query = '?limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
             query += '&marker={2}'.format(marker)
 
-        with shards(self, count, self.doc['uri']) as expected:
-            result = self.simulate_get(self.url_prefix + '/shards',
+        with pools(self, count, self.doc['uri']) as expected:
+            result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string=query)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
             results = jsonutils.loads(result[0])
             self.assertIsInstance(results, dict)
-            self.assertIn('shards', results)
-            shard_list = results['shards']
-            self.assertEqual(len(shard_list), min(limit, count))
-            for s in shard_list:
+            self.assertIn('pools', results)
+            pool_list = results['pools']
+            self.assertEqual(len(pool_list), min(limit, count))
+            for s in pool_list:
                 # NOTE(flwang): It can't assumed that both sqlalchemy and
                 # mongodb can return query result with the same order. Just
                 # like the order they're inserted. Actually, sqlalchemy can't
                 # guarantee that. So we're leveraging the relationship between
-                # shard weight and the index of shards fixture to get the
-                # right shard to verify.
+                # pool weight and the index of pools fixture to get the
+                # right pool to verify.
                 expect = expected[s['weight']]
                 path, weight = expect[:2]
-                self._shard_expect(s, path, weight, self.doc['uri'])
+                self._pool_expect(s, path, weight, self.doc['uri'])
                 if detailed:
                     self.assertIn('options', s)
                     self.assertEqual(s['options'], expect[-1])
@@ -280,30 +279,30 @@ class ShardsBaseTest(base.V1Base):
         self._listing_test(count=15, limit=limit)
 
     def test_listing_marker_is_respected(self):
-        self.simulate_delete(self.shard)
+        self.simulate_delete(self.pool)
 
-        with shards(self, 10, self.doc['uri']) as expected:
-            result = self.simulate_get(self.url_prefix + '/shards',
+        with pools(self, 10, self.doc['uri']) as expected:
+            result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string='?marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
-            shard_list = jsonutils.loads(result[0])['shards']
-            self.assertEqual(len(shard_list), 6)
+            pool_list = jsonutils.loads(result[0])['pools']
+            self.assertEqual(len(pool_list), 6)
             path, weight = expected[4][:2]
-            self._shard_expect(shard_list[0], path, weight, self.doc['uri'])
+            self._pool_expect(pool_list[0], path, weight, self.doc['uri'])
 
 
-class TestShardsMongoDB(ShardsBaseTest):
+class TestPoolsMongoDB(PoolsBaseTest):
 
     config_file = 'wsgi_mongodb.conf'
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestShardsMongoDB, self).setUp()
+        super(TestPoolsMongoDB, self).setUp()
 
 
-class TestShardsSqlalchemy(ShardsBaseTest):
+class TestPoolsSqlalchemy(PoolsBaseTest):
 
     config_file = 'wsgi_sqlalchemy.conf'
 
     def setUp(self):
-        super(TestShardsSqlalchemy, self).setUp()
+        super(TestPoolsSqlalchemy, self).setUp()

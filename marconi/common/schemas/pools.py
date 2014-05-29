@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""shards: JSON schema for marconi-queues shards resources."""
+"""pools: JSON schema for marconi-queues pools resources."""
 
 # NOTE(cpp-cabrera): options can be anything. These will be unique to
 # each storage driver, so we don't perform any further validation at

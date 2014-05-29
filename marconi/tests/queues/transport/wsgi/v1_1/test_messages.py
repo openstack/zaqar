@@ -34,11 +34,11 @@ class MessagesBaseTest(base.V1_1Base):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
-        if self.conf.sharding:
+        if self.conf.pooling:
             for i in range(4):
                 uri = self.conf['drivers:storage:mongodb'].uri
                 doc = {'weight': 100, 'uri': uri}
-                self.simulate_put(self.url_prefix + '/shards/' + str(i),
+                self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))
                 self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
@@ -59,9 +59,9 @@ class MessagesBaseTest(base.V1_1Base):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, headers=self.headers)
-        if self.conf.sharding:
+        if self.conf.pooling:
             for i in range(4):
-                self.simulate_delete(self.url_prefix + '/shards/' + str(i),
+                self.simulate_delete(self.url_prefix + '/pools/' + str(i),
                                      headers=self.headers)
 
         super(MessagesBaseTest, self).tearDown()
@@ -480,20 +480,20 @@ class TestMessagesMongoDB(MessagesBaseTest):
         super(TestMessagesMongoDB, self).tearDown()
 
 
-class TestMessagesMongoDBSharded(MessagesBaseTest):
-    config_file = 'wsgi_mongodb_sharded.conf'
+class TestMessagesMongoDBPooled(MessagesBaseTest):
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestMessagesMongoDBSharded, self).setUp()
+        super(TestMessagesMongoDBPooled, self).setUp()
 
     def tearDown(self):
-        super(TestMessagesMongoDBSharded, self).tearDown()
+        super(TestMessagesMongoDBPooled, self).tearDown()
 
-    # TODO(cpp-cabrera): remove this skipTest once sharded queue
+    # TODO(cpp-cabrera): remove this skipTest once pooled queue
     # listing is implemented
     def test_list(self):
-        self.skipTest("Need to implement sharded queue listing.")
+        self.skipTest("Need to implement pooled queue listing.")
 
 
 class TestMessagesFaultyDriver(base.V1_1BaseFaulty):

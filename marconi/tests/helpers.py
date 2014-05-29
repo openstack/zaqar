@@ -133,7 +133,7 @@ def entries(controller, count):
 
 
 @contextlib.contextmanager
-def shard_entry(controller, project, queue, shard):
+def pool_entry(controller, project, queue, pool):
     """Creates a catalogue entry with the given details, and deletes
     it once the context manager goes out of scope.
 
@@ -143,18 +143,18 @@ def shard_entry(controller, project, queue, shard):
     :type project: six.text_type
     :param queue: name of queue
     :type queue: six.text_type
-    :param shard: an identifier for the shard
-    :type shard: six.text_type
-    :returns: (project, queue, shard)
+    :param pool: an identifier for the pool
+    :type pool: six.text_type
+    :returns: (project, queue, pool)
     :rtype: (six.text_type, six.text_type, six.text_type)
     """
-    controller.insert(project, queue, shard)
-    yield (project, queue, shard)
+    controller.insert(project, queue, pool)
+    yield (project, queue, pool)
     controller.delete(project, queue)
 
 
 @contextlib.contextmanager
-def shard_entries(controller, count):
+def pool_entries(controller, count):
     """Creates `count` catalogue entries with the given details, and
     deletes them once the context manager goes out of scope.
 
@@ -162,7 +162,7 @@ def shard_entries(controller, count):
     :type controller: queues.storage.base:CatalogueBase
     :param count: number of entries to create
     :type count: int
-    :returns: [(project, queue, shard)]
+    :returns: [(project, queue, pool)]
     :rtype: [(six.text_type, six.text_type, six.text_type)]
     """
     spec = [(u'_', six.text_type(uuid.uuid1()), six.text_type(i))

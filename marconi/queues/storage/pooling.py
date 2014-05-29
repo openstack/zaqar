@@ -31,10 +31,10 @@ _CATALOG_OPTIONS = (
                help='Catalog storage driver.'),
 )
 
-_CATALOG_GROUP = 'sharding:catalog'
+_CATALOG_GROUP = 'pooling:catalog'
 
-# NOTE(kgriffs): E.g.: 'marconi-sharding:5083853/my-queue'
-_SHARD_CACHE_PREFIX = 'sharding:'
+# NOTE(kgriffs): E.g.: 'marconi-pooling:5083853/my-queue'
+_POOL_CACHE_PREFIX = 'pooling:'
 
 # TODO(kgriffs): If a queue is migrated, everyone's
 # caches need to have the relevant entry invalidated
@@ -42,58 +42,58 @@ _SHARD_CACHE_PREFIX = 'sharding:'
 # on the TTL.
 #
 # TODO(kgriffs): Make dynamic?
-_SHARD_CACHE_TTL = 10
+_POOL_CACHE_TTL = 10
 
 
 def _config_options():
     return [(_CATALOG_GROUP, _CATALOG_OPTIONS)]
 
 
-def _shard_cache_key(queue, project=None):
+def _pool_cache_key(queue, project=None):
     # NOTE(kgriffs): Use string concatenation for performance,
     # also put project first since it is guaranteed to be
     # unique, which should reduce lookup time.
-    return _SHARD_CACHE_PREFIX + str(project) + '/' + queue
+    return _POOL_CACHE_PREFIX + str(project) + '/' + queue
 
 
 class DataDriver(storage.DataDriverBase):
-    """Sharding meta-driver for routing requests to multiple backends.
+    """Pooling meta-driver for routing requests to multiple backends.
 
-    :param conf: Configuration from which to read sharding options
+    :param conf: Configuration from which to read pooling options
     :param cache: Cache instance that will be passed to individual
-        storage driver instances that correspond to each shard. will
-        also be used by the shard controller to reduce latency for
+        storage driver instances that correspond to each pool. will
+        also be used by the pool controller to reduce latency for
         some operations.
     """
 
     def __init__(self, conf, cache, control):
         super(DataDriver, self).__init__(conf, cache)
-        self._shard_catalog = Catalog(conf, cache, control)
+        self._pool_catalog = Catalog(conf, cache, control)
 
     def is_alive(self):
-        return all(self._shard_catalog.get_driver(shard['name']).is_alive()
-                   for shard in
-                   self._shard_catalog._shards_ctrl.list(limit=0))
+        return all(self._pool_catalog.get_driver(pool['name']).is_alive()
+                   for pool in
+                   self._pool_catalog._pools_ctrl.list(limit=0))
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        return QueueController(self._shard_catalog)
+        return QueueController(self._pool_catalog)
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return MessageController(self._shard_catalog)
+        return MessageController(self._pool_catalog)
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return ClaimController(self._shard_catalog)
+        return ClaimController(self._pool_catalog)
 
 
 class RoutingController(storage.base.ControllerBase):
-    """Routes operations to the appropriate shard.
+    """Routes operations to the appropriate pool.
 
     This controller stands in for a regular storage controller,
     routing operations to a driver instance that represents
-    the shard to which the queue has been assigned.
+    the pool to which the queue has been assigned.
 
     Do not instantiate this class directly; use one of the
     more specific child classes instead.
@@ -101,16 +101,16 @@ class RoutingController(storage.base.ControllerBase):
 
     _resource_name = None
 
-    def __init__(self, shard_catalog):
+    def __init__(self, pool_catalog):
         super(RoutingController, self).__init__(None)
         self._ctrl_property_name = self._resource_name + '_controller'
-        self._shard_catalog = shard_catalog
+        self._pool_catalog = pool_catalog
 
     @decorators.memoized_getattr
     def __getattr__(self, name):
         # NOTE(kgriffs): Use a closure trick to avoid
         # some attr lookups each time forward() is called.
-        lookup = self._shard_catalog.lookup
+        lookup = self._pool_catalog.lookup
 
         # NOTE(kgriffs): Assume that every controller method
         # that is exposed to the transport declares queue name
@@ -132,16 +132,16 @@ class QueueController(RoutingController):
 
     _resource_name = 'queue'
 
-    def __init__(self, shard_catalog):
-        super(QueueController, self).__init__(shard_catalog)
-        self._lookup = self._shard_catalog.lookup
+    def __init__(self, pool_catalog):
+        super(QueueController, self).__init__(pool_catalog)
+        self._lookup = self._pool_catalog.lookup
 
     def list(self, project=None, marker=None,
              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         def all_pages():
-            for shard in self._shard_catalog._shards_ctrl.list(limit=0):
-                yield next(self._shard_catalog.get_driver(shard['name'])
+            for pool in self._pool_catalog._pools_ctrl.list(limit=0):
+                yield next(self._pool_catalog.get_driver(pool['name'])
                            .queue_controller.list(
                                project=project,
                                marker=marker,
@@ -166,7 +166,7 @@ class QueueController(RoutingController):
         yield marker_name['next']
 
     def create(self, name, project=None):
-        self._shard_catalog.register(name, project)
+        self._pool_catalog.register(name, project)
 
         # NOTE(cpp-cabrera): This should always succeed since we just
         # registered the project/queue. There is a race condition,
@@ -195,7 +195,7 @@ class QueueController(RoutingController):
             # latter case is more difficult to reason about, and may
             # yield 500s in some operations.
             control = target.queue_controller
-            self._shard_catalog.deregister(name, project)
+            self._pool_catalog.deregister(name, project)
             ret = control.delete(name, project)
             return ret
 
@@ -234,9 +234,9 @@ class QueueController(RoutingController):
 class MessageController(RoutingController):
     _resource_name = 'message'
 
-    def __init__(self, shard_catalog):
-        super(MessageController, self).__init__(shard_catalog)
-        self._lookup = self._shard_catalog.lookup
+    def __init__(self, pool_catalog):
+        super(MessageController, self).__init__(pool_catalog)
+        self._lookup = self._pool_catalog.lookup
 
     def post(self, queue, project, messages, client_uuid):
         target = self._lookup(queue, project)
@@ -294,9 +294,9 @@ class MessageController(RoutingController):
 class ClaimController(RoutingController):
     _resource_name = 'claim'
 
-    def __init__(self, shard_catalog):
-        super(ClaimController, self).__init__(shard_catalog)
-        self._lookup = self._shard_catalog.lookup
+    def __init__(self, pool_catalog):
+        super(ClaimController, self).__init__(pool_catalog)
+        self._lookup = self._pool_catalog.lookup
 
     def create(self, queue, metadata, project=None, limit=None):
         target = self._lookup(queue, project)
@@ -332,7 +332,7 @@ class ClaimController(RoutingController):
 
 
 class Catalog(object):
-    """Represents the mapping between queues and shard drivers."""
+    """Represents the mapping between queues and pool drivers."""
 
     def __init__(self, conf, cache, control):
         self._drivers = {}
@@ -342,74 +342,74 @@ class Catalog(object):
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
 
-        self._shards_ctrl = control.shards_controller
+        self._pools_ctrl = control.pools_controller
         self._catalogue_ctrl = control.catalogue_controller
 
     # FIXME(cpp-cabrera): https://bugs.launchpad.net/marconi/+bug/1252791
-    def _init_driver(self, shard_id):
-        """Given a shard name, returns a storage driver.
+    def _init_driver(self, pool_id):
+        """Given a pool name, returns a storage driver.
 
-        :param shard_id: The name of a shard.
-        :type shard_id: six.text_type
+        :param pool_id: The name of a pool.
+        :type pool_id: six.text_type
         :returns: a storage driver
         :rtype: marconi.queues.storage.base.DataDriver
         """
-        shard = self._shards_ctrl.get(shard_id, detailed=True)
-        conf = utils.dynamic_conf(shard['uri'], shard['options'])
+        pool = self._pools_ctrl.get(pool_id, detailed=True)
+        conf = utils.dynamic_conf(pool['uri'], pool['options'])
         return utils.load_storage_driver(conf, self._cache)
 
-    @decorators.caches(_shard_cache_key, _SHARD_CACHE_TTL)
-    def _shard_id(self, queue, project=None):
-        """Get the ID for the shard assigned to the given queue.
+    @decorators.caches(_pool_cache_key, _POOL_CACHE_TTL)
+    def _pool_id(self, queue, project=None):
+        """Get the ID for the pool assigned to the given queue.
 
         :param queue: name of the queue
         :param project: project to which the queue belongs
 
-        :returns: shard id
+        :returns: pool id
 
         :raises: `errors.QueueNotMapped`
         """
-        return self._catalogue_ctrl.get(project, queue)['shard']
+        return self._catalogue_ctrl.get(project, queue)['pool']
 
     def register(self, queue, project=None):
-        """Register a new queue in the shard catalog.
+        """Register a new queue in the pool catalog.
 
         This method should be called whenever a new queue is being
-        created, and will create an entry in the shard catalog for
+        created, and will create an entry in the pool catalog for
         the given queue.
 
         After using this method to register the queue in the
         catalog, the caller should call `lookup()` to get a reference
         to a storage driver which will allow interacting with the
-        queue's assigned backend shard.
+        queue's assigned backend pool.
 
-        :param queue: Name of the new queue to assign to a shard
+        :param queue: Name of the new queue to assign to a pool
         :type queue: six.text_type
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
         :type project: six.text_type
-        :raises: NoShardFound
+        :raises: NoPoolFound
         """
         # NOTE(cpp-cabrera): only register a queue if the entry
         # doesn't exist
         if not self._catalogue_ctrl.exists(project, queue):
             # NOTE(cpp-cabrera): limit=0 implies unlimited - select from
-            # all shards
-            shard = select.weighted(self._shards_ctrl.list(limit=0))
+            # all pools
+            pool = select.weighted(self._pools_ctrl.list(limit=0))
 
-            if not shard:
-                raise errors.NoShardFound()
+            if not pool:
+                raise errors.NoPoolFound()
 
-            self._catalogue_ctrl.insert(project, queue, shard['name'])
+            self._catalogue_ctrl.insert(project, queue, pool['name'])
 
-    @_shard_id.purges
+    @_pool_id.purges
     def deregister(self, queue, project=None):
-        """Removes a queue from the shard catalog.
+        """Removes a queue from the pool catalog.
 
         Call this method after successfully deleting it from a
-        backend shard.
+        backend pool.
 
-        :param queue: Name of the new queue to assign to a shard
+        :param queue: Name of the new queue to assign to a pool
         :type queue: six.text_type
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
@@ -418,20 +418,20 @@ class Catalog(object):
         self._catalogue_ctrl.delete(project, queue)
 
     def lookup(self, queue, project=None):
-        """Lookup a shard driver for the given queue and project.
+        """Lookup a pool driver for the given queue and project.
 
-        :param queue: Name of the queue for which to find a shard
+        :param queue: Name of the queue for which to find a pool
         :param project: Project to which the queue belongs, or
             None to specify the "global" or "generic" project.
 
-        :returns: A storage driver instance for the appropriate shard. If
+        :returns: A storage driver instance for the appropriate pool. If
             the driver does not exist yet, it is created and cached. If the
             queue is not mapped, returns None.
         :rtype: Maybe DataDriver
         """
 
         try:
-            shard_id = self._shard_id(queue, project)
+            pool_id = self._pool_id(queue, project)
         except errors.QueueNotMapped as ex:
             LOG.debug(ex)
 
@@ -441,21 +441,21 @@ class Catalog(object):
             # the place.
             return None
 
-        return self.get_driver(shard_id)
+        return self.get_driver(pool_id)
 
-    def get_driver(self, shard_id):
-        """Get storage driver, preferably cached, from a shard name.
+    def get_driver(self, pool_id):
+        """Get storage driver, preferably cached, from a pool name.
 
-        :param shard_id: The name of a shard.
-        :type shard_id: six.text_type
+        :param pool_id: The name of a pool.
+        :type pool_id: six.text_type
         :returns: a storage driver
         :rtype: marconi.queues.storage.base.DataDriver
         """
 
         try:
-            return self._drivers[shard_id]
+            return self._drivers[pool_id]
         except KeyError:
             # NOTE(cpp-cabrera): cache storage driver connection
-            self._drivers[shard_id] = self._init_driver(shard_id)
+            self._drivers[pool_id] = self._init_driver(pool_id)
 
-            return self._drivers[shard_id]
+            return self._drivers[pool_id]

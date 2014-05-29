@@ -23,10 +23,10 @@ CatalogueBase = base.CatalogueBase
 Claim = base.Claim
 Message = base.Message
 Queue = base.Queue
-ShardsBase = base.ShardsBase
+PoolsBase = base.PoolsBase
 
 DEFAULT_QUEUES_PER_PAGE = base.DEFAULT_QUEUES_PER_PAGE
 DEFAULT_MESSAGES_PER_PAGE = base.DEFAULT_MESSAGES_PER_PAGE
-DEFAULT_SHARDS_PER_PAGE = base.DEFAULT_SHARDS_PER_PAGE
+DEFAULT_POOLS_PER_PAGE = base.DEFAULT_POOLS_PER_PAGE
 
 DEFAULT_MESSAGES_PER_CLAIM = base.DEFAULT_MESSAGES_PER_CLAIM

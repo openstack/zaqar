@@ -20,9 +20,6 @@ from oslo.config import cfg
 MONGODB_OPTIONS = (
     cfg.StrOpt('uri', help='Mongodb Connection URI.'),
 
-    # Database name
-    # TODO(kgriffs): Consider local sharding across DBs to mitigate
-    # per-DB locking latency.
     cfg.StrOpt('database', default='marconi', help='Database name.'),
 
     cfg.IntOpt('partitions', default=2,

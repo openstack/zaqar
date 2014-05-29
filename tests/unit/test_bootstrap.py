@@ -16,7 +16,7 @@
 from marconi.common import errors
 from marconi.queues import bootstrap
 from marconi.queues.storage import pipeline
-from marconi.queues.storage import sharding
+from marconi.queues.storage import pooling
 from marconi.queues.storage import sqlalchemy
 from marconi.queues.transport import wsgi
 from marconi.tests import base
@@ -39,10 +39,10 @@ class TestBootstrap(base.TestBase):
         self.assertIsInstance(bootstrap.storage._storage,
                               sqlalchemy.DataDriver)
 
-    def test_storage_sqlalchemy_sharded(self):
-        """Makes sure we can load the shard driver."""
-        bootstrap = self._bootstrap('wsgi_sqlalchemy_sharded.conf')
-        self.assertIsInstance(bootstrap.storage._storage, sharding.DataDriver)
+    def test_storage_sqlalchemy_pooled(self):
+        """Makes sure we can load the pool driver."""
+        bootstrap = self._bootstrap('wsgi_sqlalchemy_pooled.conf')
+        self.assertIsInstance(bootstrap.storage._storage, pooling.DataDriver)
 
     def test_transport_invalid(self):
         bootstrap = self._bootstrap('drivers_transport_invalid.conf')

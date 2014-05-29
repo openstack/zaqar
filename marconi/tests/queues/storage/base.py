@@ -646,115 +646,115 @@ class ClaimControllerTest(ControllerBaseTest):
                                    project=self.project)
 
 
-class ShardsControllerTest(ControllerBaseTest):
-    """Shards Controller base tests.
+class PoolsControllerTest(ControllerBaseTest):
+    """Pools Controller base tests.
 
     NOTE(flaper87): Implementations of this class should
     override the tearDown method in order
     to clean up storage's state.
     """
-    controller_base_class = storage.ShardsBase
+    controller_base_class = storage.PoolsBase
 
     def setUp(self):
-        super(ShardsControllerTest, self).setUp()
-        self.shards_controller = self.driver.shards_controller
+        super(PoolsControllerTest, self).setUp()
+        self.pools_controller = self.driver.pools_controller
 
-        # Let's create one shard
-        self.shard = str(uuid.uuid1())
-        self.shards_controller.create(self.shard, 100, 'localhost', {})
+        # Let's create one pool
+        self.pool = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, 'localhost', {})
 
     def tearDown(self):
-        self.shards_controller.drop_all()
-        super(ShardsControllerTest, self).tearDown()
+        self.pools_controller.drop_all()
+        super(PoolsControllerTest, self).tearDown()
 
     def test_create_succeeds(self):
-        self.shards_controller.create(str(uuid.uuid1()),
-                                      100, 'localhost', {})
+        self.pools_controller.create(str(uuid.uuid1()),
+                                     100, 'localhost', {})
 
     def test_create_replaces_on_duplicate_insert(self):
         name = str(uuid.uuid1())
-        self.shards_controller.create(name,
-                                      100, 'localhost', {})
-        self.shards_controller.create(name,
-                                      111, 'localhost2', {})
-        entry = self.shards_controller.get(name)
-        self._shard_expects(entry, xname=name, xweight=111,
-                            xlocation='localhost2')
+        self.pools_controller.create(name,
+                                     100, 'localhost', {})
+        self.pools_controller.create(name,
+                                     111, 'localhost2', {})
+        entry = self.pools_controller.get(name)
+        self._pool_expects(entry, xname=name, xweight=111,
+                           xlocation='localhost2')
 
-    def _shard_expects(self, shard, xname, xweight, xlocation):
-        self.assertIn('name', shard)
-        self.assertEqual(shard['name'], xname)
-        self.assertIn('weight', shard)
-        self.assertEqual(shard['weight'], xweight)
-        self.assertIn('uri', shard)
-        self.assertEqual(shard['uri'], xlocation)
+    def _pool_expects(self, pool, xname, xweight, xlocation):
+        self.assertIn('name', pool)
+        self.assertEqual(pool['name'], xname)
+        self.assertIn('weight', pool)
+        self.assertEqual(pool['weight'], xweight)
+        self.assertIn('uri', pool)
+        self.assertEqual(pool['uri'], xlocation)
 
     def test_get_returns_expected_content(self):
-        res = self.shards_controller.get(self.shard)
-        self._shard_expects(res, self.shard, 100, 'localhost')
+        res = self.pools_controller.get(self.pool)
+        self._pool_expects(res, self.pool, 100, 'localhost')
         self.assertNotIn('options', res)
 
     def test_detailed_get_returns_expected_content(self):
-        res = self.shards_controller.get(self.shard, detailed=True)
+        res = self.pools_controller.get(self.pool, detailed=True)
         self.assertIn('options', res)
         self.assertEqual(res['options'], {})
 
     def test_get_raises_if_not_found(self):
-        self.assertRaises(storage.errors.ShardDoesNotExist,
-                          self.shards_controller.get, 'notexists')
+        self.assertRaises(storage.errors.PoolDoesNotExist,
+                          self.pools_controller.get, 'notexists')
 
     def test_exists(self):
-        self.assertTrue(self.shards_controller.exists(self.shard))
-        self.assertFalse(self.shards_controller.exists('notexists'))
+        self.assertTrue(self.pools_controller.exists(self.pool))
+        self.assertFalse(self.pools_controller.exists('notexists'))
 
     def test_update_raises_assertion_error_on_bad_fields(self):
-        self.assertRaises(AssertionError, self.shards_controller.update,
-                          self.shard)
+        self.assertRaises(AssertionError, self.pools_controller.update,
+                          self.pool)
 
     def test_update_works(self):
-        self.shards_controller.update(self.shard, weight=101,
-                                      uri='redis://localhost',
-                                      options={'a': 1})
-        res = self.shards_controller.get(self.shard, detailed=True)
-        self._shard_expects(res, self.shard, 101, 'redis://localhost')
+        self.pools_controller.update(self.pool, weight=101,
+                                     uri='redis://localhost',
+                                     options={'a': 1})
+        res = self.pools_controller.get(self.pool, detailed=True)
+        self._pool_expects(res, self.pool, 101, 'redis://localhost')
         self.assertEqual(res['options'], {'a': 1})
 
     def test_delete_works(self):
-        self.shards_controller.delete(self.shard)
-        self.assertFalse(self.shards_controller.exists(self.shard))
+        self.pools_controller.delete(self.pool)
+        self.assertFalse(self.pools_controller.exists(self.pool))
 
     def test_delete_nonexistent_is_silent(self):
-        self.shards_controller.delete('nonexisting')
+        self.pools_controller.delete('nonexisting')
 
     def test_drop_all_leads_to_empty_listing(self):
-        self.shards_controller.drop_all()
-        cursor = self.shards_controller.list()
+        self.pools_controller.drop_all()
+        cursor = self.pools_controller.list()
         self.assertRaises(StopIteration, next, cursor)
 
     def test_listing_simple(self):
         # NOTE(cpp-cabrera): base entry interferes with listing results
-        self.shards_controller.delete(self.shard)
+        self.pools_controller.delete(self.pool)
 
         name_gen = lambda i: chr(ord('A') + i)
         for i in range(15):
-            self.shards_controller.create(name_gen(i), i, str(i), {})
+            self.pools_controller.create(name_gen(i), i, str(i), {})
 
-        res = list(self.shards_controller.list())
+        res = list(self.pools_controller.list())
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
-            self._shard_expects(entry, name_gen(i), i, str(i))
+            self._pool_expects(entry, name_gen(i), i, str(i))
             self.assertNotIn('options', entry)
 
-        res = list(self.shards_controller.list(limit=5))
+        res = list(self.pools_controller.list(limit=5))
         self.assertEqual(len(res), 5)
 
-        res = next(self.shards_controller.list(marker=name_gen(3)))
-        self._shard_expects(res, name_gen(4), 4, '4')
+        res = next(self.pools_controller.list(marker=name_gen(3)))
+        self._pool_expects(res, name_gen(4), 4, '4')
 
-        res = list(self.shards_controller.list(detailed=True))
+        res = list(self.pools_controller.list(detailed=True))
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
-            self._shard_expects(entry, name_gen(i), i, str(i))
+            self._pool_expects(entry, name_gen(i), i, str(i))
             self.assertIn('options', entry)
             self.assertEqual(entry['options'], {})
 
@@ -775,15 +775,15 @@ class CatalogueControllerTest(ControllerBaseTest):
     def _check_structure(self, entry):
         self.assertIn('queue', entry)
         self.assertIn('project', entry)
-        self.assertIn('shard', entry)
+        self.assertIn('pool', entry)
         self.assertIsInstance(entry['queue'], six.text_type)
         self.assertIsInstance(entry['project'], six.text_type)
-        self.assertIsInstance(entry['shard'], six.text_type)
+        self.assertIsInstance(entry['pool'], six.text_type)
 
-    def _check_value(self, entry, xqueue, xproject, xshard):
+    def _check_value(self, entry, xqueue, xproject, xpool):
         self.assertEqual(entry['queue'], xqueue)
         self.assertEqual(entry['project'], xproject)
-        self.assertEqual(entry['shard'], xshard)
+        self.assertEqual(entry['pool'], xpool)
 
     def test_catalogue_entry_life_cycle(self):
         queue = self.queue
@@ -794,13 +794,13 @@ class CatalogueControllerTest(ControllerBaseTest):
             self.fail('There should be no entries at this time')
 
         # create a listing, check its length
-        with helpers.shard_entries(self.controller, 10) as expect:
+        with helpers.pool_entries(self.controller, 10) as expect:
             project = expect[0][0]
             xs = list(self.controller.list(project))
             self.assertEqual(len(xs), 10)
 
         # create, check existence, delete
-        with helpers.shard_entry(self.controller, project, queue, u'a'):
+        with helpers.pool_entry(self.controller, project, queue, u'a'):
             self.assertTrue(self.controller.exists(project, queue))
 
         # verify it no longer exists
@@ -810,20 +810,20 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.assertEqual(len(list(self.controller.list(project))), 0)
 
     def test_list(self):
-        with helpers.shard_entries(self.controller, 10) as expect:
+        with helpers.pool_entries(self.controller, 10) as expect:
             values = zip(self.controller.list(u'_'), expect)
             for e, x in values:
                 p, q, s = x
                 self._check_structure(e)
-                self._check_value(e, xqueue=q, xproject=p, xshard=s)
+                self._check_value(e, xqueue=q, xproject=p, xpool=s)
 
     def test_update(self):
-        with helpers.shard_entry(self.controller, self.project,
-                                 self.queue, u'a') as expect:
+        with helpers.pool_entry(self.controller, self.project,
+                                self.queue, u'a') as expect:
             p, q, s = expect
-            self.controller.update(p, q, shard=u'b')
+            self.controller.update(p, q, pool=u'b')
             entry = self.controller.get(p, q)
-            self._check_value(entry, xqueue=q, xproject=p, xshard=u'b')
+            self._check_value(entry, xqueue=q, xproject=p, xpool=u'b')
 
     def test_update_raises_when_entry_does_not_exist(self):
         self.assertRaises(errors.QueueNotMapped,
@@ -831,17 +831,17 @@ class CatalogueControllerTest(ControllerBaseTest):
                           'not', 'not', 'a')
 
     def test_get(self):
-        with helpers.shard_entry(self.controller,
-                                 self.project,
-                                 self.queue, u'a') as expect:
+        with helpers.pool_entry(self.controller,
+                                self.project,
+                                self.queue, u'a') as expect:
             p, q, s = expect
             e = self.controller.get(p, q)
-            self._check_value(e, xqueue=q, xproject=p, xshard=s)
+            self._check_value(e, xqueue=q, xproject=p, xpool=s)
 
     def test_get_raises_if_does_not_exist(self):
-        with helpers.shard_entry(self.controller,
-                                 self.project,
-                                 self.queue, u'a') as expect:
+        with helpers.pool_entry(self.controller,
+                                self.project,
+                                self.queue, u'a') as expect:
             p, q, _ = expect
             self.assertRaises(errors.QueueNotMapped,
                               self.controller.get,
@@ -854,12 +854,12 @@ class CatalogueControllerTest(ControllerBaseTest):
                               'non_existing', 'non_existing')
 
     def test_exists(self):
-        with helpers.shard_entry(self.controller,
-                                 self.project,
-                                 self.queue, u'a') as expect:
+        with helpers.pool_entry(self.controller,
+                                self.project,
+                                self.queue, u'a') as expect:
             p, q, _ = expect
             self.assertTrue(self.controller.exists(p, q))
-        self.assertFalse(self.controller.exists('nada', 'not_here'))
+            self.assertFalse(self.controller.exists('nada', 'not_here'))
 
 
 def _insert_fixtures(controller, queue_name, project=None,

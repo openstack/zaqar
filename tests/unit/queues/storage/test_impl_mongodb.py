@@ -364,16 +364,16 @@ class MongodbClaimTests(base.ClaimControllerTest):
 
 
 @testing.requires_mongodb
-class MongodbShardsTests(base.ShardsControllerTest):
+class MongodbPoolsTests(base.PoolsControllerTest):
     driver_class = mongodb.ControlDriver
-    controller_class = controllers.ShardsController
+    controller_class = controllers.PoolsController
 
     def setUp(self):
-        super(MongodbShardsTests, self).setUp()
+        super(MongodbPoolsTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
 
     def tearDown(self):
-        super(MongodbShardsTests, self).tearDown()
+        super(MongodbPoolsTests, self).tearDown()
 
 
 @testing.requires_mongodb

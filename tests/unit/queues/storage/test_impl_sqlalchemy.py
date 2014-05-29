@@ -78,16 +78,16 @@ class SqlalchemyClaimTests(base.ClaimControllerTest):
     controller_class = controllers.ClaimController
 
 
-class SqlalchemyShardsTest(base.ShardsControllerTest):
+class SqlalchemyPoolsTest(base.PoolsControllerTest):
     driver_class = sqlalchemy.ControlDriver
-    controller_class = controllers.ShardsController
+    controller_class = controllers.PoolsController
 
     def setUp(self):
-        super(SqlalchemyShardsTest, self).setUp()
+        super(SqlalchemyPoolsTest, self).setUp()
         self.load_conf('wsgi_sqlalchemy.conf')
 
     def tearDown(self):
-        super(SqlalchemyShardsTest, self).tearDown()
+        super(SqlalchemyPoolsTest, self).tearDown()
 
 
 class SqlalchemyCatalogueTest(base.CatalogueControllerTest):
