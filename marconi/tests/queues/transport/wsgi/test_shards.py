@@ -20,6 +20,7 @@ import ddt
 import falcon
 
 from . import base  # noqa
+from marconi.openstack.common import jsonutils
 from marconi import tests as testing
 
 
@@ -137,7 +138,7 @@ class ShardsBaseTest(base.TestBase):
 
         result = self.simulate_get(self.shard)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        doc = json.loads(result[0])
+        doc = jsonutils.loads(result[0])
         self.assertEqual(doc['weight'], expect['weight'])
         self.assertEqual(doc['uri'], expect['uri'])
 
@@ -163,7 +164,7 @@ class ShardsBaseTest(base.TestBase):
     def test_get_works(self):
         result = self.simulate_get(self.shard)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = json.loads(result[0])
+        shard = jsonutils.loads(result[0])
         self._shard_expect(shard, self.shard, self.doc['weight'],
                            self.doc['uri'])
 
@@ -171,7 +172,7 @@ class ShardsBaseTest(base.TestBase):
         result = self.simulate_get(self.shard,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = json.loads(result[0])
+        shard = jsonutils.loads(result[0])
         self._shard_expect(shard, self.shard, self.doc['weight'],
                            self.doc['uri'])
         self.assertIn('options', shard)
@@ -190,7 +191,7 @@ class ShardsBaseTest(base.TestBase):
         result = self.simulate_get(self.shard,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        shard = json.loads(result[0])
+        shard = jsonutils.loads(result[0])
         self._shard_expect(shard, self.shard, doc['weight'],
                            doc['uri'])
         self.assertEqual(shard['options'], doc['options'])
@@ -245,7 +246,7 @@ class ShardsBaseTest(base.TestBase):
             result = self.simulate_get(self.url_prefix + '/shards',
                                        query_string=query)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
-            results = json.loads(result[0])
+            results = jsonutils.loads(result[0])
             self.assertIsInstance(results, dict)
             self.assertIn('shards', results)
             shard_list = results['shards']
@@ -283,7 +284,7 @@ class ShardsBaseTest(base.TestBase):
             result = self.simulate_get(self.url_prefix + '/shards',
                                        query_string='?marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
-            shard_list = json.loads(result[0])['shards']
+            shard_list = jsonutils.loads(result[0])['shards']
             self.assertEqual(len(shard_list), 6)
             path, weight = expected[4][:2]
             self._shard_expect(shard_list[0], path, weight, self.doc['uri'])

@@ -12,12 +12,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import json
-
 import falcon
 import six.moves.urllib.parse as urlparse
 
 from . import base  # noqa
+from marconi.openstack.common import jsonutils
 
 
 class TestHomeDocument(base.TestBase):
@@ -32,14 +31,14 @@ class TestHomeDocument(base.TestBase):
         self.assertEqual(content_type, 'application/json-home')
 
         try:
-            json.loads(body[0])
+            jsonutils.loads(body[0])
         except ValueError:
             self.fail('Home document is not valid JSON')
 
     def test_href_template(self):
         body = self.simulate_get(self.url_prefix)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        resp = json.loads(body[0])
+        resp = jsonutils.loads(body[0])
         queue_href_template = resp['resources']['rel/queue']['href-template']
         path_1 = 'https://marconi.example.com' + self.url_prefix
         path_2 = 'https://marconi.example.com' + self.url_prefix + '/'

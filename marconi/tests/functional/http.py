@@ -20,6 +20,8 @@ from falcon import testing as ftest
 import requests
 import six
 
+from marconi.openstack.common import jsonutils
+
 
 def _build_url(method):
 
@@ -100,7 +102,7 @@ class ResponseMock(object):
         self.headers = srmock.headers_dict
 
     def json(self):
-        return json.loads(self._body, encoding='utf-8')
+        return jsonutils.loads(self._body)
 
 
 class WSGIClient(object):

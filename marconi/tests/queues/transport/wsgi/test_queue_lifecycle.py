@@ -12,13 +12,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import json
-
 import ddt
 import falcon
 import six
 
 from . import base  # noqa
+from marconi.openstack.common import jsonutils
 from marconi import tests as testing
 
 
@@ -81,9 +80,9 @@ class QueueLifecycleBaseTest(base.TestBase):
         # Fetch metadata
         result = self.simulate_get(gumshoe_queue_path_metadata,
                                    project_id)
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(result_doc, json.loads(doc))
+        self.assertEqual(result_doc, jsonutils.loads(doc))
 
         # Stats empty queue
         self.simulate_get(gumshoe_queue_path_stats, project_id)
@@ -209,8 +208,8 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Get
         result = self.simulate_get(self.fizbat_queue_path_metadata, '480924')
-        result_doc = json.loads(result[0])
-        self.assertEqual(result_doc, json.loads(doc))
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(result_doc, jsonutils.loads(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def test_update_metadata(self):
@@ -234,9 +233,9 @@ class QueueLifecycleBaseTest(base.TestBase):
 
         # Get
         result = self.simulate_get(xyz_queue_path_metadata, project_id)
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
 
-        self.assertEqual(result_doc, json.loads(doc2))
+        self.assertEqual(result_doc, jsonutils.loads(doc2))
         self.assertEqual(self.srmock.headers_dict['Content-Location'],
                          xyz_queue_path_metadata)
 
@@ -276,7 +275,7 @@ class QueueLifecycleBaseTest(base.TestBase):
         result = self.simulate_get(self.queue_path, None,
                                    query_string='limit=2&detailed=true')
 
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         queues = result_doc['queues']
         self.assertEqual(len(queues), 2)
 
@@ -287,14 +286,14 @@ class QueueLifecycleBaseTest(base.TestBase):
         result = self.simulate_get(self.queue_path, project_id,
                                    query_string='limit=2')
 
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         self.assertEqual(len(result_doc['queues']), 2)
 
         # List (no metadata, get all)
         result = self.simulate_get(self.queue_path,
                                    project_id, query_string='limit=5')
 
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
@@ -319,12 +318,12 @@ class QueueLifecycleBaseTest(base.TestBase):
                                    query_string='detailed=true')
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         queue = result_doc['queues'][0]
         result = self.simulate_get(queue['href'] + '/metadata', project_id)
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         self.assertEqual(result_doc, queue['metadata'])
         self.assertEqual(result_doc, {'node': 31})
 
@@ -376,9 +375,9 @@ class TestQueueLifecycleFaultyDriver(base.TestBaseFaulty):
         self.assertNotIn(location, self.srmock.headers)
 
         result = self.simulate_get(gumshoe_queue_path + '/metadata', '480924')
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_503)
-        self.assertNotEqual(result_doc, json.loads(doc))
+        self.assertNotEqual(result_doc, jsonutils.loads(doc))
 
         self.simulate_get(gumshoe_queue_path + '/stats', '480924')
         self.assertEqual(self.srmock.status, falcon.HTTP_503)
