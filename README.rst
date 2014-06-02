@@ -86,6 +86,6 @@ You can read more about running functional tests in separate `TESTS_README`_.
 .. _`MongoDB` : http://docs.mongodb.org/manual/installation/
 .. _`pyenv` : https://github.com/yyuu/pyenv/
 .. _`virtualenv` : https://pypi.python.org/pypi/virtualenv/
-.. _`wiki` : https://wiki.openstack.org/wiki/Marconi/
+.. _`wiki` : https://wiki.openstack.org/wiki/Marconi
 .. _`TESTS_README` : https://github.com/openstack/marconi/blob/master/tests/functional/README.rst
 
