@@ -52,7 +52,8 @@ class TestClaims(base.FunctionalTestBase):
     @ddt.data({}, dict(limit=2))
     def test_claim_messages(self, params):
         """Claim messages."""
-        message_count = params.get('limit', 10)
+        message_count = params.get('limit',
+                                   self.limits.max_messages_per_claim)
 
         doc = {"ttl": 300, "grace": 100}
 
@@ -64,6 +65,9 @@ class TestClaims(base.FunctionalTestBase):
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_with_body, response_headers)
+
+        # NOTE(abettadapur) This fails because of Bug #1321840
+        # self.assertSchema(result.json(), 'claim_create')
 
     test_claim_messages.tags = ['smoke', 'positive']
 
@@ -79,6 +83,9 @@ class TestClaims(base.FunctionalTestBase):
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
+
+        # NOTE(abettadapur) This fails because of Bug #1321840
+        # self.assertSchema(result.json(), 'claim_get')
 
     test_query_claim.tags = ['smoke', 'positive']
 

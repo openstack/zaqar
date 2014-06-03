@@ -22,37 +22,43 @@ class ResponseSchema(api.Api):
 
     def __init__(self, limits):
         self.limits = limits
-        self.schema = {
-            'message_get_many': {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "href": {
-                            "type": "string",
-                            "pattern": "^(/v1/queues/[a-zA-Z0-9_-]{1,64}"
-                            "/messages/[a-zA-Z0-9_-]+)$"
-                        },
-                        "ttl": {
-                            "type": "number",
-                            "minimum": 1,
-                            "maximum": self.limits.max_message_ttl
-                        },
-                        "age": {
-                            "type": "number",
-                            "minimum": 0
-                        },
-                        "body": {
-                            "type": "object"
-                        }
-                    },
-                    "required": ["href", "ttl", "age", "body"],
-                    "additionalProperties": False,
-                },
-                "minItems": 1,
-                "maxItems": self.limits.max_messages_per_page
-            },
 
+        age = {
+            "type": "number",
+            "minimum": 0
+        }
+
+        message = {
+            "type": "object",
+            "properties": {
+                "href": {
+                    "type": "string",
+                    "pattern": "^(/v1/queues/[a-zA-Z0-9_-]"
+                    "{1,64}/messages/[a-zA-Z0-9_-]+)$"
+                },
+                "age": age,
+                "ttl": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": self.limits.max_message_ttl
+                },
+
+                "body": {
+                    "type": "object"
+                }
+            },
+            "required": ["href", "ttl", "age", "body"],
+            "additionalProperties": False,
+        }
+
+        claim_href = {
+            "type": "string",
+            "pattern": "^(/v1/queues/[a-zA-Z0-9_-]{1,64}"
+            "/messages/[a-zA-Z0-9_-]+)"
+            "\?claim_id=[a-zA-Z0-9_-]+$"
+        }
+
+        self.schema = {
             'queue_list': {
                 'type': 'object',
                 'properties': {
@@ -103,5 +109,137 @@ class ResponseSchema(api.Api):
                 },
                 'required': ['links', 'queues'],
                 'additionalProperties': False,
+            },
+            'queue_stats': {
+                'type': 'object',
+                'properties': {
+                    'messages': {
+                        'type': 'object',
+                        'properties': {
+                            'free': {
+                                'type': 'number',
+                                'minimum': 0
+                            },
+                            'claimed': {
+                                'type': 'number',
+                                'minimum': 0
+                            },
+                            'total': {
+                                'type': 'number',
+                                'minimum': 0
+                            },
+                            'oldest': {
+                                'type': 'object'
+                            },
+                            'newest': {
+                                'type': 'object'
+                            }
+
+                        },
+                        'required': ['free', 'claimed', 'total'],
+                        'additionalProperties': False
+                    }
+                },
+                'required': ['messages'],
+                'additionalProperties': False
+            },
+            'message_list': {
+                'type': 'object',
+                'properties': {
+                    'links': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'rel': {
+                                    'type': 'string'
+                                },
+                                'href': {
+                                    'type': 'string',
+                                    'pattern': '^/v1/queues/[a-zA-Z0-9_-]+'
+                                               '/messages\?(.)*$'
+                                }
+                            },
+                            'required': ['rel', 'href'],
+                            'additionalProperties': False
+                        }
+                    },
+                    'messages': {
+                        "type": "array",
+                        "items": message,
+                        "minItems": 1,
+                        "maxItems": self.limits.max_messages_per_claim
+                    }
+                }
+            },
+            'message_get_many': {
+                "type": "array",
+                "items": message,
+                "minItems": 1,
+                "maxItems": self.limits.max_messages_per_page
+            },
+
+            'claim_create': {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "href": claim_href,
+                        "ttl": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": self.limits.max_message_ttl
+                        },
+                        "age": age,
+                        "body": {
+                            "type": "object"
+                        }
+                    },
+                    "required": ["href", "ttl", "age", "body"],
+                    "additionalProperties": False,
+                },
+                "minItems": 1,
+                "maxItems": self.limits.max_messages_per_page
+            },
+
+            'claim_get': {
+                'type': 'object',
+                'properties': {
+                    'age': age,
+                    'ttl': {
+                        'type': 'number',
+                        'minimum': 0,
+                        'maximum': self.limits.max_claim_ttl
+                    },
+                    'href': {
+                        'type': 'string',
+                        'pattern': '^/v1/queues/[a-zA-Z0-9_-]+'
+                                   '/claims/[a-zA-Z0-9_-]+$'
+                    },
+                    'messages': {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "href": claim_href,
+                                "ttl": {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "maximum": self.limits.max_message_ttl
+                                },
+                                "age": age,
+                                "body": {
+                                    "type": "object"
+                                }
+                            },
+                            "required": ["href", "ttl", "age", "body"],
+                            "additionalProperties": False,
+                        },
+                        "minItems": 1,
+                        "maxItems": self.limits.max_messages_per_page
+                    }
+                },
+                'required': ['age', 'ttl', 'messages', 'href'],
+                'additionalProperties': False
             }
         }
