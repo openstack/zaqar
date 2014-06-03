@@ -24,6 +24,7 @@ import six
 from testtools import matchers
 
 from . import base  # noqa
+from marconi.openstack.common import jsonutils
 from marconi.openstack.common import timeutils
 from marconi.queues.transport import validation
 from marconi import tests as testing
@@ -73,7 +74,7 @@ class MessagesBaseTest(base.TestBase):
                                     body=sample_doc, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
         self.assertEqual(len(msg_ids), len(sample_messages))
@@ -107,7 +108,7 @@ class MessagesBaseTest(base.TestBase):
                                  message_uri)
 
                 # Check message properties
-                message = json.loads(result[0])
+                message = jsonutils.loads(result[0])
                 self.assertEqual(message['href'], message_uri)
                 self.assertEqual(message['body'], lookup[message['ttl']])
 
@@ -122,7 +123,7 @@ class MessagesBaseTest(base.TestBase):
                                    query_string=query_string)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        result_doc = json.loads(result[0])
+        result_doc = jsonutils.loads(result[0])
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in result_doc)
         self.assertFalse(expected_ttls - actual_ttls)
@@ -320,7 +321,7 @@ class MessagesBaseTest(base.TestBase):
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
-            contents = json.loads(body[0])
+            contents = jsonutils.loads(body[0])
             [target, params] = contents['links'][0]['href'].split('?')
 
             for msg in contents['messages']:
@@ -339,7 +340,7 @@ class MessagesBaseTest(base.TestBase):
         body = self.simulate_get(self.queue_path + '/stats', self.project_id)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        message_stats = json.loads(body[0])['messages']
+        message_stats = jsonutils.loads(body[0])['messages']
         self.assertEqual(self.srmock.headers_dict['Content-Location'],
                          self.queue_path + '/stats')
 
@@ -417,7 +418,7 @@ class MessagesBaseTest(base.TestBase):
     def test_delete_message_with_invalid_claim_doesnt_delete_message(self):
         path = self.queue_path
         resp = self._post_messages(path + '/messages', 1)
-        location = json.loads(resp[0])['resources'][0]
+        location = jsonutils.loads(resp[0])['resources'][0]
 
         self.simulate_delete(location, query_string='claim_id=invalid')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
@@ -437,7 +438,7 @@ class MessagesBaseTest(base.TestBase):
         body = self.simulate_get(path, self.project_id,
                                  query_string=query_string,
                                  headers=self.headers)
-        messages = json.loads(body[0])
+        messages = jsonutils.loads(body[0])
 
         self.assertNotIn(self.queue_path + '/messages/messages',
                          messages[0]['href'])

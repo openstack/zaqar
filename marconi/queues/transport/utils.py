@@ -15,6 +15,8 @@
 
 import json
 
+from marconi.openstack.common import strutils
+
 
 class MalformedJSON(ValueError):
     """JSON string is not valid."""
@@ -42,9 +44,11 @@ def read_json(stream, len):
     :param len: the number of bytes to read from stream
     """
     try:
-        return json.loads(stream.read(len), parse_int=_json_int)
-
+        content = strutils.safe_decode(stream.read(len), 'utf-8')
+        return json.loads(content, parse_int=_json_int)
     except ValueError as ex:
+        raise MalformedJSON(ex)
+    except UnicodeDecodeError as ex:
         raise MalformedJSON(ex)
 
 

@@ -21,6 +21,7 @@ import falcon
 
 from . import base  # noqa
 
+from marconi.openstack.common import jsonutils
 from marconi.queues import storage
 
 
@@ -51,7 +52,7 @@ class TestDefaultLimits(base.TestBase):
             result = self.simulate_get(self.queue_path)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-            queues = json.loads(result[0])['queues']
+            queues = jsonutils.loads(result[0])['queues']
             self.assertEqual(len(queues), storage.DEFAULT_QUEUES_PER_PAGE)
 
     def test_message_listing(self):
@@ -62,7 +63,7 @@ class TestDefaultLimits(base.TestBase):
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        messages = json.loads(result[0])['messages']
+        messages = jsonutils.loads(result[0])['messages']
         self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_PAGE)
 
     def test_claim_creation(self):
@@ -73,7 +74,7 @@ class TestDefaultLimits(base.TestBase):
 
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        messages = json.loads(result[0])
+        messages = jsonutils.loads(result[0])
         self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
 
     @contextlib.contextmanager
