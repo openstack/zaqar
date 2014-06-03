@@ -19,7 +19,9 @@ import sqlalchemy as sa
 from sqlalchemy import exc
 from sqlalchemy.sql import func as sfunc
 
+from marconi.openstack.common import jsonutils
 from marconi.openstack.common import log as logging
+from marconi.openstack.common import strutils
 from marconi.queues.storage import errors
 from marconi.queues.storage.sqlalchemy import tables
 
@@ -121,3 +123,11 @@ def stat_message(message):
         'age': message['age'],
         'created': message['created'],
     }
+
+
+def json_encode(obj):
+    return strutils.safe_encode(jsonutils.dumps(obj), 'utf-8')
+
+
+def json_decode(binary):
+    return jsonutils.loads(binary, 'utf-8')

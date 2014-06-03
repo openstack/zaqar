@@ -23,7 +23,6 @@ Schema:
 """
 
 import functools
-import json
 
 import sqlalchemy as sa
 
@@ -71,7 +70,7 @@ class ShardsController(base.ShardsBase):
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
     def create(self, name, weight, uri, options=None):
-        opts = None if options is None else json.dumps(options)
+        opts = None if options is None else utils.json_encode(options)
 
         try:
             stmt = sa.sql.expression.insert(tables.Shards).values(
@@ -104,7 +103,7 @@ class ShardsController(base.ShardsBase):
         assert fields, '`weight`, `uri`, or `options` not found in kwargs'
 
         if 'options' in fields:
-            fields['options'] = json.dumps(fields['options'])
+            fields['options'] = utils.json_encode(fields['options'])
 
         stmt = sa.sql.update(tables.Shards).where(
             tables.Shards.c.name == name).values(**fields)
@@ -134,6 +133,6 @@ def _normalize(shard, detailed=False):
     }
     if detailed:
         opts = shard[3]
-        ret['options'] = json.loads(opts) if opts else None
+        ret['options'] = utils.json_decode(opts) if opts else None
 
     return ret
