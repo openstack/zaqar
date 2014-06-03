@@ -16,30 +16,8 @@
 # single module.
 
 from marconi.tests.queues.transport.wsgi import base
-from marconi.tests.queues.transport.wsgi import test_auth
-from marconi.tests.queues.transport.wsgi import test_claims
-from marconi.tests.queues.transport.wsgi import test_default_limits
-from marconi.tests.queues.transport.wsgi import test_home
-from marconi.tests.queues.transport.wsgi import test_media_type
-from marconi.tests.queues.transport.wsgi import test_messages
-from marconi.tests.queues.transport.wsgi import test_queue_lifecycle as lc
-from marconi.tests.queues.transport.wsgi import test_shards
 
 TestBase = base.TestBase
 TestBaseFaulty = base.TestBaseFaulty
-TestAuth = test_auth.TestAuth
-TestClaimsFaultyDriver = test_claims.TestClaimsFaultyDriver
-TestClaimsMongoDB = test_claims.TestClaimsMongoDB
-TestClaimsSqlalchemy = test_claims.TestClaimsSqlalchemy
-TestDefaultLimits = test_default_limits.TestDefaultLimits
-TestHomeDocument = test_home.TestHomeDocument
-TestMediaType = test_media_type.TestMediaType
-TestMessagesFaultyDriver = test_messages.TestMessagesFaultyDriver
-TestMessagesMongoDB = test_messages.TestMessagesMongoDB
-TestMessagesMongoDBSharded = test_messages.TestMessagesMongoDBSharded
-TestMessagesSqlalchemy = test_messages.TestMessagesSqlalchemy
-TestQueueFaultyDriver = lc.TestQueueLifecycleFaultyDriver
-TestQueueLifecycleMongoDB = lc.TestQueueLifecycleMongoDB
-TestQueueLifecycleSqlalchemy = lc.TestQueueLifecycleSqlalchemy
-TestShardsMongoDB = test_shards.TestShardsMongoDB
-TestShardsSqlalchemy = test_shards.TestShardsSqlalchemy
+V1Base = base.V1Base
+V1_1Base = base.V1_1Base

@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import datetime
-import json
 import uuid
 
 import ddt
@@ -22,13 +21,14 @@ import falcon
 import mock
 from testtools import matchers
 
-from . import base  # noqa
+from marconi.openstack.common import jsonutils
 from marconi.openstack.common import timeutils
 from marconi import tests as testing
+from marconi.tests.queues.transport.wsgi import base
 
 
 @ddt.ddt
-class ClaimsBaseTest(base.TestBase):
+class ClaimsBaseTest(base.V1Base):
 
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
@@ -43,7 +43,7 @@ class ClaimsBaseTest(base.TestBase):
         self.simulate_put(self.queue_path, self.project_id, body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        doc = json.dumps([{'body': 239, 'ttl': 300}] * 10)
+        doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * 10)
         self.simulate_post(self.queue_path + '/messages', self.project_id,
                            body=doc, headers={'Client-ID': str(uuid.uuid4())})
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -74,7 +74,7 @@ class ClaimsBaseTest(base.TestBase):
     def test_unacceptable_ttl_or_grace(self, ttl_grace):
         ttl, grace = ttl_grace
         self.simulate_post(self.claims_path, self.project_id,
-                           body=json.dumps({'ttl': ttl, 'grace': grace}))
+                           body=jsonutils.dumps({'ttl': ttl, 'grace': grace}))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
@@ -83,7 +83,7 @@ class ClaimsBaseTest(base.TestBase):
         href = self._get_a_claim()
 
         self.simulate_patch(href, self.project_id,
-                            body=json.dumps({'ttl': ttl}))
+                            body=jsonutils.dumps({'ttl': ttl}))
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
@@ -99,7 +99,7 @@ class ClaimsBaseTest(base.TestBase):
         body = self.simulate_post(self.claims_path, self.project_id, body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        claimed = json.loads(body[0])
+        claimed = jsonutils.loads(body[0])
         claim_href = self.srmock.headers_dict['Location']
         message_href, params = claimed[0]['href'].split('?')
 
@@ -121,7 +121,7 @@ class ClaimsBaseTest(base.TestBase):
         body = self.simulate_get(self.messages_path, self.project_id,
                                  query_string='include_claimed=true',
                                  headers=headers)
-        listed = json.loads(body[0])
+        listed = jsonutils.loads(body[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertEqual(len(listed['messages']), len(claimed))
 
@@ -131,7 +131,7 @@ class ClaimsBaseTest(base.TestBase):
             mock_utcnow.return_value = now
             body = self.simulate_get(claim_href, self.project_id)
 
-        claim = json.loads(body[0])
+        claim = jsonutils.loads(body[0])
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertEqual(self.srmock.headers_dict['Content-Location'],
@@ -166,7 +166,7 @@ class ClaimsBaseTest(base.TestBase):
         # Get the claimed messages (again)
         body = self.simulate_get(claim_href, self.project_id)
         query = timeutils.utcnow()
-        claim = json.loads(body[0])
+        claim = jsonutils.loads(body[0])
         message_href, params = claim['messages'][0]['href'].split('?')
 
         self.assertEqual(claim['ttl'], 60)
@@ -218,7 +218,7 @@ class ClaimsBaseTest(base.TestBase):
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
     def test_patch_nonexistent_claim_404s(self):
-        patch_data = json.dumps({'ttl': 100})
+        patch_data = jsonutils.dumps({'ttl': 100})
         self.simulate_patch(self.claims_path + '/a', body=patch_data)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
@@ -248,7 +248,7 @@ class TestClaimsSqlalchemy(ClaimsBaseTest):
     config_file = 'wsgi_sqlalchemy.conf'
 
 
-class TestClaimsFaultyDriver(base.TestBaseFaulty):
+class TestClaimsFaultyDriver(base.V1BaseFaulty):
 
     config_file = 'wsgi_faulty.conf'
 

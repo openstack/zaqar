@@ -16,13 +16,13 @@ import ddt
 import falcon
 import six
 
-from . import base  # noqa
 from marconi.openstack.common import jsonutils
 from marconi import tests as testing
+from marconi.tests.queues.transport.wsgi import base
 
 
 @ddt.ddt
-class QueueLifecycleBaseTest(base.TestBase):
+class QueueLifecycleBaseTest(base.V1Base):
 
     config_file = None
 
@@ -361,7 +361,7 @@ class TestQueueLifecycleSqlalchemy(QueueLifecycleBaseTest):
     config_file = 'wsgi_sqlalchemy.conf'
 
 
-class TestQueueLifecycleFaultyDriver(base.TestBaseFaulty):
+class TestQueueLifecycleFaultyDriver(base.V1BaseFaulty):
 
     config_file = 'wsgi_faulty.conf'
 

@@ -14,7 +14,8 @@
 
 import falcon
 
-from marconi.tests.queues.transport import wsgi
+from marconi.tests.queues.transport.wsgi import base
+from marconi.tests.queues.transport.wsgi import v1
 
 
 #----------------------------------------------------------------------------
@@ -24,67 +25,67 @@ from marconi.tests.queues.transport import wsgi
 URL_PREFIX = '/v1'
 
 
-class TestAuth(wsgi.TestAuth):
+class TestAuth(v1.TestAuth):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsFaultyDriver(wsgi.TestClaimsFaultyDriver):
+class TestClaimsFaultyDriver(v1.TestClaimsFaultyDriver):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsMongoDB(wsgi.TestClaimsMongoDB):
+class TestClaimsMongoDB(v1.TestClaimsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsSqlalchemy(wsgi.TestClaimsSqlalchemy):
+class TestClaimsSqlalchemy(v1.TestClaimsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestDefaultLimits(wsgi.TestDefaultLimits):
+class TestDefaultLimits(v1.TestDefaultLimits):
     url_prefix = URL_PREFIX
 
 
-class TestHomeDocument(wsgi.TestHomeDocument):
+class TestHomeDocument(v1.TestHomeDocument):
     url_prefix = URL_PREFIX
 
 
-class TestMediaType(wsgi.TestMediaType):
+class TestMediaType(v1.TestMediaType):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesFaultyDriver(wsgi.TestMessagesFaultyDriver):
+class TestMessagesFaultyDriver(v1.TestMessagesFaultyDriver):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesMongoDB(wsgi.TestMessagesMongoDB):
+class TestMessagesMongoDB(v1.TestMessagesMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesMongoDBSharded(wsgi.TestMessagesMongoDBSharded):
+class TestMessagesMongoDBSharded(v1.TestMessagesMongoDBSharded):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesSqlalchemy(wsgi.TestMessagesSqlalchemy):
+class TestMessagesSqlalchemy(v1.TestMessagesSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestQueueFaultyDriver(wsgi.TestQueueFaultyDriver):
+class TestQueueFaultyDriver(v1.TestQueueFaultyDriver):
     url_prefix = URL_PREFIX
 
 
-class TestQueueLifecycleMongoDB(wsgi.TestQueueLifecycleMongoDB):
+class TestQueueLifecycleMongoDB(v1.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestQueueLifecycleSqlalchemy(wsgi.TestQueueLifecycleSqlalchemy):
+class TestQueueLifecycleSqlalchemy(v1.TestQueueLifecycleSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestShardsMongoDB(wsgi.TestShardsMongoDB):
+class TestShardsMongoDB(v1.TestShardsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestShardsSqlalchemy(wsgi.TestShardsSqlalchemy):
+class TestShardsSqlalchemy(v1.TestShardsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
@@ -92,7 +93,7 @@ class TestShardsSqlalchemy(wsgi.TestShardsSqlalchemy):
 # v1.0 only
 #----------------------------------------------------------------------------
 
-class TestHealth(wsgi.TestBase):
+class TestHealth(base.V1Base):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

@@ -15,11 +15,14 @@
 import falcon
 import six.moves.urllib.parse as urlparse
 
-from . import base  # noqa
+
 from marconi.openstack.common import jsonutils
 
 
-class TestHomeDocument(base.TestBase):
+from marconi.tests.queues.transport.wsgi import base
+
+
+class TestHomeDocument(base.V1Base):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

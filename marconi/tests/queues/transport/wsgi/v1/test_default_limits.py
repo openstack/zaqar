@@ -14,18 +14,16 @@
 # limitations under the License.
 
 import contextlib
-import json
 import uuid
 
 import falcon
 
-from . import base  # noqa
-
 from marconi.openstack.common import jsonutils
 from marconi.queues import storage
+from marconi.tests.queues.transport.wsgi import base
 
 
-class TestDefaultLimits(base.TestBase):
+class TestDefaultLimits(base.V1Base):
 
     config_file = 'wsgi_sqlalchemy_default_limits.conf'
 
@@ -92,7 +90,7 @@ class TestDefaultLimits(base.TestBase):
             self.simulate_delete(path)
 
     def _prepare_messages(self, count):
-        doc = json.dumps([{'body': 239, 'ttl': 300}] * count)
+        doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * count)
         self.simulate_post(self.messages_path, body=doc,
                            headers={'Client-ID': str(uuid.uuid4())})
 
