@@ -238,7 +238,7 @@ class MessageController(storage.Message):
             statement = statement.order_by(tables.Messages.c.id.desc())
             result = trans.execute(statement).fetchall()
 
-        return map(utils.msgid_encode, [i[0] for i in reversed(result)])
+        return [utils.msgid_encode(i[0]) for i in reversed(result)]
 
     def delete(self, queue, message_id, project, claim=None):
         if project is None:

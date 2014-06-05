@@ -88,7 +88,9 @@ def msgid_decode(id):
 
 
 def marker_encode(id):
-    return oct(id ^ 0x3c96a355)[1:]
+    # NOTE(AAzza): cannot use oct(id) here, because on Python 3 it returns
+    # string with prefix '0o', whereas on Python 2 prefix is just '0'
+    return '{0:o}'.format(id ^ 0x3c96a355)
 
 
 def marker_decode(id):
