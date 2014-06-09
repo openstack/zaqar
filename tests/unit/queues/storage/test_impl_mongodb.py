@@ -35,12 +35,17 @@ from marconi import tests as testing
 from marconi.tests.queues.storage import base
 
 
-def _cleanup_databases(controller):
-    databases = (controller.driver.message_databases +
-                 [controller.driver.queues_database])
+class MongodbDBSetup(testing.TestBase):
+    def _purge_databases(self):
+        databases = (self.driver.message_databases +
+                     [self.driver.queues_database])
 
-    for db in databases:
-        controller.driver.connection.drop_database(db)
+        for db in databases:
+            self.driver.connection.drop_database(db)
+
+    def _prepare_conf(self):
+        self.config(options.MONGODB_GROUP,
+                    database=uuid.uuid4().hex)
 
 
 class MongodbUtilsTest(testing.TestBase):
@@ -133,9 +138,6 @@ class MongodbDriverTest(testing.TestBase):
 
     config_file = 'wsgi_mongodb.conf'
 
-    def _purge_databases(self):
-        _cleanup_databases(self)
-
     def test_db_instance(self):
         cache = oslo_cache.get_cache()
         driver = mongodb.DataDriver(self.conf, cache)
@@ -154,13 +156,6 @@ class MongodbQueueTests(base.QueueControllerTest):
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.QueueController
-
-    def _purge_databases(self):
-        _cleanup_databases(self)
-
-    def _prepare_conf(self):
-        self.config(options.MONGODB_GROUP,
-                    database=uuid.uuid4().hex)
 
     def test_indexes(self):
         collection = self.controller._collection
@@ -197,13 +192,6 @@ class MongodbMessageTests(base.MessageControllerTest):
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
-
-    def _purge_databases(self):
-        _cleanup_databases(self)
-
-    def _prepare_conf(self):
-        self.config(options.MONGODB_GROUP,
-                    database=uuid.uuid4().hex)
 
     def test_indexes(self):
         for collection in self.controller._collections:
@@ -348,13 +336,6 @@ class MongodbClaimTests(base.ClaimControllerTest):
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.ClaimController
-
-    def _purge_databases(self):
-        _cleanup_databases(self)
-
-    def _prepare_conf(self):
-        self.config(options.MONGODB_GROUP,
-                    database=uuid.uuid4().hex)
 
     def test_claim_doesnt_exist(self):
         """Verifies that operations fail on expired/missing claims.
