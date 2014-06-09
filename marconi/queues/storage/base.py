@@ -567,3 +567,99 @@ class CatalogueBase(ControllerBase):
     def drop_all(self):
         """Drops all catalogue entries from storage."""
         raise NotImplementedError
+
+
+@six.add_metaclass(abc.ABCMeta)
+class FlavorsBase(ControllerBase):
+    """A controller for managing flavors."""
+
+    @abc.abstractmethod
+    def list(self, project=None, marker=None, limit=10, detailed=False):
+        """Lists all registered flavors.
+
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :param marker: used to determine which flavor to start with
+        :type marker: six.text_type
+        :param limit: (Default 10) Max number of results to return
+        :type limit: int
+        :param detailed: whether to include capabilities
+        :type detailed: bool
+        :returns: A list of flavors - name, project, flavor
+        :rtype: [{}]
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create(self, name, pool, project=None, capabilities=None):
+        """Registers a flavor entry.
+
+        :param name: The name of this flavor
+        :type name: six.text_type
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :param pool: The name of the pool to use for this flavor.
+        :type pool: six.text_type
+        :param capabilities: Flavor capabilities
+        :type capabilities: dict
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(self, name, project=None, detailed=False):
+        """Returns a single flavor entry.
+
+        :param name: The name of this flavor
+        :type name: six.text_type
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :param detailed: Should the options data be included?
+        :type detailed: bool
+        :rtype: {}
+        :raises: FlavorDoesNotExist if not found
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, name, project=None):
+        """Verifies whether the flavor exists.
+
+        :param name: The name of this flavor
+        :type name: six.text_type
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :returns: True if the flavor exists
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, name, project=None):
+        """Removes a flavor entry.
+
+        :param name: The name of this flavor
+        :type name: six.text_type
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, name, project=None, **kwargs):
+        """Updates the flavor and/or capabilities of this flavor
+
+        :param name: Name of the flavor
+        :type name: text
+        :param project: Project this flavor belongs to.
+        :type project: six.text_type
+        :param kwargs: one of: `uri`, `weight`, `options`
+        :type kwargs: dict
+        :raises: FlavorDoesNotExist
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def drop_all(self):
+        """Deletes all flavors from storage."""
+        raise NotImplementedError
