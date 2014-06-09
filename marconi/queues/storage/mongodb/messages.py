@@ -573,7 +573,7 @@ class MessageController(storage.Message):
                                       {'$set': {'tx': None}},
                                       upsert=False, multi=True)
 
-                return map(str, ids)
+                return [str(id_) for id_ in ids]
 
             except pymongo.errors.DuplicateKeyError as ex:
                 # TODO(kgriffs): Record stats of how often retries happen,
