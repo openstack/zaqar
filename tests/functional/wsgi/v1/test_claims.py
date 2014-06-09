@@ -66,8 +66,7 @@ class TestClaims(base.FunctionalTestBase):
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_with_body, response_headers)
 
-        # NOTE(abettadapur) This fails because of Bug #1321840
-        # self.assertSchema(result.json(), 'claim_create')
+        self.assertSchema(result.json(), 'claim_create')
 
     test_claim_messages.tags = ['smoke', 'positive']
 
@@ -84,8 +83,7 @@ class TestClaims(base.FunctionalTestBase):
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
-        # NOTE(abettadapur) This fails because of Bug #1321840
-        # self.assertSchema(result.json(), 'claim_get')
+        self.assertSchema(result.json(), 'claim_get')
 
     test_query_claim.tags = ['smoke', 'positive']
 
