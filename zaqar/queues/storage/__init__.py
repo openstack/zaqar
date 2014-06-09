@@ -24,6 +24,7 @@ Claim = base.Claim
 Message = base.Message
 Queue = base.Queue
 PoolsBase = base.PoolsBase
+FlavorsBase = base.FlavorsBase
 
 DEFAULT_QUEUES_PER_PAGE = base.DEFAULT_QUEUES_PER_PAGE
 DEFAULT_MESSAGES_PER_PAGE = base.DEFAULT_MESSAGES_PER_PAGE

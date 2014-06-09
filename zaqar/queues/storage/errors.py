@@ -133,6 +133,14 @@ class PoolDoesNotExist(DoesNotExist):
         super(PoolDoesNotExist, self).__init__(pool=pool)
 
 
+class FlavorDoesNotExist(DoesNotExist):
+
+    msg_format = u'Flavor {flavor} does not exist'
+
+    def __init__(self, flavor):
+        super(FlavorDoesNotExist, self).__init__(flavor=flavor)
+
+
 class NoPoolFound(ExceptionBase):
 
     msg_format = u'No pools registered'

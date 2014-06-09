@@ -168,3 +168,7 @@ class ControlDriver(storage.ControlDriverBase):
     @property
     def catalogue_controller(self):
         return controllers.CatalogueController(self)
+
+    @property
+    def flavors_controller(self):
+        return controllers.FlavorsController(self)

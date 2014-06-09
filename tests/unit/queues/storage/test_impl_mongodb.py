@@ -439,3 +439,14 @@ class PooledClaimsTests(base.ClaimControllerTest):
     driver_class = pooling.DataDriver
     control_driver_class = mongodb.ControlDriver
     controller_base_class = pooling.RoutingController
+
+
+@testing.requires_mongodb
+class MongodbFlavorsTest(base.FlavorsControllerTest):
+    driver_class = mongodb.ControlDriver
+    controller_class = controllers.FlavorsController
+
+    def setUp(self):
+        super(MongodbFlavorsTest, self).setUp()
+        self.load_conf('wsgi_mongodb.conf')
+        self.addCleanup(self.controller.drop_all)
