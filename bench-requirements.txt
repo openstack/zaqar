@@ -1,0 +1,5 @@
+argparse>=1.2.1
+gevent>=1.0.1
+marktime>=0.2.0
+psutil>=2.1.1
+python-marconiclient>=0.0.2
