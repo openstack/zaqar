@@ -22,7 +22,8 @@ import jsonschema
 import six
 
 from marconi.openstack.common import timeutils
-from marconi.queues.api.v1 import response
+from marconi.queues.api.v1 import response as response_v1
+from marconi.queues.api.v1_1 import response as response_v1_1
 from marconi.queues import bootstrap
 # TODO(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
@@ -49,7 +50,6 @@ class FunctionalTestBase(testing.TestBase):
 
     def setUp(self):
         super(FunctionalTestBase, self).setUp()
-
         # NOTE(flaper87): Config can't be a class
         # attribute because it may be necessary to
         # modify it at runtime which will affect
@@ -63,8 +63,6 @@ class FunctionalTestBase(testing.TestBase):
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
-        self.response = response.ResponseSchema(self.limits)
-
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
             # an external wsgi server instance.
@@ -118,20 +116,6 @@ class FunctionalTestBase(testing.TestBase):
                ', actual count = {1}'.format(expectedCount, actualCount))
         self.assertTrue(actualCount <= expectedCount, msg)
 
-    def assertSchema(self, response, expectedSchemaName):
-        """Compares the json response with the expected schema
-
-        :param response: response json returned by the API.
-        :type response: dict
-        :param expectedSchema: expected schema definition for response.
-        :type expectedSchema: string
-        """
-        try:
-            expectedSchema = self.response.get_schema(expectedSchemaName)
-            jsonschema.validate(response, expectedSchema)
-        except jsonschema.ValidationError as message:
-            assert False, message
-
     def assertQueueStats(self, result_json, claimed):
         """Checks the Queue Stats results
 
@@ -153,6 +137,20 @@ class FunctionalTestBase(testing.TestBase):
 
             newest_message = result_json['messages']['newest']
             self.verify_message_stats(newest_message)
+
+    def assertSchema(self, response, expectedSchemaName):
+        """Compares the json response with the expected schema
+
+        :param response: response json returned by the API.
+        :type response: dict
+        :param expectedSchema: expected schema definition for response.
+        :type expectedSchema: string
+        """
+        try:
+            expectedSchema = self.response.get_schema(expectedSchemaName)
+            jsonschema.validate(response, expectedSchema)
+        except jsonschema.ValidationError as message:
+            assert False, message
 
     def verify_message_stats(self, message):
         """Verifies the oldest & newest message stats
@@ -276,3 +274,15 @@ class MarconiAdminServer(Server):
         server = bootstrap.Bootstrap(conf)
         conf.admin_mode = False
         return server.run
+
+
+class V1FunctionalTestBase(FunctionalTestBase):
+    def setUp(self):
+        super(V1FunctionalTestBase, self).setUp()
+        self.response = response_v1.ResponseSchema(self.limits)
+
+
+class V1_1FunctionalTestBase(FunctionalTestBase):
+    def setUp(self):
+        super(V1_1FunctionalTestBase, self).setUp()
+        self.response = response_v1_1.ResponseSchema(self.limits)

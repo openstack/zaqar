@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2014 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,29 +24,92 @@ from marconi.tests.functional import helpers
 
 
 @ddt.ddt
-class TestMessages(base.V1FunctionalTestBase):
+class TestMessages(base.V1_1FunctionalTestBase):
 
-    """Tests for Messages."""
+    """Message Tests Specific to V1.1."""
 
     server_class = base.MarconiServer
 
     def setUp(self):
         super(TestMessages, self).setUp()
 
-        self.queue = uuid.uuid1()
+        self.queue = uuid.uuid1()  # Generate a random queue ID
         self.queue_url = ("{url}/{version}/queues/{queue}".format(
-                          url=self.cfg.marconi.url,
-                          version="v1",
-                          queue=self.queue))
+            url=self.cfg.marconi.url,
+            version="v1.1",
+            queue=self.queue))
 
-        self.client.put(self.queue_url)
+        self.headers = helpers.create_marconi_headers(self.cfg)
+        self.client.headers = self.headers
 
-        self.message_url = self.queue_url + '/messages'
+        self.client.put(self.queue_url)  # Create the queue
+        self.message_url = self.queue_url+'/messages'
         self.client.set_base_url(self.message_url)
 
     def tearDown(self):
-        self.client.delete(self.queue_url)
+        self.client.delete(self.queue_url)  # Remove the queue
         super(TestMessages, self).tearDown()
+
+    # TODO(abettadapur) Not sure if return format is right
+    def test_message_single_pop(self):
+        """Pop a message."""
+        # Setup
+        self.skipTest("Not supported")
+        doc = helpers.create_message_body(messagecount=1)
+        result = self.client.post(data=doc)
+        href = result.json()['links'][0]['href']
+        index = href.find('/')
+        id = href[index+1:]
+        self.assertEqual(result.status_code, 200)
+
+        # Pop a message, compare the HREFs. They should be the same
+        url = self.message_url+'?pop=1'
+        result = self.client.delete(url)
+        claimid = result.json()['messages'][0]['id']
+        self.assertEqual(claimid, id)
+        # Make sure there are no messages left in the queue
+        result = self.client.get(self.message_url)
+        self.assertEqual(result.status_code, 204)
+
+    # TODO(abettadapur) Not sure if return format is right
+    def test_message_bulk_pop(self):
+        """Pop multiple messages."""
+        # Setup
+        self.skipTest("Not supported")
+        doc = helpers.create_message_body(messagecount=10)
+        result = self.client.post(data=doc)
+        links = result.json()["links"]
+
+        # Gather inserted ids
+        ids = []
+        for item in links:
+            href = item['href']
+            index = href.find('/')
+            ids.append(href[index:])
+
+        # Pop the 10 messages
+        url = self.message_url+'?pop=10'
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 200)
+        claims = result.json()
+
+        # compare the HREFS
+        match = True
+        for i in range(0, 10):
+            if ids[i] != claims['messages'][i]['id']:
+                match = False
+                break
+
+        self.assertEqual(match, True)
+        # Make sure there are no messages left in the queue
+        result = self.client.get(self.message_url)
+        self.assertEqual(result.status_code, 204)
+
+    def test_message_pop_too_high(self):
+        self.skipTest("Not supported")
+        url = self.message_url+'?pop=21'
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, 400)
 
     def _post_large_bulk_insert(self, offset):
         """Insert just under than max allowed messages."""
@@ -102,7 +165,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # By default, include_claimed = false
         result = self.client.get(self.message_url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(result.status_code, 200)
 
     test_message_single_insert.tags = ['smoke', 'positive']
 
@@ -143,7 +206,11 @@ class TestMessages(base.V1FunctionalTestBase):
     def test_get_message(self, params):
         """Get Messages."""
 
-        expected_msg_count = params.get('limit', 10)
+        # Note(abettadapur): This will now return 200s and [].
+        # Needs to be addressed when feature patch goes in
+        self.skipTest("Not supported")
+        expected_msg_count = params.get('limit',
+                                        self.limits.max_messages_per_page)
 
         # Test Setup
         doc = helpers.create_message_body(
@@ -164,8 +231,6 @@ class TestMessages(base.V1FunctionalTestBase):
             if result.status_code == 200:
                 actual_msg_count = len(result.json()['messages'])
                 self.assertMessageCount(actual_msg_count, expected_msg_count)
-
-                self.assertSchema(result.json(), 'message_list')
 
                 href = result.json()['links'][0]['href']
                 url = self.cfg.marconi.url + href
@@ -208,7 +273,7 @@ class TestMessages(base.V1FunctionalTestBase):
         self.assertEqual(result.status_code, 204)
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(result.status_code, 404)
 
     test_message_bulk_delete.tags = ['smoke', 'positive']
 
@@ -249,8 +314,6 @@ class TestMessages(base.V1FunctionalTestBase):
         url += ',nonexisting'
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-
-        self.assertSchema(result.json(), "message_get_many")
 
     test_message_partial_get.tags = ['negative']
 
@@ -303,9 +366,9 @@ class TestMessages(base.V1FunctionalTestBase):
         By default, max messages that can be deleted in a single
         request is 20.
         """
-        url = (self.message_url + '?ids=' +
-               ','.join(str(i) for i in
-                        range(self.limits.max_messages_per_page + 1)))
+        url = (self.message_url + '?ids='
+               + ','.join(str(i) for i in
+                          range(self.limits.max_messages_per_page + 1)))
         result = self.client.delete(url)
 
         self.assertEqual(result.status_code, 400)
@@ -318,9 +381,11 @@ class TestMessages(base.V1FunctionalTestBase):
         By default, max messages that can be fetched in a single
         request is 20.
         """
-        url = (self.message_url + '?ids=' +
-               ','.join(str(i) for i in
-                        range(self.limits.max_messages_per_page + 1)))
+
+        url = (self.message_url + '?ids='
+               + ','.join(str(i) for i in
+                          range(self.limits.max_messages_per_page + 1)))
+
         result = self.client.get(url)
 
         self.assertEqual(result.status_code, 400)
@@ -331,8 +396,9 @@ class TestMessages(base.V1FunctionalTestBase):
         """Get messages with non-existing marker."""
         url = self.message_url + '?marker=invalid'
 
-        result = self.client.get(url)
-        self.assertEqual(result.status_code, 204)
+        result = self.client.get(url, headers=self.headers)
+        self.assertEqual(result.status_code, 200)
+        self.assertSchema(result.json(), 'message_list')
 
     test_get_messages_malformed_marker.tags = ['negative']
 
@@ -363,7 +429,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """Get Set of Non Existing Messages."""
         path = '?ids=not_there1,not_there2'
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(result.status_code, 404)
 
     test_query_non_existing_message_set.tags = ['negative']
 
@@ -374,3 +440,16 @@ class TestMessages(base.V1FunctionalTestBase):
         self.assertEqual(result.status_code, 204)
 
     test_delete_non_existing_message.tags = ['negative']
+
+    def test_message_bad_header_single_insert(self):
+        """Insert Single Message into the Queue.
+
+        This should fail because of the lack of a Client-ID header
+        """
+
+        self.skipTest("Not supported")
+        del self.client.headers["Client-ID"]
+        doc = helpers.create_message_body(messagecount=1)
+
+        result = self.client.post(data=doc)
+        self.assertEqual(result.status_code, 400)

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2014 Rackspace, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from marconi.tests.functional import helpers
 
 
 @ddt.ddt
-class TestClaims(base.V1FunctionalTestBase):
+class TestClaims(base.V1_1FunctionalTestBase):
     """Tests for Claims."""
 
     server_class = base.MarconiServer
@@ -30,10 +30,13 @@ class TestClaims(base.V1FunctionalTestBase):
     def setUp(self):
         super(TestClaims, self).setUp()
 
+        self.headers = helpers.create_marconi_headers(self.cfg)
+        self.client.headers = self.headers
+
         self.queue = uuid.uuid1()
         self.queue_url = ("{url}/{version}/queues/{queue}".format(
                           url=self.cfg.marconi.url,
-                          version="v1",
+                          version="v1.1",
                           queue=self.queue))
 
         self.client.put(self.queue_url)
@@ -49,7 +52,7 @@ class TestClaims(base.V1FunctionalTestBase):
         for i in range(10):
             self.client.post(url, data=doc)
 
-    @ddt.data({}, dict(limit=2))
+    @ddt.data({}, {'limit': 2})
     def test_claim_messages(self, params):
         """Claim messages."""
         message_count = params.get('limit', self.limits.max_messages_per_claim)
@@ -64,7 +67,6 @@ class TestClaims(base.V1FunctionalTestBase):
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_with_body, response_headers)
-        self.assertSchema(result.json(), 'claim_create')
 
     test_claim_messages.tags = ['smoke', 'positive']
 
@@ -80,8 +82,6 @@ class TestClaims(base.V1FunctionalTestBase):
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-
-        self.assertSchema(result.json(), 'claim_get')
 
     test_query_claim.tags = ['smoke', 'positive']
 
