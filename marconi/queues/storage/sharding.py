@@ -41,7 +41,7 @@ _SHARD_CACHE_PREFIX = 'sharding:'
 # before "unfreezing" the queue, rather than waiting
 # on the TTL.
 #
-# TODO(kgriffs): Make configurable?
+# TODO(kgriffs): Make dynamic?
 _SHARD_CACHE_TTL = 10
 
 
@@ -106,7 +106,7 @@ class RoutingController(storage.base.ControllerBase):
         self._ctrl_property_name = self._resource_name + '_controller'
         self._shard_catalog = shard_catalog
 
-    @decorators.cached_getattr
+    @decorators.memoized_getattr
     def __getattr__(self, name):
         # NOTE(kgriffs): Use a closure trick to avoid
         # some attr lookups each time forward() is called.
@@ -358,6 +358,7 @@ class Catalog(object):
         conf = utils.dynamic_conf(shard['uri'], shard['options'])
         return utils.load_storage_driver(conf, self._cache)
 
+    @decorators.caches(_shard_cache_key, _SHARD_CACHE_TTL)
     def _shard_id(self, queue, project=None):
         """Get the ID for the shard assigned to the given queue.
 
@@ -368,19 +369,7 @@ class Catalog(object):
 
         :raises: `errors.QueueNotMapped`
         """
-        cache_key = _shard_cache_key(queue, project)
-        shard_id = self._cache.get(cache_key)
-
-        if shard_id is None:
-            shard_id = self._catalogue_ctrl.get(project, queue)['shard']
-
-            if not self._cache.set(cache_key, shard_id, _SHARD_CACHE_TTL):
-                LOG.warn('Failed to cache shard ID')
-
-        return shard_id
-
-    def _invalidate_cached_id(self, queue, project=None):
-        self._cache.unset_many([_shard_cache_key(queue, project)])
+        return self._catalogue_ctrl.get(project, queue)['shard']
 
     def register(self, queue, project=None):
         """Register a new queue in the shard catalog.
@@ -413,6 +402,7 @@ class Catalog(object):
 
             self._catalogue_ctrl.insert(project, queue, shard['name'])
 
+    @_shard_id.purges
     def deregister(self, queue, project=None):
         """Removes a queue from the shard catalog.
 
@@ -425,7 +415,6 @@ class Catalog(object):
             None for the "global" or "generic" project.
         :type project: six.text_type
         """
-        self._invalidate_cached_id(queue, project)
         self._catalogue_ctrl.delete(project, queue)
 
     def lookup(self, queue, project=None):

@@ -41,7 +41,7 @@ class DriverBase(object):
     :param storage: The storage driver
     :type storage: marconi.queues.storage.base.DataDriverBase
     :param cache: caching object
-    :type cache: marconi.common.cache.backends.BaseCache
+    :type cache: marconi.openstack.common.cache.backends.BaseCache
     :param control: Storage driver to handle the control plane
     :type control: marconi.queues.storage.base.ControlDriverBase
     """

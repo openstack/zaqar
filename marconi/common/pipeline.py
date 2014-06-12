@@ -48,7 +48,7 @@ class Pipeline(object):
     def append(self, stage):
         self._pipeline.append(stage)
 
-    @decorators.cached_getattr
+    @decorators.memoized_getattr
     def __getattr__(self, name):
         with self.consumer_for(name) as consumer:
             return consumer

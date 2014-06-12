@@ -33,7 +33,7 @@ class DriverBase(object):
     :type conf: `oslo.config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `marconi.common.cache.backends.BaseCache`
+    :type cache: `marconi.openstack.common.cache.backends.BaseCache`
     """
     def __init__(self, conf, cache):
         self.conf = conf
@@ -54,7 +54,7 @@ class DataDriverBase(DriverBase):
     :type conf: `oslo.config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `marconi.common.cache.backends.BaseCache`
+    :type cache: `marconi.openstack.common.cache.backends.BaseCache`
     """
 
     def __init__(self, conf, cache):
@@ -96,7 +96,7 @@ class ControlDriverBase(DriverBase):
     :type conf: `oslo.config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `marconi.common.cache.backends.BaseCache`
+    :type cache: `marconi.openstack.common.cache.backends.BaseCache`
     """
 
     @abc.abstractproperty
