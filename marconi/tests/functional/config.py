@@ -25,8 +25,8 @@ _DEFAULT = (
 _AUTH_OPTIONS = (
     cfg.BoolOpt("auth_on", default=False),
     cfg.StrOpt("url", default="https://127.0.0.1:5000/v2.0/tokens"),
-    cfg.StrOpt("username", default=None),
-    cfg.StrOpt("password", default=None),
+    cfg.StrOpt("username"),
+    cfg.StrOpt("password"),
 )
 
 
