@@ -106,3 +106,43 @@ class TestBase(testing.TestBase):
 
 class TestBaseFaulty(TestBase):
     """This test ensures we aren't letting any exceptions go unhandled."""
+
+
+class V1Base(TestBase):
+    """Base class for V1 API Tests.
+    Should contain methods specific to V1 of the API
+    """
+    pass
+
+
+class V1BaseFaulty(TestBaseFaulty):
+    """Base class for V1 API Faulty Tests.
+    Should contain methods specific to V1 exception testing
+    """
+    pass
+
+
+class V1_1Base(TestBase):
+    """Base class for V1 API Tests.
+    Should contain methods specific to V1.1 of the API
+    """
+
+    def simulate_request(self, path, **kwargs):
+        """Simulate a request.
+
+        Simulates a WSGI request to the API for testing.
+
+        :param path: Request path for the desired resource
+        :param kwargs: Same as falcon.testing.create_environ()
+
+        :returns: standard WSGI iterable response
+        """
+        return self.app(ftest.create_environ(path=path, **kwargs),
+                        self.srmock)
+
+
+class V1_1BaseFaulty(TestBaseFaulty):
+    """Base class for V1.1 API Faulty Tests.
+    Should contain methods specific to V1.1 exception testing
+    """
+    pass

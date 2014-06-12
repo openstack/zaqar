@@ -20,10 +20,10 @@ import falcon
 from falcon import testing
 from keystoneclient.middleware import auth_token
 
-from . import base  # noqa
+from marconi.tests.queues.transport.wsgi import base
 
 
-class TestAuth(base.TestBase):
+class TestAuth(base.V1Base):
 
     config_file = 'keystone_auth.conf'
 

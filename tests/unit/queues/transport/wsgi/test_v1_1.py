@@ -14,8 +14,8 @@
 
 import falcon
 
-from marconi.tests.queues.transport import wsgi
-
+from marconi.tests.queues.transport.wsgi import base
+from marconi.tests.queues.transport.wsgi import v1_1
 
 #----------------------------------------------------------------------------
 # Identical or just minor variations across versions
@@ -24,69 +24,69 @@ from marconi.tests.queues.transport import wsgi
 URL_PREFIX = '/v1.1'
 
 
-class TestAuth(wsgi.TestAuth):
+class TestAuth(v1_1.TestAuth):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsFaultyDriver(wsgi.TestClaimsFaultyDriver):
+class TestClaimsFaultyDriver(v1_1.TestClaimsFaultyDriver):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsMongoDB(wsgi.TestClaimsMongoDB):
+class TestClaimsMongoDB(v1_1.TestClaimsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsSqlalchemy(wsgi.TestClaimsSqlalchemy):
+class TestClaimsSqlalchemy(v1_1.TestClaimsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestDefaultLimits(wsgi.TestDefaultLimits):
+class TestDefaultLimits(v1_1.TestDefaultLimits):
     url_prefix = URL_PREFIX
 
 
-class TestHomeDocument(wsgi.TestHomeDocument):
+class TestHomeDocument(v1_1.TestHomeDocument):
     url_prefix = URL_PREFIX
 
 
-class TestMediaType(wsgi.TestMediaType):
+class TestMediaType(v1_1.TestMediaType):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesFaultyDriver(wsgi.TestMessagesFaultyDriver):
+class TestMessagesFaultyDriver(v1_1.TestMessagesFaultyDriver):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesMongoDB(wsgi.TestMessagesMongoDB):
+class TestMessagesMongoDB(v1_1.TestMessagesMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesMongoDBSharded(wsgi.TestMessagesMongoDBSharded):
+class TestMessagesMongoDBSharded(v1_1.TestMessagesMongoDBSharded):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesSqlalchemy(wsgi.TestMessagesSqlalchemy):
+class TestMessagesSqlalchemy(v1_1.TestMessagesSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestQueueFaultyDriver(wsgi.TestQueueFaultyDriver):
+class TestQueueFaultyDriver(v1_1.TestQueueFaultyDriver):
     url_prefix = URL_PREFIX
 
 
 # TODO(kgriffs): Having to list a separate test for each backend is
 # sort of a pain; is there a better way?
-class TestQueueLifecycleMongoDB(wsgi.TestQueueLifecycleMongoDB):
+class TestQueueLifecycleMongoDB(v1_1.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestQueueLifecycleSqlalchemy(wsgi.TestQueueLifecycleSqlalchemy):
+class TestQueueLifecycleSqlalchemy(v1_1.TestQueueLifecycleSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestShardsMongoDB(wsgi.TestShardsMongoDB):
+class TestShardsMongoDB(v1_1.TestShardsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestShardsSqlalchemy(wsgi.TestShardsSqlalchemy):
+class TestShardsSqlalchemy(v1_1.TestShardsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
@@ -94,7 +94,7 @@ class TestShardsSqlalchemy(wsgi.TestShardsSqlalchemy):
 # v1.1 only
 #----------------------------------------------------------------------------
 
-class TestPing(wsgi.TestBase):
+class TestPing(base.V1_1Base):
 
     config_file = 'wsgi_sqlalchemy.conf'
 
@@ -114,7 +114,7 @@ class TestPing(wsgi.TestBase):
         self.assertEqual(response, [])
 
 
-class TestHealth(wsgi.TestBase):
+class TestHealth(base.V1_1Base):
 
     config_file = 'wsgi_sqlalchemy.conf'
 

@@ -13,15 +13,14 @@
 # the License.
 
 import contextlib
-import json
 import uuid
 
 import ddt
 import falcon
 
-from . import base  # noqa
 from marconi.openstack.common import jsonutils
 from marconi import tests as testing
+from marconi.tests.queues.transport.wsgi import base
 
 
 @contextlib.contextmanager
@@ -42,7 +41,7 @@ def shard(test, name, weight, uri, options={}):
     doc = {'weight': weight, 'uri': uri, 'options': options}
     path = test.url_prefix + '/shards/' + name
 
-    test.simulate_put(path, body=json.dumps(doc))
+    test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
         yield name, weight, uri, options
@@ -69,7 +68,7 @@ def shards(test, count, uri):
             for i in range(count)]
     for path, weight, option in args:
         doc = {'weight': weight, 'uri': uri, 'options': option}
-        test.simulate_put(path, body=json.dumps(doc))
+        test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
         yield args
@@ -79,13 +78,13 @@ def shards(test, count, uri):
 
 
 @ddt.ddt
-class ShardsBaseTest(base.TestBase):
+class ShardsBaseTest(base.V1_1Base):
 
     def setUp(self):
         super(ShardsBaseTest, self).setUp()
         self.doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
         self.shard = self.url_prefix + '/shards/' + str(uuid.uuid1())
-        self.simulate_put(self.shard, body=json.dumps(self.doc))
+        self.simulate_put(self.shard, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
@@ -101,10 +100,12 @@ class ShardsBaseTest(base.TestBase):
 
     def test_put_raises_if_missing_fields(self):
         path = self.url_prefix + '/shards/' + str(uuid.uuid1())
-        self.simulate_put(path, body=json.dumps({'weight': 100}))
+        self.simulate_put(path, body=jsonutils.dumps({'weight': 100}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-        self.simulate_put(path, body=json.dumps({'uri': 'sqlite://:memory:'}))
+        self.simulate_put(path,
+                          body=jsonutils.dumps(
+                              {'uri': 'sqlite://:memory:'}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, 'big')
@@ -112,28 +113,28 @@ class ShardsBaseTest(base.TestBase):
         path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         doc = {'weight': weight, 'uri': 'a'}
         self.simulate_put(path,
-                          body=json.dumps(doc))
+                          body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
         path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         self.simulate_put(path,
-                          body=json.dumps({'weight': 1, 'uri': uri}))
+                          body=jsonutils.dumps({'weight': 1, 'uri': uri}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_options(self, options):
         path = self.url_prefix + '/shards/' + str(uuid.uuid1())
         doc = {'weight': 1, 'uri': 'a', 'options': options}
-        self.simulate_put(path, body=json.dumps(doc))
+        self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default shard
         expect = self.doc
         self.simulate_put(self.shard,
-                          body=json.dumps(expect))
+                          body=jsonutils.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         result = self.simulate_get(self.shard)
@@ -180,12 +181,12 @@ class ShardsBaseTest(base.TestBase):
 
     def test_patch_raises_if_missing_fields(self):
         self.simulate_patch(self.shard,
-                            body=json.dumps({'location': 1}))
+                            body=jsonutils.dumps({'location': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def _patch_test(self, doc):
         self.simulate_patch(self.shard,
-                            body=json.dumps(doc))
+                            body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         result = self.simulate_get(self.shard,
@@ -208,24 +209,24 @@ class ShardsBaseTest(base.TestBase):
     @ddt.data(-1, 2**32+1, 'big')
     def test_patch_raises_400_on_invalid_weight(self, weight):
         self.simulate_patch(self.shard,
-                            body=json.dumps({'weight': weight}))
+                            body=jsonutils.dumps({'weight': weight}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_patch_raises_400_on_invalid_uri(self, uri):
         self.simulate_patch(self.shard,
-                            body=json.dumps({'uri': uri}))
+                            body=jsonutils.dumps({'uri': uri}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_patch_raises_400_on_invalid_options(self, options):
         self.simulate_patch(self.shard,
-                            body=json.dumps({'options': options}))
+                            body=jsonutils.dumps({'options': options}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_patch_raises_404_if_shard_not_found(self):
         self.simulate_patch(self.url_prefix + '/shards/notexists',
-                            body=json.dumps({'weight': 1}))
+                            body=jsonutils.dumps({'weight': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_empty_listing_returns_204(self):

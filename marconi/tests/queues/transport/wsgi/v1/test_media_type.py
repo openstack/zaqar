@@ -18,10 +18,11 @@ import uuid
 import falcon
 from falcon import testing
 
-from . import base  # noqa
+
+from marconi.tests.queues.transport.wsgi import base
 
 
-class TestMediaType(base.TestBase):
+class TestMediaType(base.V1Base):
 
     config_file = 'wsgi_sqlalchemy.conf'
 
