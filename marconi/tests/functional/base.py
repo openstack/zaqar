@@ -162,7 +162,7 @@ class FunctionalTestBase(testing.TestBase):
         expected_keys = ['age', 'created', 'href']
 
         response_keys = message.keys()
-        response_keys.sort()
+        response_keys = sorted(response_keys)
         self.assertEqual(response_keys, expected_keys)
 
         # Verify that age has valid values

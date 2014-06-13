@@ -21,6 +21,7 @@ import uuid
 import mock
 from pymongo import cursor
 import pymongo.errors
+import six
 from testtools import matchers
 
 from marconi.openstack.common.cache import cache as oslo_cache
@@ -179,7 +180,9 @@ class MongodbQueueTests(base.QueueControllerTest):
 
     def test_raises_connection_error(self):
 
-        with mock.patch.object(cursor.Cursor, 'next', autospec=True) as method:
+        with mock.patch.object(cursor.Cursor,
+                               'next' if six.PY2 else '__next__',
+                               autospec=True) as method:
             error = pymongo.errors.ConnectionFailure()
             method.side_effect = error
 

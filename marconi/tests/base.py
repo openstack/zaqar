@@ -17,6 +17,7 @@ import os
 
 import fixtures
 from oslo.config import cfg
+import six
 import testtools
 
 
@@ -83,7 +84,7 @@ class TestBase(testtools.TestCase):
         All overrides are automatically cleared at the end of the current
         test by the tearDown() method.
         """
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             self.conf.set_override(k, v, group)
 
     def _my_dir(self):

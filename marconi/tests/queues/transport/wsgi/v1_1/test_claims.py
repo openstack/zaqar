@@ -23,7 +23,7 @@ from marconi.tests.queues.transport.wsgi import base
 import mock
 from testtools import matchers
 
-
+from marconi.openstack.common import jsonutils
 from marconi.openstack.common import timeutils
 from marconi import tests as testing
 
@@ -108,7 +108,7 @@ class ClaimsBaseTest(base.V1_1Base):
                                   headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        claimed = json.loads(body[0])
+        claimed = jsonutils.loads(body[0])
         claim_href = self.srmock.headers_dict['Location']
         message_href, params = claimed[0]['href'].split('?')
 
@@ -153,7 +153,7 @@ class ClaimsBaseTest(base.V1_1Base):
                                  query_string='include_claimed=true'
                                               '&echo=true',
                                  headers=self.headers)
-        listed = json.loads(body[0])
+        listed = jsonutils.loads(body[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertEqual(len(listed['messages']), len(claimed))
 
@@ -163,7 +163,7 @@ class ClaimsBaseTest(base.V1_1Base):
             mock_utcnow.return_value = now
             body = self.simulate_get(claim_href, headers=self.headers)
 
-        claim = json.loads(body[0])
+        claim = jsonutils.loads(body[0])
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         self.assertEqual(self.srmock.headers_dict['Content-Location'],
@@ -204,7 +204,7 @@ class ClaimsBaseTest(base.V1_1Base):
         # Get the claimed messages (again)
         body = self.simulate_get(claim_href, headers=self.headers)
         query = timeutils.utcnow()
-        claim = json.loads(body[0])
+        claim = jsonutils.loads(body[0])
         message_href, params = claim['messages'][0]['href'].split('?')
 
         self.assertEqual(claim['ttl'], 60)
