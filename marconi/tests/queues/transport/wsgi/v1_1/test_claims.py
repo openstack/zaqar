@@ -121,13 +121,15 @@ class ClaimsBaseTest(base.V1_1Base):
         body = self.simulate_get(self.messages_path,
                                  headers=self.headers,
                                  query_string="echo=true")
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
         # Listing messages, by default, won't include claimed, won't echo
         body = self.simulate_get(self.messages_path,
                                  headers=self.headers,
                                  query_string="echo=false")
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
         # List messages, include_claimed, but don't echo
         body = self.simulate_get(self.messages_path,
@@ -135,7 +137,8 @@ class ClaimsBaseTest(base.V1_1Base):
                                               '&echo=false',
                                  headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self._empty_message_list(body)
 
         # List messages with a different client-id and echo=false.
         # Should return some messages
