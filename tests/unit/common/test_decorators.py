@@ -118,7 +118,7 @@ class TestDecorators(base.TestBase):
         self.assertEqual(instance.user_gets, 1)
 
         # Should be in the cache now.
-        user = msgpack.unpackb(cache.get(name))
+        user = msgpack.unpackb(cache.get(name), encoding='utf-8')
         self.assertEqual(user, name)
 
         # Should read from the cache this time (counter will not

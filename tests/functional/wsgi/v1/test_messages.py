@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import division
+
 import uuid
 
 import ddt
@@ -52,7 +54,7 @@ class TestMessages(base.FunctionalTestBase):
         doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
         overhead = len(doc.format('', ''))
 
-        half_size = (self.limits.max_message_size - overhead) / 2
+        half_size = (self.limits.max_message_size - overhead) // 2
         doc = doc.format(helpers.generate_random_string(half_size),
                          helpers.generate_random_string(half_size + offset))
 
@@ -271,7 +273,7 @@ class TestMessages(base.FunctionalTestBase):
         doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
         overhead = len(doc.format('', ''))
 
-        half_size = (self.limits.max_message_size - overhead) / 2
+        half_size = (self.limits.max_message_size - overhead) // 2
         doc = doc.format(helpers.generate_random_string(half_size),
                          helpers.generate_random_string(half_size + 1))
 
