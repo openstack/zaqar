@@ -264,9 +264,10 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.base_url = self.cfg.marconi.url
         self.client.set_base_url(self.base_url)
 
-        self.queue_url = self.base_url + '/{0}/queues/{1}' \
-                                         .format(self.cfg.marconi.version,
-                                                 uuid.uuid1())
+        template = self.base_url + '/{0}/queues/{1}'
+
+        self.queue_url = template.format(self.cfg.marconi.version,
+                                         uuid.uuid1())
 
     def test_list_queues(self):
         """List Queues."""
@@ -274,8 +275,9 @@ class TestQueueMisc(base.FunctionalTestBase):
         self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
 
-        result = self.client.get('/{0}/queues'
-                                 .format(self.cfg.marconi.version))
+        url = '/{0}/queues'.format(self.cfg.marconi.version)
+        result = self.client.get(url)
+
         self.assertEqual(result.status_code, 200)
         self.assertSchema(result.json(), 'queue_list')
 
@@ -418,8 +420,8 @@ class TestQueueNonExisting(base.FunctionalTestBase):
         super(TestQueueNonExisting, self).setUp()
         self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
                                          self.cfg.marconi.version)
-        self.queue_url = self.base_url + \
-            '/queues/0a5b1b85-4263-11e3-b034-28cfe91478b9'
+        self.queue_url = (self.base_url +
+                          '/queues/0a5b1b85-4263-11e3-b034-28cfe91478b9')
         self.client.set_base_url(self.queue_url)
 
         self.header = helpers.create_marconi_headers(self.cfg)

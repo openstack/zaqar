@@ -122,6 +122,7 @@ def to_oid(obj):
 
 def oid_ts(oid):
     """Converts an ObjectId to a UNIX timestamp.
+
     :raises: TypeError if oid isn't an ObjectId
     """
     try:

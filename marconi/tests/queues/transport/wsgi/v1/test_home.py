@@ -15,10 +15,7 @@
 import falcon
 import six.moves.urllib.parse as urlparse
 
-
 from marconi.openstack.common import jsonutils
-
-
 from marconi.tests.queues.transport.wsgi import base
 
 

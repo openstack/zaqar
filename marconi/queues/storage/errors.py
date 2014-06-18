@@ -24,9 +24,7 @@ class ExceptionBase(Exception):
 
 
 class ConnectionError(ExceptionBase):
-    """Raised when the connection with the back-end
-    was lost.
-    """
+    """Raised when the connection with the back-end was lost."""
 
 
 class DoesNotExist(ExceptionBase):
@@ -38,9 +36,7 @@ class NotPermitted(ExceptionBase):
 
 
 class Conflict(ExceptionBase):
-    """Resource could not be created due to a conflict
-    with an existing resource.
-    """
+    """Resource could not be created due to a conflict."""
 
 
 class MessageConflict(Conflict):
@@ -51,13 +47,15 @@ class MessageConflict(Conflict):
 
     def __init__(self, queue, project, message_ids):
         """Initializes the error with contextual information.
+
         :param queue: name of the queue to which the message was posted
 
         :param project: name of the project to which the queue belongs
         :param message_ids: list of IDs for messages successfully
-        posted. Note that these must be in the same order as the
-        list of messages originally submitted to be enqueued.
+            posted. Note that these must be in the same order as the
+            list of messages originally submitted to be enqueued.
         """
+
         super(MessageConflict, self).__init__(queue=queue, project=project)
         self._succeeded_ids = message_ids
 

@@ -16,6 +16,7 @@
 """Implements the DriverBase abstract class for Marconi storage drivers."""
 
 import abc
+
 import six
 
 DEFAULT_QUEUES_PER_PAGE = 10
@@ -480,15 +481,15 @@ class PoolsBase(ControllerBase):
 
 @six.add_metaclass(abc.ABCMeta)
 class CatalogueBase(ControllerBase):
-    """A controller for managing the catalogue. The catalogue is
-    responsible for maintaining a mapping between project.queue
-    entries to their pool.
+    """A controller for managing the catalogue.
+
+    The catalogue is responsible for maintaining a mapping
+    between project.queue entries to their pool.
     """
 
     @abc.abstractmethod
     def list(self, project):
-        """Returns a list of queue entries from the catalogue associated with
-        this project.
+        """Get a list of queues from the catalogue.
 
         :param project: The project to use when filtering through queue
                         entries.
@@ -500,8 +501,7 @@ class CatalogueBase(ControllerBase):
 
     @abc.abstractmethod
     def get(self, project, queue):
-        """Returns the pool identifier for the queue registered under this
-        project.
+        """Returns the pool identifier for the given queue.
 
         :param project: Namespace to search for the given queue
         :type project: six.text_type
@@ -527,7 +527,7 @@ class CatalogueBase(ControllerBase):
 
     @abc.abstractmethod
     def insert(self, project, queue, pool):
-        """Creates a new catalogue entry, or updates it if it already existed.
+        """Creates a new catalogue entry, or updates it if it already exists.
 
         :param project: str - Namespace to insert the given queue into
         :type project: six.text_type
@@ -551,7 +551,7 @@ class CatalogueBase(ControllerBase):
 
     @abc.abstractmethod
     def update(self, project, queue, pools=None):
-        """Updates the pool identifier for this queue
+        """Updates the pool identifier for this queue.
 
         :param project: Namespace to search
         :type project: six.text_type

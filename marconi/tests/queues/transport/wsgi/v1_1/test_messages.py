@@ -444,8 +444,8 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def test_no_duplicated_messages_path_in_href(self):
-        """Fixes bug 1240897
-        """
+        """Test for bug 1240897."""
+
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=1)
 

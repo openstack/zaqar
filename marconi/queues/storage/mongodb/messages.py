@@ -148,9 +148,9 @@ class MessageController(storage.Message):
         for collection in self._collections:
             self._ensure_indexes(collection)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Helpers
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def _ensure_indexes(self, collection):
         """Ensures that all indexes are created."""
@@ -296,9 +296,9 @@ class MessageController(storage.Message):
         # ensure the most performant one is chosen.
         return cursor.hint(ACTIVE_INDEX_FIELDS)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # "Friends" interface
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def _count(self, queue_name, project=None, include_claimed=False):
         """Return total number of messages in a queue.
@@ -358,8 +358,7 @@ class MessageController(storage.Message):
         collection = self._collection(queue_name, project)
         msgs = collection.find(query, sort=[('k', 1)],
                                read_preference=preference).hint(
-                                   CLAIMED_INDEX_FIELDS
-                               )
+                                   CLAIMED_INDEX_FIELDS)
 
         if limit is not None:
             msgs = msgs.limit(limit)
@@ -392,9 +391,9 @@ class MessageController(storage.Message):
                           {'$set': {'c': {'id': None, 'e': now}}},
                           upsert=False, multi=True)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Public interface
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def list(self, queue_name, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,

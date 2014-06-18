@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import abc
-import six
 
 from oslo.config import cfg
+import six
 
 
 _TRANSPORT_OPTIONS = (

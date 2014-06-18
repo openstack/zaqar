@@ -23,7 +23,6 @@ from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
 from marconi.queues.storage import pooling
 from marconi.queues.storage import utils as storage_utils
-from marconi.queues import transport  # NOQA
 
 LOG = log.getLogger(__name__)
 

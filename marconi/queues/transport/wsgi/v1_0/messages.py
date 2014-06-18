@@ -38,9 +38,9 @@ class CollectionResource(object):
         self._validate = validate
         self.message_controller = message_controller
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Helpers
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def _get_by_id(self, base_path, project_id, queue_name, ids):
         """Returns one or more messages from the queue by ID."""
@@ -127,9 +127,9 @@ class CollectionResource(object):
             ]
         }
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Interface
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Messages collection POST - queue:  %(queue)s, '

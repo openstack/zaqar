@@ -1,5 +1,5 @@
 # Metrics and style
-hacking>=0.8.0,<0.9
+hacking>=0.9.2,<0.10
 
 # Packaging
 mock>=1.0

@@ -234,8 +234,7 @@ class MessagesBaseTest(base.V1Base):
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
         self.simulate_post(self.queue_path + '/messages',
-                           body=jsonutils.dumps([{'ttl': ttl,
-                                             'body': None}]),
+                           body=jsonutils.dumps([{'ttl': ttl, 'body': None}]),
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -428,8 +427,8 @@ class MessagesBaseTest(base.V1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def test_no_duplicated_messages_path_in_href(self):
-        """Fixes bug 1240897
-        """
+        """Test for bug 1240897."""
+
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=1)
 

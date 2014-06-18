@@ -19,13 +19,13 @@ import uuid
 
 import ddt
 import falcon
-from marconi.tests.queues.transport.wsgi import base
 import mock
 from testtools import matchers
 
 from marconi.openstack.common import jsonutils
 from marconi.openstack.common import timeutils
 from marconi import tests as testing
+from marconi.tests.queues.transport.wsgi import base
 
 
 @ddt.ddt
@@ -172,7 +172,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.headers_dict['Content-Location'],
                          claim_href)
         self.assertEqual(claim['ttl'], 100)
-        ## NOTE(cpp-cabrera): verify that claim age is non-negative
+        # NOTE(cpp-cabrera): verify that claim age is non-negative
         self.assertThat(claim['age'], matchers.GreaterThan(-1))
 
         # Try to delete the message without submitting a claim_id

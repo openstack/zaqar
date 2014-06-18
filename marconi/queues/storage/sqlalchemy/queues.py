@@ -98,11 +98,12 @@ class QueueController(storage.Queue):
         if project is None:
             project = ''
 
-        update = tables.Queues.update().\
-            where(sa.and_(
-                tables.Queues.c.project == project,
-                tables.Queues.c.name == name)).\
-            values(metadata=utils.json_encode(metadata))
+        update = (tables.Queues.update().
+                  where(sa.and_(
+                      tables.Queues.c.project == project,
+                      tables.Queues.c.name == name)).
+                  values(metadata=utils.json_encode(metadata)))
+
         res = self.driver.run(update)
 
         try:
@@ -131,15 +132,13 @@ class QueueController(storage.Queue):
                               tables.Messages.c.qid == qid,
                               tables.Messages.c.cid != (None),
                               tables.Messages.c.ttl >
-                              sfunc.now() - tables.Messages.c.created,
-                          )),
+                              sfunc.now() - tables.Messages.c.created)),
             sa.sql.select([sa.func.count(tables.Messages.c.id)],
                           sa.and_(
                               tables.Messages.c.qid == qid,
                               tables.Messages.c.cid == (None),
                               tables.Messages.c.ttl >
-                              sfunc.now() - tables.Messages.c.created,
-                          ))
+                              sfunc.now() - tables.Messages.c.created))
         ])
 
         claimed, free = self.driver.get(sel)

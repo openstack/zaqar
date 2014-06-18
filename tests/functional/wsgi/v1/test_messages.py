@@ -146,8 +146,9 @@ class TestMessages(base.FunctionalTestBase):
         expected_msg_count = params.get('limit', 10)
 
         # Test Setup
-        doc = helpers.create_message_body(messagecount=
-                                          self.limits.max_messages_per_page)
+        doc = helpers.create_message_body(
+            messagecount=self.limits.max_messages_per_page)
+
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
@@ -300,9 +301,9 @@ class TestMessages(base.FunctionalTestBase):
         By default, max messages that can be deleted in a single
         request is 20.
         """
-        url = self.message_url + '?ids=' \
-            + ','.join(str(i) for i in
-                       range(self.limits.max_messages_per_page + 1))
+        url = (self.message_url + '?ids=' +
+               ','.join(str(i) for i in
+                        range(self.limits.max_messages_per_page + 1)))
         result = self.client.delete(url)
 
         self.assertEqual(result.status_code, 400)
@@ -315,9 +316,9 @@ class TestMessages(base.FunctionalTestBase):
         By default, max messages that can be fetched in a single
         request is 20.
         """
-        url = self.message_url + '?ids=' \
-            + ','.join(str(i) for i in
-                       range(self.limits.max_messages_per_page + 1))
+        url = (self.message_url + '?ids=' +
+               ','.join(str(i) for i in
+                        range(self.limits.max_messages_per_page + 1)))
         result = self.client.get(url)
 
         self.assertEqual(result.status_code, 400)

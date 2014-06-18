@@ -16,10 +16,9 @@ from falcon import testing as ftest
 
 from marconi.openstack.common import jsonutils
 from marconi.queues import bootstrap
+from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import driver
 from marconi import tests as testing
-
-from marconi.queues.transport import validation
 
 
 class TestBase(testing.TestBase):
@@ -111,6 +110,7 @@ class TestBaseFaulty(TestBase):
 
 class V1Base(TestBase):
     """Base class for V1 API Tests.
+
     Should contain methods specific to V1 of the API
     """
     pass
@@ -118,6 +118,7 @@ class V1Base(TestBase):
 
 class V1BaseFaulty(TestBaseFaulty):
     """Base class for V1 API Faulty Tests.
+
     Should contain methods specific to V1 exception testing
     """
     pass
@@ -125,6 +126,7 @@ class V1BaseFaulty(TestBaseFaulty):
 
 class V1_1Base(TestBase):
     """Base class for V1.1 API Tests.
+
     Should contain methods specific to V1.1 of the API
     """
 
@@ -147,6 +149,7 @@ class V1_1Base(TestBase):
 
 class V1_1BaseFaulty(TestBaseFaulty):
     """Base class for V1.1 API Faulty Tests.
+
     Should contain methods specific to V1.1 exception testing
     """
     pass

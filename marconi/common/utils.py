@@ -22,6 +22,7 @@ import six
 def fields(d, names, pred=lambda x: True,
            key_transform=lambda x: x, value_transform=lambda x: x):
     """Returns the entries in this dictionary with keys appearing in names.
+
     :type d: dict
     :type names: [a]
     :param pred: a filter that is applied to the values of the dictionary.
@@ -32,8 +33,8 @@ def fields(d, names, pred=lambda x: True,
     returning it
     :type value_transform: a -> a
     :rtype: dict
-
     """
+
     return dict((key_transform(k), value_transform(v))
                 for k, v in six.iteritems(d)
                 if k in names and pred(v))
@@ -58,7 +59,9 @@ def dict_to_conf(options):
     :returns: a list of options compatible with oslo.config
     :rtype: [oslo.config.cfg.Opt]
     """
+
     opts = []
+
     for k, v in six.iteritems(options):
         opt_type = _pytype_to_cfgtype[type(v)]
         opts.append(opt_type(name=k, default=v))

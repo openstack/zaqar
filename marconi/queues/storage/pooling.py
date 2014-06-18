@@ -127,8 +127,7 @@ class RoutingController(storage.base.ControllerBase):
 
 
 class QueueController(RoutingController):
-    """Controller to facilitate special processing for queue operations.
-    """
+    """Controller to facilitate special processing for queue operations."""
 
     _resource_name = 'queue'
 

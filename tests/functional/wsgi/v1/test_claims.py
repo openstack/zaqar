@@ -41,7 +41,7 @@ class TestClaims(base.FunctionalTestBase):
         self.claim_url = self.queue_url + '/claims'
         self.client.set_base_url(self.claim_url)
 
-        #Post Messages
+        # Post Messages
         url = self.queue_url + '/messages'
         doc = helpers.create_message_body(
             messagecount=self.limits.max_messages_per_page)
@@ -102,13 +102,13 @@ class TestClaims(base.FunctionalTestBase):
 
     def test_claim_patch(self):
         """Update Claim."""
-        #Test Setup - Post Claim
+        # Test Setup - Post Claim
         doc = {"ttl": 300, "grace": 400}
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
-        #Patch Claim
+        # Patch Claim
         claim_location = result.headers['Location']
         url = self.cfg.marconi.url + claim_location
         doc_updated = {"ttl": 300}
@@ -116,7 +116,7 @@ class TestClaims(base.FunctionalTestBase):
         result = self.client.patch(url, data=doc_updated)
         self.assertEqual(result.status_code, 204)
 
-        #verify that the claim TTL is updated
+        # verify that the claim TTL is updated
         result = self.client.get(url)
         new_ttl = result.json()['ttl']
         self.assertEqual(new_ttl, 300)
@@ -125,13 +125,13 @@ class TestClaims(base.FunctionalTestBase):
 
     def test_delete_claimed_message(self):
         """Delete message belonging to a Claim."""
-        #Test Setup - Post claim
+        # Test Setup - Post claim
         doc = {"ttl": 60, "grace": 60}
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
-        #Delete Claimed Messages
+        # Delete Claimed Messages
         for rst in result.json():
             href = rst['href']
             url = self.cfg.marconi.url + href
@@ -147,11 +147,11 @@ class TestClaims(base.FunctionalTestBase):
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
-        #Extract claim location and construct the claim URL.
+        # Extract claim location and construct the claim URL.
         location = result.headers['Location']
         url = self.cfg.marconi.url + location
 
-        #Release Claim.
+        # Release Claim.
         result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
 
@@ -214,11 +214,11 @@ class TestClaims(base.FunctionalTestBase):
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
-        #Extract claim location and construct the claim URL.
+        # Extract claim location and construct the claim URL.
         location = result.headers['Location']
         url = self.cfg.marconi.url + location
 
-        #Patch Claim.
+        # Patch Claim.
         doc = {"ttl": ttl}
         result = self.client.patch(url, data=doc)
         self.assertEqual(result.status_code, 400)

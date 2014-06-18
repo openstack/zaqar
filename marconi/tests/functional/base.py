@@ -15,9 +15,10 @@
 # limitations under the License.
 
 import abc
-import jsonschema
 import multiprocessing
 import os
+
+import jsonschema
 import six
 
 from marconi.openstack.common import timeutils
@@ -113,8 +114,8 @@ class FunctionalTestBase(testing.TestBase):
         :param expectedCount: limit value passed in the url (OR) default(10).
         :param actualCount: number of messages returned in the API response.
         """
-        msg = 'More Messages returned than allowed: expected count = {0}' \
-              ', actual count = {1}'.format(expectedCount, actualCount)
+        msg = ('More Messages returned than allowed: expected count = {0}'
+               ', actual count = {1}'.format(expectedCount, actualCount))
         self.assertTrue(actualCount <= expectedCount, msg)
 
     def assertSchema(self, response, expectedSchemaName):
@@ -188,8 +189,8 @@ class FunctionalTestBase(testing.TestBase):
         # (needed to pass this test on sqlite driver)
         delta = int(delta)
 
-        msg = 'Invalid Time Delta {0}, Created time {1}, Now {2}' \
-              .format(delta, created_time, now)
+        msg = ('Invalid Time Delta {0}, Created time {1}, Now {2}'
+               .format(delta, created_time, now))
         self.assertTrue(0 <= delta <= 6000, msg)
 
 

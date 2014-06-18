@@ -94,9 +94,9 @@ class QueueController(storage.Queue):
         # a specific project, for example. Order matters!
         self._collection.ensure_index([('p_q', 1)], unique=True)
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Helpers
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def _get(self, name, project=None, fields={'m': 1, '_id': 0}):
         queue = self._collection.find_one(_get_scoped_query(name, project),
@@ -190,9 +190,9 @@ class QueueController(storage.Queue):
 
         return doc['c']['v']
 
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Interface
-    #-----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def list(self, project=None, marker=None,
              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
