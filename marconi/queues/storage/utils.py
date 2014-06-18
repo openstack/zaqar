@@ -97,11 +97,23 @@ def keyify(key, iterable):
         def __init__(self, obj):
             self.obj = obj
 
-        def __cmp__(self, other):
-            return cmp(self.obj[key], other.obj[key])
+        def __eq__(self, other):
+            return self.obj[key] == other.obj[key]
 
-        # TODO(zyuan): define magic operators to make py3 work
-        #     http://code.activestate.com/recipes/576653/
+        def __ne__(self, other):
+            return self.obj[key] != other.obj[key]
+
+        def __lt__(self, other):
+            return self.obj[key] < other.obj[key]
+
+        def __le__(self, other):
+            return self.obj[key] <= other.obj[key]
+
+        def __gt__(self, other):
+            return self.obj[key] > other.obj[key]
+
+        def __ge__(self, other):
+            return self.obj[key] >= other.obj[key]
 
     for item in iterable:
         yield Keyed(item)
