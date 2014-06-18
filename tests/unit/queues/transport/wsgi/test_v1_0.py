@@ -61,7 +61,7 @@ class TestMessagesMongoDB(v1.TestMessagesMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesMongoDBSharded(v1.TestMessagesMongoDBSharded):
+class TestMessagesMongoDBPooled(v1.TestMessagesMongoDBPooled):
     url_prefix = URL_PREFIX
 
 
@@ -81,11 +81,11 @@ class TestQueueLifecycleSqlalchemy(v1.TestQueueLifecycleSqlalchemy):
     url_prefix = URL_PREFIX
 
 
-class TestShardsMongoDB(v1.TestShardsMongoDB):
+class TestPoolsMongoDB(v1.TestPoolsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestShardsSqlalchemy(v1.TestShardsSqlalchemy):
+class TestPoolsSqlalchemy(v1.TestPoolsSqlalchemy):
     url_prefix = URL_PREFIX
 
 

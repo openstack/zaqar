@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""shards: a resource to handle storage shard management
+"""pools: a resource to handle storage pool management
 
-A shard is added by an operator by interacting with the
-sharding-related endpoints. When specifying a shard, the
+A pool is added by an operator by interacting with the
+pooling-related endpoints. When specifying a pool, the
 following fields are required:
 
 {
@@ -25,7 +25,7 @@ following fields are required:
     "uri": string::uri
 }
 
-Furthermore, depending on the underlying storage type of shard being
+Furthermore, depending on the underlying storage type of pool being
 registered, there is an optional field:
 
 {
@@ -36,7 +36,7 @@ registered, there is an optional field:
 import falcon
 import jsonschema
 
-from marconi.common.schemas import shards as schema
+from marconi.common.schemas import pools as schema
 from marconi.common.transport.wsgi import utils
 from marconi.common import utils as common_utils
 from marconi.openstack.common import log
@@ -49,15 +49,15 @@ LOG = log.getLogger(__name__)
 
 
 class Listing(object):
-    """A resource to list registered shards
+    """A resource to list registered pools
 
-    :param shards_controller: means to interact with storage
+    :param pools_controller: means to interact with storage
     """
-    def __init__(self, shards_controller):
-        self._ctrl = shards_controller
+    def __init__(self, pools_controller):
+        self._ctrl = pools_controller
 
     def on_get(self, request, response, project_id):
-        """Returns a shard listing as objects embedded in an array:
+        """Returns a pool listing as objects embedded in an array:
 
         [
             {"href": "", "weight": 100, "uri": ""},
@@ -66,7 +66,7 @@ class Listing(object):
 
         :returns: HTTP | [200, 204]
         """
-        LOG.debug(u'LIST shards')
+        LOG.debug(u'LIST pools')
 
         store = {}
         request.get_param('marker', store=store)
@@ -74,11 +74,11 @@ class Listing(object):
         request.get_param_as_bool('detailed', store=store)
 
         results = {}
-        results['shards'] = list(self._ctrl.list(**store))
-        for entry in results['shards']:
+        results['pools'] = list(self._ctrl.list(**store))
+        for entry in results['pools']:
             entry['href'] = request.path + '/' + entry.pop('name')
 
-        if not results['shards']:
+        if not results['pools']:
             response.status = falcon.HTTP_204
             return
 
@@ -88,12 +88,12 @@ class Listing(object):
 
 
 class Resource(object):
-    """A handler for individual shard.
+    """A handler for individual pool.
 
-    :param shards_controller: means to interact with storage
+    :param pools_controller: means to interact with storage
     """
-    def __init__(self, shards_controller):
-        self._ctrl = shards_controller
+    def __init__(self, pools_controller):
+        self._ctrl = pools_controller
         validator_type = jsonschema.Draft4Validator
         self._validators = {
             'weight': validator_type(schema.patch_weight),
@@ -102,21 +102,21 @@ class Resource(object):
             'create': validator_type(schema.create)
         }
 
-    def on_get(self, request, response, project_id, shard):
-        """Returns a JSON object for a single shard entry:
+    def on_get(self, request, response, project_id, pool):
+        """Returns a JSON object for a single pool entry:
 
         {"weight": 100, "uri": "", options: {...}}
 
         :returns: HTTP | [200, 404]
         """
-        LOG.debug(u'GET shard - name: %s', shard)
+        LOG.debug(u'GET pool - name: %s', pool)
         data = None
         detailed = request.get_param_as_bool('detailed') or False
 
         try:
-            data = self._ctrl.get(shard, detailed)
+            data = self._ctrl.get(pool, detailed)
 
-        except errors.ShardDoesNotExist as ex:
+        except errors.PoolDoesNotExist as ex:
             LOG.debug(ex)
             raise falcon.HTTPNotFound()
 
@@ -127,8 +127,8 @@ class Resource(object):
         response.body = transport_utils.to_json(data)
         response.content_location = request.relative_uri
 
-    def on_put(self, request, response, project_id, shard):
-        """Registers a new shard. Expects the following input:
+    def on_put(self, request, response, project_id, pool):
+        """Registers a new pool. Expects the following input:
 
         {"weight": 100, "uri": ""}
 
@@ -136,7 +136,7 @@ class Resource(object):
 
         :returns: HTTP | [201, 204]
         """
-        LOG.debug(u'PUT shard - name: %s', shard)
+        LOG.debug(u'PUT pool - name: %s', pool)
 
         data = utils.load(request)
         utils.validate(self._validators['create'], data)
@@ -144,23 +144,23 @@ class Resource(object):
             raise wsgi_errors.HTTPBadRequestBody(
                 'cannot connect to %s' % data['uri']
             )
-        self._ctrl.create(shard, weight=data['weight'],
+        self._ctrl.create(pool, weight=data['weight'],
                           uri=data['uri'],
                           options=data.get('options', {}))
         response.status = falcon.HTTP_201
         response.location = request.path
 
-    def on_delete(self, request, response, project_id, shard):
-        """Deregisters a shard.
+    def on_delete(self, request, response, project_id, pool):
+        """Deregisters a pool.
 
         :returns: HTTP | 204
         """
-        LOG.debug(u'DELETE shard - name: %s', shard)
-        self._ctrl.delete(shard)
+        LOG.debug(u'DELETE pool - name: %s', pool)
+        self._ctrl.delete(pool)
         response.status = falcon.HTTP_204
 
-    def on_patch(self, request, response, project_id, shard):
-        """Allows one to update a shard's weight, uri, and/or options.
+    def on_patch(self, request, response, project_id, pool):
+        """Allows one to update a pool's weight, uri, and/or options.
 
         This method expects the user to submit a JSON object
         containing at least one of: 'uri', 'weight', 'options'. If
@@ -171,12 +171,12 @@ class Resource(object):
 
         :returns: HTTP | 200,400
         """
-        LOG.debug(u'PATCH shard - name: %s', shard)
+        LOG.debug(u'PATCH pool - name: %s', pool)
         data = utils.load(request)
 
         EXPECT = ('weight', 'uri', 'options')
         if not any([(field in data) for field in EXPECT]):
-            LOG.debug(u'PATCH shard, bad params')
+            LOG.debug(u'PATCH pool, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 'One of `uri`, `weight`, or `options` needs '
                 'to be specified'
@@ -193,7 +193,7 @@ class Resource(object):
                                      pred=lambda v: v is not None)
 
         try:
-            self._ctrl.update(shard, **fields)
-        except errors.ShardDoesNotExist as ex:
+            self._ctrl.update(pool, **fields)
+        except errors.PoolDoesNotExist as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()

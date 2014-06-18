@@ -48,8 +48,8 @@ class TestBase(testing.TestBase):
         self.srmock = ftest.StartResponseMock()
 
     def tearDown(self):
-        if self.conf.sharding:
-            self.boot.control.shards_controller.drop_all()
+        if self.conf.pooling:
+            self.boot.control.pools_controller.drop_all()
             self.boot.control.catalogue_controller.drop_all()
         super(TestBase, self).tearDown()
 

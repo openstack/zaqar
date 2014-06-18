@@ -21,7 +21,7 @@ from marconi.common import errors
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common import log
 from marconi.queues.storage import pipeline
-from marconi.queues.storage import sharding
+from marconi.queues.storage import pooling
 from marconi.queues.storage import utils as storage_utils
 from marconi.queues import transport  # NOQA
 
@@ -38,13 +38,14 @@ CONF = cfg.CONF
 CONF.register_cli_opts(_CLI_OPTIONS)
 
 _GENERAL_OPTIONS = (
-    cfg.BoolOpt('sharding', default=False,
-                help=('Enable sharding across multiple storage backends. ',
-                      'If sharding is enabled, the storage driver ',
+    cfg.BoolOpt('pooling', default=False,
+                help=('Enable pooling across multiple storage backends. ',
+                      'If pooling is enabled, the storage driver ',
                       'configuration is used to determine where the ',
-                      'catalogue/control plane data is kept.')),
+                      'catalogue/control plane data is kept.'),
+                deprecated_opts=[cfg.DeprecatedOpt('pooling')]),
     cfg.BoolOpt('admin_mode', default=False,
-                help='Activate endpoints to manage shard registry.'),
+                help='Activate endpoints to manage pool registry.'),
 )
 
 _DRIVER_OPTIONS = (
@@ -81,10 +82,10 @@ class Bootstrap(object):
     def storage(self):
         LOG.debug(u'Loading storage driver')
 
-        if self.conf.sharding:
-            LOG.debug(u'Storage sharding enabled')
-            storage_driver = sharding.DataDriver(self.conf, self.cache,
-                                                 self.control)
+        if self.conf.pooling:
+            LOG.debug(u'Storage pooling enabled')
+            storage_driver = pooling.DataDriver(self.conf, self.cache,
+                                                self.control)
         else:
             storage_driver = storage_utils.load_storage_driver(
                 self.conf, self.cache)

@@ -17,7 +17,7 @@ import uuid
 from oslo.config import cfg
 
 from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.queues.storage import sharding
+from marconi.queues.storage import pooling
 from marconi.queues.storage import sqlalchemy
 from marconi.queues.storage import utils
 from marconi import tests as testing
@@ -25,14 +25,14 @@ from marconi import tests as testing
 
 # TODO(cpp-cabrera): it would be wonderful to refactor this unit test
 # so that it could use multiple control storage backends once those
-# have shards/catalogue implementations.
+# have pools/catalogue implementations.
 @testing.requires_mongodb
-class ShardCatalogTest(testing.TestBase):
+class PoolCatalogTest(testing.TestBase):
 
-    config_file = 'wsgi_mongodb_sharded.conf'
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     def setUp(self):
-        super(ShardCatalogTest, self).setUp()
+        super(PoolCatalogTest, self).setUp()
 
         self.conf.register_opts([cfg.StrOpt('storage')],
                                 group='drivers')
@@ -41,20 +41,20 @@ class ShardCatalogTest(testing.TestBase):
                                             control_mode=True)
 
         self.catalogue_ctrl = control.catalogue_controller
-        self.shards_ctrl = control.shards_controller
+        self.pools_ctrl = control.pools_controller
 
         # NOTE(cpp-cabrera): populate catalogue
-        self.shard = str(uuid.uuid1())
+        self.pool = str(uuid.uuid1())
         self.queue = str(uuid.uuid1())
         self.project = str(uuid.uuid1())
-        self.shards_ctrl.create(self.shard, 100, 'sqlite://:memory:')
-        self.catalogue_ctrl.insert(self.project, self.queue, self.shard)
-        self.catalog = sharding.Catalog(self.conf, cache, control)
+        self.pools_ctrl.create(self.pool, 100, 'sqlite://:memory:')
+        self.catalogue_ctrl.insert(self.project, self.queue, self.pool)
+        self.catalog = pooling.Catalog(self.conf, cache, control)
 
     def tearDown(self):
         self.catalogue_ctrl.drop_all()
-        self.shards_ctrl.drop_all()
-        super(ShardCatalogTest, self).tearDown()
+        self.pools_ctrl.drop_all()
+        super(PoolCatalogTest, self).tearDown()
 
     def test_lookup_loads_correct_driver(self):
         storage = self.catalog.lookup(self.queue, self.project)

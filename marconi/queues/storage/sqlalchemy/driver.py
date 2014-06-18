@@ -140,8 +140,8 @@ class ControlDriver(storage.ControlDriverBase):
         self.connection.close()
 
     @property
-    def shards_controller(self):
-        return controllers.ShardsController(self)
+    def pools_controller(self):
+        return controllers.PoolsController(self)
 
     @property
     def catalogue_controller(self):

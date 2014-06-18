@@ -112,7 +112,7 @@ class ClaimDoesNotExist(DoesNotExist):
 
 class QueueNotMapped(DoesNotExist):
 
-    msg_format = (u'No shard found for '
+    msg_format = (u'No pool found for '
                   u'queue {queue} for project {project}')
 
     def __init__(self, queue, project):
@@ -127,17 +127,17 @@ class MessageIsClaimedBy(NotPermitted):
         super(MessageIsClaimedBy, self).__init__(cid=cid, mid=mid)
 
 
-class ShardDoesNotExist(DoesNotExist):
+class PoolDoesNotExist(DoesNotExist):
 
-    msg_format = u'Shard {shard} does not exist'
+    msg_format = u'Pool {pool} does not exist'
 
-    def __init__(self, shard):
-        super(ShardDoesNotExist, self).__init__(shard=shard)
+    def __init__(self, pool):
+        super(PoolDoesNotExist, self).__init__(pool=pool)
 
 
-class NoShardFound(ExceptionBase):
+class NoPoolFound(ExceptionBase):
 
-    msg_format = u'No shards registered'
+    msg_format = u'No pools registered'
 
     def __init__(self):
-        super(NoShardFound, self).__init__()
+        super(NoPoolFound, self).__init__()

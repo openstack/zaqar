@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-"""shards: an implementation of the shard management storage
+"""pools: an implementation of the pool management storage
 controller for mongodb.
 
 Schema:
@@ -29,7 +29,7 @@ from marconi.queues.storage import base
 from marconi.queues.storage import errors
 from marconi.queues.storage.mongodb import utils
 
-SHARDS_INDEX = [
+POOLS_INDEX = [
     ('n', 1)
 ]
 
@@ -42,15 +42,15 @@ def _field_spec(detailed=False):
     return dict(OMIT_FIELDS + (() if detailed else (('o', False),)))
 
 
-class ShardsController(base.ShardsBase):
+class PoolsController(base.PoolsBase):
 
     def __init__(self, *args, **kwargs):
-        super(ShardsController, self).__init__(*args, **kwargs)
+        super(PoolsController, self).__init__(*args, **kwargs)
 
-        self._col = self.driver.database.shards
-        self._col.ensure_index(SHARDS_INDEX,
+        self._col = self.driver.database.pools
+        self._col.ensure_index(POOLS_INDEX,
                                background=True,
-                               name='shards_name',
+                               name='pools_name',
                                unique=True)
 
     @utils.raises_conn_error
@@ -69,7 +69,7 @@ class ShardsController(base.ShardsBase):
         res = self._col.find_one({'n': name},
                                  _field_spec(detailed))
         if not res:
-            raise errors.ShardDoesNotExist(name)
+            raise errors.PoolDoesNotExist(name)
 
         return _normalize(res, detailed)
 
@@ -96,7 +96,7 @@ class ShardsController(base.ShardsBase):
                                {'$set': fields},
                                upsert=False)
         if not res['updatedExisting']:
-            raise errors.ShardDoesNotExist(name)
+            raise errors.PoolDoesNotExist(name)
 
     @utils.raises_conn_error
     def delete(self, name):
@@ -105,16 +105,16 @@ class ShardsController(base.ShardsBase):
     @utils.raises_conn_error
     def drop_all(self):
         self._col.drop()
-        self._col.ensure_index(SHARDS_INDEX, unique=True)
+        self._col.ensure_index(POOLS_INDEX, unique=True)
 
 
-def _normalize(shard, detailed=False):
+def _normalize(pool, detailed=False):
     ret = {
-        'name': shard['n'],
-        'uri': shard['u'],
-        'weight': shard['w'],
+        'name': pool['n'],
+        'uri': pool['u'],
+        'weight': pool['w'],
     }
     if detailed:
-        ret['options'] = shard['o']
+        ret['options'] = pool['o']
 
     return ret

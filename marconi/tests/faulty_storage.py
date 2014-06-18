@@ -50,7 +50,7 @@ class ControlDriver(storage.ControlDriverBase):
         return None
 
     @property
-    def shards_controller(self):
+    def pools_controller(self):
         return None
 
 

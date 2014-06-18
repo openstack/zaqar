@@ -15,11 +15,11 @@
 
 """MongoDB storage controller for the queues catalogue.
 
-Serves to construct an association between a project + queue -> shard
+Serves to construct an association between a project + queue -> pool
 
 {
     'p_q': project_queue :: six.text_type,
-    's': shard_identifier :: six.text_type
+    's': pool_identifier :: six.text_type
 }
 """
 
@@ -47,10 +47,10 @@ class CatalogueController(base.CatalogueBase):
         self._col.ensure_index(CATALOGUE_INDEX, unique=True)
 
     @utils.raises_conn_error
-    def _insert(self, project, queue, shard, upsert):
+    def _insert(self, project, queue, pool, upsert):
         key = utils.scope_queue_name(queue, project)
         return self._col.update({PRIMARY_KEY: key},
-                                {'$set': {'s': shard}}, upsert=upsert)
+                                {'$set': {'s': pool}}, upsert=upsert)
 
     @utils.raises_conn_error
     def list(self, project):
@@ -77,18 +77,18 @@ class CatalogueController(base.CatalogueBase):
         key = utils.scope_queue_name(queue, project)
         return self._col.find_one({PRIMARY_KEY: key}) is not None
 
-    def insert(self, project, queue, shard):
+    def insert(self, project, queue, pool):
         # NOTE(cpp-cabrera): _insert handles conn_error
-        self._insert(project, queue, shard, upsert=True)
+        self._insert(project, queue, pool, upsert=True)
 
     @utils.raises_conn_error
     def delete(self, project, queue):
         self._col.remove({PRIMARY_KEY: utils.scope_queue_name(queue, project)},
                          w=0)
 
-    def update(self, project, queue, shard=None):
+    def update(self, project, queue, pool=None):
         # NOTE(cpp-cabrera): _insert handles conn_error
-        res = self._insert(project, queue, shard, upsert=False)
+        res = self._insert(project, queue, pool, upsert=False)
 
         if not res['updatedExisting']:
             raise errors.QueueNotMapped(project, queue)
@@ -104,5 +104,5 @@ def _normalize(entry):
     return {
         'queue': queue,
         'project': project,
-        'shard': entry['s']
+        'pool': entry['s']
     }

@@ -15,9 +15,9 @@
 
 """Sql storage controller for the queues catalogue.
 
-Serves to construct an association between a project + queue -> shard
+Serves to construct an association between a project + queue -> pool
 
-name: string -> Shards.name
+name: string -> Pools.name
 project: string
 queue: string
 """
@@ -68,15 +68,15 @@ class CatalogueController(base.CatalogueBase):
         except errors.QueueNotMapped:
             return False
 
-    def insert(self, project, queue, shard):
+    def insert(self, project, queue, pool):
         try:
             stmt = sa.sql.insert(tables.Catalogue).values(
-                project=project, queue=queue, shard=shard
+                project=project, queue=queue, pool=pool
             )
             self._conn.execute(stmt)
 
         except sa.exc.IntegrityError:
-            self.update(project, queue, shard)
+            self.update(project, queue, pool)
 
     def delete(self, project, queue):
         stmt = sa.sql.delete(tables.Catalogue).where(
@@ -84,8 +84,8 @@ class CatalogueController(base.CatalogueBase):
         )
         self._conn.execute(stmt)
 
-    def update(self, project, queue, shard=None):
-        if shard is None:
+    def update(self, project, queue, pool=None):
+        if pool is None:
             return
 
         if not self.exists(project, queue):
@@ -93,7 +93,7 @@ class CatalogueController(base.CatalogueBase):
 
         stmt = sa.sql.update(tables.Catalogue).where(
             _match(project, queue)
-        ).values(shard=shard)
+        ).values(pool=pool)
         self._conn.execute(stmt)
 
     def drop_all(self):
@@ -106,5 +106,5 @@ def _normalize(entry):
     return {
         'queue': queue,
         'project': project,
-        'shard': name
+        'pool': name
     }

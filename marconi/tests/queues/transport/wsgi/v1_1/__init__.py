@@ -18,8 +18,8 @@ from marconi.tests.queues.transport.wsgi.v1_1 import test_default_limits
 from marconi.tests.queues.transport.wsgi.v1_1 import test_home
 from marconi.tests.queues.transport.wsgi.v1_1 import test_media_type
 from marconi.tests.queues.transport.wsgi.v1_1 import test_messages
-from marconi.tests.queues.transport.wsgi.v1_1 import test_queue_lifecycle as lc
-from marconi.tests.queues.transport.wsgi.v1_1 import test_shards
+from marconi.tests.queues.transport.wsgi.v1_1 import test_pools
+from marconi.tests.queues.transport.wsgi.v1_1 import test_queue_lifecycle as l
 
 TestAuth = test_auth.TestAuth
 TestClaimsFaultyDriver = test_claims.TestClaimsFaultyDriver
@@ -30,10 +30,10 @@ TestHomeDocument = test_home.TestHomeDocument
 TestMediaType = test_media_type.TestMediaType
 TestMessagesFaultyDriver = test_messages.TestMessagesFaultyDriver
 TestMessagesMongoDB = test_messages.TestMessagesMongoDB
-TestMessagesMongoDBSharded = test_messages.TestMessagesMongoDBSharded
+TestMessagesMongoDBPooled = test_messages.TestMessagesMongoDBPooled
 TestMessagesSqlalchemy = test_messages.TestMessagesSqlalchemy
-TestQueueFaultyDriver = lc.TestQueueLifecycleFaultyDriver
-TestQueueLifecycleMongoDB = lc.TestQueueLifecycleMongoDB
-TestQueueLifecycleSqlalchemy = lc.TestQueueLifecycleSqlalchemy
-TestShardsMongoDB = test_shards.TestShardsMongoDB
-TestShardsSqlalchemy = test_shards.TestShardsSqlalchemy
+TestQueueFaultyDriver = l.TestQueueLifecycleFaultyDriver
+TestQueueLifecycleMongoDB = l.TestQueueLifecycleMongoDB
+TestQueueLifecycleSqlalchemy = l.TestQueueLifecycleSqlalchemy
+TestPoolsMongoDB = test_pools.TestPoolsMongoDB
+TestPoolsSqlalchemy = test_pools.TestPoolsSqlalchemy

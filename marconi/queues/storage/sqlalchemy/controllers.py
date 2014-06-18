@@ -16,12 +16,12 @@
 from marconi.queues.storage.sqlalchemy import catalogue
 from marconi.queues.storage.sqlalchemy import claims
 from marconi.queues.storage.sqlalchemy import messages
+from marconi.queues.storage.sqlalchemy import pools
 from marconi.queues.storage.sqlalchemy import queues
-from marconi.queues.storage.sqlalchemy import shards
 
 
 QueueController = queues.QueueController
 ClaimController = claims.ClaimController
 MessageController = messages.MessageController
 CatalogueController = catalogue.CatalogueController
-ShardsController = shards.ShardsController
+PoolsController = pools.PoolsController

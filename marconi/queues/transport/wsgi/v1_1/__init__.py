@@ -18,8 +18,8 @@ from marconi.queues.transport.wsgi.v1_1 import homedoc
 from marconi.queues.transport.wsgi.v1_1 import messages
 from marconi.queues.transport.wsgi.v1_1 import metadata
 from marconi.queues.transport.wsgi.v1_1 import ping
+from marconi.queues.transport.wsgi.v1_1 import pools
 from marconi.queues.transport.wsgi.v1_1 import queues
-from marconi.queues.transport.wsgi.v1_1 import shards
 from marconi.queues.transport.wsgi.v1_1 import stats
 
 
@@ -76,11 +76,11 @@ def public_endpoints(driver):
 
 
 def private_endpoints(driver):
-    shards_controller = driver._control.shards_controller
+    pools_controller = driver._control.pools_controller
 
     return [
-        ('/shards',
-         shards.Listing(shards_controller)),
-        ('/shards/{shard}',
-         shards.Resource(shards_controller)),
+        ('/pools',
+         pools.Listing(pools_controller)),
+        ('/pools/{pool}',
+         pools.Resource(pools_controller)),
     ]

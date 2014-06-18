@@ -20,7 +20,7 @@ import six
 
 DEFAULT_QUEUES_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_PAGE = 10
-DEFAULT_SHARDS_PER_PAGE = 10
+DEFAULT_POOLS_PER_PAGE = 10
 
 DEFAULT_MESSAGES_PER_CLAIM = 10
 
@@ -48,7 +48,7 @@ class DataDriverBase(DriverBase):
     core functionality of the system.
 
     Connection information and driver-specific options are
-    loaded from the config file or the shard catalog.
+    loaded from the config file or the pool catalog.
 
     :param conf: Configuration containing options for this driver.
     :type conf: `oslo.config.ConfigOpts`
@@ -89,8 +89,8 @@ class ControlDriverBase(DriverBase):
     modify aspects of the functionality of the system. This is ideal
     for administrative purposes.
 
-    Allows access to the shard registry through a catalogue and a
-    shard controller.
+    Allows access to the pool registry through a catalogue and a
+    pool controller.
 
     :param conf: Configuration containing options for this driver.
     :type conf: `oslo.config.ConfigOpts`
@@ -105,8 +105,8 @@ class ControlDriverBase(DriverBase):
         raise NotImplementedError
 
     @abc.abstractproperty
-    def shards_controller(self):
-        """Returns storage's shard management controller."""
+    def pools_controller(self):
+        """Returns storage's pool management controller."""
         raise NotImplementedError
 
 
@@ -390,71 +390,71 @@ class Claim(ControllerBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ShardsBase(ControllerBase):
-    """A controller for managing shards."""
+class PoolsBase(ControllerBase):
+    """A controller for managing pools."""
 
     @abc.abstractmethod
-    def list(self, marker=None, limit=DEFAULT_SHARDS_PER_PAGE,
+    def list(self, marker=None, limit=DEFAULT_POOLS_PER_PAGE,
              detailed=False):
-        """Lists all registered shards.
+        """Lists all registered pools.
 
-        :param marker: used to determine which shard to start with
+        :param marker: used to determine which pool to start with
         :type marker: six.text_type
         :param limit: (Default 10) Max number of results to return
         :type limit: int
         :param detailed: whether to include options
         :type detailed: bool
-        :returns: A list of shards - name, weight, uri
+        :returns: A list of pools - name, weight, uri
         :rtype: [{}]
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def create(self, name, weight, uri, options=None):
-        """Registers a shard entry.
+        """Registers a pool entry.
 
-        :param name: The name of this shard
+        :param name: The name of this pool
         :type name: six.text_type
-        :param weight: the likelihood that this shard will be used
+        :param weight: the likelihood that this pool will be used
         :type weight: int
         :param uri: A URI that can be used by a storage client
-        (e.g., pymongo) to access this shard.
+        (e.g., pymongo) to access this pool.
         :type uri: six.text_type
-        :param options: Options used to configure this shard
+        :param options: Options used to configure this pool
         :type options: dict
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def get(self, name, detailed=False):
-        """Returns a single shard entry.
+        """Returns a single pool entry.
 
-        :param name: The name of this shard
+        :param name: The name of this pool
         :type name: six.text_type
         :param detailed: Should the options data be included?
         :type detailed: bool
-        :returns: weight, uri, and options for this shard
+        :returns: weight, uri, and options for this pool
         :rtype: {}
-        :raises: ShardDoesNotExist if not found
+        :raises: PoolDoesNotExist if not found
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def exists(self, name):
-        """Returns a single shard entry.
+        """Returns a single pool entry.
 
-        :param name: The name of this shard
+        :param name: The name of this pool
         :type name: six.text_type
-        :returns: True if the shard exists
+        :returns: True if the pool exists
         :rtype: bool
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, name):
-        """Removes a shard entry.
+        """Removes a pool entry.
 
-        :param name: The name of this shard
+        :param name: The name of this pool
         :type name: six.text_type
         :rtype: None
         """
@@ -462,19 +462,19 @@ class ShardsBase(ControllerBase):
 
     @abc.abstractmethod
     def update(self, name, **kwargs):
-        """Updates the weight, uris, and/or options of this shard
+        """Updates the weight, uris, and/or options of this pool
 
-        :param name: Name of the shard
+        :param name: Name of the pool
         :type name: text
         :param kwargs: one of: `uri`, `weight`, `options`
         :type kwargs: dict
-        :raises: ShardDoesNotExist
+        :raises: PoolDoesNotExist
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def drop_all(self):
-        """Deletes all shards from storage."""
+        """Deletes all pools from storage."""
         raise NotImplementedError
 
 
@@ -482,7 +482,7 @@ class ShardsBase(ControllerBase):
 class CatalogueBase(ControllerBase):
     """A controller for managing the catalogue. The catalogue is
     responsible for maintaining a mapping between project.queue
-    entries to their shard.
+    entries to their pool.
     """
 
     @abc.abstractmethod
@@ -493,21 +493,21 @@ class CatalogueBase(ControllerBase):
         :param project: The project to use when filtering through queue
                         entries.
         :type project: six.text_type
-        :returns: [{'project': ..., 'queue': ..., 'shard': ...},]
+        :returns: [{'project': ..., 'queue': ..., 'pool': ...},]
         :rtype: [dict]
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def get(self, project, queue):
-        """Returns the shard identifier for the queue registered under this
+        """Returns the pool identifier for the queue registered under this
         project.
 
         :param project: Namespace to search for the given queue
         :type project: six.text_type
         :param queue: The name of the queue to search for
         :type queue: six.text_type
-        :returns: {'shard': ...}
+        :returns: {'pool': ...}
         :rtype: dict
         :raises: QueueNotMapped
         """
@@ -526,15 +526,15 @@ class CatalogueBase(ControllerBase):
         """
 
     @abc.abstractmethod
-    def insert(self, project, queue, shard):
+    def insert(self, project, queue, pool):
         """Creates a new catalogue entry, or updates it if it already existed.
 
         :param project: str - Namespace to insert the given queue into
         :type project: six.text_type
         :param queue: str - The name of the queue to insert
         :type queue: six.text_type
-        :param shard: shard identifier to associate this queue with
-        :type shard: six.text_type
+        :param pool: pool identifier to associate this queue with
+        :type pool: six.text_type
         """
         raise NotImplementedError
 
@@ -550,15 +550,15 @@ class CatalogueBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, project, queue, shards=None):
-        """Updates the shard identifier for this queue
+    def update(self, project, queue, pools=None):
+        """Updates the pool identifier for this queue
 
         :param project: Namespace to search
         :type project: six.text_type
         :param queue: The name of the queue
         :type queue: six.text_type
-        :param shards: The name of the shard where this project/queue lives.
-        :type shards: six.text_type
+        :param pools: The name of the pool where this project/queue lives.
+        :type pools: six.text_type
         :raises: QueueNotMapped
         """
         raise NotImplementedError

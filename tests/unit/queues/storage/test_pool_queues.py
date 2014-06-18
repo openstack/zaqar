@@ -19,35 +19,35 @@ from oslo.config import cfg
 import six
 
 from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.queues.storage import sharding
+from marconi.queues.storage import pooling
 from marconi.queues.storage import utils
 from marconi import tests as testing
 
 
 @testing.requires_mongodb
-class ShardQueuesTest(testing.TestBase):
+class PoolQueuesTest(testing.TestBase):
 
     def setUp(self):
-        super(ShardQueuesTest, self).setUp()
-        conf = self.load_conf('wsgi_mongodb_sharded.conf')
+        super(PoolQueuesTest, self).setUp()
+        conf = self.load_conf('wsgi_mongodb_pooled.conf')
 
         conf.register_opts([cfg.StrOpt('storage')],
                            group='drivers')
 
         cache = oslo_cache.get_cache()
         control = utils.load_storage_driver(conf, cache, control_mode=True)
-        self.shards_ctrl = control.shards_controller
-        self.driver = sharding.DataDriver(conf, cache, control)
+        self.pools_ctrl = control.pools_controller
+        self.driver = pooling.DataDriver(conf, cache, control)
         self.controller = self.driver.queue_controller
 
-        # fake two shards
+        # fake two pools
         for _ in six.moves.xrange(2):
-            self.shards_ctrl.create(str(uuid.uuid1()), 100,
-                                    'sqlite://:memory:')
+            self.pools_ctrl.create(str(uuid.uuid1()), 100,
+                                   'sqlite://:memory:')
 
     def tearDown(self):
-        self.shards_ctrl.drop_all()
-        super(ShardQueuesTest, self).tearDown()
+        self.pools_ctrl.drop_all()
+        super(PoolQueuesTest, self).tearDown()
 
     def test_ping(self):
         ping = self.driver.is_alive()
