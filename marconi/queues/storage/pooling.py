@@ -351,7 +351,7 @@ class Catalog(object):
         :param pool_id: The name of a pool.
         :type pool_id: six.text_type
         :returns: a storage driver
-        :rtype: marconi.queues.storage.base.DataDriver
+        :rtype: marconi.queues.storage.base.DataDriverBase
         """
         pool = self._pools_ctrl.get(pool_id, detailed=True)
         conf = utils.dynamic_conf(pool['uri'], pool['options'])
