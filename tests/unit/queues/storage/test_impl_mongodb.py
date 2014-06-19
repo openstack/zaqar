@@ -205,55 +205,68 @@ class MongodbMessageTests(base.MessageControllerTest):
             self.assertIn('counting', indexes)
 
     def test_message_counter(self):
-        queue_name = 'marker_test'
+        queue_name = self.queue_name
         iterations = 10
 
-        self.queue_controller.create(queue_name)
-
-        seed_marker1 = self.queue_controller._get_counter(queue_name)
+        seed_marker1 = self.queue_controller._get_counter(queue_name,
+                                                          self.project)
         self.assertEqual(seed_marker1, 1, 'First marker is 1')
 
         for i in range(iterations):
-            self.controller.post(queue_name, [{'ttl': 60}], 'uuid')
+            self.controller.post(queue_name, [{'ttl': 60}],
+                                 'uuid', project=self.project)
 
-            marker1 = self.queue_controller._get_counter(queue_name)
-            marker2 = self.queue_controller._get_counter(queue_name)
-            marker3 = self.queue_controller._get_counter(queue_name)
+            marker1 = self.queue_controller._get_counter(queue_name,
+                                                         self.project)
+            marker2 = self.queue_controller._get_counter(queue_name,
+                                                         self.project)
+            marker3 = self.queue_controller._get_counter(queue_name,
+                                                         self.project)
 
             self.assertEqual(marker1, marker2)
             self.assertEqual(marker2, marker3)
             self.assertEqual(marker1, i + 2)
 
-        new_value = self.queue_controller._inc_counter(queue_name)
+        new_value = self.queue_controller._inc_counter(queue_name,
+                                                       self.project)
         self.assertIsNotNone(new_value)
 
-        value_before = self.queue_controller._get_counter(queue_name)
-        new_value = self.queue_controller._inc_counter(queue_name)
+        value_before = self.queue_controller._get_counter(queue_name,
+                                                          project=self.project)
+        new_value = self.queue_controller._inc_counter(queue_name,
+                                                       project=self.project)
         self.assertIsNotNone(new_value)
-        value_after = self.queue_controller._get_counter(queue_name)
+        value_after = self.queue_controller._get_counter(queue_name,
+                                                         project=self.project)
         self.assertEqual(value_after, value_before + 1)
 
         value_before = value_after
-        new_value = self.queue_controller._inc_counter(queue_name, amount=7)
-        value_after = self.queue_controller._get_counter(queue_name)
+        new_value = self.queue_controller._inc_counter(queue_name,
+                                                       project=self.project,
+                                                       amount=7)
+        value_after = self.queue_controller._get_counter(queue_name,
+                                                         project=self.project)
         self.assertEqual(value_after, value_before + 7)
         self.assertEqual(value_after, new_value)
 
         reference_value = value_after
 
-        unchanged = self.queue_controller._inc_counter(queue_name, window=10)
+        unchanged = self.queue_controller._inc_counter(queue_name,
+                                                       project=self.project,
+                                                       window=10)
         self.assertIsNone(unchanged)
 
         now = timeutils.utcnow() + datetime.timedelta(seconds=10)
         timeutils_utcnow = 'marconi.openstack.common.timeutils.utcnow'
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
-            changed = self.queue_controller._inc_counter(queue_name, window=5)
+            changed = self.queue_controller._inc_counter(queue_name,
+                                                         project=self.project,
+                                                         window=5)
             self.assertEqual(changed, reference_value + 1)
 
     def test_race_condition_on_post(self):
-        queue_name = 'marker_test'
-        self.queue_controller.create(queue_name)
+        queue_name = self.queue_name
 
         expected_messages = [
             {
@@ -291,7 +304,8 @@ class MongodbMessageTests(base.MessageControllerTest):
 
             method.return_value = 2
             messages = expected_messages[:1]
-            created = list(self.controller.post(queue_name, messages, uuid))
+            created = list(self.controller.post(queue_name, messages,
+                                                uuid, project=self.project))
             self.assertEqual(len(created), 1)
 
             # Force infinite retries
@@ -299,18 +313,19 @@ class MongodbMessageTests(base.MessageControllerTest):
                 method.return_value = None
 
                 with testing.expect(errors.MessageConflict):
-                    self.controller.post(queue_name, messages, uuid)
+                    self.controller.post(queue_name, messages,
+                                         uuid, project=self.project)
 
         created = list(self.controller.post(queue_name,
                                             expected_messages[1:],
-                                            uuid))
+                                            uuid, project=self.project))
 
         self.assertEqual(len(created), 2)
 
         expected_ids = [m['body']['backupId'] for m in expected_messages]
 
         interaction = self.controller.list(queue_name, client_uuid=uuid,
-                                           echo=True)
+                                           echo=True, project=self.project)
 
         actual_messages = list(next(interaction))
         self.assertEqual(len(actual_messages), len(expected_messages))
@@ -319,18 +334,15 @@ class MongodbMessageTests(base.MessageControllerTest):
         self.assertEqual(actual_ids, expected_ids)
 
     def test_empty_queue_exception(self):
-        queue_name = 'empty-queue-test'
-        self.queue_controller.create(queue_name)
-
         self.assertRaises(storage.errors.QueueIsEmpty,
-                          self.controller.first, queue_name)
+                          self.controller.first,
+                          self.queue_name, project=self.project)
 
     def test_invalid_sort_option(self):
-        queue_name = 'empty-queue-test'
-        self.queue_controller.create(queue_name)
-
         self.assertRaises(ValueError,
-                          self.controller.first, queue_name, sort=0)
+                          self.controller.first,
+                          self.queue_name, sort=0,
+                          project=self.project)
 
 
 @testing.requires_mongodb
