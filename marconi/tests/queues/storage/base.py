@@ -91,8 +91,13 @@ class QueueControllerTest(ControllerBaseTest):
 
         num = 15
         for queue in six.moves.xrange(num):
-            self.controller.create(str(queue), project=project)
-            self.controller.create(str(queue), project=project_alt)
+            queue = str(queue)
+            self.controller.create(queue, project=project)
+            self.controller.create(queue, project=project_alt)
+            self.addCleanup(self.controller.delete,
+                            queue, project=project)
+            self.addCleanup(self.controller.delete,
+                            queue, project=project_alt)
 
         interaction = self.controller.list(project=project,
                                            detailed=True)
@@ -203,6 +208,7 @@ class QueueControllerTest(ControllerBaseTest):
             self.controller.set_metadata('test', '{}', project=self.project)
 
     def test_stats_for_empty_queue(self):
+        self.addCleanup(self.controller.delete, 'test', project=self.project)
         created = self.controller.create('test', project=self.project)
         self.assertTrue(created)
 
