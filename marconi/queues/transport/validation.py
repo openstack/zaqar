@@ -123,7 +123,8 @@ class Validator(object):
         :param content_length: Queue request's length.
         :raises: ValidationFailed if the metadata is oversize.
         """
-
+        if content_length is None:
+            return
         if content_length > self._limits_conf.max_queue_metadata:
             msg = _(u'Queue metadata is too large. Max size: {0}')
             raise ValidationFailed(msg, self._limits_conf.max_queue_metadata)
@@ -148,6 +149,8 @@ class Validator(object):
         :param content_length: Queue request's length.
         :raises: ValidationFailed if the metadata is oversize.
         """
+        if content_length is None:
+            return
         if content_length > self._limits_conf.max_message_size:
             raise ValidationFailed(
                 _(u'Message collection size is too large. Max size {0}'),
