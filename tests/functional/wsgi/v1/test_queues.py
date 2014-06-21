@@ -28,7 +28,7 @@ class NamedBinaryStr(six.binary_type):
     """Wrapper for six.binary_type to facilitate overriding __name__."""
 
 
-class NamedUnicodeStr(object):
+class NamedUnicodeStr(six.text_type):
 
     """Unicode string look-alike to facilitate overriding __name__."""
 
