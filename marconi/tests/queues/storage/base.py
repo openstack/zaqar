@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import datetime
+import random
 import time
 import uuid
 
@@ -735,26 +736,54 @@ class PoolsControllerTest(ControllerBaseTest):
         # NOTE(cpp-cabrera): base entry interferes with listing results
         self.pools_controller.delete(self.pool)
 
-        name_gen = lambda i: chr(ord('A') + i)
+        pools = []
+        marker = ''
         for i in range(15):
-            self.pools_controller.create(name_gen(i), i, str(i), {})
+            n = str(uuid.uuid4())
+            w = random.randint(1, 100)
+            pools.append({'n': n, 'w': w, 'u': str(i)})
+
+            # Keep the max name as marker
+            if n > marker:
+                marker = n
+
+            self.pools_controller.create(n, w, str(i), {})
+
+        # Get the target pool
+        def _pool(name):
+            pool = [p for p in pools if p['n'] == name]
+            self.assertEqual(len(pool), 1)
+
+            pool = pool[0]
+            n = pool['n']
+            w = pool['w']
+            u = pool['u']
+
+            return n, w, u
 
         res = list(self.pools_controller.list())
         self.assertEqual(len(res), 10)
-        for i, entry in enumerate(res):
-            self._pool_expects(entry, name_gen(i), i, str(i))
+        for entry in res:
+            n, w, u = _pool(entry['name'])
+
+            self._pool_expects(entry, n, w, u)
             self.assertNotIn('options', entry)
 
         res = list(self.pools_controller.list(limit=5))
         self.assertEqual(len(res), 5)
 
-        res = next(self.pools_controller.list(marker=name_gen(3)))
-        self._pool_expects(res, name_gen(4), 4, '4')
+        next_name = marker + 'n'
+        self.pools_controller.create(next_name, 123, '123', {})
+        res = next(self.pools_controller.list(marker=marker))
+        self._pool_expects(res, next_name, 123, '123')
+        self.pools_controller.delete(next_name)
 
         res = list(self.pools_controller.list(detailed=True))
         self.assertEqual(len(res), 10)
-        for i, entry in enumerate(res):
-            self._pool_expects(entry, name_gen(i), i, str(i))
+        for entry in res:
+            n, w, u = _pool(entry['name'])
+
+            self._pool_expects(entry, n, w, u)
             self.assertIn('options', entry)
             self.assertEqual(entry['options'], {})
 
