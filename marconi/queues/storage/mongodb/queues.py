@@ -33,7 +33,7 @@ from marconi.queues.storage.mongodb import utils
 
 LOG = logging.getLogger(__name__)
 
-# NOTE(kgriffs): E.g.: 'marconi-queuecontroller:5083853/my-queue'
+# NOTE(kgriffs): E.g.: 'queuecontroller:exists:5083853/my-queue'
 _QUEUE_CACHE_PREFIX = 'queuecontroller:'
 
 # NOTE(kgriffs): This causes some race conditions, but they are

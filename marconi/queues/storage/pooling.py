@@ -41,7 +41,7 @@ _POOL_CACHE_PREFIX = 'pooling:'
 # before "unfreezing" the queue, rather than waiting
 # on the TTL.
 #
-# TODO(kgriffs): Make dynamic?
+# TODO(kgriffs): Make configurable?
 _POOL_CACHE_TTL = 10
 
 
