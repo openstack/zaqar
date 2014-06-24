@@ -15,6 +15,8 @@
 
 """Mongodb storage driver implementation."""
 
+import ssl
+
 import pymongo
 import pymongo.errors
 
@@ -33,6 +35,29 @@ def _connection(conf):
         MongoClient = pymongo.MongoReplicaSetClient
     else:
         MongoClient = pymongo.MongoClient
+
+    if 'ssl=true' in conf.uri.lower():
+        kwargs = {}
+
+        # Default to CERT_REQUIRED
+        ssl_cert_reqs = ssl.CERT_REQUIRED
+
+        if conf.ssl_cert_reqs == 'CERT_OPTIONAL':
+            ssl_cert_reqs = ssl.CERT_OPTIONAL
+
+        if conf.ssl_cert_reqs == 'CERT_NONE':
+            ssl_cert_reqs = ssl.CERT_NONE
+
+        kwargs['ssl_cert_reqs'] = ssl_cert_reqs
+
+        if conf.ssl_keyfile:
+            kwargs['ssl_keyfile'] = conf.ssl_keyfile
+        if conf.ssl_certfile:
+            kwargs['ssl_certfile'] = conf.ssl_certfile
+        if conf.ssl_ca_certs:
+            kwargs['ssl_ca_certs'] = conf.ssl_ca_certs
+
+        return MongoClient(conf.uri, **kwargs)
 
     return MongoClient(conf.uri)
 

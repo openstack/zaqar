@@ -18,7 +18,39 @@ from oslo.config import cfg
 
 
 MONGODB_OPTIONS = (
-    cfg.StrOpt('uri', help='Mongodb Connection URI.'),
+
+    cfg.StrOpt('ssl_keyfile',
+               help=('The private keyfile used to identify the local '
+                     'connection against mongod. If included with the '
+                     '``certifle`` then only the ``ssl_certfile`` '
+                     'is needed.')),
+
+    cfg.StrOpt('ssl_certfile',
+               help=('The certificate file used to identify the local '
+                     'connection against mongod.')),
+
+    cfg.StrOpt('ssl_cert_reqs', default='CERT_REQUIRED',
+               help=('Specifies whether a certificate is required from '
+                     'the other side of the connection, and whether it '
+                     'will be validated if provided. It must be one of '
+                     'the three values ``CERT_NONE``(certificates ignored), '
+                     '``CERT_OPTIONAL``(not required, but validated if '
+                     'provided), or ``CERT_REQUIRED``(required and '
+                     'validated). If the value of this parameter is not '
+                     '``CERT_NONE``, then the ``ssl_ca_cert`` parameter '
+                     'must point to a file of CA certificates.')),
+
+    cfg.StrOpt('ssl_ca_certs',
+               help=('The ca_certs file contains a set of concatenated '
+                     '"certification authority" certificates, which are '
+                     'used to validate certificates passed from the other '
+                     'end of the connection.')),
+
+    cfg.StrOpt('uri',
+               help=('Mongodb Connection URI. If ssl connection enabled, '
+                     'then ``ssl_keyfile``, ``ssl_certfile``, '
+                     '``ssl_cert_reqs``, ``ssl_ca_certs`` need to be set '
+                     'accordingly.')),
 
     cfg.StrOpt('database', default='marconi', help='Database name.'),
 
