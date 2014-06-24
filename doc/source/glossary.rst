@@ -64,14 +64,14 @@ protocol, which is one of the main requirements in today’s scalable applicatio
      Queues database stores the information about the queues and the messages
      within these queues. Storage layer has to guarantee durability and availability of the data.
 
-   Sharding
-     If sharding enabled, queuing service uses multiple queues databases in order
-     to scale horizontally. A shard (queues database) can be added anytime without
-     stopping the service. Each shard has a weight that is assigned during the
-     creation time but can be changed later. Sharding is done by queue which
-     indicates that all messages for a particular queue can be found in the same shard (queues database).
+   Pooling
+     If pooling enabled, queuing service uses multiple queues databases in order
+     to scale horizontally. A pool (queues database) can be added anytime without
+     stopping the service. Each pool has a weight that is assigned during the
+     creation time but can be changed later. Pooling is done by queue which
+     indicates that all messages for a particular queue can be found in the same pool (queues database).
 
    Catalog Database
-     If sharding is enabled, catalog database has to be created. Catalog database
+     If pooling is enabled, catalog database has to be created. Catalog database
      maintains ``queues`` to ``queues database`` mapping. Storage layer has
      to guarantee durability and availability of data.

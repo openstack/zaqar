@@ -2,7 +2,7 @@ export OSLO_CONFIG_GENERATOR_EXTRA_MODULES="keystoneclient.middleware.auth_token
 export OSLO_CONFIG_GENERATOR_EXTRA_LIBRARIES="marconi.bootstrap
                                               marconi.storage.base
                                               marconi.storage.pipeline
-                                              marconi.storage.sharding
+                                              marconi.storage.pooling
                                               marconi.storage.mongodb
                                               marconi.storage.sqlalchemy
                                               marconi.transport.wsgi

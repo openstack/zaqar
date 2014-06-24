@@ -156,8 +156,8 @@ Create a Marconi configuration file ``/etc/marconi.conf`` with the following con
     # Show debugging output in logs (sets DEBUG log level output)
     #debug = False
 
-    # Sharding and admin mode configs
-    sharding      = True
+    # Pooling and admin mode configs
+    pooling      = True
     admin_mode    = True
 
     # Log to this file!
@@ -239,17 +239,17 @@ Start the queuing service::
     #/usr/bin/uwsgi --ini /srv/marconi/uwsgi.ini
 
 
-Configure Shards
+Configure Pools
 ~~~~~~~~~~~~~~~~
 
-To have a functional queuing service, we need to define a shard. On one of the
+To have a functional queuing service, we need to define a pool. On one of the
 web servers run this command::
 
-    curl -i -X PUT -H 'X-Auth-Token: $TOKEN' -d '{"weight": 100, "uri": "mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=catalog&w=2&readPreference=secondaryPreferred", "options": {"partitions": 8}}' http://localhost:8888/v1/shards/shard1
+    curl -i -X PUT -H 'X-Auth-Token: $TOKEN' -d '{"weight": 100, "uri": "mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=catalog&w=2&readPreference=secondaryPreferred", "options": {"partitions": 8}}' http://localhost:8888/v1/pools/pool1
 
 The above ``$TOKEN`` variable is the authentication token retrieved from
 identity service. If you choose not to enable Keystone authentication you won't
 have to pass a token.
 
-Reminder: In larger deployments, catalog database and queues databases (shards)
+Reminder: In larger deployments, catalog database and queues databases (pools)
 are going to be on different MongoDB replica-sets.

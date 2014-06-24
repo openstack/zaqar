@@ -14,13 +14,13 @@
 # Options defined in marconi.bootstrap
 #
 
-# ('Enable sharding across multiple storage backends. ', 'If
-# sharding is enabled, the storage driver ', 'configuration is
-# used to determine where the ', 'catalogue/control plane data
-# is kept.') (boolean value)
-#sharding=false
+# Enable pooling across multiple storage backends. If
+# pooling is enabled, the storage driver configuration is
+# used to determine where the catalogue/control plane data
+# is kept. (boolean value)
+#pooling=false
 
-# Activate endpoints to manage shard registry. (boolean value)
+# Activate endpoints to manage pool registry. (boolean value)
 #admin_mode=false
 
 
@@ -354,10 +354,10 @@
 #enforce_token_bind=permissive
 
 
-[sharding:catalog]
+[pooling:catalog]
 
 #
-# Options defined in marconi.storage.sharding
+# Options defined in marconi.storage.pooling
 #
 
 # Catalog storage driver. (integer value)
