@@ -99,3 +99,16 @@ def create_message_body(**kwargs):
     """
     message_count = kwargs['messagecount']
     return [single_message_body(**kwargs) for i in range(message_count)]
+
+
+def create_shard_body(**kwargs):
+    shard_body = {
+        'weight': kwargs['weight'],
+        'uri': kwargs['uri'],
+        'options': {
+            'max_retry_sleep': 1,
+            'partitions': 8
+        }
+    }
+
+    return shard_body
