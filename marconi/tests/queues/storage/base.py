@@ -301,6 +301,10 @@ class MessageControllerTest(ControllerBaseTest):
         load_messages(15, self.queue_name, project=self.project, limit=20,
                       echo=True)
 
+        # Test default limit
+        load_messages(storage.DEFAULT_MESSAGES_PER_PAGE,
+                      self.queue_name, project=self.project, echo=True)
+
         # Test all messages, echo True, and uuid
         interaction = load_messages(10, self.queue_name, echo=True,
                                     project=self.project,
@@ -564,6 +568,18 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           claim_id, project=self.project)
+
+    def test_claim_create_default_limit(self):
+        _insert_fixtures(self.message_controller, self.queue_name,
+                         project=self.project, client_uuid=uuid.uuid4(),
+                         num=storage.DEFAULT_MESSAGES_PER_CLAIM + 1)
+        meta = {'ttl': 70, 'grace': 30}
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        messages = list(messages)
+        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
 
     def test_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
