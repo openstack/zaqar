@@ -36,7 +36,7 @@ def _connection(conf):
     else:
         MongoClient = pymongo.MongoClient
 
-    if 'ssl=true' in conf.uri.lower():
+    if conf.uri and 'ssl=true' in conf.uri.lower():
         kwargs = {}
 
         # Default to CERT_REQUIRED
