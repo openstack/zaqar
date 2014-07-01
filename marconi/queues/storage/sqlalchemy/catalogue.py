@@ -58,7 +58,7 @@ class CatalogueController(base.CatalogueBase):
         entry = self._conn.execute(stmt).fetchone()
 
         if entry is None:
-            raise errors.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(queue, project)
 
         return _normalize(entry)
 
@@ -89,7 +89,7 @@ class CatalogueController(base.CatalogueBase):
             return
 
         if not self.exists(project, queue):
-            raise errors.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(queue, project)
 
         stmt = sa.sql.update(tables.Catalogue).where(
             _match(project, queue)
