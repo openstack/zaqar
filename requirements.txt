@@ -14,4 +14,5 @@ WebOb>=1.2.3
 stevedore>=0.14
 six>=1.7.0
 oslo.config>=1.2.1
+oslo.i18n>=0.1.0
 SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99

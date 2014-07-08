@@ -16,7 +16,7 @@ from __future__ import print_function
 import functools
 import sys
 
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 from marconi.openstack.common import log as logging
 
 

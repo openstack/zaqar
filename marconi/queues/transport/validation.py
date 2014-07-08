@@ -17,7 +17,7 @@ import re
 
 from oslo.config import cfg
 
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 
 MIN_MESSAGE_TTL = 60
 MIN_CLAIM_TTL = 60
