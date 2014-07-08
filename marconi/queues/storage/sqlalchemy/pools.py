@@ -49,7 +49,9 @@ class PoolsController(base.PoolsBase):
         # clause
         stmt = sa.sql.select([tables.Pools]).where(
             tables.Pools.c.name > marker
-        ).limit(limit)
+        )
+        if limit > 0:
+            stmt = stmt.limit(limit)
         cursor = self._conn.execute(stmt)
 
         normalizer = functools.partial(_normalize, detailed=detailed)
