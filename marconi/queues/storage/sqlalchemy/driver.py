@@ -35,12 +35,12 @@ class DataDriver(storage.DataDriverBase):
         self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
 
     def _sqlite_on_connect(self, conn, record):
-        # NOTE(flaper87): This is necesary in order
+        # NOTE(flaper87): This is necessary in order
         # to ensure FK are treated correctly by sqlite.
         conn.execute('pragma foreign_keys=ON')
 
     def _mysql_on_connect(self, conn, record):
-        # NOTE(flaper87): This is necesary in order
+        # NOTE(flaper87): This is necessary in order
         # to ensure that all date operations in mysql
         # happen in UTC, `now()` for example.
         conn.query('SET time_zone = "+0:00"')
