@@ -864,9 +864,10 @@ class CatalogueControllerTest(ControllerBaseTest):
             self._check_value(entry, xqueue=q, xproject=p, xpool=u'b')
 
     def test_update_raises_when_entry_does_not_exist(self):
-        self.assertRaises(errors.QueueNotMapped,
-                          self.controller.update,
-                          'not', 'not', 'a')
+        e = self.assertRaises(errors.QueueNotMapped,
+                              self.controller.update,
+                              'p', 'q', 'a')
+        self.assertIn('queue q for project p', str(e))
 
     def test_get(self):
         with helpers.pool_entry(self.controller,

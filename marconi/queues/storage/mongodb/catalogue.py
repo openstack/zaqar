@@ -68,7 +68,7 @@ class CatalogueController(base.CatalogueBase):
                                    fields=fields)
 
         if entry is None:
-            raise errors.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(queue, project)
 
         return _normalize(entry)
 
@@ -91,7 +91,7 @@ class CatalogueController(base.CatalogueBase):
         res = self._insert(project, queue, pool, upsert=False)
 
         if not res['updatedExisting']:
-            raise errors.QueueNotMapped(project, queue)
+            raise errors.QueueNotMapped(queue, project)
 
     @utils.raises_conn_error
     def drop_all(self):
