@@ -772,6 +772,9 @@ class PoolsControllerTest(ControllerBaseTest):
         res = list(self.pools_controller.list(limit=5))
         self.assertEqual(len(res), 5)
 
+        res = list(self.pools_controller.list(limit=0))
+        self.assertEqual(len(res), 15)
+
         next_name = marker + 'n'
         self.pools_controller.create(next_name, 123, '123', {})
         res = next(self.pools_controller.list(marker=marker))
