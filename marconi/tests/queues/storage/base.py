@@ -900,6 +900,12 @@ class CatalogueControllerTest(ControllerBaseTest):
             self.assertTrue(self.controller.exists(p, q))
             self.assertFalse(self.controller.exists('nada', 'not_here'))
 
+    def test_insert(self):
+        q1 = six.text_type(uuid.uuid1())
+        q2 = six.text_type(uuid.uuid1())
+        self.controller.insert(self.project, q1, u'a')
+        self.controller.insert(self.project, q2, u'a')
+
 
 def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
