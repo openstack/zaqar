@@ -26,7 +26,7 @@ from bson import objectid
 from bson import tz_util
 from pymongo import errors
 
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues.storage import errors as storage_errors

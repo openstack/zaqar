@@ -17,7 +17,7 @@ import jsonschema
 from jsonschema import validators
 
 from marconi.common import errors
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 from marconi.openstack.common import log
 
 LOG = log.getLogger(__name__)

@@ -34,7 +34,7 @@ import contextlib
 import six
 
 from marconi.common import decorators
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 import marconi.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)

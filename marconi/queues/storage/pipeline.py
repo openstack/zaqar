@@ -17,7 +17,7 @@ from stevedore import driver
 
 from marconi import common
 from marconi.common import decorators
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 from marconi.openstack.common import log as logging
 from marconi.queues.storage import base
 

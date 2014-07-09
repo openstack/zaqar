@@ -16,7 +16,7 @@
 import falcon
 import six
 
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 import marconi.openstack.common.log as logging
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation

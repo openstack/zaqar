@@ -15,7 +15,7 @@
 
 import falcon
 
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 
 
 class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):

@@ -24,7 +24,7 @@ Field Mappings:
 import pymongo.errors
 
 from marconi.common import decorators
-from marconi.openstack.common.gettextutils import _
+from marconi.i18n import _
 import marconi.openstack.common.log as logging
 from marconi.openstack.common import timeutils
 from marconi.queues import storage
