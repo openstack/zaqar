@@ -32,6 +32,7 @@ from marconi.queues.storage import mongodb
 from marconi.queues.storage.mongodb import controllers
 from marconi.queues.storage.mongodb import options
 from marconi.queues.storage.mongodb import utils
+from marconi.queues.storage import pooling
 from marconi import tests as testing
 from marconi.tests.queues.storage import base
 
@@ -403,3 +404,30 @@ class MongodbCatalogueTests(base.CatalogueControllerTest):
     def tearDown(self):
         self.controller.drop_all()
         super(MongodbCatalogueTests, self).tearDown()
+
+
+@testing.requires_mongodb
+class PooledMessageTests(base.MessageControllerTest):
+    config_file = 'wsgi_mongodb_pooled.conf'
+    controller_class = pooling.MessageController
+    driver_class = pooling.DataDriver
+    control_driver_class = mongodb.ControlDriver
+    controller_base_class = pooling.RoutingController
+
+
+@testing.requires_mongodb
+class PooledQueueTests(base.QueueControllerTest):
+    config_file = 'wsgi_mongodb_pooled.conf'
+    controller_class = pooling.QueueController
+    driver_class = pooling.DataDriver
+    control_driver_class = mongodb.ControlDriver
+    controller_base_class = pooling.RoutingController
+
+
+@testing.requires_mongodb
+class PooledClaimsTests(base.ClaimControllerTest):
+    config_file = 'wsgi_mongodb_pooled.conf'
+    controller_class = pooling.ClaimController
+    driver_class = pooling.DataDriver
+    control_driver_class = mongodb.ControlDriver
+    controller_base_class = pooling.RoutingController

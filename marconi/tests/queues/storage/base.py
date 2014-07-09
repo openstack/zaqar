@@ -24,6 +24,7 @@ from testtools import matchers
 
 from marconi.openstack.common.cache import cache as oslo_cache
 from marconi.openstack.common import timeutils
+from marconi.queues import bootstrap
 from marconi.queues import storage
 from marconi.queues.storage import errors
 from marconi import tests as testing
@@ -52,13 +53,33 @@ class ControllerBaseTest(testing.TestBase):
         cache = oslo_cache.get_cache(self.conf.cache_url)
 
         # pylint: disable=not-callable
-        self.driver = self.driver_class(self.conf, cache)
+        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+        pooling = 'pooling' in self.conf and self.conf.pooling
+        if pooling and not self.control_driver_class:
+            self.skipTest("Pooling is enabled, "
+                          "but control driver class is not specified")
+
+        if not pooling:
+            # pylint: disable=not-callable
+            self.driver = self.driver_class(self.conf, cache)
+        else:
+            # pylint: disable=not-callable
+            control = self.control_driver_class(self.conf, cache)
+            uri = "sqlite:///:memory:"
+            for i in range(4):
+                control.pools_controller.create(six.text_type(i), 100, uri)
+            self.driver = self.driver_class(self.conf, cache, control)
+
         self._prepare_conf()
 
         self.addCleanup(self._purge_databases)
 
-        # pylint: disable=not-callable
-        self.controller = self.controller_class(self.driver)
+        if not pooling:
+            # pylint: disable=not-callable
+            self.controller = self.controller_class(self.driver)
+        else:
+            # pylint: disable=not-callable
+            self.controller = self.controller_class(self.driver._pool_catalog)
 
     def _prepare_conf(self):
         """Prepare the conf before running tests

@@ -135,6 +135,6 @@ def _normalize(pool, detailed=False):
     }
     if detailed:
         opts = pool[3]
-        ret['options'] = utils.json_decode(opts) if opts else None
+        ret['options'] = utils.json_decode(opts) if opts else {}
 
     return ret
