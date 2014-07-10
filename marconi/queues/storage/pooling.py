@@ -27,7 +27,7 @@ from marconi.queues.storage import utils
 LOG = log.getLogger(__name__)
 
 _CATALOG_OPTIONS = (
-    cfg.IntOpt('storage', default='sqlite',
+    cfg.StrOpt('storage', default='sqlite',
                help='Catalog storage driver.'),
 )
 
