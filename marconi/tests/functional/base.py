@@ -70,7 +70,6 @@ class FunctionalTestBase(testing.TestBase):
             # NOTE(flaper87): Use running instances.
             if self.cfg.marconi.run_server:
                 if not (self.server and self.server.is_alive()):
-                    # pylint: disable=not-callable
                     self.server = self.server_class()
                     self.server.start(self.mconf)
 

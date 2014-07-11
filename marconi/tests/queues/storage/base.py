@@ -52,7 +52,6 @@ class ControllerBaseTest(testing.TestBase):
         oslo_cache.register_oslo_configs(self.conf)
         cache = oslo_cache.get_cache(self.conf.cache_url)
 
-        # pylint: disable=not-callable
         self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
         pooling = 'pooling' in self.conf and self.conf.pooling
         if pooling and not self.control_driver_class:
@@ -60,10 +59,8 @@ class ControllerBaseTest(testing.TestBase):
                           "but control driver class is not specified")
 
         if not pooling:
-            # pylint: disable=not-callable
             self.driver = self.driver_class(self.conf, cache)
         else:
-            # pylint: disable=not-callable
             control = self.control_driver_class(self.conf, cache)
             uri = "sqlite:///:memory:"
             for i in range(4):
@@ -75,10 +72,8 @@ class ControllerBaseTest(testing.TestBase):
         self.addCleanup(self._purge_databases)
 
         if not pooling:
-            # pylint: disable=not-callable
             self.controller = self.controller_class(self.driver)
         else:
-            # pylint: disable=not-callable
             self.controller = self.controller_class(self.driver._pool_catalog)
 
     def _prepare_conf(self):

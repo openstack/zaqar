@@ -46,9 +46,9 @@ def read_json(stream, len):
     try:
         content = strutils.safe_decode(stream.read(len), 'utf-8')
         return json.loads(content, parse_int=_json_int)
-    except ValueError as ex:
-        raise MalformedJSON(ex)
     except UnicodeDecodeError as ex:
+        raise MalformedJSON(ex)
+    except ValueError as ex:
         raise MalformedJSON(ex)
 
 

@@ -326,12 +326,12 @@ class TestMessages(base.V1_1FunctionalTestBase):
     test_message_bulk_insert_large_bodies.tags = ['positive']
 
     @ddt.data(1, 10)
-    def test_message_bulk_insert_large_bodies(self, offset):
+    def test_message_bulk_insert_large_bodies_(self, offset):
         """Insert just under than max allowed messages."""
         result = self._post_large_bulk_insert(offset)
         self.assertEqual(result.status_code, 400)
 
-    test_message_bulk_insert_large_bodies.tags = ['negative']
+    test_message_bulk_insert_large_bodies_.tags = ['negative']
 
     def test_message_bulk_insert_oversized(self):
         """Insert more than max allowed size."""
