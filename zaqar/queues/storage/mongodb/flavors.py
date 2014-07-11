@@ -58,7 +58,7 @@ class FlavorsController(base.FlavorsBase):
             query['n'] = {'$gt': marker}
 
         cursor = self._col.find(query, fields=_field_spec(detailed),
-                                limit=limit)
+                                limit=limit).sort('n', 1)
 
         normalizer = functools.partial(_normalize, detailed=detailed)
         return utils.HookedCursor(cursor, normalizer)

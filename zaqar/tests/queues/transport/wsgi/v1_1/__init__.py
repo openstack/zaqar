@@ -15,6 +15,7 @@
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_auth
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_claims
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_default_limits
+from zaqar.tests.queues.transport.wsgi.v1_1 import test_flavors
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_health
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_home
 from zaqar.tests.queues.transport.wsgi.v1_1 import test_media_type
@@ -42,3 +43,4 @@ TestQueueLifecycleSqlalchemy = l.TestQueueLifecycleSqlalchemy
 TestPoolsMongoDB = test_pools.TestPoolsMongoDB
 TestPoolsSqlalchemy = test_pools.TestPoolsSqlalchemy
 TestValidation = test_validation.TestValidation
+TestFlavorsMongoDB = test_flavors.TestFlavorsMongoDB
