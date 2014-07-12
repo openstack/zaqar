@@ -237,16 +237,16 @@ class MessageController(RoutingController):
         super(MessageController, self).__init__(pool_catalog)
         self._lookup = self._pool_catalog.lookup
 
-    def post(self, queue, project, messages, client_uuid):
+    def post(self, queue, messages, client_uuid, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
             return control.post(queue, project=project,
                                 messages=messages,
                                 client_uuid=client_uuid)
-        raise errors.QueueDoesNotExist(project, queue)
+        raise errors.QueueDoesNotExist(queue, project)
 
-    def delete(self, queue, project, message_id, claim):
+    def delete(self, queue, message_id, project=None, claim=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
@@ -254,7 +254,7 @@ class MessageController(RoutingController):
                                   message_id=message_id, claim=claim)
         return None
 
-    def bulk_delete(self, queue, project, message_ids):
+    def bulk_delete(self, queue, message_ids, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
@@ -262,7 +262,7 @@ class MessageController(RoutingController):
                                        message_ids=message_ids)
         return None
 
-    def bulk_get(self, queue, project, message_ids):
+    def bulk_get(self, queue, message_ids, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
@@ -270,7 +270,8 @@ class MessageController(RoutingController):
                                     message_ids=message_ids)
         return []
 
-    def list(self, queue, project, marker=None, limit=None,
+    def list(self, queue, project=None, marker=None,
+             limit=storage.DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None, include_claimed=False):
         target = self._lookup(queue, project)
         if target:
@@ -281,13 +282,20 @@ class MessageController(RoutingController):
                                 include_claimed=include_claimed)
         return iter([[]])
 
-    def get(self, queue, message_id, project):
+    def get(self, queue, message_id, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.message_controller
             return control.get(queue, message_id=message_id,
                                project=project)
-        raise errors.QueueDoesNotExist(project, queue)
+        raise errors.QueueDoesNotExist(queue, project)
+
+    def first(self, queue, project=None, sort=1):
+        target = self._lookup(queue, project)
+        if target:
+            control = target.message_controller
+            return control.first(queue, project=project, sort=sort)
+        raise errors.QueueDoesNotExist(queue, project)
 
 
 class ClaimController(RoutingController):
@@ -297,7 +305,8 @@ class ClaimController(RoutingController):
         super(ClaimController, self).__init__(pool_catalog)
         self._lookup = self._pool_catalog.lookup
 
-    def create(self, queue, metadata, project=None, limit=None):
+    def create(self, queue, metadata, project=None,
+               limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
         target = self._lookup(queue, project)
         if target:
             control = target.claim_controller
@@ -305,7 +314,7 @@ class ClaimController(RoutingController):
                                   project=project, limit=limit)
         return [None, []]
 
-    def get(self, queue, claim_id, project):
+    def get(self, queue, claim_id, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.claim_controller
@@ -313,7 +322,7 @@ class ClaimController(RoutingController):
                                project=project)
         raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
-    def update(self, queue, claim_id, metadata, project):
+    def update(self, queue, claim_id, metadata, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.claim_controller
@@ -321,7 +330,7 @@ class ClaimController(RoutingController):
                                   project=project, metadata=metadata)
         raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
-    def delete(self, queue, claim_id, project):
+    def delete(self, queue, claim_id, project=None):
         target = self._lookup(queue, project)
         if target:
             control = target.claim_controller
