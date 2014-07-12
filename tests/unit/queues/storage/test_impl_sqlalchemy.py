@@ -17,6 +17,7 @@ import datetime
 import sqlalchemy as sa
 
 from marconi.queues.storage import errors
+from marconi.queues.storage import pooling
 from marconi.queues.storage import sqlalchemy
 from marconi.queues.storage.sqlalchemy import controllers
 from marconi.queues.storage.sqlalchemy import tables
@@ -100,3 +101,27 @@ class SqlalchemyCatalogueTest(base.CatalogueControllerTest):
 
     def tearDown(self):
         super(SqlalchemyCatalogueTest, self).tearDown()
+
+
+class PooledMessageTests(base.MessageControllerTest):
+    config_file = 'wsgi_sqlalchemy_pooled.conf'
+    controller_class = pooling.MessageController
+    driver_class = pooling.DataDriver
+    control_driver_class = sqlalchemy.ControlDriver
+    controller_base_class = pooling.RoutingController
+
+
+class PooledClaimsTests(base.ClaimControllerTest):
+    config_file = 'wsgi_sqlalchemy_pooled.conf'
+    controller_class = pooling.ClaimController
+    driver_class = pooling.DataDriver
+    control_driver_class = sqlalchemy.ControlDriver
+    controller_base_class = pooling.RoutingController
+
+
+class PooledQueueTests(base.QueueControllerTest):
+    config_file = 'wsgi_sqlalchemy_pooled.conf'
+    controller_class = pooling.QueueController
+    driver_class = pooling.DataDriver
+    control_driver_class = sqlalchemy.ControlDriver
+    controller_base_class = pooling.RoutingController

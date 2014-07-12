@@ -68,6 +68,6 @@ Catalogue = sa.Table('Catalogue', metadata,
                      sa.Column('pool', sa.String(64),
                                sa.ForeignKey('Pools.name',
                                              ondelete='CASCADE')),
-                     sa.Column('project', sa.String(64), nullable=False),
+                     sa.Column('project', sa.String(64)),
                      sa.Column('queue', sa.String(64), nullable=False),
                      sa.UniqueConstraint('project', 'queue'))
