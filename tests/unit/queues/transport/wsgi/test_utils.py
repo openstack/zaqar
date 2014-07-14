@@ -28,53 +28,68 @@ class TestUtils(testtools.TestCase):
         doc = {}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack',
+                          int, None)
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 42, int)
+                          utils.get_checked_field, doc, 42, int, None)
 
         doc = {'openstac': 10}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack',
+                          int, None)
+
+        value = utils.get_checked_field(doc, 'missing', int, 0)
+        self.assertEqual(value, 0)
+
+        value = utils.get_checked_field(doc, 'missing', dict, {})
+        self.assertEqual(value, {})
 
     def test_get_checked_field_bad_type(self):
         doc = {'openstack': '10'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 'openstack', int)
+                          utils.get_checked_field, doc, 'openstack',
+                          int, None)
 
         doc = {'openstack': 10, 'openstack-mq': 'test'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 'openstack', str)
+                          utils.get_checked_field, doc, 'openstack',
+                          str, None)
 
         doc = {'openstack': '[1, 2]'}
 
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.get_checked_field, doc, 'openstack', list)
+                          utils.get_checked_field, doc, 'openstack',
+                          list, None)
 
     def test_get_checked_field(self):
         doc = {'hello': 'world', 'the answer': 42, 'question': []}
 
-        value = utils.get_checked_field(doc, 'hello', str)
+        value = utils.get_checked_field(doc, 'hello', str, None)
         self.assertEqual(value, 'world')
 
-        value = utils.get_checked_field(doc, 'the answer', int)
+        value = utils.get_checked_field(doc, 'the answer', int, None)
         self.assertEqual(value, 42)
 
-        value = utils.get_checked_field(doc, 'question', list)
+        value = utils.get_checked_field(doc, 'question', list, None)
         self.assertEqual(value, [])
 
     def test_filter_missing(self):
         doc = {'body': {'event': 'start_backup'}}
-        spec = (('tag', dict),)
+        spec = (('tag', dict, None),)
         self.assertRaises(falcon.HTTPBadRequest,
                           utils.filter, doc, spec)
 
+        spec = (('tag', str, 'db'),)
+        filtered = utils.filter(doc, spec)
+        self.assertEqual(filtered, {'tag': 'db'})
+
     def test_filter_bad_type(self):
         doc = {'ttl': '300', 'bogus': 'yogabbagabba'}
-        spec = [('ttl', int)]
+        spec = [('ttl', int, None)]
         self.assertRaises(falcon.HTTPBadRequest,
                           utils.filter, doc, spec)
 
@@ -82,18 +97,18 @@ class TestUtils(testtools.TestCase):
         doc = {'body': {'event': 'start_backup'}}
 
         def spec():
-            yield ('body', dict)
+            yield ('body', dict, None)
 
         filtered = utils.filter(doc, spec())
         self.assertEqual(filtered, doc)
 
         doc = {'ttl': 300, 'bogus': 'yogabbagabba'}
-        spec = [('ttl', int)]
+        spec = [('ttl', int, None)]
         filtered = utils.filter(doc, spec)
         self.assertEqual(filtered, {'ttl': 300})
 
         doc = {'body': {'event': 'start_backup'}, 'ttl': 300}
-        spec = (('body', dict), ('ttl', int))
+        spec = (('body', dict, None), ('ttl', int, None))
         filtered = utils.filter(doc, spec)
         self.assertEqual(filtered, doc)
 
@@ -122,7 +137,7 @@ class TestUtils(testtools.TestCase):
     def test_filter_star(self):
         doc = {'ttl': 300, 'body': {'event': 'start_backup'}}
 
-        spec = [('body', '*'), ('ttl', '*')]
+        spec = [('body', '*', None), ('ttl', '*', None)]
         filtered = utils.filter(doc, spec)
 
         self.assertEqual(filtered, doc)
@@ -132,7 +147,7 @@ class TestUtils(testtools.TestCase):
 
         document = six.text_type(json.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
-        spec = [('body', dict), ('id', six.string_types)]
+        spec = [('body', dict, None), ('id', six.string_types, None)]
         filtered_object, = utils.filter_stream(stream, len(document), spec)
 
         self.assertEqual(filtered_object, obj)
@@ -147,7 +162,7 @@ class TestUtils(testtools.TestCase):
 
         document = six.text_type(json.dumps(array, ensure_ascii=False))
         stream = io.StringIO(document)
-        spec = [('body', dict)]
+        spec = [('body', dict, None)]
         filtered_objects = list(utils.filter_stream(
             stream, len(document), spec, doctype=utils.JSONArray))
 

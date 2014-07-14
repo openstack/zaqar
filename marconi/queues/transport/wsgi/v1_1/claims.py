@@ -26,20 +26,35 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
 
-CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
-CLAIM_PATCH_SPEC = (('ttl', int),)
+CLAIM_PATCH_SPEC = (('ttl', int, None),)
 
 
-class Resource(object):
+class CollectionResource(object):
 
-    __slots__ = ('claim_controller', '_validate')
+    __slots__ = (
+        'claim_controller',
+        '_validate',
+        '_claim_post_spec',
+        '_default_meta',
+    )
 
-    def __init__(self, wsgi_conf, validate, claim_controller):
+    def __init__(self, wsgi_conf, validate, claim_controller,
+                 default_claim_ttl, default_grace_ttl):
+
         self.claim_controller = claim_controller
         self._validate = validate
 
+        self._claim_post_spec = (
+            ('ttl', int, default_claim_ttl),
+            ('grace', int, default_grace_ttl),
+        )
 
-class CollectionResource(Resource):
+        # NOTE(kgriffs): Create this once up front, rather than creating
+        # a new dict every time, for the sake of performance.
+        self._default_meta = {
+            'ttl': default_claim_ttl,
+            'grace': default_grace_ttl,
+        }
 
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Claims collection POST - queue: %(queue)s, '
@@ -50,14 +65,22 @@ class CollectionResource(Resource):
         limit = req.get_param_as_int('limit')
         claim_options = {} if limit is None else {'limit': limit}
 
-        # Read claim metadata (e.g., TTL) and raise appropriate
-        # HTTP errors as needed.
-        metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
-                                             CLAIM_POST_SPEC)
+        # NOTE(kgriffs): Clients may or may not actually include the
+        # Content-Length header when the body is empty; the following
+        # check works for both 0 and None.
+        if not req.content_length:
+            # No values given, so use defaults
+            metadata = self._default_meta
+        else:
+            # Read claim metadata (e.g., TTL) and raise appropriate
+            # HTTP errors as needed.
+            metadata, = wsgi_utils.filter_stream(
+                req.stream, req.content_length, self._claim_post_spec)
 
         # Claim some messages
         try:
             self._validate.claim_creation(metadata, limit=limit)
+
             cid, msgs = self.claim_controller.create(
                 queue_name,
                 metadata=metadata,
@@ -93,7 +116,7 @@ class CollectionResource(Resource):
             resp.status = falcon.HTTP_204
 
 
-class ItemResource(Resource):
+class ItemResource(object):
 
     __slots__ = ('claim_controller', '_validate')
 

@@ -26,20 +26,30 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
 
-MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
-
 
 class CollectionResource(object):
 
-    __slots__ = ('message_controller', '_wsgi_conf', '_validate',
-                 'queue_controller')
+    __slots__ = (
+        'message_controller',
+        'queue_controller',
+        '_wsgi_conf',
+        '_validate',
+        '_message_post_spec',
+    )
 
-    def __init__(self, wsgi_conf, validate, message_controller,
-                 queue_controller):
+    def __init__(self, wsgi_conf, validate,
+                 message_controller, queue_controller,
+                 default_message_ttl):
+
         self._wsgi_conf = wsgi_conf
         self._validate = validate
         self.message_controller = message_controller
         self.queue_controller = queue_controller
+
+        self._message_post_spec = (
+            ('ttl', int, default_message_ttl),
+            ('body', '*', None),
+        )
 
     # ----------------------------------------------------------------------
     # Helpers
@@ -153,7 +163,7 @@ class CollectionResource(object):
         messages = wsgi_utils.filter_stream(
             req.stream,
             req.content_length,
-            MESSAGE_POST_SPEC,
+            self._message_post_spec,
             doctype=wsgi_utils.JSONArray)
 
         # Enqueue the messages

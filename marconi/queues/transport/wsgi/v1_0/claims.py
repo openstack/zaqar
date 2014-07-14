@@ -26,8 +26,8 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
 
-CLAIM_POST_SPEC = (('ttl', int), ('grace', int))
-CLAIM_PATCH_SPEC = (('ttl', int),)
+CLAIM_POST_SPEC = (('ttl', int, None), ('grace', int, None))
+CLAIM_PATCH_SPEC = (('ttl', int, None),)
 
 
 class Resource(object):

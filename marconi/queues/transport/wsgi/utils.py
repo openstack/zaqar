@@ -29,7 +29,6 @@ JSONArray = list
 LOG = logging.getLogger(__name__)
 
 
-# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
 def filter_stream(stream, len, spec=None, doctype=JSONObject):
     """Reads, deserializes, and validates a document from a stream.
 
@@ -39,11 +38,14 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
     :param spec: (Default None) Iterable describing expected fields,
         yielding tuples with the form of:
 
-            (field_name, value_type).
+            (field_name, value_type, default_value)
 
         Note that value_type may either be a Python type, or the
-        special string '*' to accept any type. If spec is None, the
-        incoming documents will not be validated.
+        special string '*' to accept any type. default_value is the
+        default to give the field if it is missing, or None to require
+        that the field be present.
+
+        If spec is None, the incoming documents will not be validated.
     :param doctype: type of document to expect; must be either
         JSONObject or JSONArray.
     :raises: HTTPBadRequest, HTTPServiceUnavailable
@@ -99,7 +101,6 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
     raise TypeError('doctype must be either a JSONObject or JSONArray')
 
 
-# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
 def filter(document, spec):
     """Validates and retrieves typed fields from a single document.
 
@@ -119,14 +120,14 @@ def filter(document, spec):
     """
 
     filtered = {}
-    for name, value_type in spec:
-        filtered[name] = get_checked_field(document, name, value_type)
+    for name, value_type, default_value in spec:
+        filtered[name] = get_checked_field(document, name,
+                                           value_type, default_value)
 
     return filtered
 
 
-# TODO(kgriffs): Consider moving this to Falcon and/or Oslo
-def get_checked_field(document, name, value_type):
+def get_checked_field(document, name, value_type, default_value):
     """Validates and retrieves a typed field from a document.
 
     This function attempts to look up doc[name], and raises
@@ -136,6 +137,8 @@ def get_checked_field(document, name, value_type):
     :param document: dict-like object
     :param name: field name
     :param value_type: expected value type, or '*' to accept any type
+    :param default_value: Default value to use if the value is missing,
+        or None to make the value required.
     :raises: HTTPBadRequest if the field is missing or not an
         instance of value_type
     :returns: value obtained from doc[name]
@@ -144,9 +147,14 @@ def get_checked_field(document, name, value_type):
     try:
         value = document[name]
     except KeyError:
-        description = _(u'Missing "{name}" field.').format(name=name)
-        raise errors.HTTPBadRequestBody(description)
+        if default_value is not None:
+            value = default_value
+        else:
+            description = _(u'Missing "{name}" field.').format(name=name)
+            raise errors.HTTPBadRequestBody(description)
 
+    # PERF(kgriffs): We do our own little spec thing because it is way
+    # faster than jsonschema.
     if value_type == '*' or isinstance(value, value_type):
         return value
 

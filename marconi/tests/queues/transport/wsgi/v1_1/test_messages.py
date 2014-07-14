@@ -35,6 +35,8 @@ class MessagesBaseTest(base.V1_1Base):
     def setUp(self):
         super(MessagesBaseTest, self).setUp()
 
+        self.default_message_ttl = self.boot.transport._defaults.message_ttl
+
         if self.conf.pooling:
             for i in range(4):
                 uri = self.conf['drivers:storage:mongodb'].uri
@@ -172,6 +174,27 @@ class MessagesBaseTest(base.V1_1Base):
         ]
 
         self._test_post(sample_messages)
+
+    def test_post_optional_ttl(self):
+        sample_messages = [
+            {'body': 239},
+            {'body': {'key': 'value'}, 'ttl': 200},
+        ]
+
+        # Manually check default TTL is max from config
+
+        sample_doc = jsonutils.dumps(sample_messages)
+        result = self.simulate_post(self.messages_path,
+                                    body=sample_doc, headers=self.headers)
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        result_doc = jsonutils.loads(result[0])
+
+        href = result_doc['resources'][0]
+        result = self.simulate_get(href, headers=self.headers)
+        message = jsonutils.loads(result[0])
+
+        self.assertEqual(self.default_message_ttl, message['ttl'])
 
     def test_post_to_non_ascii_queue(self):
         # NOTE(kgriffs): This test verifies that routes with

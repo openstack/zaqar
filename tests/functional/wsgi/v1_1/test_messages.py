@@ -202,6 +202,26 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     test_message_bulk_insert.tags = ['smoke', 'positive']
 
+    def test_message_default_ttl(self):
+        """Insert Single Message into the Queue using the default TTL."""
+        doc = helpers.create_message_body(messagecount=1, default_ttl=True)
+
+        result = self.client.post(data=doc)
+        self.assertEqual(result.status_code, 201)
+
+        # GET on posted message
+        href = result.json()['resources'][0]
+        url = self.cfg.marconi.url + href
+
+        result = self.client.get(url)
+        self.assertEqual(result.status_code, 200)
+
+        # Compare message metadata
+        default_ttl = result.json()['ttl']
+        self.assertEqual(default_ttl, self.resource_defaults.message_ttl)
+
+    test_message_default_ttl.tags = ['smoke', 'positive']
+
     @ddt.data({}, {'limit': 5})
     def test_get_message(self, params):
         """Get Messages."""

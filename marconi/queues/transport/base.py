@@ -19,7 +19,7 @@ from oslo.config import cfg
 import six
 
 
-_TRANSPORT_OPTIONS = (
+_GENERAL_TRANSPORT_OPTIONS = (
     cfg.StrOpt('auth_strategy', default='',
                help=('Backend to use for authentication. '
                      'For no auth, keep it empty. '
@@ -27,9 +27,41 @@ _TRANSPORT_OPTIONS = (
                      'See also the keystone_authtoken section below')),
 )
 
+_RESOURCE_DEFAULTS = (
+    cfg.IntOpt('default_message_ttl', default=3600),
+    cfg.IntOpt('default_claim_ttl', default=300),
+    cfg.IntOpt('default_claim_grace', default=60),
+)
+
+_TRANSPORT_GROUP = 'transport'
+
 
 def _config_options():
-    return [(None, _TRANSPORT_OPTIONS)]
+    return [
+        (None, _GENERAL_TRANSPORT_OPTIONS),
+        (_TRANSPORT_GROUP, _RESOURCE_DEFAULTS),
+    ]
+
+
+class ResourceDefaults(object):
+    """Registers and exposes defaults for resource fields."""
+
+    def __init__(self, conf):
+        self._conf = conf
+        self._conf.register_opts(_RESOURCE_DEFAULTS, group=_TRANSPORT_GROUP)
+        self._defaults = self._conf[_TRANSPORT_GROUP]
+
+    @property
+    def message_ttl(self):
+        return self._defaults.default_message_ttl
+
+    @property
+    def claim_ttl(self):
+        return self._defaults.default_claim_ttl
+
+    @property
+    def claim_grace(self):
+        return self._defaults.default_claim_grace
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -52,7 +84,8 @@ class DriverBase(object):
         self._cache = cache
         self._control = control
 
-        self._conf.register_opts(_TRANSPORT_OPTIONS)
+        self._conf.register_opts(_GENERAL_TRANSPORT_OPTIONS)
+        self._defaults = ResourceDefaults(self._conf)
 
     @abc.abstractmethod
     def listen(self):

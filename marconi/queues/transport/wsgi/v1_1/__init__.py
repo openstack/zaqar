@@ -28,6 +28,8 @@ def public_endpoints(driver):
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
 
+    defaults = driver._defaults
+
     return [
         # Home
         ('/',
@@ -51,7 +53,8 @@ def public_endpoints(driver):
          messages.CollectionResource(driver._wsgi_conf,
                                      driver._validate,
                                      message_controller,
-                                     queue_controller)),
+                                     queue_controller,
+                                     defaults.message_ttl)),
         ('/queues/{queue_name}/messages/{message_id}',
          messages.ItemResource(message_controller)),
 
@@ -59,7 +62,9 @@ def public_endpoints(driver):
         ('/queues/{queue_name}/claims',
          claims.CollectionResource(driver._wsgi_conf,
                                    driver._validate,
-                                   claim_controller)),
+                                   claim_controller,
+                                   defaults.claim_ttl,
+                                   defaults.claim_grace)),
         ('/queues/{queue_name}/claims/{claim_id}',
          claims.ItemResource(driver._wsgi_conf,
                              driver._validate,
