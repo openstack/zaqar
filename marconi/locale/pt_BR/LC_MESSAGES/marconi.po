@@ -1,17 +1,19 @@
-# Translations template for marconi.
+# Portuguese (Brazil) translations for marconi.
 # Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the marconi project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
-#, fuzzy
+# Translators:
+# Gabriel Guerreiro <gabriel.eu.br@gmail.com>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: marconi 2014.2.dev65.g57842ef\n"
+"Project-Id-Version:  Marconi\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-07-17 06:07+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2014-07-15 12:50+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"Language-Team: Portuguese (Brazil) "
+"(http://www.transifex.com/projects/p/marconi/language/pt_BR/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,21 +21,21 @@ msgstr ""
 
 #: marconi/common/api.py:48
 msgid "{0} is not a valid operation"
-msgstr ""
+msgstr "{0} não é uma operação válida"
 
 #: marconi/common/cli.py:50
 msgid "Terminating"
-msgstr ""
+msgstr "Finalizando"
 
 #: marconi/common/pipeline.py:94
 #, python-format
 msgid "Stage %(stage)s does not implement %(method)s"
-msgstr ""
+msgstr "O estágio %(stage)s não implementa o método %(method)s"
 
 #: marconi/common/pipeline.py:108
 #, python-format
 msgid "Method %s not found in any of the registered stages"
-msgstr ""
+msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
 
 #: marconi/common/transport/wsgi/helpers.py:45
 msgid ""
@@ -42,64 +44,72 @@ msgid ""
 "-PROJECT-ID\n"
 "and retry."
 msgstr ""
+"\n"
+"X-PROJECT-ID não pode ser uma string vazia. Especifique o cabeçalho X"
+"-PROJECT-ID\n"
+"e tente novemente."
 
 #: marconi/common/transport/wsgi/helpers.py:86
 msgid "Invalid queue identification"
-msgstr ""
+msgstr "Identificação de fila inválida"
 
 #: marconi/common/transport/wsgi/helpers.py:87
 msgid "The format of the submitted queue name or project id is not valid."
 msgstr ""
+"O formato do nome da fila submetida ou o identificador do projeto não é "
+"válido."
 
 #: marconi/openstack/common/gettextutils.py:320
 msgid "Message objects do not support addition."
-msgstr ""
+msgstr "Objetos mensagem não suportam adição."
 
 #: marconi/openstack/common/gettextutils.py:330
 msgid ""
 "Message objects do not support str() because they may contain non-ascii "
 "characters. Please use unicode() or translate() instead."
 msgstr ""
+"Objetos mensagem não suportam str() pois podem conter carácteres "
+"não-ascii. Use unicode() ou translate()."
 
 #: marconi/openstack/common/lockutils.py:102
 #, python-format
 msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
-msgstr ""
+msgstr "Não foi possível bloquear o arquivo ` %(filename)s` devido a %(exception)s"
 
 #: marconi/openstack/common/log.py:327
 #, python-format
 msgid "Deprecated: %s"
-msgstr ""
+msgstr "Obsoleto: %s"
 
 #: marconi/openstack/common/log.py:436
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
-msgstr ""
+msgstr "Erro ao carregar configuração %(log_config)s: %(err_msg)s"
 
 #: marconi/openstack/common/log.py:487
 #, python-format
 msgid "syslog facility must be one of: %s"
-msgstr ""
+msgstr "O recurso de syslog deve ser um dos seguintes: %s"
 
 #: marconi/openstack/common/log.py:725
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
-msgstr ""
+msgstr "Chamada fatal de configuração obsoleta: %(msg)s"
 
 #: marconi/openstack/common/strutils.py:92
 #, python-format
 msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
-msgstr ""
+msgstr "Valor não reconhecido '%(val)s', os valores aceitáveis são: %(acceptable)s"
 
 #: marconi/openstack/common/strutils.py:197
 #, python-format
 msgid "Invalid unit system: \"%s\""
-msgstr ""
+msgstr "Unidade inválida do sistema: \"%s\""
 
 #: marconi/openstack/common/strutils.py:206
 #, python-format
 msgid "Invalid string format: %s"
-msgstr ""
+msgstr "Formato de string inválido: %s"
 
 #: marconi/queues/storage/pipeline.py:30
 msgid ""
@@ -107,11 +117,14 @@ msgid ""
 "consumed before calling the storage driver's controller methods, which "
 "will always be appended to this pipeline."
 msgstr ""
+"Pipeline usada para processar {0} operações. Esta pipeline será consumida"
+" antes de chamar os métodos de controle do driver de armazenamento, que "
+"sempre será adicionado a essa pipeline."
 
 #: marconi/queues/storage/pipeline.py:78
 #, python-format
 msgid "Stage %(stage)d could not be imported: %(ex)s"
-msgstr ""
+msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 
 #: marconi/queues/storage/mongodb/messages.py:546
 #, python-format
@@ -119,6 +132,8 @@ msgid ""
 "%(attempts)d attempt(s) required to post %(num_messages)d messages to "
 "queue \"%(queue)s\" under project %(project)s"
 msgstr ""
+"%(attempts)d tentativa(s) necessária(s) para enviar %(num_messages)d "
+"mensagens para a fila \"%(queue)s\" do projeto %(project)s"
 
 #: marconi/queues/storage/mongodb/messages.py:590
 #, python-format
@@ -126,6 +141,8 @@ msgid ""
 "First attempt failed while adding messages to queue \"%(queue)s\" under "
 "project %(project)s"
 msgstr ""
+"Primeira tentativa falhou durante a adição de mensagens à fila "
+"\"%(queue)s\" do projeto %(project)s"
 
 #: marconi/queues/storage/mongodb/messages.py:604
 #, python-format
@@ -133,6 +150,8 @@ msgid ""
 "Exceeded maximum retry duration for queue \"%(queue)s\" under project "
 "%(project)s"
 msgstr ""
+"Excedido o tempo máximo de tentativas para a fila \"%(queue)s\" do "
+"projeto %(project)s"
 
 #: marconi/queues/storage/mongodb/messages.py:664
 #, python-format
@@ -140,6 +159,8 @@ msgid ""
 "Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
 "project %(project)s"
 msgstr ""
+"Excedido o número máximo de tentativas (%(max)s) para a fila "
+"\"%(queue)s\" do projeto %(project)s"
 
 #: marconi/queues/storage/mongodb/queues.py:177
 #, python-format
@@ -147,55 +168,63 @@ msgid ""
 "Failed to increment the message counter for queue %(name)s and project "
 "%(project)s"
 msgstr ""
+"Falha ao incrementar o contador de mensagens para a fila %(name)s e "
+"projeto %(project)s"
 
 #: marconi/queues/storage/mongodb/utils.py:290
 msgid "Caught AutoReconnect, retrying the call to {0}"
-msgstr ""
+msgstr "Exceção AutoReconnect capturada, tentando chamar {0} novamente"
 
 #: marconi/queues/storage/mongodb/utils.py:296
 msgid "Caught AutoReconnect, maximum attempts to {0} exceeded."
 msgstr ""
+"Exceção AutoReconnect capturada, número máximo de tentativas para {0} "
+"excedido."
 
 #: marconi/queues/transport/validation.py:97
 msgid "Project ids may not be more than {0} characters long."
-msgstr ""
+msgstr "Identificadores de projeto não devem ter mais de {0} carácteres."
 
 #: marconi/queues/transport/validation.py:101
 msgid "Queue names may not be more than {0} characters long."
-msgstr ""
+msgstr "Nomes de filas não devem ter mais de {0} carácteres."
 
 #: marconi/queues/transport/validation.py:106
 msgid ""
 "Queue names may only contain ASCII letters, digits, underscores, and "
 "dashes."
 msgstr ""
+"O nome de uma fila deve conter apenas letras ASCII, números, subtraços e "
+"traços."
 
 #: marconi/queues/transport/validation.py:119
 msgid "Limit must be at least 1 and no greater than {0}."
-msgstr ""
+msgstr "O limite deve ser no mínimo 1 e não deve ser superior a {0}."
 
 #: marconi/queues/transport/validation.py:131
 msgid "Queue metadata is too large. Max size: {0}"
-msgstr ""
+msgstr "Os métadados da fila são muito grandes. Tamanho máximo: {0}"
 
 #: marconi/queues/transport/validation.py:143
 msgid "No messages to enqueu."
-msgstr ""
+msgstr "Não foi possível adicionar mensagens à fila."
 
 #: marconi/queues/transport/validation.py:158
 msgid "Message collection size is too large. Max size {0}"
-msgstr ""
+msgstr "O tamanho da coleção de mensagens é muito grande. O tamnho máximo é {0}"
 
 #: marconi/queues/transport/validation.py:167
 msgid ""
 "The TTL for a message may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
 msgstr ""
+"O tempo de vida de uma mensagem não pode exceder {0} segundos e não deve "
+"ser menor que {1} segundos."
 
 #: marconi/queues/transport/validation.py:183
 #: marconi/queues/transport/validation.py:239
 msgid "Limit must be at least 1 and may not be greater than {0}."
-msgstr ""
+msgstr "O limite deve ser de no mínimo 1 e não deve exceder {0}."
 
 #: marconi/queues/transport/validation.py:201
 msgid "pop and id params cannot be present together in the delete request."
@@ -220,157 +249,163 @@ msgid ""
 "The grace for a claim may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
 msgstr ""
+"O prazo de carência para um pedido não deve exceder {0} segundos e não "
+"deve ser menor que {1} segundo."
 
 #: marconi/queues/transport/validation.py:264
 msgid ""
 "The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
 "seconds long."
 msgstr ""
+"O tempo de vida de um pedido não pode exceder {0} segundos e não deve ser"
+" menor que {1} segundos."
 
 #: marconi/queues/transport/wsgi/driver.py:105
 #, python-format
 msgid "Serving on host %(bind)s:%(port)s"
-msgstr ""
+msgstr "Servindo em %(bind)s:%(port)s"
 
 #: marconi/queues/transport/wsgi/errors.py:24
 msgid "Service temporarily unavailable"
-msgstr ""
+msgstr "Serviço temporariamente indisponível"
 
 #: marconi/queues/transport/wsgi/errors.py:25
 msgid "Please try again in a few seconds."
-msgstr ""
+msgstr "Tente novamente em alguns segundos."
 
 #: marconi/queues/transport/wsgi/errors.py:36
 msgid "Invalid API call"
-msgstr ""
+msgstr "Chamada de API inválida"
 
 #: marconi/queues/transport/wsgi/errors.py:45
 msgid "Invalid request body"
-msgstr ""
+msgstr "Corpo da requisição inválido"
 
 #: marconi/queues/transport/wsgi/errors.py:54
 msgid "Document type not supported."
-msgstr ""
+msgstr "Tipo de documento não suportado."
 
 #: marconi/queues/transport/wsgi/utils.py:59
 msgid "Request body can not be empty"
-msgstr ""
+msgstr "O corpo da requisição não pode ser vazio"
 
 #: marconi/queues/transport/wsgi/utils.py:70
 msgid "Request body could not be parsed."
-msgstr ""
+msgstr "Não foi possível analisar o corpo da requisição."
 
 #: marconi/queues/transport/wsgi/utils.py:75
 msgid "JSON contains integer that is too large."
-msgstr ""
+msgstr "JSON possui um numero inteiro muito grande."
 
 #: marconi/queues/transport/wsgi/utils.py:81
 msgid "Request body could not be read."
-msgstr ""
+msgstr "O corpo da requisição não pode ser lido."
 
 #: marconi/queues/transport/wsgi/utils.py:147
 msgid "Missing \"{name}\" field."
-msgstr ""
+msgstr "Faltando o campo \"{name}\"."
 
 #: marconi/queues/transport/wsgi/utils.py:153
 msgid "The value of the \"{name}\" field must be a {vtype}."
-msgstr ""
+msgstr "O valor do campo \"{name}\" deve ser do tipo {vtype}."
 
 #: marconi/queues/transport/wsgi/utils.py:171
 msgid "Malformed hexadecimal UUID."
-msgstr ""
+msgstr "UUID hexadecimal inválido."
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:77
 #: marconi/queues/transport/wsgi/v1_1/claims.py:77
 msgid "Claim could not be created."
-msgstr ""
+msgstr "Não foi possível criar o pedido."
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:125
 #: marconi/queues/transport/wsgi/v1_1/claims.py:125
 msgid "Claim could not be queried."
-msgstr ""
+msgstr "Não foi possível consultar o pedido."
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:173
 #: marconi/queues/transport/wsgi/v1_1/claims.py:173
 msgid "Claim could not be updated."
-msgstr ""
+msgstr "Não foi possível atualizar o pedido."
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:191
 #: marconi/queues/transport/wsgi/v1_1/claims.py:191
 msgid "Claim could not be deleted."
-msgstr ""
+msgstr "Não foi possível excluir o pedido."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:60
 #: marconi/queues/transport/wsgi/v1_0/messages.py:269
 #: marconi/queues/transport/wsgi/v1_1/messages.py:63
 #: marconi/queues/transport/wsgi/v1_1/messages.py:319
 msgid "Message could not be retrieved."
-msgstr ""
+msgstr "Não foi possível recuperar a mensagem."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:108
 #: marconi/queues/transport/wsgi/v1_1/messages.py:111
 msgid "Messages could not be listed."
-msgstr ""
+msgstr "Não foi possível listar a mensagem."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:183
 #: marconi/queues/transport/wsgi/v1_1/messages.py:190
 msgid "No messages could be enqueued."
-msgstr ""
+msgstr "Nenhuma mensagem pode ser adicionada à fila."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:188
 #: marconi/queues/transport/wsgi/v1_1/messages.py:195
 msgid "Messages could not be enqueued."
-msgstr ""
+msgstr "Não foi possível adicionar mensagens à fila."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:238
 #: marconi/queues/transport/wsgi/v1_1/messages.py:264
 msgid "Messages could not be deleted."
-msgstr ""
+msgstr "Não foi possível excluir as mensagens."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:295
 #: marconi/queues/transport/wsgi/v1_1/messages.py:346
 msgid "Unable to delete"
-msgstr ""
+msgstr "Impossível excluir"
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:296
 #: marconi/queues/transport/wsgi/v1_1/messages.py:347
 msgid "This message is claimed; it cannot be deleted without a valid claim_id."
 msgstr ""
+"Esta mensagem está sendo usada; não pode ser excluída sem um claim_id "
+"válido."
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:302
 #: marconi/queues/transport/wsgi/v1_1/messages.py:353
 msgid "Message could not be deleted."
-msgstr ""
+msgstr "A mensagem não pode ser excluída."
 
 #: marconi/queues/transport/wsgi/v1_0/metadata.py:54
 #: marconi/queues/transport/wsgi/v1_1/metadata.py:54
 msgid "Queue metadata could not be retrieved."
-msgstr ""
+msgstr "Não foi possível obter os metadados da fila."
 
 #: marconi/queues/transport/wsgi/v1_0/metadata.py:92
 #: marconi/queues/transport/wsgi/v1_1/metadata.py:92
 msgid "Metadata could not be updated."
-msgstr ""
+msgstr "Não foi possível atualizar os metadados."
 
 #: marconi/queues/transport/wsgi/v1_0/queues.py:48
 #: marconi/queues/transport/wsgi/v1_1/queues.py:48
 msgid "Queue could not be created."
-msgstr ""
+msgstr "Não foi possível criar a fila."
 
 #: marconi/queues/transport/wsgi/v1_0/queues.py:77
 #: marconi/queues/transport/wsgi/v1_1/queues.py:77
 msgid "Queue could not be deleted."
-msgstr ""
+msgstr "Não foi possível excluir a fila."
 
 #: marconi/queues/transport/wsgi/v1_0/queues.py:113
 #: marconi/queues/transport/wsgi/v1_1/queues.py:113
 msgid "Queues could not be listed."
-msgstr ""
+msgstr "Não foi possível listar as filas."
 
 #: marconi/queues/transport/wsgi/v1_0/stats.py:63
 #: marconi/queues/transport/wsgi/v1_1/stats.py:74
 msgid "Queue stats could not be read."
-msgstr ""
+msgstr "Não foi possível ler as estatísticas da fila."
 
 #: marconi/queues/transport/wsgi/v1_1/messages.py:282
 msgid "Messages could not be popped."
