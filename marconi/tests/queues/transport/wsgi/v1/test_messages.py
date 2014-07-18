@@ -382,6 +382,7 @@ class MessagesBaseTest(base.V1Base):
     def test_when_claim_deleted_then_messages_unclaimed(self):
         path = self.queue_path
         self._post_messages(path + '/messages', repeat=5)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # post claim
         self.simulate_post(path + '/claims', self.project_id,

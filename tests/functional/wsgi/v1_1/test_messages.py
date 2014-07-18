@@ -25,7 +25,6 @@ from marconi.tests.functional import helpers
 
 @ddt.ddt
 class TestMessages(base.V1_1FunctionalTestBase):
-
     """Message Tests Specific to V1.1."""
 
     server_class = base.MarconiServer
@@ -53,7 +52,8 @@ class TestMessages(base.V1_1FunctionalTestBase):
     def _post_large_bulk_insert(self, offset):
         """Insert just under than max allowed messages."""
 
-        doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
+        doc = ('{{"messages":[{{"body": "{0}", "ttl": 300}},'
+               '{{"body": "{1}", "ttl": 120}}]}}')
         overhead = len(doc.format('', ''))
 
         half_size = (self.limits.max_message_size - overhead) // 2
@@ -68,7 +68,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
         This test also verifies that claimed messages are
         retuned (or not) depending on the include_claimed flag.
         """
-        doc = helpers.create_message_body(messagecount=1)
+        doc = helpers.create_message_body_v1_1(messagecount=1)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
@@ -85,7 +85,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
         # Compare message metadata
         result_body = result.json()['body']
-        posted_metadata = doc[0]['body']
+        posted_metadata = doc['messages'][0]['body']
         self.assertEqual(result_body, posted_metadata)
 
         # Post a claim & verify the include_claimed flag.
@@ -111,7 +111,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
     def test_message_bulk_insert(self):
         """Bulk Insert Messages into the Queue."""
         message_count = self.limits.max_messages_per_page
-        doc = helpers.create_message_body(messagecount=message_count)
+        doc = helpers.create_message_body_v1_1(messagecount=message_count)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
@@ -143,7 +143,8 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_message_default_ttl(self):
         """Insert Single Message into the Queue using the default TTL."""
-        doc = helpers.create_message_body(messagecount=1, default_ttl=True)
+        doc = helpers.create_message_body_v1_1(messagecount=1,
+                                               default_ttl=True)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
@@ -172,7 +173,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
                                         self.limits.max_messages_per_page)
 
         # Test Setup
-        doc = helpers.create_message_body(
+        doc = helpers.create_message_body_v1_1(
             messagecount=self.limits.max_messages_per_page)
 
         result = self.client.post(data=doc)
@@ -201,7 +202,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
     def test_message_delete(self):
         """Delete Message."""
         # Test Setup
-        doc = helpers.create_message_body(messagecount=1)
+        doc = helpers.create_message_body_v1_1(messagecount=1)
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
@@ -219,7 +220,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_message_bulk_delete(self):
         """Bulk Delete Messages."""
-        doc = helpers.create_message_body(messagecount=10)
+        doc = helpers.create_message_body_v1_1(messagecount=10)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -246,7 +247,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_message_partial_delete(self):
         """Delete Messages will be partially successful."""
-        doc = helpers.create_message_body(messagecount=3)
+        doc = helpers.create_message_body_v1_1(messagecount=3)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -263,7 +264,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
     @ddt.data(5, 1)
     def test_messages_pop(self, limit=5):
         """Pop messages from a queue."""
-        doc = helpers.create_message_body(messagecount=limit)
+        doc = helpers.create_message_body_v1_1(messagecount=limit)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -287,7 +288,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
     @ddt.data(10000000, 0, -1)
     def test_messages_pop_invalid(self, limit):
         """Pop messages from a queue."""
-        doc = helpers.create_message_body(
+        doc = helpers.create_message_body_v1_1(
             messagecount=self.limits.max_messages_per_page)
         result = self.client.post(data=doc)
 
@@ -310,7 +311,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_messages_delete_pop_and_id(self):
         """Delete messages with pop & id params in the request."""
-        doc = helpers.create_message_body(
+        doc = helpers.create_message_body_v1_1(
             messagecount=1)
         result = self.client.post(data=doc)
 
@@ -347,7 +348,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_messages_pop_one(self):
         """Pop single messages from a queue."""
-        doc = helpers.create_message_body(
+        doc = helpers.create_message_body_v1_1(
             messagecount=self.limits.max_messages_per_page)
         result = self.client.post(data=doc)
 
@@ -373,7 +374,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
     def test_message_partial_get(self):
         """Get Messages will be partially successful."""
-        doc = helpers.create_message_body(messagecount=3)
+        doc = helpers.create_message_body_v1_1(messagecount=3)
         result = self.client.post(data=doc)
 
         self.assertEqual(result.status_code, 201)
@@ -519,7 +520,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
 
         self.skipTest("Not supported")
         del self.client.headers["Client-ID"]
-        doc = helpers.create_message_body(messagecount=1)
+        doc = helpers.create_message_body_v1_1(messagecount=1)
 
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 400)

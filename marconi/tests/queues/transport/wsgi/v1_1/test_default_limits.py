@@ -116,8 +116,9 @@ class TestDefaultLimits(base.V1_1Base):
             self.simulate_delete(path, headers=self.headers)
 
     def _prepare_messages(self, count):
-        doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * count)
-        self.simulate_post(self.messages_path, body=doc,
+        doc = {'messages': [{'body': 239, 'ttl': 300}] * count}
+        body = jsonutils.dumps(doc)
+        self.simulate_post(self.messages_path, body=body,
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_201)

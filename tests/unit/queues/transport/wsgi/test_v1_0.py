@@ -89,6 +89,10 @@ class TestPoolsSqlalchemy(v1.TestPoolsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
+class TestValidation(v1.TestValidation):
+    url_prefix = URL_PREFIX
+
+
 # --------------------------------------------------------------------------
 # v1.0 only
 # --------------------------------------------------------------------------

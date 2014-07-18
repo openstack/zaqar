@@ -117,12 +117,13 @@ class TestUtils(testtools.TestCase):
         document = six.text_type(json.dumps(obj, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
-        filtered = utils.filter_stream(doc_stream, len(document), spec=None)
-        self.assertEqual(filtered[0], obj)
+        deserialized = utils.deserialize(doc_stream, len(document))
+        filtered = utils.sanitize(deserialized, spec=None)
+        self.assertEqual(filtered, obj)
 
         # NOTE(kgriffs): Ensure default value for *spec* is None
         doc_stream.seek(0)
-        filtered2 = utils.filter_stream(doc_stream, len(document))
+        filtered2 = utils.sanitize(deserialized)
         self.assertEqual(filtered2, filtered)
 
     def test_no_spec_array(self):
@@ -130,8 +131,9 @@ class TestUtils(testtools.TestCase):
         document = six.text_type(json.dumps(things, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
-        filtered = utils.filter_stream(doc_stream, len(document),
-                                       doctype=utils.JSONArray, spec=None)
+        deserialized = utils.deserialize(doc_stream, len(document))
+        filtered = utils.sanitize(deserialized, doctype=utils.JSONArray,
+                                  spec=None)
         self.assertEqual(filtered, things)
 
     def test_filter_star(self):
@@ -148,13 +150,15 @@ class TestUtils(testtools.TestCase):
         document = six.text_type(json.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict, None), ('id', six.string_types, None)]
-        filtered_object, = utils.filter_stream(stream, len(document), spec)
 
+        # Positive test
+        deserialized_object = utils.deserialize(stream, len(document))
+        filtered_object = utils.sanitize(deserialized_object, spec)
         self.assertEqual(filtered_object, obj)
 
-        stream.seek(0)
+        # Negative test
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.filter_stream, stream, len(document), spec,
+                          utils.sanitize, deserialized_object, spec,
                           doctype=utils.JSONArray)
 
     def test_filter_stream_expect_array(self):
@@ -163,26 +167,24 @@ class TestUtils(testtools.TestCase):
         document = six.text_type(json.dumps(array, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict, None)]
-        filtered_objects = list(utils.filter_stream(
-            stream, len(document), spec, doctype=utils.JSONArray))
 
-        self.assertEqual(filtered_objects, array)
+        # Positive test
+        deserialized_object = utils.deserialize(stream, len(document))
+        filtered_object = utils.sanitize(deserialized_object, spec,
+                                         doctype=utils.JSONArray)
+        self.assertEqual(filtered_object, array)
 
-        stream.seek(0)
+        # Negative test
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.filter_stream, stream, len(document), spec,
+                          utils.sanitize, deserialized_object, spec,
                           doctype=utils.JSONObject)
 
-    def test_filter_stream_wrong_use(self):
-        document = u'3'
-        stream = io.StringIO(document)
-        spec = None
+    def test_bad_doctype(self):
         self.assertRaises(TypeError,
-                          utils.filter_stream, stream, len(document), spec,
-                          doctype=int)
+                          utils.sanitize, {}, None, doctype=int)
 
-    def test_filter_stream_no_reading(self):
+    def test_deserialize_bad_stream(self):
         stream = None
         length = None
         self.assertRaises(falcon.HTTPBadRequest,
-                          utils.filter_stream, stream, length, None)
+                          utils.deserialize, stream, length)

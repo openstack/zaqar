@@ -52,8 +52,8 @@ class CollectionResource(Resource):
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
-                                             CLAIM_POST_SPEC)
+        document = wsgi_utils.deserialize(req.stream, req.content_length)
+        metadata = wsgi_utils.sanitize(document, CLAIM_POST_SPEC)
 
         # Claim some messages
         try:
@@ -148,8 +148,8 @@ class ItemResource(Resource):
 
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
-        metadata, = wsgi_utils.filter_stream(req.stream, req.content_length,
-                                             CLAIM_PATCH_SPEC)
+        document = wsgi_utils.deserialize(req.stream, req.content_length)
+        metadata = wsgi_utils.sanitize(document, CLAIM_PATCH_SPEC)
 
         try:
             self._validate.claim_updating(metadata)

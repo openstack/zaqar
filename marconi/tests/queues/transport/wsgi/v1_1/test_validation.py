@@ -21,20 +21,16 @@ import falcon
 from marconi.tests.queues.transport.wsgi import base
 
 
-class ValidationTest(base.TestBase):
+class TestValidation(base.V1_1Base):
 
     config_file = 'wsgi_sqlalchemy_validation.conf'
 
     def setUp(self):
-        super(ValidationTest, self).setUp()
+        super(TestValidation, self).setUp()
 
         self.project_id = '7e55e1a7e'
 
-        # NOTE(kgriffs): ATM, validation logic does not key off
-        # the API version. Therefore, we just pick '/v1' arbitrarily
-        # as the url prefix.
-        self.queue_path = '/v1/queues/noein'
-
+        self.queue_path = self.url_prefix + '/queues/noein'
         self.simulate_put(self.queue_path, self.project_id)
 
         self.headers = {
@@ -43,7 +39,7 @@ class ValidationTest(base.TestBase):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, self.project_id)
-        super(ValidationTest, self).tearDown()
+        super(TestValidation, self).tearDown()
 
     def test_metadata_deserialization(self):
         # Normal case
@@ -71,9 +67,9 @@ class ValidationTest(base.TestBase):
 
     def test_message_deserialization(self):
         # Normal case
+        body = '{"messages": [{"body": "Dragon Knights", "ttl": 100}]}'
         self.simulate_post(self.queue_path + '/messages',
-                           self.project_id,
-                           body='[{"body": "Dragon Knights", "ttl": 100}]',
+                           self.project_id, body=body,
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_201)

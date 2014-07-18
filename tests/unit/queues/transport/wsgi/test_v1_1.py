@@ -93,6 +93,10 @@ class TestPoolsSqlalchemy(v1_1.TestPoolsSqlalchemy):
     url_prefix = URL_PREFIX
 
 
+class TestValidation(v1_1.TestValidation):
+    url_prefix = URL_PREFIX
+
+
 # --------------------------------------------------------------------------
 # v1.1 only
 # --------------------------------------------------------------------------
@@ -153,8 +157,10 @@ class TestMessages(base.V1_1Base):
         super(TestMessages, self).tearDown()
 
     def _post_messages(self, target, repeat=1):
-        doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * repeat)
-        return self.simulate_post(target, self.project_id, body=doc,
+        doc = {'messages': [{'body': 239, 'ttl': 300}] * repeat}
+        body = jsonutils.dumps(doc)
+
+        return self.simulate_post(target, self.project_id, body=body,
                                   headers=self.headers)
 
     def _get_msg_id(self, headers):
