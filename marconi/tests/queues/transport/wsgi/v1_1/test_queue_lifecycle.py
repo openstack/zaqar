@@ -46,13 +46,8 @@ class QueueLifecycleBaseTest(base.V1_1Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': ''
         }
-        self.simulate_get(self.gumshoe_queue_path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_put(self.gumshoe_queue_path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
-        self.simulate_head(self.gumshoe_queue_path, headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_delete(self.gumshoe_queue_path, headers=headers)
@@ -82,10 +77,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         location = self.srmock.headers_dict['Location']
         self.assertEqual(location, self.gumshoe_queue_path)
 
-        # Ensure queue existence
-        self.simulate_head(self.gumshoe_queue_path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-
         # Add metadata
 
         doc = '{"messages": {"ttl": 600}}'
@@ -107,10 +98,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         # Delete
         self.simulate_delete(self.gumshoe_queue_path, headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
-
-        # Get non-existent queue
-        self.simulate_get(self.gumshoe_queue_path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Get non-existent stats
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
@@ -158,9 +145,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
                 uri = uri.encode(enc)
 
             self.simulate_put(uri, headers=self.headers)
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
-            self.simulate_get(uri, headers=self.headers)
             self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
             self.simulate_delete(uri, headers=self.headers)
