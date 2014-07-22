@@ -153,10 +153,10 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'shard-list': {
+            'pool-list': {
                 'type': 'object',
                 'properties': {
-                    'shards': {
+                    'pools': {
                         'type': 'array',
                         'items': {
                             'type': 'object',
@@ -164,7 +164,7 @@ class ResponseSchema(api.Api):
                                 'href': {
                                     'type': 'string',
                                     'pattern': '^/v1\.1/'
-                                    'shards/[a-zA-Z0-9_-]{1,64}$'
+                                    'pools/[a-zA-Z0-9_-]{1,64}$'
                                 },
                                 'weight': {
                                     'type': 'number',
@@ -183,7 +183,7 @@ class ResponseSchema(api.Api):
                         },
                     }
                 },
-                'required': ['shards'],
+                'required': ['pools'],
                 'additionalProperties': False
             },
 
@@ -216,7 +216,7 @@ class ResponseSchema(api.Api):
                     }
                 }
             },
-            'shard-detail': {
+            'pool-detail': {
                 'type': 'object',
                 'properties': {
                     'uri': {
@@ -228,7 +228,7 @@ class ResponseSchema(api.Api):
                     },
                     'href': {
                         'type': 'string',
-                        'pattern': '^/v1\.1/shards/'
+                        'pattern': '^/v1\.1/pools/'
                                    '[a-zA-Z0-9_\-]+$'
                     },
                     'options': {
