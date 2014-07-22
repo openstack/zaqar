@@ -34,8 +34,8 @@ class ClaimsBaseTest(base.V1_1Base):
     def setUp(self):
         super(ClaimsBaseTest, self).setUp()
 
+        self.default_claim_ttl = self.boot.transport._defaults.claim_ttl
         self.project_id = '737_abc8332832'
-
         self.headers = {
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': self.project_id
@@ -59,7 +59,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
         super(ClaimsBaseTest, self).tearDown()
 
-    @ddt.data(None, '[', '[]', '{}', '.', '"fail"')
+    @ddt.data('[', '[]', '.', '"fail"')
     def test_bad_claim(self, doc):
         self.simulate_post(self.claims_path, body=doc, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -94,6 +94,18 @@ class ClaimsBaseTest(base.V1_1Base):
                             headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    def test_default_ttl_and_grace(self):
+        self.simulate_post(self.claims_path,
+                           body='{}', headers=self.headers)
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+        body = self.simulate_get(self.srmock.headers_dict['location'],
+                                 headers=self.headers)
+
+        claim = jsonutils.loads(body[0])
+        self.assertEqual(self.default_claim_ttl, claim['ttl'])
 
     def _get_a_claim(self):
         doc = '{"ttl": 100, "grace": 60}'

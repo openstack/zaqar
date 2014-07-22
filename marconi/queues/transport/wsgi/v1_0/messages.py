@@ -26,7 +26,7 @@ from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
 
-MESSAGE_POST_SPEC = (('ttl', int), ('body', '*'))
+MESSAGE_POST_SPEC = (('ttl', int, None), ('body', '*', None))
 
 
 class CollectionResource(object):

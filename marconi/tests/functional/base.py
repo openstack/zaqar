@@ -25,6 +25,7 @@ from marconi.openstack.common import timeutils
 from marconi.queues.api.v1 import response as response_v1
 from marconi.queues.api.v1_1 import response as response_v1_1
 from marconi.queues import bootstrap
+from marconi.queues.transport import base as transport_base
 # TODO(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
 # refactored as part of the work for this blueprint
@@ -63,6 +64,11 @@ class FunctionalTestBase(testing.TestBase):
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
+
+        transport_base._config_options()
+
+        self.resource_defaults = transport_base.ResourceDefaults(self.mconf)
+
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
             # an external wsgi server instance.

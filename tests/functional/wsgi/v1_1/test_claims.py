@@ -86,6 +86,26 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
     test_query_claim.tags = ['smoke', 'positive']
 
+    @ddt.data(None, {}, {"grace": 100})
+    def test_claim_default_ttl(self, doc):
+        """Create claim with default TTL and grace values."""
+        params = {'limit': 1}
+
+        result = self.client.post(params=params, data=doc)
+        self.assertEqual(result.status_code, 201)
+
+        location = result.headers['Location']
+
+        url = self.cfg.marconi.url + location
+
+        result = self.client.get(url)
+        self.assertEqual(result.status_code, 200)
+
+        default_ttl = result.json()['ttl']
+        self.assertEqual(default_ttl, self.resource_defaults.claim_ttl)
+
+    test_claim_default_ttl.tags = ['smoke', 'positive']
+
     def test_claim_more_than_allowed(self):
         """Claim more than max allowed per request.
 
@@ -101,9 +121,9 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
     def test_claim_patch(self):
         """Update Claim."""
+
         # Test Setup - Post Claim
         doc = {"ttl": 300, "grace": 400}
-
         result = self.client.post(data=doc)
         self.assertEqual(result.status_code, 201)
 
