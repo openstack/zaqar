@@ -15,7 +15,8 @@
 
 """Middleware for handling authorization and authentication."""
 
-from keystoneclient.middleware import auth_token
+from keystonemiddleware import auth_token
+from keystonemiddleware import opts
 
 from zaqar.openstack.common import log
 
@@ -31,10 +32,17 @@ class KeystoneAuth(object):
 
     @classmethod
     def _register_opts(cls, conf):
-        """Register keystoneclient middleware options."""
+        """Register keystonemiddleware options."""
+
+        options = []
+        keystone_opts = opts.list_auth_token_opts()
+        for n in keystone_opts:
+            if (n[0] == cls.OPT_GROUP_NAME):
+                options = n[1]
+                break
 
         if cls.OPT_GROUP_NAME not in conf:
-            conf.register_opts(auth_token.opts, group=cls.OPT_GROUP_NAME)
+            conf.register_opts(options, group=cls.OPT_GROUP_NAME)
             auth_token.CONF = conf
 
     @classmethod
