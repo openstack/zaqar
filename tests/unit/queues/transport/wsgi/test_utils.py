@@ -122,7 +122,6 @@ class TestUtils(testtools.TestCase):
         self.assertEqual(filtered, obj)
 
         # NOTE(kgriffs): Ensure default value for *spec* is None
-        doc_stream.seek(0)
         filtered2 = utils.sanitize(deserialized)
         self.assertEqual(filtered2, filtered)
 
@@ -144,7 +143,7 @@ class TestUtils(testtools.TestCase):
 
         self.assertEqual(filtered, doc)
 
-    def test_filter_stream_expect_obj(self):
+    def test_deserialize_and_sanitize_json_obj(self):
         obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
 
         document = six.text_type(json.dumps(obj, ensure_ascii=False))
@@ -161,7 +160,7 @@ class TestUtils(testtools.TestCase):
                           utils.sanitize, deserialized_object, spec,
                           doctype=utils.JSONArray)
 
-    def test_filter_stream_expect_array(self):
+    def test_deserialize_and_sanitize_json_array(self):
         array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
 
         document = six.text_type(json.dumps(array, ensure_ascii=False))
