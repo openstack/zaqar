@@ -104,8 +104,8 @@ def create_message_body(messagecount, **kwargs):
     return [single_message_body(**kwargs) for i in range(messagecount)]
 
 
-def create_shard_body(**kwargs):
-    shard_body = {
+def create_pool_body(**kwargs):
+    pool_body = {
         'weight': kwargs['weight'],
         'uri': kwargs['uri'],
         'options': {
@@ -114,4 +114,4 @@ def create_shard_body(**kwargs):
         }
     }
 
-    return shard_body
+    return pool_body

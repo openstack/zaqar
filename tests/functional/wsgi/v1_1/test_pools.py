@@ -19,14 +19,14 @@ from marconi.tests.functional import helpers
 
 
 @ddt.ddt
-class TestShards(base.V1_1FunctionalTestBase):
+class TestPools(base.V1_1FunctionalTestBase):
 
     server_class = base.MarconiServer
 
     def setUp(self):
-        super(TestShards, self).setUp()
+        super(TestPools, self).setUp()
 
-        self.shard_url = ("{url}/{version}/shards".format(
+        self.pool_url = ("{url}/{version}/pools".format(
             url=self.cfg.marconi.url,
             version="v1.1"
         ))
@@ -37,187 +37,187 @@ class TestShards(base.V1_1FunctionalTestBase):
         self.headers = helpers.create_marconi_headers(self.cfg)
         self.client.headers = self.headers
 
-        self.client.set_base_url(self.shard_url)
+        self.client.set_base_url(self.pool_url)
 
     def tearDown(self):
-        super(TestShards, self).tearDown()
+        super(TestPools, self).tearDown()
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_insert_shard(self, params):
-        """Test the registering of one shard."""
-        doc = helpers.create_shard_body(
+    def test_insert_pool(self, params):
+        """Test the registering of one pool."""
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
 
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
 
-        result = self.client.put('/'+shard_name, data=doc)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
 
         # Test existence
-        result = self.client.get('/'+shard_name)
+        result = self.client.get('/'+pool_name)
         self.assertEqual(result.status_code, 200)
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_shard_details(self, params):
-        """Get the details of a shard. Assert the respective schema."""
-        doc = helpers.create_shard_body(
+    def test_pool_details(self, params):
+        """Get the details of a pool. Assert the respective schema."""
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
 
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
 
         # Test existence
-        result = self.client.get('/'+shard_name+'?detailed=true')
+        result = self.client.get('/'+pool_name+'?detailed=true')
         self.assertEqual(result.status_code, 200)
-        self.assertSchema(result.json(), 'shard-detail')
+        self.assertSchema(result.json(), 'pool-detail')
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_delete_shard(self, params):
-        """Create a shard, then delete it.
+    def test_delete_pool(self, params):
+        """Create a pool, then delete it.
 
         Make sure operation is successful.
         """
 
-        # Create the shard
-        doc = helpers.create_shard_body(
+        # Create the pool
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
 
-        shard_name = params.get('name', "newshard")
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
 
         # Make sure it exists
-        result = self.client.get('/'+shard_name)
+        result = self.client.get('/'+pool_name)
         self.assertEqual(result.status_code, 200)
 
         # Delete it
-        result = self.client.delete('/'+shard_name)
+        result = self.client.delete('/'+pool_name)
         self.assertEqual(result.status_code, 204)
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_list_shards(self, params):
-        """Add a shard. Get the list of all the shards.
+    def test_list_pools(self, params):
+        """Add a pool. Get the list of all the pools.
 
         Assert respective schema
         """
-        doc = helpers.create_shard_body(
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
 
         result = self.client.get()
         self.assertEqual(result.status_code, 200)
-        self.assertSchema(result.json(), 'shard-list')
+        self.assertSchema(result.json(), 'pool-list')
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_patch_shard(self, params):
-        """Create a shard. Issue a patch command,
+    def test_patch_pool(self, params):
+        """Create a pool. Issue a patch command,
 
         make sure command was successful. Check details to be sure.
         """
 
-        doc = helpers.create_shard_body(
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
-        # Update that shard
+        # Update that pool
 
-        patchdoc = helpers.create_shard_body(
+        patchdoc = helpers.create_pool_body(
             weight=5,
             uri="mongodb://127.0.0.1:27017"
         )
-        result = self.client.patch('/'+shard_name, data=patchdoc)
+        result = self.client.patch('/'+pool_name, data=patchdoc)
         self.assertEqual(result.status_code, 200)
 
-        # Get the shard, check update#
-        result = self.client.get('/'+shard_name)
+        # Get the pool, check update#
+        result = self.client.get('/'+pool_name)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()["weight"], 5)
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_patch_shard_bad_data(self, params):
+    def test_patch_pool_bad_data(self, params):
         """Issue a patch command without a body. Assert 400."""
-        # create a shard
-        doc = helpers.create_shard_body(
+        # create a pool
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 201)
 
-        # Update shard with bad post data. Ensure 400
-        result = self.client.patch('/'+shard_name)
+        # Update pool with bad post data. Ensure 400
+        result = self.client.patch('/'+pool_name)
         self.assertEqual(result.status_code, 400)
 
     @ddt.data(
         {
-            'name': "newshard",
+            'name': "newpool",
             'weight': 10,
             'uri': "mongodb://127.0.0.1:27017"
         }
     )
-    def test_patch_shard_non_exist(self, params):
-        """Issue patch command to shard that doesn't exist. Assert 404."""
-        doc = helpers.create_shard_body(
+    def test_patch_pool_non_exist(self, params):
+        """Issue patch command to pool that doesn't exist. Assert 404."""
+        doc = helpers.create_pool_body(
             weight=5,
             uri=params.get('uri', "mongodb://127.0.0.1:27018")
         )
-        result = self.client.patch('/nonexistshard', data=doc)
+        result = self.client.patch('/nonexistpool', data=doc)
         self.assertEqual(result.status_code, 404)
 
     @ddt.data(
@@ -225,18 +225,18 @@ class TestShards(base.V1_1FunctionalTestBase):
         {'name': 'i'*65},
         {'weight': -1}
     )
-    def test_insert_shard_bad_data(self, params):
-        """Create shards with invalid names and weights. Assert 400."""
-        doc = helpers.create_shard_body(
+    def test_insert_pool_bad_data(self, params):
+        """Create pools with invalid names and weights. Assert 400."""
+        doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
         )
-        shard_name = params.get('name', "newshard")
-        self.addCleanup(self.client.delete, url='/'+shard_name)
-        result = self.client.put('/'+shard_name, data=doc)
+        pool_name = params.get('name', "newpool")
+        self.addCleanup(self.client.delete, url='/'+pool_name)
+        result = self.client.put('/'+pool_name, data=doc)
         self.assertEqual(result.status_code, 400)
 
-    def test_delete_shard_non_exist(self):
-        """Delete a shard that doesn't exist. Assert 404."""
-        result = self.client.delete('/nonexistshard')
+    def test_delete_pool_non_exist(self):
+        """Delete a pool that doesn't exist. Assert 404."""
+        result = self.client.delete('/nonexistpool')
         self.assertEqual(result.status_code, 204)
