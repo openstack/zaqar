@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: marconi 2014.2.dev65.g57842ef\n"
+"Project-Id-Version: marconi 2014.2.dev75.gb3f1b48\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-17 06:07+0000\n"
+"POT-Creation-Date: 2014-07-24 06:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -252,93 +252,93 @@ msgstr ""
 msgid "Document type not supported."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:59
+#: marconi/queues/transport/wsgi/utils.py:50
 msgid "Request body can not be empty"
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:70
+#: marconi/queues/transport/wsgi/utils.py:61
 msgid "Request body could not be parsed."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:75
+#: marconi/queues/transport/wsgi/utils.py:66
 msgid "JSON contains integer that is too large."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:81
+#: marconi/queues/transport/wsgi/utils.py:72
 msgid "Request body could not be read."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:147
+#: marconi/queues/transport/wsgi/utils.py:168
 msgid "Missing \"{name}\" field."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:153
+#: marconi/queues/transport/wsgi/utils.py:176
 msgid "The value of the \"{name}\" field must be a {vtype}."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/utils.py:171
+#: marconi/queues/transport/wsgi/utils.py:194
 msgid "Malformed hexadecimal UUID."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:77
-#: marconi/queues/transport/wsgi/v1_1/claims.py:77
+#: marconi/queues/transport/wsgi/v1_1/claims.py:100
 msgid "Claim could not be created."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:125
-#: marconi/queues/transport/wsgi/v1_1/claims.py:125
+#: marconi/queues/transport/wsgi/v1_1/claims.py:148
 msgid "Claim could not be queried."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:173
-#: marconi/queues/transport/wsgi/v1_1/claims.py:173
+#: marconi/queues/transport/wsgi/v1_1/claims.py:196
 msgid "Claim could not be updated."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/claims.py:191
-#: marconi/queues/transport/wsgi/v1_1/claims.py:191
+#: marconi/queues/transport/wsgi/v1_1/claims.py:214
 msgid "Claim could not be deleted."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:60
-#: marconi/queues/transport/wsgi/v1_0/messages.py:269
-#: marconi/queues/transport/wsgi/v1_1/messages.py:63
-#: marconi/queues/transport/wsgi/v1_1/messages.py:319
+#: marconi/queues/transport/wsgi/v1_0/messages.py:267
+#: marconi/queues/transport/wsgi/v1_1/messages.py:73
+#: marconi/queues/transport/wsgi/v1_1/messages.py:333
 msgid "Message could not be retrieved."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/messages.py:108
-#: marconi/queues/transport/wsgi/v1_1/messages.py:111
+#: marconi/queues/transport/wsgi/v1_1/messages.py:121
 msgid "Messages could not be listed."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:183
-#: marconi/queues/transport/wsgi/v1_1/messages.py:190
+#: marconi/queues/transport/wsgi/v1_0/messages.py:181
+#: marconi/queues/transport/wsgi/v1_1/messages.py:204
 msgid "No messages could be enqueued."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:188
-#: marconi/queues/transport/wsgi/v1_1/messages.py:195
+#: marconi/queues/transport/wsgi/v1_0/messages.py:186
+#: marconi/queues/transport/wsgi/v1_1/messages.py:209
 msgid "Messages could not be enqueued."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:238
-#: marconi/queues/transport/wsgi/v1_1/messages.py:264
+#: marconi/queues/transport/wsgi/v1_0/messages.py:236
+#: marconi/queues/transport/wsgi/v1_1/messages.py:278
 msgid "Messages could not be deleted."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:295
-#: marconi/queues/transport/wsgi/v1_1/messages.py:346
+#: marconi/queues/transport/wsgi/v1_0/messages.py:293
+#: marconi/queues/transport/wsgi/v1_1/messages.py:360
 msgid "Unable to delete"
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:296
-#: marconi/queues/transport/wsgi/v1_1/messages.py:347
+#: marconi/queues/transport/wsgi/v1_0/messages.py:294
+#: marconi/queues/transport/wsgi/v1_1/messages.py:361
 msgid "This message is claimed; it cannot be deleted without a valid claim_id."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/messages.py:302
-#: marconi/queues/transport/wsgi/v1_1/messages.py:353
+#: marconi/queues/transport/wsgi/v1_0/messages.py:300
+#: marconi/queues/transport/wsgi/v1_1/messages.py:367
 msgid "Message could not be deleted."
 msgstr ""
 
@@ -347,8 +347,8 @@ msgstr ""
 msgid "Queue metadata could not be retrieved."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_0/metadata.py:92
-#: marconi/queues/transport/wsgi/v1_1/metadata.py:92
+#: marconi/queues/transport/wsgi/v1_0/metadata.py:91
+#: marconi/queues/transport/wsgi/v1_1/metadata.py:91
 msgid "Metadata could not be updated."
 msgstr ""
 
@@ -358,12 +358,12 @@ msgid "Queue could not be created."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/queues.py:77
-#: marconi/queues/transport/wsgi/v1_1/queues.py:77
+#: marconi/queues/transport/wsgi/v1_1/queues.py:63
 msgid "Queue could not be deleted."
 msgstr ""
 
 #: marconi/queues/transport/wsgi/v1_0/queues.py:113
-#: marconi/queues/transport/wsgi/v1_1/queues.py:113
+#: marconi/queues/transport/wsgi/v1_1/queues.py:99
 msgid "Queues could not be listed."
 msgstr ""
 
@@ -372,7 +372,11 @@ msgstr ""
 msgid "Queue stats could not be read."
 msgstr ""
 
-#: marconi/queues/transport/wsgi/v1_1/messages.py:282
+#: marconi/queues/transport/wsgi/v1_1/messages.py:166
+msgid "No messages were found in the request body."
+msgstr ""
+
+#: marconi/queues/transport/wsgi/v1_1/messages.py:296
 msgid "Messages could not be popped."
 msgstr ""
 
