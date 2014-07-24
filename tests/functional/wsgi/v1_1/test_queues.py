@@ -97,9 +97,6 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_empty, response_headers)
 
-        result = self.client.get(self.url)
-        self.assertEqual(result.status_code, 204)
-
     test_insert_queue.tags = ['positive', 'smoke']
 
     @ddt.data(annotated('test_insert_queue_non_ascii_name',
@@ -252,24 +249,11 @@ class TestQueueMisc(base.V1_1FunctionalTestBase):
 
         self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
+
         result = self.client.get(self.queue_url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(result.status_code, 405)
 
-        result = self.client.head(self.queue_url)
-        self.assertEqual(result.status_code, 204)
-
-    test_check_queue_exists.tags = ['positive']
-
-    def test_check_queue_exists_negative(self):
-        """Checks non-existing queue."""
-        path = '/{0}/queues/nonexistingqueue'.format("v1.1")
-        result = self.client.get(path)
-        self.assertEqual(result.status_code, 404)
-
-        result = self.client.head(path)
-        self.assertEqual(result.status_code, 404)
-
-    test_check_queue_exists_negative.tags = ['negative']
+    test_check_queue_exists.tags = ['negative']
 
     def test_get_queue_malformed_marker(self):
         """List queues with invalid marker."""
@@ -356,12 +340,6 @@ class TestQueueNonExisting(base.V1_1FunctionalTestBase):
         self.header = helpers.create_marconi_headers(self.cfg)
         self.headers_response_empty = set(['location'])
         self.header = helpers.create_marconi_headers(self.cfg)
-
-    def test_get_queue(self):
-        """Get non existing Queue."""
-        result = self.client.get()
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), [])
 
     def test_get_stats(self):
         """Get stats on non existing Queue."""
