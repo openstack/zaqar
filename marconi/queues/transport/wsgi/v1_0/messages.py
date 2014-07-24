@@ -150,9 +150,6 @@ class CollectionResource(object):
         messages = wsgi_utils.sanitize(document, MESSAGE_POST_SPEC,
                                        doctype=wsgi_utils.JSONArray)
 
-        # Enqueue the messages
-        partial = False
-
         try:
             self._validate.message_posting(messages)
 
@@ -172,7 +169,6 @@ class CollectionResource(object):
 
         except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
-            partial = True
             message_ids = ex.succeeded_ids
 
             if not message_ids:
@@ -191,7 +187,14 @@ class CollectionResource(object):
         resp.location = req.path + '?ids=' + ids_value
 
         hrefs = [req.path + '/' + id for id in message_ids]
-        body = {'resources': hrefs, 'partial': partial}
+
+        # NOTE(kgriffs): As of the Icehouse release, drivers are
+        # no longer allowed to enqueue a subset of the messages
+        # submitted by the client; it's all or nothing. Therefore,
+        # 'partial' is now always False in the v1.0 API, and the
+        # field has been removed in v1.1.
+        body = {'resources': hrefs, 'partial': False}
+
         resp.body = utils.to_json(body)
         resp.status = falcon.HTTP_201
 
