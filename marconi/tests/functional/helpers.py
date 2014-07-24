@@ -95,13 +95,27 @@ def single_message_body(messagesize=2, default_ttl=False, ttl=None):
 
 
 def create_message_body(messagecount, **kwargs):
-    """Returns request body for post message tests.
+    """Returns request body for message-posting tests.
 
     :param messagecount: Number of messages to create
     :param **kwargs: Same as for `single_message_body`
     """
 
-    return [single_message_body(**kwargs) for i in range(messagecount)]
+    return [single_message_body(**kwargs)
+            for i in range(messagecount)]
+
+
+def create_message_body_v1_1(messagecount, **kwargs):
+    """Returns request body for message-posting tests.
+
+    :param messagecount: Number of messages to create
+    :param **kwargs: Same as for `single_message_body`
+    """
+
+    return {
+        "messages": [single_message_body(**kwargs)
+                     for i in range(messagecount)]
+    }
 
 
 def create_pool_body(**kwargs):

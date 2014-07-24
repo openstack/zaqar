@@ -20,6 +20,7 @@ from marconi.tests.queues.transport.wsgi.v1_1 import test_media_type
 from marconi.tests.queues.transport.wsgi.v1_1 import test_messages
 from marconi.tests.queues.transport.wsgi.v1_1 import test_pools
 from marconi.tests.queues.transport.wsgi.v1_1 import test_queue_lifecycle as l
+from marconi.tests.queues.transport.wsgi.v1_1 import test_validation
 
 TestAuth = test_auth.TestAuth
 TestClaimsFaultyDriver = test_claims.TestClaimsFaultyDriver
@@ -37,3 +38,4 @@ TestQueueLifecycleMongoDB = l.TestQueueLifecycleMongoDB
 TestQueueLifecycleSqlalchemy = l.TestQueueLifecycleSqlalchemy
 TestPoolsMongoDB = test_pools.TestPoolsMongoDB
 TestPoolsSqlalchemy = test_pools.TestPoolsSqlalchemy
+TestValidation = test_validation.TestValidation

@@ -70,7 +70,7 @@ class MessagesBaseTest(base.V1_1Base):
         super(MessagesBaseTest, self).tearDown()
 
     def _test_post(self, sample_messages):
-        sample_doc = jsonutils.dumps(sample_messages)
+        sample_doc = jsonutils.dumps({'messages': sample_messages})
 
         result = self.simulate_post(self.messages_path,
                                     body=sample_doc, headers=self.headers)
@@ -176,10 +176,12 @@ class MessagesBaseTest(base.V1_1Base):
         self._test_post(sample_messages)
 
     def test_post_optional_ttl(self):
-        sample_messages = [
-            {'body': 239},
-            {'body': {'key': 'value'}, 'ttl': 200},
-        ]
+        sample_messages = {
+            'messages': [
+                {'body': 239},
+                {'body': {'key': 'value'}, 'ttl': 200},
+            ],
+        }
 
         # Manually check default TTL is max from config
 
@@ -259,23 +261,24 @@ class MessagesBaseTest(base.V1_1Base):
 
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
+        doc = {'messages': [{'ttl': ttl, 'body': None}]}
+
         self.simulate_post(self.queue_path + '/messages',
-                           body=jsonutils.dumps([{'ttl': ttl,
-                                                  'body': None}]),
+                           body=jsonutils.dumps(doc),
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_exceeded_message_posting(self):
         # Total (raw request) size
-        doc = jsonutils.dumps([{'body': "some body", 'ttl': 100}] * 20,
-                              indent=4)
+        doc = {'messages': [{'body': "some body", 'ttl': 100}] * 20}
+        body = jsonutils.dumps(doc, indent=4)
 
         max_len = self.transport_cfg.max_message_size
-        long_doc = doc + (' ' * (max_len - len(doc) + 1))
+        long_body = body + (' ' * (max_len - len(body) + 1))
 
         self.simulate_post(self.queue_path + '/messages',
-                           body=long_doc,
+                           body=long_body,
                            headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -484,9 +487,10 @@ class MessagesBaseTest(base.V1_1Base):
                          messages[0]['href'])
 
     def _post_messages(self, target, repeat=1):
-        doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * repeat)
-        return self.simulate_post(target, body=doc,
-                                  headers=self.headers)
+        doc = {'messages': [{'body': 239, 'ttl': 300}] * repeat}
+
+        body = jsonutils.dumps(doc)
+        return self.simulate_post(target, body=body, headers=self.headers)
 
     def _get_msg_id(self, headers):
         return self._get_msg_ids(headers)[0]
@@ -532,14 +536,14 @@ class TestMessagesFaultyDriver(base.V1_1BaseFaulty):
     def test_simple(self):
         project_id = 'xyz'
         path = self.url_prefix + '/queues/fizbit/messages'
-        doc = '[{"body": 239, "ttl": 100}]'
+        body = '{"messages": [{"body": 239, "ttl": 100}]}'
         headers = {
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': project_id
         }
 
         self.simulate_post(path,
-                           body=doc,
+                           body=body,
                            headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_503)
 

@@ -48,7 +48,8 @@ class TestClaims(base.V1FunctionalTestBase):
             messagecount=self.limits.max_messages_per_page)
 
         for i in range(10):
-            self.client.post(url, data=doc)
+            result = self.client.post(url, data=doc)
+            self.assertEqual(result.status_code, 201)
 
     @ddt.data({}, dict(limit=2))
     def test_claim_messages(self, params):
@@ -76,6 +77,8 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)
+        self.assertEqual(result.status_code, 201)
+
         location = result.headers['Location']
 
         url = self.cfg.marconi.url + location

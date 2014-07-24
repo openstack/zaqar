@@ -49,7 +49,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.simulate_put(self.queue_path, body=doc, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        doc = json.dumps([{'body': 239, 'ttl': 300}] * 10)
+        doc = json.dumps({'messages': [{'body': 239, 'ttl': 300}] * 10})
         self.simulate_post(self.queue_path + '/messages',
                            body=doc, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)

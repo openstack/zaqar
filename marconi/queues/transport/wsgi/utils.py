@@ -29,32 +29,21 @@ JSONArray = list
 LOG = logging.getLogger(__name__)
 
 
-def filter_stream(stream, len, spec=None, doctype=JSONObject):
-    """Reads, deserializes, and validates a document from a stream.
+#
+# TODO(kgriffs): Create Falcon "before" hooks adapters for these functions
+#
+
+
+def deserialize(stream, len):
+    """Deserializes JSON from a file-like stream.
+
+    This function deserializes JSON from a stream, including
+    translating read and parsing errors to HTTP error types.
 
     :param stream: file-like object from which to read an object or
         array of objects.
     :param len: number of bytes to read from stream
-    :param spec: (Default None) Iterable describing expected fields,
-        yielding tuples with the form of:
-
-            (field_name, value_type, default_value)
-
-        Note that value_type may either be a Python type, or the
-        special string '*' to accept any type. default_value is the
-        default to give the field if it is missing, or None to require
-        that the field be present.
-
-        If spec is None, the incoming documents will not be validated.
-    :param doctype: type of document to expect; must be either
-        JSONObject or JSONArray.
     :raises: HTTPBadRequest, HTTPServiceUnavailable
-    :returns: A sanitized, filtered version of the document list read
-        from the stream. If the document contains a list of objects,
-        each object will be filtered and returned in a new list. If,
-        on the other hand, the document is expected to contain a
-        single object, that object will be filtered and returned as
-        a single-element iterable.
     """
 
     if len is None:
@@ -65,7 +54,7 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
         # TODO(kgriffs): read_json should stream the resulting list
         # of messages, returning a generator rather than buffering
         # everything in memory (bp/streaming-serialization).
-        document = utils.read_json(stream, len)
+        return utils.read_json(stream, len)
 
     except utils.MalformedJSON as ex:
         LOG.debug(ex)
@@ -83,11 +72,37 @@ def filter_stream(stream, len, spec=None, doctype=JSONObject):
         description = _(u'Request body could not be read.')
         raise errors.HTTPServiceUnavailable(description)
 
+
+def sanitize(document, spec=None, doctype=JSONObject):
+    """Validates a document and drops undesired fields.
+
+    :param document: A dict to verify according to `spec`.
+    :param spec: (Default None) Iterable describing expected fields,
+        yielding tuples with the form of:
+
+            (field_name, value_type, default_value)
+
+        Note that value_type may either be a Python type, or the
+        special string '*' to accept any type. default_value is the
+        default to give the field if it is missing, or None to require
+        that the field be present.
+
+        If spec is None, the incoming documents will not be validated.
+    :param doctype: type of document to expect; must be either
+        JSONObject or JSONArray.
+    :raises: HTTPBadRequestBody
+    :returns: A sanitized, filtered version of the document. If the
+        document is a list of objects, each object will be filtered
+        and returned in a new list. If, on the other hand, the document
+        is expected to contain a single object, that object's fields will
+        be filtered and the resulting object will be returned.
+    """
+
     if doctype is JSONObject:
         if not isinstance(document, JSONObject):
             raise errors.HTTPDocumentTypeNotSupported()
 
-        return (document,) if spec is None else (filter(document, spec),)
+        return document if spec is None else filter(document, spec)
 
     if doctype is JSONArray:
         if not isinstance(document, JSONArray):

@@ -159,12 +159,16 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        # Pull out just the fields we care about
-        messages = wsgi_utils.filter_stream(
-            req.stream,
-            req.content_length,
-            self._message_post_spec,
-            doctype=wsgi_utils.JSONArray)
+        # Deserialize and validate the incoming messages
+        document = wsgi_utils.deserialize(req.stream, req.content_length)
+
+        if 'messages' not in document:
+            description = _(u'No messages were found in the request body.')
+            raise wsgi_errors.HTTPBadRequestAPI(description)
+
+        messages = wsgi_utils.sanitize(document['messages'],
+                                       self._message_post_spec,
+                                       doctype=wsgi_utils.JSONArray)
 
         # Enqueue the messages
         partial = False

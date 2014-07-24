@@ -145,12 +145,10 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        # Pull out just the fields we care about
-        messages = wsgi_utils.filter_stream(
-            req.stream,
-            req.content_length,
-            MESSAGE_POST_SPEC,
-            doctype=wsgi_utils.JSONArray)
+        # Deserialize and validate the request body
+        document = wsgi_utils.deserialize(req.stream, req.content_length)
+        messages = wsgi_utils.sanitize(document, MESSAGE_POST_SPEC,
+                                       doctype=wsgi_utils.JSONArray)
 
         # Enqueue the messages
         partial = False

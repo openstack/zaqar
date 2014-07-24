@@ -71,9 +71,8 @@ class Resource(object):
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         # Deserialize queue metadata
-        metadata, = wsgi_utils.filter_stream(req.stream,
-                                             req.content_length,
-                                             spec=None)
+        document = wsgi_utils.deserialize(req.stream, req.content_length)
+        metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
             self.queue_ctrl.set_metadata(queue_name,
