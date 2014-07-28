@@ -421,23 +421,39 @@ class MessageControllerTest(ControllerBaseTest):
 
     @testing.is_slow(condition=lambda self: self.gc_interval != 0)
     def test_expired_messages(self):
-        messages = [{'body': 3.14, 'ttl': 0}]
+        messages = [{'body': 3.14, 'ttl': 0}, {'body': 0.618, 'ttl': 600}]
         client_uuid = uuid.uuid4()
 
-        [msgid] = self.controller.post(self.queue_name, messages,
-                                       project=self.project,
-                                       client_uuid=client_uuid)
+        [msgid_expired, msgid] = self.controller.post(self.queue_name,
+                                                      messages,
+                                                      project=self.project,
+                                                      client_uuid=client_uuid)
 
         time.sleep(self.gc_interval)
 
         with testing.expect(storage.errors.DoesNotExist):
-            self.controller.get(self.queue_name, msgid,
+            self.controller.get(self.queue_name, msgid_expired,
                                 project=self.project)
 
         stats = self.queue_controller.stats(self.queue_name,
                                             project=self.project)
 
-        self.assertEqual(stats['messages']['free'], 0)
+        self.assertEqual(stats['messages']['free'], 1)
+
+        # Make sure expired messages not return when listing
+        interaction = self.controller.list(self.queue_name,
+                                           project=self.project)
+
+        messages = list(next(interaction))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(msgid, messages[0]['id'])
+
+        # Make sure expired messages not return when popping
+        messages = self.controller.pop(self.queue_name,
+                                       limit=10,
+                                       project=self.project)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(msgid, messages[0]['id'])
 
     def test_bad_id(self):
         # NOTE(cpp-cabrera): A malformed ID should result in an empty

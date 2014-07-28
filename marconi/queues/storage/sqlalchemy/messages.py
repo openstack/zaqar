@@ -27,6 +27,12 @@ from marconi.queues.storage.sqlalchemy import utils
 
 class MessageController(storage.Message):
 
+    def _and_stmt_with_ttl(self, queue_name, project):
+        return [tables.Queues.c.name == queue_name,
+                tables.Queues.c.project == project,
+                tables.Messages.c.ttl >
+                sfunc.now() - tables.Messages.c.created]
+
     def _get(self, queue, message_id, project, count=False):
 
         if project is None:
@@ -49,11 +55,10 @@ class MessageController(storage.Message):
                 sel = sa.sql.select([sfunc.count(tables.Messages.c.id)])
 
             sel = sel.select_from(j)
-            sel = sel.where(sa.and_(tables.Messages.c.id == mid,
-                                    tables.Queues.c.project == project,
-                                    tables.Queues.c.name == queue,
-                                    tables.Messages.c.ttl >
-                                    sfunc.now() - tables.Messages.c.created))
+            and_stmt = [tables.Messages.c.id == mid]
+            and_stmt.extend(self._and_stmt_with_ttl(queue, project))
+
+            sel = sel.where(sa.and_(*and_stmt))
 
             return self.driver.get(sel)
         except utils.NoResult:
@@ -91,11 +96,8 @@ class MessageController(storage.Message):
                                    tables.Messages.c.ttl,
                                    tables.Messages.c.created])
 
-        and_stmt = [tables.Messages.c.id.in_(message_ids),
-                    tables.Queues.c.name == queue,
-                    tables.Queues.c.project == project,
-                    tables.Messages.c.ttl >
-                    sfunc.now() - tables.Messages.c.created]
+        and_stmt = [tables.Messages.c.id.in_(message_ids)]
+        and_stmt.extend(self._and_stmt_with_ttl(queue, project))
 
         j = sa.join(tables.Messages, tables.Queues,
                     tables.Messages.c.qid == tables.Queues.c.id)
@@ -166,8 +168,7 @@ class MessageController(storage.Message):
                         tables.Messages.c.qid == tables.Queues.c.id)
 
             sel = sel.select_from(j)
-            and_clause = [tables.Queues.c.name == queue,
-                          tables.Queues.c.project == project]
+            and_clause = self._and_stmt_with_ttl(queue, project)
 
             if not echo:
                 and_clause.append(tables.Messages.c.client != str(client_uuid))
@@ -308,8 +309,7 @@ class MessageController(storage.Message):
                         tables.Messages.c.qid == tables.Queues.c.id)
 
             sel = sel.select_from(j)
-            and_clause = [tables.Queues.c.name == queue_name,
-                          tables.Queues.c.project == project]
+            and_clause = self._and_stmt_with_ttl(queue_name, project)
 
             and_clause.append(tables.Messages.c.cid == (None))
 
