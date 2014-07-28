@@ -82,6 +82,10 @@ class MessagesBaseTest(base.V1Base):
         expected_resources = [six.text_type(self.messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEqual(expected_resources, result_doc['resources'])
+
+        # NOTE(kgriffs): As of the Icehouse release, drivers are
+        # required to either completely succeed, or completely fail
+        # to enqueue the entire batch of messages.
         self.assertFalse(result_doc['partial'])
 
         self.assertEqual(len(msg_ids), len(sample_messages))

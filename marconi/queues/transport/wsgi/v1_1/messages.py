@@ -170,9 +170,6 @@ class CollectionResource(object):
                                        self._message_post_spec,
                                        doctype=wsgi_utils.JSONArray)
 
-        # Enqueue the messages
-        partial = False
-
         try:
             self._validate.message_posting(messages)
 
@@ -195,7 +192,6 @@ class CollectionResource(object):
 
         except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
-            partial = True
             message_ids = ex.succeeded_ids
 
             if not message_ids:
@@ -214,7 +210,7 @@ class CollectionResource(object):
         resp.location = req.path + '?ids=' + ids_value
 
         hrefs = [req.path + '/' + id for id in message_ids]
-        body = {'resources': hrefs, 'partial': partial}
+        body = {'resources': hrefs}
         resp.body = utils.to_json(body)
         resp.status = falcon.HTTP_201
 

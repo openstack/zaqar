@@ -84,7 +84,10 @@ class MessagesBaseTest(base.V1_1Base):
         expected_resources = [six.text_type(self.messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEqual(expected_resources, result_doc['resources'])
-        self.assertFalse(result_doc['partial'])
+
+        # NOTE(kgriffs): As of v1.1, "partial" is no longer given
+        # in the response document.
+        self.assertNotIn('partial', result_doc)
 
         self.assertEqual(len(msg_ids), len(sample_messages))
 
