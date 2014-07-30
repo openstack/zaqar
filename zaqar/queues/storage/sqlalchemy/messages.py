@@ -215,13 +215,13 @@ class MessageController(storage.Message):
         with self.driver.trans() as trans:
             qid = utils.get_qid(self.driver, queue, project)
 
-            # TODO(kgriffs): Need to port this to sqla! Bug #1331228
-            #
-            # cleanup all expired messages in this queue
-            # self.driver.run('''
-            #     delete from Messages
-            #      where ttl <= julianday() * 86400.0 - created
-            #        and qid = ?''', qid)
+            # Delete the expired messages
+            and_stmt = sa.and_(tables.Messages.c.ttl <=
+                               sfunc.now() - tables.Messages.c.created,
+                               tables.Messages.c.qid == qid)
+            statement = tables.Messages.delete().where(and_stmt)
+
+            trans.execute(statement)
 
             # executemany() sets lastrowid to None, so no matter we manually
             # generate the IDs or not, we still need to query for it.
