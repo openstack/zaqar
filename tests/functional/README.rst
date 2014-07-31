@@ -38,24 +38,16 @@ Running the Functional Tests (Without Tox)
      pip install -r requirements.txt
      pip install -r test-requirements.txt
 
-#. cd to the marconi/tests/functional directory
+#. cd to the tests/etc directory
 
-#. Copy tests/etc/functional-marconi.conf to one of the following locations::
-
-     ~/.marconi/functional-tests.conf
-     /etc/marconi/functional-tests.conf
-
-#. Update the config file to point to the Marconi server you want to run
-   the tests against
-
-#. If leaving keystone auth enabled, update system-tests.conf with a
+#. If leaving keystone auth enabled, update functional-tests.conf with a
    valid set of credentials.
 
 #. Now, to run the system tests, simply use the nosetests commands, e.g.:
 
     Run all test suites: ::
 
-        nosetests --tests tests.functional -v
+        nosetests -v
 
 Adding New Tests
 ----------------
