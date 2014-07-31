@@ -519,6 +519,54 @@ class MessageControllerTest(ControllerBaseTest):
                                          -1)
         self.assertEqual(msg_desc['id'], msgid_last)
 
+    def test_get_first_with_empty_queue_exception(self):
+        self.assertRaises(storage.errors.QueueIsEmpty,
+                          self.controller.first,
+                          self.queue_name, project=self.project)
+
+    def test_get_first_with_invalid_sort_option(self):
+        self.assertRaises(ValueError,
+                          self.controller.first,
+                          self.queue_name, sort=0,
+                          project=self.project)
+
+    def test_pop_message(self):
+        self.queue_controller.create(self.queue_name, self.project)
+        messages = [
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'd378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+            {
+                'ttl': 60,
+                'body': {
+                    'event': 'BackupStarted',
+                    'backupId': 'e378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+        ]
+
+        client_uuid = uuid.uuid1()
+        self.controller.post(self.queue_name, messages, client_uuid,
+                             project=self.project)
+
+        # Test Message Pop
+        popped_messages = self.controller.pop(self.queue_name,
+                                              limit=1,
+                                              project=self.project)
+
+        self.assertEqual(len(popped_messages), 1)
+
 
 class ClaimControllerTest(ControllerBaseTest):
     """Claim Controller base tests.

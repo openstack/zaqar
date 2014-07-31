@@ -16,7 +16,6 @@ import datetime
 
 import sqlalchemy as sa
 
-from marconi.queues.storage import errors
 from marconi.queues.storage import pooling
 from marconi.queues.storage import sqlalchemy
 from marconi.queues.storage.sqlalchemy import controllers
@@ -64,50 +63,6 @@ class SqlalchemyQueueTests(base.QueueControllerTest):
 class SqlalchemyMessageTests(base.MessageControllerTest):
     driver_class = sqlalchemy.DataDriver
     controller_class = controllers.MessageController
-
-    def test_empty_queue_exception(self):
-        queue_name = 'empty-queue-test'
-        self.queue_controller.create(queue_name, None)
-
-        self.assertRaises(errors.QueueIsEmpty,
-                          self.controller.first,
-                          queue_name, None, sort=1)
-
-    def test_pop_message(self):
-        queue_name = 'pop-message-test'
-        self.queue_controller.create(queue_name, self.project)
-        messages = [
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'd378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'e378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-        ]
-        uuid = '33a7ce80-0892-11e4-9d5d-28cfe91478b9'
-        self.controller.post(queue_name, messages, uuid,
-                             self.project)
-
-        # Test Message Pop
-        message_popped = self.controller.pop(queue_name,
-                                             limit=1,
-                                             project=self.project)
-        self.assertEqual(len(message_popped), 1)
 
 
 class SqlalchemyClaimTests(base.ClaimControllerTest):
