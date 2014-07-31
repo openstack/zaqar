@@ -1,0 +1,5 @@
+[DEFAULT]
+# verbose = False
+# server_url = http://localhost:8888
+# messages_path = some/path/to/messages.json
+# queue_prefix = ogre-test-queue-

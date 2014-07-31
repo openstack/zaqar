@@ -28,6 +28,9 @@ _CLI_OPTIONS = (
         default=psutil.NUM_CPUS * 2,
         help='Number of Workers'),
     cfg.IntOpt('time', short='t', default=3, help="time in seconds"),
+    cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
+    cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue-'),
+    cfg.StrOpt('messages_path', short='m')
 )
 conf.register_cli_opts(_CLI_OPTIONS)
-conf(project='zaqar', prog='zaqar-queues')
+conf(project='zaqar', prog='zaqar-benchmark')

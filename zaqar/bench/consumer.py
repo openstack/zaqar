@@ -13,8 +13,10 @@
 # limitations under the License.
 
 from __future__ import division
+from __future__ import print_function
 
 import multiprocessing as mp
+import sys
 import time
 
 from gevent import monkey as curious_george
@@ -24,10 +26,7 @@ import marktime
 from zaqarclient.queues.v1 import client
 from zaqarclient.transport.errors import TransportError
 
-from zaqar.bench.cli_config import conf
-
-URL = 'http://localhost:8888'
-QUEUE_PREFIX = 'ogre-test-queue-'
+from zaqar.bench.config import conf
 
 
 def claim_delete(stats, test_duration, ttl, grace, limit):
@@ -38,8 +37,8 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     delete is recorded for calculating throughput and latency.
     """
 
-    cli = client.Client(URL)
-    queue = cli.queue(QUEUE_PREFIX + '1')
+    cli = client.Client(conf.server_url)
+    queue = cli.queue(conf.queue_prefix + '1')
     end = time.time() + test_duration
     total_elapsed = 0
     total_requests = 0
@@ -52,11 +51,10 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
             claim = queue.claim(ttl=ttl, grace=grace, limit=limit)
 
         except TransportError as ex:
-            print ("Could not claim messages : {0}".format(ex))
+            sys.stderr.write("Could not claim messages : {0}\n".format(ex))
 
         else:
             total_elapsed += marktime.stop('claim_message').seconds
-            total_requests += 1
             claim_total_requests += 1
 
             try:
@@ -68,14 +66,19 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
 
                 total_elapsed += marktime.stop('delete_message').seconds
                 delete_total_requests += 1
-                total_requests += 1
-                stats.put({'total_requests': total_requests,
-                           'claim_total_requests': claim_total_requests,
-                           'delete_total_requests': delete_total_requests,
-                           'total_elapsed': total_elapsed})
 
             except TransportError as ex:
-                print ("Could not claim and delete : {0}".format(ex))
+                sys.stderr.write("Could not delete messages: {0}\n".format(ex))
+
+            finally:
+                total_requests += 1
+        finally:
+            total_requests += 1
+
+    stats.put({'total_requests': total_requests,
+               'claim_total_requests': claim_total_requests,
+               'delete_total_requests': delete_total_requests,
+               'total_elapsed': total_elapsed})
 
 
 def load_generator(stats, num_workers, test_duration, url, ttl, grace, limit):
@@ -103,18 +106,19 @@ def crunch(stats):
             delete_total_requests)
 
 
-def run():
+def run(upstream_queue):
     num_procs = conf.processes
     num_workers = conf.workers
     test_duration = conf.time
     stats = mp.Queue()
     # TODO(TheSriram) : Make ttl,grace and limit configurable
-    args = (stats, num_workers, test_duration, URL, 300, 200, 1)
+    args = (stats, num_workers, test_duration, conf.server_url, 300, 200, 1)
 
     procs = [mp.Process(target=load_generator, args=args)
              for _ in range(num_procs)]
 
-    print ("\nStarting Consumer...")
+    if conf.verbose:
+        print("\nStarting Consumer...")
 
     start = time.time()
 
@@ -126,17 +130,14 @@ def run():
     (total_requests, total_latency, claim_total_requests,
      delete_total_requests) = crunch(stats)
 
+    successful_requests = claim_total_requests + delete_total_requests
     duration = time.time() - start
-    throughput = total_requests / duration
-    latency = 1000 * total_latency / total_requests
+    throughput = successful_requests / duration
+    latency = 1000 * total_latency / successful_requests
 
-    print('Duration: {0:.1f} sec'.format(duration))
-    print('Total Requests: {0}'.format(total_requests))
-    print('Throughput: {0:.0f} req/sec'.format(throughput))
-    print('Latency: {0:.1f} ms/req'.format(latency))
-
-    print('')  # Blank line
-
-
-def main():
-    run()
+    upstream_queue.put({'consumer': {
+        'duration_sec': duration,
+        'total_reqs': total_requests,
+        'successful_reqs': successful_requests,
+        'reqs_per_sec': throughput,
+        'ms_per_req': latency}})

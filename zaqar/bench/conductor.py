@@ -14,16 +14,31 @@
 
 from __future__ import print_function
 
+import json
 import multiprocessing as mp
 
+from zaqar.bench.config import conf
 from zaqar.bench import consumer
 from zaqar.bench import producer
 
 
 def main():
-    procs = [mp.Process(target=worker.run)
+    downstream_queue = mp.Queue()
+    procs = [mp.Process(target=worker.run, args=(downstream_queue,))
              for worker in [producer, consumer]]
     for each_proc in procs:
         each_proc.start()
     for each_proc in procs:
         each_proc.join()
+
+    stats = {'params': {'processes': conf.processes, 'workers': conf.workers}}
+    for each_proc in procs:
+        stats.update(downstream_queue.get_nowait())
+
+    if conf.verbose:
+        for name, stat in stats.items():
+            print(name.capitalize())
+            print("\n".join("{}: {:.1f}".format(*it) for it in stat.items()))
+            print('')  # Blank line
+    else:
+        print(json.dumps(stats))
