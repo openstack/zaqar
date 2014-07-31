@@ -13,15 +13,20 @@
 # the License.
 
 import contextlib
+import logging
 
 import sqlalchemy as sa
 
 from marconi.common import decorators
+from marconi.i18n import _
 from marconi.queues import storage
 from marconi.queues.storage.sqlalchemy import controllers
 from marconi.queues.storage.sqlalchemy import options
 from marconi.queues.storage.sqlalchemy import tables
 from marconi.queues.storage.sqlalchemy import utils
+
+
+LOG = logging.getLogger(__name__)
 
 
 class DataDriver(storage.DataDriverBase):
@@ -33,6 +38,9 @@ class DataDriver(storage.DataDriverBase):
         self.conf.register_opts(opts,
                                 group=options.SQLALCHEMY_GROUP)
         self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
+        LOG.warn(_('sqlalchemy\'s data plane driver will be removed during '
+                   'the next release. Please, consider moving your data to '
+                   'one of the other supported drivers.'))
 
     def _sqlite_on_connect(self, conn, record):
         # NOTE(flaper87): This is necessary in order
