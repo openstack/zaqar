@@ -47,20 +47,8 @@ class RequestSchema(api.Api):
             }
         },
 
-        'queue_set_metadata': {
-            'ref': 'queues/{queue_name}/metadata',
-            'method': 'PUT',
-            'required': ['queue_name'],
-            'properties': {
-                # NOTE(flaper87): Metadata is part
-                # of the request content. No need to
-                # add it here.
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'queue_get_metadata': {
-            'ref': 'queues/{queue_name}/metadata',
+        'queue_get': {
+            'ref': 'queues/{queue_name}',
             'method': 'GET',
             'required': ['queue_name'],
             'properties': {

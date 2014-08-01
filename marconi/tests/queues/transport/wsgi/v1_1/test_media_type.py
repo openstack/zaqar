@@ -28,7 +28,6 @@ class TestMediaType(base.V1_1Base):
     def test_json_only_endpoints(self):
         endpoints = (
             ('GET', self.url_prefix + '/queues'),
-            ('GET', self.url_prefix + '/queues/nonexistent/metadata'),
             ('GET', self.url_prefix + '/queues/nonexistent/stats'),
             ('POST', self.url_prefix + '/queues/nonexistent/messages'),
             ('GET', self.url_prefix + '/queues/nonexistent/messages/deadbeaf'),

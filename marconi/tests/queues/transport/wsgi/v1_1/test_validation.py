@@ -43,7 +43,7 @@ class TestValidation(base.V1_1Base):
 
     def test_metadata_deserialization(self):
         # Normal case
-        self.simulate_put(self.queue_path + '/metadata',
+        self.simulate_put(self.queue_path,
                           self.project_id,
                           body='{"timespace": "Shangri-la"}')
 
@@ -59,7 +59,7 @@ class TestValidation(base.V1_1Base):
         for tmpl in doc_tmpl, doc_tmpl_ws:
             gen = '0' * (max_queue_metadata - envelope_length + 1)
             doc = tmpl.format(gen)
-            self.simulate_put(self.queue_path + '/metadata',
+            self.simulate_put(self.queue_path,
                               self.project_id,
                               body=doc)
 

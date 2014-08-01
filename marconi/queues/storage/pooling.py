@@ -164,7 +164,13 @@ class QueueController(RoutingController):
         yield it()
         yield marker_name['next']
 
-    def create(self, name, project=None):
+    def get(self, name, project=None):
+        try:
+            return self.get_metadata(name, project)
+        except errors.QueueDoesNotExist:
+            return {}
+
+    def create(self, name, metadata=None, project=None):
         self._pool_catalog.register(name, project)
 
         # NOTE(cpp-cabrera): This should always succeed since we just
@@ -176,7 +182,9 @@ class QueueController(RoutingController):
         if not target:
             raise RuntimeError('Failed to register queue')
 
-        return target.queue_controller.create(name, project)
+        return target.queue_controller.create(name,
+                                              metadata=metadata,
+                                              project=project)
 
     def delete(self, name, project=None):
         # NOTE(cpp-cabrera): If we fail to find a project/queue in the

@@ -135,7 +135,9 @@ class QueueControllerTest(ControllerBaseTest):
 
     def test_queue_lifecycle(self):
         # Test queue creation
-        created = self.controller.create('test', project=self.project)
+        created = self.controller.create('test',
+                                         metadata=dict(meta='test_meta'),
+                                         project=self.project)
         self.assertTrue(created)
 
         # Test queue existence
@@ -147,21 +149,14 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertEqual(queue['name'], 'test')
 
         # Test queue metadata retrieval
-        metadata = self.controller.get_metadata('test', project=self.project)
-        self.assertEqual(metadata, {})
-
-        # Test queue update
-        created = self.controller.set_metadata('test', project=self.project,
-                                               metadata=dict(meta='test_meta'))
-
-        metadata = self.controller.get_metadata('test', project=self.project)
+        metadata = self.controller.get('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
         # Touching an existing queue does not affect metadata
         created = self.controller.create('test', project=self.project)
         self.assertFalse(created)
 
-        metadata = self.controller.get_metadata('test', project=self.project)
+        metadata = self.controller.get('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
         client_uuid = uuid.uuid4()
@@ -215,13 +210,6 @@ class QueueControllerTest(ControllerBaseTest):
 
         # Test queue existence
         self.assertFalse(self.controller.exists('test', project=self.project))
-
-        # Test DoesNotExist exception
-        with testing.expect(storage.errors.DoesNotExist):
-            self.controller.get_metadata('test', project=self.project)
-
-        with testing.expect(storage.errors.DoesNotExist):
-            self.controller.set_metadata('test', '{}', project=self.project)
 
     def test_stats_for_empty_queue(self):
         self.addCleanup(self.controller.delete, 'test', project=self.project)
@@ -531,7 +519,7 @@ class MessageControllerTest(ControllerBaseTest):
                           project=self.project)
 
     def test_pop_message(self):
-        self.queue_controller.create(self.queue_name, self.project)
+        self.queue_controller.create(self.queue_name, project=self.project)
         messages = [
             {
                 'ttl': 60,

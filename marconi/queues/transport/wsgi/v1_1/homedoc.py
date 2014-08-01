@@ -41,19 +41,7 @@ JSON_HOME = {
                 'queue_name': 'param/queue_name',
             },
             'hints': {
-                'allow': ['PUT', 'DELETE'],
-                'formats': {
-                    'application/json': {},
-                },
-            },
-        },
-        'rel/queue-metadata': {
-            'href-template': '/v1.1/queues/{queue_name}/metadata',
-            'href-vars': {
-                'queue_name': 'param/queue_name',
-            },
-            'hints': {
-                'allow': ['GET', 'PUT'],
+                'allow': ['GET', 'PUT', 'DELETE'],
                 'formats': {
                     'application/json': {},
                 },

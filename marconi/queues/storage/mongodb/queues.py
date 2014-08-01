@@ -98,14 +98,6 @@ class QueueController(storage.Queue):
     # Helpers
     # ----------------------------------------------------------------------
 
-    def _get(self, name, project=None, fields={'m': 1, '_id': 0}):
-        queue = self._collection.find_one(_get_scoped_query(name, project),
-                                          fields=fields)
-        if queue is None:
-            raise errors.QueueDoesNotExist(name, project)
-
-        return queue
-
     def _get_counter(self, name, project=None):
         """Retrieves the current message counter value for a given queue.
 
@@ -194,6 +186,12 @@ class QueueController(storage.Queue):
     # Interface
     # ----------------------------------------------------------------------
 
+    def get(self, name, project=None):
+        try:
+            return self.get_metadata(name, project)
+        except errors.QueueDoesNotExist:
+            return {}
+
     def list(self, project=None, marker=None,
              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
@@ -220,12 +218,16 @@ class QueueController(storage.Queue):
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
     def get_metadata(self, name, project=None):
-        queue = self._get(name, project)
+        queue = self._collection.find_one(_get_scoped_query(name, project),
+                                          fields={'m': 1, '_id': 0})
+        if queue is None:
+            raise errors.QueueDoesNotExist(name, project)
+
         return queue.get('m', {})
 
     @utils.raises_conn_error
     # @utils.retries_on_autoreconnect
-    def create(self, name, project=None):
+    def create(self, name, metadata=None, project=None):
         # NOTE(flaper87): If the connection fails after it was called
         # and we retry to insert the queue, we could end up returning
         # `False` because of the `DuplicatedKeyError` although the
@@ -242,7 +244,7 @@ class QueueController(storage.Queue):
             counter = {'v': 1, 't': 0}
 
             scoped_name = utils.scope_queue_name(name, project)
-            self._collection.insert({'p_q': scoped_name, 'm': {},
+            self._collection.insert({'p_q': scoped_name, 'm': metadata or {},
                                      'c': counter})
 
         except pymongo.errors.DuplicateKeyError:

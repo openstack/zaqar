@@ -34,7 +34,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         self.queue_path = self.url_prefix + '/queues'
         self.gumshoe_queue_path = self.queue_path + '/gumshoe'
         self.fizbat_queue_path = self.queue_path + '/fizbat'
-        self.fizbat_queue_path_metadata = self.fizbat_queue_path + '/metadata'
 
         self.headers = {
             'Client-ID': str(uuid.uuid4()),
@@ -59,33 +58,23 @@ class QueueLifecycleBaseTest(base.V1_1Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': project_id
         }
-        gumshoe_queue_path_metadata = self.gumshoe_queue_path + '/metadata'
         gumshoe_queue_path_stats = self.gumshoe_queue_path + '/stats'
 
         # Stats are empty - queue not created yet
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        # Metadata not found - queue not created yet
-        self.simulate_get(gumshoe_queue_path_metadata, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
-
         # Create
-        self.simulate_put(self.gumshoe_queue_path, headers=headers)
+        doc = '{"messages": {"ttl": 600}}'
+        self.simulate_put(self.gumshoe_queue_path,
+                          headers=headers, body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         location = self.srmock.headers_dict['Location']
         self.assertEqual(location, self.gumshoe_queue_path)
 
-        # Add metadata
-
-        doc = '{"messages": {"ttl": 600}}'
-        self.simulate_put(gumshoe_queue_path_metadata,
-                          headers=headers, body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-
         # Fetch metadata
-        result = self.simulate_get(gumshoe_queue_path_metadata,
+        result = self.simulate_get(self.gumshoe_queue_path,
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
@@ -102,10 +91,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         # Get non-existent stats
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-
-        # Get non-existent metadata
-        self.simulate_get(gumshoe_queue_path_metadata, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_name_restrictions(self):
         self.simulate_put(self.queue_path + '/Nice-Boat_2',
@@ -151,23 +136,17 @@ class QueueLifecycleBaseTest(base.V1_1Base):
             self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_no_metadata(self):
-        self.simulate_put(self.fizbat_queue_path, headers=self.headers)
+        self.simulate_put(self.fizbat_queue_path,
+                          headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        self.simulate_put(self.fizbat_queue_path_metadata,
+        self.simulate_put(self.fizbat_queue_path, body='',
                           headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-        self.simulate_put(self.fizbat_queue_path_metadata, body='',
-                          headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
-    @ddt.data('{', '[]', '.', '  ', '')
+    @ddt.data('{', '[]', '.', '  ')
     def test_bad_metadata(self, document):
-        self.simulate_put(self.fizbat_queue_path, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
-
-        self.simulate_put(self.fizbat_queue_path_metadata,
+        self.simulate_put(self.fizbat_queue_path,
                           headers=self.headers,
                           body=document)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -182,7 +161,7 @@ class QueueLifecycleBaseTest(base.V1_1Base):
 
         doc = doc.format(pad='x' * padding_len)
 
-        self.simulate_put(self.fizbat_queue_path_metadata,
+        self.simulate_put(self.fizbat_queue_path,
                           headers=self.headers,
                           body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -197,14 +176,11 @@ class QueueLifecycleBaseTest(base.V1_1Base):
 
         doc = doc.format(pad='x' * padding_len)
 
-        self.simulate_put(self.fizbat_queue_path_metadata,
+        self.simulate_put(self.fizbat_queue_path,
                           headers=self.headers, body=doc)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_custom_metadata(self):
-        self.simulate_put(self.fizbat_queue_path, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
-
         # Set
         doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
 
@@ -212,21 +188,22 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         padding_len = max_size - (len(doc) - 2)
 
         doc = doc.format(pad='x' * padding_len)
-        self.simulate_put(self.fizbat_queue_path_metadata,
+        self.simulate_put(self.fizbat_queue_path,
                           headers=self.headers,
                           body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         # Get
-        result = self.simulate_get(self.fizbat_queue_path_metadata,
+        result = self.simulate_get(self.fizbat_queue_path,
                                    headers=self.headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(result_doc, jsonutils.loads(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def test_update_metadata(self):
+        self.skip("This should use patch instead")
         xyz_queue_path = self.url_prefix + '/queues/xyz'
-        xyz_queue_path_metadata = xyz_queue_path + '/metadata'
+        xyz_queue_path_metadata = xyz_queue_path
 
         # Create
         self.simulate_put(xyz_queue_path, headers=self.headers)
@@ -252,8 +229,6 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         result_doc = jsonutils.loads(result[0])
 
         self.assertEqual(result_doc, jsonutils.loads(doc2))
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         xyz_queue_path_metadata)
 
     def test_list(self):
         arbitrary_number = 644079696574693
@@ -282,8 +257,7 @@ class QueueLifecycleBaseTest(base.V1_1Base):
             if project_id is not None:
                 altheader['X-Project-ID'] = project_id
             uri = self.queue_path + '/' + name
-            self.simulate_put(uri, headers=altheader)
-            self.simulate_put(uri + '/metadata', headers=altheader, body=body)
+            self.simulate_put(uri, headers=altheader, body=body)
 
         create_queue('g1', None, '{"answer": 42}')
         create_queue('g2', None, '{"answer": 42}')
@@ -320,23 +294,10 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         self.queue_path + '?limit=5')
 
         # Ensure we didn't pick up the queue from the alt project.
         queues = result_doc['queues']
         self.assertEqual(len(queues), 3)
-
-        for queue in queues:
-            self.simulate_get(queue['href'] + '/metadata', headers=header)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
-
-            altheader = header.copy()
-            altheader['X-Project-ID'] = 'imnothere'
-            self.simulate_get(queue['href'] + '/metadata', headers=altheader)
-            self.assertEqual(self.srmock.status, falcon.HTTP_404)
-
-            self.assertNotIn('metadata', queue)
 
         # List with metadata
         result = self.simulate_get(self.queue_path, headers=header,
@@ -347,7 +308,7 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         queue = result_doc['queues'][0]
-        result = self.simulate_get(queue['href'] + '/metadata', headers=header)
+        result = self.simulate_get(queue['href'], headers=header)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(result_doc, queue['metadata'])
         self.assertEqual(result_doc, {'node': 31})
@@ -406,7 +367,7 @@ class TestQueueLifecycleFaultyDriver(base.V1_1BaseFaulty):
         location = ('Location', gumshoe_queue_path)
         self.assertNotIn(location, self.srmock.headers)
 
-        result = self.simulate_get(gumshoe_queue_path + '/metadata',
+        result = self.simulate_get(gumshoe_queue_path,
                                    headers=self.headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(self.srmock.status, falcon.HTTP_503)

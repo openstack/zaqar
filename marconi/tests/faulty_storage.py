@@ -61,10 +61,13 @@ class QueueController(storage.Queue):
     def list(self, project=None):
         raise NotImplementedError()
 
+    def get(self, name, project=None):
+        raise NotImplementedError()
+
     def get_metadata(self, name, project=None):
         raise NotImplementedError()
 
-    def create(self, name, project=None):
+    def create(self, name, metadata=None, project=None):
         raise NotImplementedError()
 
     def exists(self, name, project=None):

@@ -16,7 +16,6 @@ from marconi.queues.transport.wsgi.v1_1 import claims
 from marconi.queues.transport.wsgi.v1_1 import health
 from marconi.queues.transport.wsgi.v1_1 import homedoc
 from marconi.queues.transport.wsgi.v1_1 import messages
-from marconi.queues.transport.wsgi.v1_1 import metadata
 from marconi.queues.transport.wsgi.v1_1 import ping
 from marconi.queues.transport.wsgi.v1_1 import pools
 from marconi.queues.transport.wsgi.v1_1 import queues
@@ -40,13 +39,11 @@ def public_endpoints(driver):
          queues.CollectionResource(driver._validate,
                                    queue_controller)),
         ('/queues/{queue_name}',
-         queues.ItemResource(queue_controller,
+         queues.ItemResource(driver._validate,
+                             queue_controller,
                              message_controller)),
         ('/queues/{queue_name}/stats',
          stats.Resource(queue_controller)),
-        ('/queues/{queue_name}/metadata',
-         metadata.Resource(driver._wsgi_conf, driver._validate,
-                           queue_controller)),
 
         # Messages Endpoints
         ('/queues/{queue_name}/messages',

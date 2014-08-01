@@ -18,9 +18,11 @@ import six
 
 from marconi.i18n import _
 import marconi.openstack.common.log as logging
+from marconi.queues.storage import errors as storage_errors
 from marconi.queues.transport import utils
 from marconi.queues.transport import validation
 from marconi.queues.transport.wsgi import errors as wsgi_errors
+from marconi.queues.transport.wsgi import utils as wsgi_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -28,11 +30,33 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('queue_controller', 'message_controller')
+    __slots__ = ('validate', 'queue_controller', 'message_controller')
 
-    def __init__(self, queue_controller, message_controller):
+    def __init__(self, validate, queue_controller, message_controller):
+        self.validate = validate
         self.queue_controller = queue_controller
         self.message_controller = message_controller
+
+    def on_get(self, req, resp, project_id, queue_name):
+        LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        try:
+            resp_dict = self.queue_controller.get(queue_name,
+                                                  project=project_id)
+
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            raise falcon.HTTPNotFound()
+
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _(u'Queue metadata could not be retrieved.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)
+
+        resp.body = utils.to_json(resp_dict)
+        # status defaults to 200
 
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue item PUT - queue: %(queue)s, '
@@ -40,8 +64,22 @@ class ItemResource(object):
                   {'queue': queue_name, 'project': project_id})
 
         try:
-            created = self.queue_controller.create(
-                queue_name, project=project_id)
+            # Place JSON size restriction before parsing
+            self.validate.queue_metadata_length(req.content_length)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+
+        # Deserialize queue metadata
+        metadata = None
+        if req.content_length:
+            document = wsgi_utils.deserialize(req.stream, req.content_length)
+            metadata = wsgi_utils.sanitize(document, spec=None)
+
+        try:
+            created = self.queue_controller.create(queue_name,
+                                                   metadata=metadata,
+                                                   project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -122,6 +160,5 @@ class CollectionResource(object):
             ]
         }
 
-        resp.content_location = req.relative_uri
         resp.body = utils.to_json(response_body)
         # status defaults to 200

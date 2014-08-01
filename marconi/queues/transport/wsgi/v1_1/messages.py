@@ -174,7 +174,7 @@ class CollectionResource(object):
             self._validate.message_posting(messages)
 
             if not self.queue_controller.exists(queue_name, project_id):
-                self.queue_controller.create(queue_name, project_id)
+                self.queue_controller.create(queue_name, project=project_id)
 
             message_ids = self.message_controller.post(
                 queue_name,

@@ -167,11 +167,11 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
 
         self.assertEqual(result.status_code, 201)
 
-        self.url = self.base_url + '/queues/hasmetadata/metadata'
+        self.url = self.base_url + '/queues/hasmetadata'
         result = self.client.get(self.url)
 
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), {})
+        self.assertEqual(result.json(), {"queue": "Has Metadata"})
 
     test_insert_queue_with_metadata.tags = ['negative']
 
@@ -250,7 +250,7 @@ class TestQueueMisc(base.V1_1FunctionalTestBase):
         self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
 
-        result = self.client.get(self.queue_url)
+        result = self.client.head(self.queue_url)
         self.assertEqual(result.status_code, 405)
 
     test_check_queue_exists.tags = ['negative']
@@ -349,7 +349,7 @@ class TestQueueNonExisting(base.V1_1FunctionalTestBase):
 
     def test_get_metadata(self):
         """Get metadata on non existing Queue."""
-        result = self.client.get('/metadata')
+        result = self.client.get('/')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json(), [])
 

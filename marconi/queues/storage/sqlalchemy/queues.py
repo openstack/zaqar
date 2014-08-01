@@ -68,13 +68,21 @@ class QueueController(storage.Queue):
         except utils.NoResult:
             raise errors.QueueDoesNotExist(name, project)
 
-    def create(self, name, project):
+    def get(self, name, project=None):
+        try:
+            return self.get_metadata(name, project)
+        except errors.QueueDoesNotExist:
+            return {}
+
+    def create(self, name, metadata=None, project=None):
         if project is None:
             project = ''
 
         try:
-            ins = tables.Queues.insert().values(project=project, name=name,
-                                                metadata=utils.json_encode({}))
+            smeta = utils.json_encode(metadata or {})
+            ins = tables.Queues.insert().values(project=project,
+                                                name=name,
+                                                metadata=smeta)
             res = self.driver.run(ins)
         except sa.exc.IntegrityError:
             return False

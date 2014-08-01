@@ -149,6 +149,17 @@ class Queue(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def get(self, name, project=None):
+        """Base method for queue metadata retrieval.
+
+        :param name: The queue name
+        :param project: Project id
+
+        :returns: Dictionary containing queue metadata
+        :raises: DoesNotExist
+        """
+        raise NotImplementedError
+
     def get_metadata(self, name, project=None):
         """Base method for queue metadata retrieval.
 
@@ -161,7 +172,7 @@ class Queue(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, name, project=None):
+    def create(self, name, metadata=None, project=None):
         """Base method for queue creation.
 
         :param name: The queue name
@@ -182,7 +193,6 @@ class Queue(ControllerBase):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     def set_metadata(self, name, metadata, project=None):
         """Base method for updating a queue metadata.
 
