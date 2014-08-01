@@ -37,7 +37,7 @@ from marconi import tests as testing
 from marconi.tests.queues.storage import base
 
 
-class MongodbDBSetup(testing.TestBase):
+class MongodbSetupMixin(object):
     def _purge_databases(self):
         databases = (self.driver.message_databases +
                      [self.driver.queues_database])
@@ -50,7 +50,7 @@ class MongodbDBSetup(testing.TestBase):
                     database=uuid.uuid4().hex)
 
 
-class MongodbUtilsTest(testing.TestBase):
+class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
 
     config_file = 'wsgi_mongodb.conf'
 
@@ -136,7 +136,7 @@ class MongodbUtilsTest(testing.TestBase):
 
 
 @testing.requires_mongodb
-class MongodbDriverTest(testing.TestBase):
+class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
 
     config_file = 'wsgi_mongodb.conf'
 
@@ -153,7 +153,7 @@ class MongodbDriverTest(testing.TestBase):
 
 
 @testing.requires_mongodb
-class MongodbQueueTests(base.QueueControllerTest):
+class MongodbQueueTests(MongodbSetupMixin, base.QueueControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
@@ -188,7 +188,7 @@ class MongodbQueueTests(base.QueueControllerTest):
 
 
 @testing.requires_mongodb
-class MongodbMessageTests(base.MessageControllerTest):
+class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
@@ -334,52 +334,9 @@ class MongodbMessageTests(base.MessageControllerTest):
 
         self.assertEqual(actual_ids, expected_ids)
 
-    def test_pop_messages(self):
-        queue_name = 'pop-queue-test'
-        self.queue_controller.create(queue_name, self.project)
-        messages = [
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'd378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-            {
-                'ttl': 60,
-                'body': {
-                    'event': 'BackupStarted',
-                    'backupId': 'e378813c-3f0b-11e2-ad92-7823d2b0f3ce',
-                },
-            },
-        ]
-        self.controller.post(queue_name, messages, uuid.uuid1(), self.project)
-        message_popped = self.controller.pop(queue_name,
-                                             limit=1,
-                                             project=self.project)
-        self.assertEqual(len(message_popped), 1)
-
-    def test_empty_queue_exception(self):
-        self.assertRaises(storage.errors.QueueIsEmpty,
-                          self.controller.first,
-                          self.queue_name, project=self.project)
-
-    def test_invalid_sort_option(self):
-        self.assertRaises(ValueError,
-                          self.controller.first,
-                          self.queue_name, sort=0,
-                          project=self.project)
-
 
 @testing.requires_mongodb
-class MongodbClaimTests(base.ClaimControllerTest):
+class MongodbClaimTests(MongodbSetupMixin, base.ClaimControllerTest):
 
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
@@ -410,6 +367,10 @@ class MongodbClaimTests(base.ClaimControllerTest):
                           self.controller.update, self.queue_name,
                           claim_id, {}, project=self.project)
 
+
+#
+# TODO(kgriffs): Do these need database purges as well as those above?
+#
 
 @testing.requires_mongodb
 class MongodbPoolsTests(base.PoolsControllerTest):
