@@ -22,7 +22,6 @@ Field Mappings:
 """
 
 import datetime
-import itertools
 import time
 
 from bson import objectid
@@ -756,10 +755,9 @@ class MessageController(storage.Message):
                                                remove=True)
                     for _ in range(limit))
 
-        messages = itertools.ifilter(None, messages)
-
         final_messages = [_basic_message(message, now)
-                          for message in messages]
+                          for message in messages
+                          if message]
 
         return final_messages
 
