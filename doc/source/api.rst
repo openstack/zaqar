@@ -11,20 +11,20 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-Using Marconi's Public APIs
-===========================
+Using Zaqar's Public APIs
+=========================
 
-Marconi fully implements version 1.0 of the OpenStack Messaging API by now. 
-Generally, you can use any HTTP client to talk with Marconi public REST API,
-though Marconi client is the recommended approach.
+Zaqar fully implements version 1.0 of the OpenStack Messaging API by now.
+Generally, you can use any HTTP client to talk with Zaqar public REST API,
+though Zaqar client is the recommended approach.
 
 
-Marconi Client
+Zaqar Client
 ############################################
-We can easily access the Marconi REST API via Marconi client. Below is an example
+We can easily access the Zaqar REST API via Zaqar client. Below is an example
 to create a queue, post messages to it and finally delete it::
 
-    from marconiclient.queues.v1 import client
+    from zaqarclient.queues.v1 import client
 
     URL = 'http://localhost:8888'
     messages = [{'body': {'id': idx}, 'ttl': 360} for idx in range(20)]

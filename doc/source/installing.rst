@@ -115,39 +115,39 @@ Install uwsgi on web servers::
     web# yum -y install python-pip
     web# pip install uwsgi
 
-Configure OpenStack Marconi
-###########################
+Configure OpenStack Zaqar
+#########################
 
 On the web servers run these commands::
 
-    web# git clone https://github.com/openstack/marconi.git .
-    web# pip install . -r ./requirements.txt --upgrade --log /tmp/marconi-pip.log
+    web# git clone https://git.openstack.org/openstack/zaqar.git .
+    web# pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
 
-Create ``/srv/marconi`` folder to store related configuration files.
+Create ``/srv/zaqar`` folder to store related configuration files.
 
-Create ``/srv/marconi/marconi_uwsgi.py`` with the following content::
+Create ``/srv/zaqar/zaqar_uwsgi.py`` with the following content::
 
     from keystoneclient.middleware import auth_token
-    from marconi.transport.wsgi import app
+    from zaqar.transport.wsgi import app
 
     app = auth_token.AuthProtocol(app.app, {})
 
-Create ``/srv/marconi/uwsgi.ini`` file with the following content::
+Create ``/srv/zaqar/uwsgi.ini`` file with the following content::
 
     [uwsgi]
     http = 192.168.192.168:80
-    daemonize = /var/log/marconi.log
-    pidfile = /var/run/marconi.pid
+    daemonize = /var/log/zaqar.log
+    pidfile = /var/run/zaqar.pid
     gevent = 2000
     gevent-monkey-patch = true
     listen = 1024
     enable-threads = true
-    module = marconi_uwsgi:app
+    module = zaqar_uwsgi:app
     workers = 4
 
 The uwsgi configuration options above can be modified for different performance requirements.
 
-Create a Marconi configuration file ``/etc/marconi.conf`` with the following content::
+Create a Zaqar configuration file ``/etc/zaqar.conf`` with the following content::
 
     [DEFAULT]
     # Show more verbose log output (sets INFO log level output)
@@ -161,7 +161,7 @@ Create a Marconi configuration file ``/etc/marconi.conf`` with the following con
     admin_mode    = True
 
     # Log to this file!
-    log_file = /var/log/marconi-queues.log
+    log_file = /var/log/zaqar-queues.log
     debug    = False
     verbose  = False
 
@@ -192,7 +192,7 @@ Create a Marconi configuration file ``/etc/marconi.conf`` with the following con
 
     [drivers:storage:mongodb]
     uri = mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=catalog&w=2&readPreference=secondaryPreferred
-    database = marconi
+    database = zaqar
     partitions = 8
 
     # Maximum number of times to retry a failed operation. Currently
@@ -236,7 +236,7 @@ Create a Marconi configuration file ``/etc/marconi.conf`` with the following con
 
 Start the queuing service::
 
-    #/usr/bin/uwsgi --ini /srv/marconi/uwsgi.ini
+    #/usr/bin/uwsgi --ini /srv/zaqar/uwsgi.ini
 
 
 Configure Pools

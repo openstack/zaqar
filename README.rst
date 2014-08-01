@@ -1,28 +1,28 @@
-Marconi
-=======
+Zaqar
+=====
 
 Message queuing service for `OpenStack`_.
 To find more information read our `wiki`_.
 
-Running a local Marconi server with MongoDB
--------------------------------------------
+Running a local Zaqar server with MongoDB
+-----------------------------------------
 
-**Note:** These instructions are for running a local instance of Marconi and
+**Note:** These instructions are for running a local instance of Zaqar and
 not all of these steps are required. It is assumed you have `MongoDB`_
 installed and running.
 
-1. From your home folder create the ``~/.marconi`` folder and clone the repo::
+1. From your home folder create the ``~/.zaqar`` folder and clone the repo::
 
     $ cd
-    $ mkdir .marconi
-    $ git clone https://github.com/openstack/marconi.git
+    $ mkdir .zaqar
+    $ git clone https://github.com/openstack/zaqar.git
 
-2. Copy the Marconi config files to the directory ``~/.marconi``::
+2. Copy the Zaqar config files to the directory ``~/.zaqar``::
 
-    $ cp marconi/etc/marconi.conf.sample ~/.marconi/marconi.conf
-    $ cp marconi/etc/logging.conf.sample ~/.marconi/logging.conf
+    $ cp zaqar/etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
+    $ cp zaqar/etc/logging.conf.sample ~/.zaqar/logging.conf
 
-3. Find ``[drivers]`` section in ``~/.marconi/marconi.conf``
+3. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
    and specify to use mongodb storage::
 
     storage = mongodb
@@ -37,25 +37,25 @@ installed and running.
     uri = mongodb://127.0.0.1:27017
 
 4. For logging, find the ``[DEFAULT]`` section in
-   ``~/.marconi/marconi.conf`` and modify as desired::
+   ``~/.zaqar/zaqar.conf`` and modify as desired::
 
     log_file = server.log
 
 5. Change directories back to your local copy of the repo::
 
-    $ cd marconi
+    $ cd zaqar
 
 6. Run the following so you can see the results of any changes you
    make to the code without having to reinstall the package each time::
 
     $ pip install -e .
 
-7. Start the Marconi server with logging level set to INFO so you can see
+7. Start the Zaqar server with logging level set to INFO so you can see
    the port on which the server is listening::
 
-    $ marconi-server -v
+    $ zaqar-server -v
 
-8. Test out that Marconi is working by creating a queue::
+8. Test out that Zaqar is working by creating a queue::
 
     $ curl -i -X PUT http://127.0.0.1:8888/v1/queues/samplequeue -H
     "Content-type: application/json"
@@ -86,6 +86,6 @@ You can read more about running functional tests in separate `TESTS_README`_.
 .. _`MongoDB` : http://docs.mongodb.org/manual/installation/
 .. _`pyenv` : https://github.com/yyuu/pyenv/
 .. _`virtualenv` : https://pypi.python.org/pypi/virtualenv/
-.. _`wiki` : https://wiki.openstack.org/wiki/Marconi
-.. _`TESTS_README` : https://github.com/openstack/marconi/blob/master/tests/functional/README.rst
+.. _`wiki` : https://wiki.openstack.org/wiki/Zaqar
+.. _`TESTS_README` : https://github.com/openstack/zaqar/blob/master/tests/functional/README.rst
 

@@ -1,8 +1,8 @@
 [run]
 branch = True
-omit = *marconi/openstack*
+omit = *zaqar/openstack*
 
 [report]
 exclude_lines =
-    if __MARCONI_SETUP__:
+    if _ZAQAR_SETUP__:
     raise NotImplementedError

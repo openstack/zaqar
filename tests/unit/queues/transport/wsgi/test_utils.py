@@ -19,7 +19,7 @@ import falcon
 import six
 import testtools
 
-from marconi.queues.transport.wsgi import utils
+from zaqar.queues.transport.wsgi import utils
 
 
 class TestUtils(testtools.TestCase):

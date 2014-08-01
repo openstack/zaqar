@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import pipeline
-from marconi.tests import base
+from zaqar.common import pipeline
+from zaqar.tests import base
 
 
 class FirstClass(object):

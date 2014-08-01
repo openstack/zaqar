@@ -16,13 +16,13 @@ import datetime
 
 import sqlalchemy as sa
 
-from marconi.queues.storage import pooling
-from marconi.queues.storage import sqlalchemy
-from marconi.queues.storage.sqlalchemy import controllers
-from marconi.queues.storage.sqlalchemy import tables
-from marconi.queues.storage.sqlalchemy import utils
-from marconi import tests as testing
-from marconi.tests.queues.storage import base
+from zaqar.queues.storage import pooling
+from zaqar.queues.storage import sqlalchemy
+from zaqar.queues.storage.sqlalchemy import controllers
+from zaqar.queues.storage.sqlalchemy import tables
+from zaqar.queues.storage.sqlalchemy import utils
+from zaqar import tests as testing
+from zaqar.tests.queues.storage import base
 
 
 class SqlalchemyTableTests(testing.TestBase):
@@ -34,7 +34,7 @@ class SqlalchemyTableTests(testing.TestBase):
 
     def test_table_queries(self):
         self.engine.execute(tables.Queues.insert(), id=1, project='test',
-                            name='marconi', metadata=utils.json_encode('aaaa'))
+                            name='zaqar', metadata=utils.json_encode('aaaa'))
         self.engine.execute(tables.Messages.insert(), id=1, qid=1, ttl=10,
                             body=utils.json_encode('bbbb'), client='a',
                             created=datetime.datetime.now())

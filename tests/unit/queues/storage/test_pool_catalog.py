@@ -16,11 +16,11 @@ import uuid
 
 from oslo.config import cfg
 
-from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.queues.storage import pooling
-from marconi.queues.storage import sqlalchemy
-from marconi.queues.storage import utils
-from marconi import tests as testing
+from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.queues.storage import pooling
+from zaqar.queues.storage import sqlalchemy
+from zaqar.queues.storage import utils
+from zaqar import tests as testing
 
 
 # TODO(cpp-cabrera): it would be wonderful to refactor this unit test

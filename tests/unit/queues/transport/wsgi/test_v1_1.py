@@ -16,9 +16,9 @@ import uuid
 import ddt
 import falcon
 
-from marconi.openstack.common import jsonutils
-from marconi.tests.queues.transport.wsgi import base
-from marconi.tests.queues.transport.wsgi import v1_1
+from zaqar.openstack.common import jsonutils
+from zaqar.tests.queues.transport.wsgi import base
+from zaqar.tests.queues.transport.wsgi import v1_1
 
 # --------------------------------------------------------------------------
 # Identical or just minor variations across versions

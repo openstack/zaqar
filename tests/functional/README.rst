@@ -1,7 +1,7 @@
-Marconi Functional Tests
-====================
+Zaqar Functional Tests
+======================
 
-Marconi's functional tests treat Marconi as a black box. In other
+Zaqar's functional tests treat Zaqar as a black box. In other
 words, the API calls attempt to simulate an actual user. Unlike unit tests,
 the functional tests do not use mockendpoints.
 
@@ -9,10 +9,10 @@ the functional tests do not use mockendpoints.
 Running functional tests (With Tox)
 -----------------------------------
 
-#. Setup a Marconi server. Refer to the Marconi `README`_ on
-   how to run Marconi locally, or simply use an existing server.
+#. Setup a Zaqar server. Refer to the Zaqar `README`_ on
+   how to run Zaqar locally, or simply use an existing server.
 
-#. Change `$MARCONI_TESTS_CONFIGS_DIR/functional-tests.conf` and
+#. Change `$ZAQAR_TESTS_CONFIGS_DIR/functional-tests.conf` and
    set `run_tests` to True.
 
 #. Run tests. ::
@@ -30,8 +30,8 @@ Running functional tests (With Tox)
 Running the Functional Tests (Without Tox)
 ------------------------------------------
 
-#. Setup a Marconi server. Refer to the Marconi `README`_ on
-   how to run Marconi locally, or simply use an existing server.
+#. Setup a Zaqar server. Refer to the Zaqar `README`_ on
+   how to run Zaqar locally, or simply use an existing server.
 
 #. Install functional tests dependencies. ::
 
@@ -58,5 +58,5 @@ Adding New Tests
     messages/test_messages.py
     claim/test_claims.py
 
-.. _README : https://github.com/openstack/marconi/blob/master/README.rst
+.. _README : https://github.com/openstack/zaqar/blob/master/README.rst
 .. _requests : https://pypi.python.org/pypi/requests

@@ -14,8 +14,8 @@
 
 import falcon
 
-from marconi.tests.queues.transport.wsgi import base
-from marconi.tests.queues.transport.wsgi import v1
+from zaqar.tests.queues.transport.wsgi import base
+from zaqar.tests.queues.transport.wsgi import v1
 
 
 # --------------------------------------------------------------------------

@@ -19,8 +19,8 @@ import uuid
 
 import ddt
 
-from marconi.tests.functional import base
-from marconi.tests.functional import helpers
+from zaqar.tests.functional import base
+from zaqar.tests.functional import helpers
 
 
 @ddt.ddt
@@ -28,14 +28,14 @@ class TestMessages(base.V1FunctionalTestBase):
 
     """Tests for Messages."""
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestMessages, self).setUp()
 
         self.queue = uuid.uuid1()
         self.queue_url = ("{url}/{version}/queues/{queue}".format(
-                          url=self.cfg.marconi.url,
+                          url=self.cfg.zaqar.url,
                           version="v1",
                           queue=self.queue))
 
@@ -76,7 +76,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # GET on posted message
         href = result.json()['resources'][0]
-        url = self.cfg.marconi.url + href
+        url = self.cfg.zaqar.url + href
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
@@ -116,7 +116,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # GET on posted messages
         location = result.headers['location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
@@ -168,7 +168,7 @@ class TestMessages(base.V1FunctionalTestBase):
                 self.assertSchema(result.json(), 'message_list')
 
                 href = result.json()['links'][0]['href']
-                url = self.cfg.marconi.url + href
+                url = self.cfg.zaqar.url + href
 
         self.assertEqual(result.status_code, 204)
 
@@ -183,7 +183,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # Delete posted message
         href = result.json()['resources'][0]
-        url = self.cfg.marconi.url + href
+        url = self.cfg.zaqar.url + href
 
         result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
@@ -202,7 +202,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # Delete posted messages
         location = result.headers['Location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
 
         result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
@@ -229,7 +229,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # Delete posted message
         location = result.headers['Location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
         url += ',nonexisting'
         result = self.client.delete(url)
         self.assertEqual(result.status_code, 204)
@@ -245,7 +245,7 @@ class TestMessages(base.V1FunctionalTestBase):
 
         # Get posted message and a nonexisting message
         location = result.headers['Location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
         url += ',nonexisting'
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
@@ -343,7 +343,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """Get messages with invalid client id."""
         url = self.message_url
 
-        header = helpers.create_marconi_headers(self.cfg)
+        header = helpers.create_zaqar_headers(self.cfg)
         header['Client-ID'] = client_id
 
         result = self.client.get(url, headers=header)

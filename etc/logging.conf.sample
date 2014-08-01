@@ -14,12 +14,12 @@ handlers=devel
 [logger_server]
 level=DEBUG
 handlers=devel
-qualname=marconi-server
+qualname=zaqar-server
 
 [logger_combined]
 level=DEBUG
 handlers=devel
-qualname=marconi-combined
+qualname=zaqar-combined
 
 [handler_production]
 class=handlers.SysLogHandler
@@ -31,7 +31,7 @@ args=(('localhost', handlers.SYSLOG_UDP_PORT), handlers.SysLogHandler.LOG_USER)
 class=FileHandler
 level=DEBUG
 formatter=normal_with_name
-args=('marconi.log', 'w')
+args=('zaqar.log', 'w')
 
 [handler_devel]
 class=StreamHandler

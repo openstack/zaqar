@@ -19,8 +19,8 @@ import uuid
 import ddt
 import six
 
-from marconi.tests.functional import base  # noqa
-from marconi.tests.functional import helpers
+from zaqar.tests.functional import base  # noqa
+from zaqar.tests.functional import helpers
 
 
 class NamedBinaryStr(six.binary_type):
@@ -72,14 +72,14 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
 
     """Tests for Insert queue."""
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestInsertQueue, self).setUp()
-        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+        self.base_url = '{0}/{1}'.format(self.cfg.zaqar.url,
                                          "v1.1")
 
-        self.header = helpers.create_marconi_headers(self.cfg)
+        self.header = helpers.create_zaqar_headers(self.cfg)
         self.headers_response_empty = set(['location'])
         self.client.set_base_url(self.base_url)
         self.client.headers = self.header
@@ -182,11 +182,11 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
 @ddt.ddt
 class TestQueueMisc(base.V1_1FunctionalTestBase):
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestQueueMisc, self).setUp()
-        self.base_url = self.cfg.marconi.url
+        self.base_url = self.cfg.zaqar.url
         self.client.set_base_url(self.base_url)
 
         self.queue_url = self.base_url + ('/{0}/queues/{1}'
@@ -324,22 +324,22 @@ class TestQueueNonExisting(base.V1_1FunctionalTestBase):
 
     """Test Actions on non existing queue."""
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestQueueNonExisting, self).setUp()
         if self.cfg.version != "v1":
             self.skipTest("Not Supported")
 
-        self.base_url = '{0}/{1}'.format(self.cfg.marconi.url,
+        self.base_url = '{0}/{1}'.format(self.cfg.zaqar.url,
                                          "v1.1")
         self.queue_url = (self.base_url +
                           '/queues/0a5b1b85-4263-11e3-b034-28cfe91478b9')
         self.client.set_base_url(self.queue_url)
 
-        self.header = helpers.create_marconi_headers(self.cfg)
+        self.header = helpers.create_zaqar_headers(self.cfg)
         self.headers_response_empty = set(['location'])
-        self.header = helpers.create_marconi_headers(self.cfg)
+        self.header = helpers.create_zaqar_headers(self.cfg)
 
     def test_get_stats(self):
         """Get stats on non existing Queue."""

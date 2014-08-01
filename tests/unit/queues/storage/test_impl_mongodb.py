@@ -24,17 +24,17 @@ import pymongo.errors
 import six
 from testtools import matchers
 
-from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.openstack.common import timeutils
-from marconi.queues import storage
-from marconi.queues.storage import errors
-from marconi.queues.storage import mongodb
-from marconi.queues.storage.mongodb import controllers
-from marconi.queues.storage.mongodb import options
-from marconi.queues.storage.mongodb import utils
-from marconi.queues.storage import pooling
-from marconi import tests as testing
-from marconi.tests.queues.storage import base
+from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.openstack.common import timeutils
+from zaqar.queues import storage
+from zaqar.queues.storage import errors
+from zaqar.queues.storage import mongodb
+from zaqar.queues.storage.mongodb import controllers
+from zaqar.queues.storage.mongodb import options
+from zaqar.queues.storage.mongodb import utils
+from zaqar.queues.storage import pooling
+from zaqar import tests as testing
+from zaqar.tests.queues.storage import base
 
 
 class MongodbSetupMixin(object):
@@ -258,7 +258,7 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
         self.assertIsNone(unchanged)
 
         now = timeutils.utcnow() + datetime.timedelta(seconds=10)
-        timeutils_utcnow = 'marconi.openstack.common.timeutils.utcnow'
+        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow'
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
             changed = self.queue_controller._inc_counter(queue_name,

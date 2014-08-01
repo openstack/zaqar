@@ -18,10 +18,10 @@ import uuid
 from oslo.config import cfg
 import six
 
-from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.queues.storage import pooling
-from marconi.queues.storage import utils
-from marconi import tests as testing
+from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.queues.storage import pooling
+from zaqar.queues.storage import utils
+from zaqar import tests as testing
 
 
 @testing.requires_mongodb

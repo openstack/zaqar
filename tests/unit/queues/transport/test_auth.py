@@ -17,8 +17,8 @@
 
 from oslo.config import cfg
 
-from marconi.queues.transport import auth
-from marconi import tests as testing
+from zaqar.queues.transport import auth
+from zaqar import tests as testing
 
 
 class TestTransportAuth(testing.TestBase):

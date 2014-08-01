@@ -15,8 +15,8 @@
 # limitations under the License.
 
 
-from marconi.common import request
-from marconi.tests import base
+from zaqar.common import request
+from zaqar.tests import base
 
 
 class TestRequest(base.TestBase):

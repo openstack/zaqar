@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Marconi documentation build configuration file, created by
+# Zaqar documentation build configuration file, created by
 # sphinx-quickstart on Sat May  1 15:17:47 2010.
 #
 # This file is execfile()d with the current directory set
@@ -63,14 +63,14 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'marconi'
+project = u'zaqar'
 copyright = u'2010-present, OpenStack Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-from marconi.version import version_info
+from zaqar.version import version_info
 # The full version, including alpha/beta/rc tags.
 release = version_info.release_string()
 # The short X.Y version.
@@ -115,7 +115,7 @@ show_authors = False
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['marconi.']
+modindex_common_prefix = ['zaqar.']
 
 # -- Options for man page output ----------------------------------------------
 
@@ -196,7 +196,7 @@ html_last_updated_fmt = os.popen(git_cmd).read()
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'marconidoc'
+htmlhelp_basename = 'zaqardoc'
 
 
 # -- Options for LaTeX output -------------------------------------------------
@@ -211,7 +211,7 @@ htmlhelp_basename = 'marconidoc'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'Marconi.tex', u'Marconi Documentation',
+    ('index', 'Zaqar.tex', u'Zaqar Documentation',
      u'Anso Labs, LLC', 'manual'),
 ]
 

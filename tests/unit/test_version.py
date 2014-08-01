@@ -14,8 +14,8 @@
 
 import pbr.packaging
 
-import marconi
-from marconi import tests as testing
+import zaqar
+from zaqar import tests as testing
 
 
 class TestVersion(testing.TestBase):
@@ -31,7 +31,7 @@ class TestVersion(testing.TestBase):
             self.skipTest('The git version string does not contain a hash')
 
         sha_abbrev = commit[1:]
-        self.assertTrue(marconi.version.verify_sha(sha_abbrev))
+        self.assertTrue(zaqar.version.verify_sha(sha_abbrev))
 
         sha_abbrev_bad = 'x' + sha_abbrev[1:]
-        self.assertFalse(marconi.version.verify_sha(sha_abbrev_bad))
+        self.assertFalse(zaqar.version.verify_sha(sha_abbrev_bad))

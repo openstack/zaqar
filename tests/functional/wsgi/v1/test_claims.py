@@ -17,22 +17,22 @@ import uuid
 
 import ddt
 
-from marconi.tests.functional import base
-from marconi.tests.functional import helpers
+from zaqar.tests.functional import base
+from zaqar.tests.functional import helpers
 
 
 @ddt.ddt
 class TestClaims(base.V1FunctionalTestBase):
     """Tests for Claims."""
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestClaims, self).setUp()
 
         self.queue = uuid.uuid1()
         self.queue_url = ("{url}/{version}/queues/{queue}".format(
-                          url=self.cfg.marconi.url,
+                          url=self.cfg.zaqar.url,
                           version="v1",
                           queue=self.queue))
 
@@ -81,7 +81,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         location = result.headers['Location']
 
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
@@ -93,7 +93,7 @@ class TestClaims(base.V1FunctionalTestBase):
     def test_claim_more_than_allowed(self):
         """Claim more than max allowed per request.
 
-        Marconi allows a maximum of 20 messages per claim by default.
+        Zaqar allows a maximum of 20 messages per claim by default.
         """
         params = {"limit": self.limits.max_messages_per_claim_or_pop + 1}
         doc = {"ttl": 300, "grace": 100}
@@ -113,7 +113,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         # Patch Claim
         claim_location = result.headers['Location']
-        url = self.cfg.marconi.url + claim_location
+        url = self.cfg.zaqar.url + claim_location
         doc_updated = {"ttl": 300}
 
         result = self.client.patch(url, data=doc_updated)
@@ -137,7 +137,7 @@ class TestClaims(base.V1FunctionalTestBase):
         # Delete Claimed Messages
         for rst in result.json():
             href = rst['href']
-            url = self.cfg.marconi.url + href
+            url = self.cfg.zaqar.url + href
             result = self.client.delete(url)
             self.assertEqual(result.status_code, 204)
 
@@ -152,7 +152,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         # Extract claim location and construct the claim URL.
         location = result.headers['Location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
 
         # Release Claim.
         result = self.client.delete(url)
@@ -219,7 +219,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         # Extract claim location and construct the claim URL.
         location = result.headers['Location']
-        url = self.cfg.marconi.url + location
+        url = self.cfg.zaqar.url + location
 
         # Patch Claim.
         doc = {"ttl": ttl}

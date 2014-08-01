@@ -7,8 +7,8 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>marconi-api-ref</module>
-        <module>marconi-get-started</module>
+        <module>zaqar-api-ref</module>
+        <module>zaqar-get-started</module>
     </modules>
     <profiles>
         <profile>

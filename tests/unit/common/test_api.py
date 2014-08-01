@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import api
-from marconi.common import errors
-from marconi.tests import base
+from zaqar.common import api
+from zaqar.common import errors
+from zaqar.tests import base
 
 
 class FakeApi(api.Api):

@@ -16,9 +16,9 @@
 import msgpack
 from oslo.config import cfg
 
-from marconi.common import decorators
-from marconi.openstack.common.cache import cache as oslo_cache
-from marconi.tests import base
+from zaqar.common import decorators
+from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.tests import base
 
 
 class TestDecorators(base.TestBase):

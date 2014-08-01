@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE application [
+    <!ENTITY % common  SYSTEM "../common/common.ent">
+    %common;
+]>
+
+
+<application xmlns="http://wadl.dev.java.net/2009/02"
+             xmlns:wadl="http://wadl.dev.java.net/2009/02"
+             xmlns:xlink="http://www.w3.org/1999/xlink"
+             xmlns:xsdxt="http://docs.rackspacecloud.com/xsd-ext/v1.0"
+             xmlns:queueapi="http://docs.openstack.org/queue/api/v1"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:dbaas="http://docs.openstack.org/database/api/v1.0"
+             xmlns:queues="http://docs.openstack.org/database/api/v1.0">
+
+
+<!--*******************************************************-->
+<!--             All Resources                             -->
+<!--*******************************************************-->
+
+
+        <resources base="https://queues.api.openstack.org/"
+                   xml:id="os-zaqar-v1">
+                <resource id="version" path="{version}">
+                        <!--    <remark> Project ID is now in a header, not in the URI.         </remark>
+                                <resource id="projectID" path="{projectId}">
+                                <param name="projectId" style="template" type="xsd:string">
+                                <doc>The project ID of the owner of the specified
+                                queue. </doc></param>
+                                </resource>
+                        -->
+                        <method href="#getHomeDocument"/>
+                        <resource id="queues" path="queues">
+                                <method href="#listQueues" />
+
+                                <resource id="queue" path="{queue_name}">
+                                        <param name="queue_name" style="template" type="xsd:string">
+                                                <doc>Specifies the name of the queue. </doc></param>
+                                        <method href="#createQueue"/>
+                                        <method href="#deleteQueue"/>
+                                        <method href="#checkQueueExists" />
+                                        <resource id="metadata" path="metadata">
+                                           <method href="#setQueueMetadata"/>
+                                           <method href="#getQueueMetadata"/>
+                                        </resource>
+                                        <resource id="stats" path="stats">
+                                                <method href="#getQueueStats" />
+                                        </resource>
+                                        <resource id="messages" path="messages">
+                                                <method href="#postMessage" />
+                                                <method href="#getMessages" />
+                                                <method href="#getSetMessagesByID" />
+                                                <method href="#deleteMessages" />
+                                                <resource id="message" path="{messageId}">
+                                                        <param name="messageId" style="template" type="xsd:string">
+                                                                <doc>Specifies the message ID.</doc></param>
+                                                        <method href="#getSpecificMessage" />
+                                                        <method href="#deleteMessage" />
+                                                </resource>
+                                        </resource>
+                                        <resource id="claims" path="claims">
+                                                <method href="#claimMessages" />
+                                                <resource id="claim" path="{claimId}">
+                                                        <param name="claimId" style="template" type="xsd:string">
+                                                                <doc>Specifies the claim ID.</doc></param>
+                                                        <method href="#queryClaim" />
+                                                        <method href="#updateClaim" />
+                                                        <method href="#deleteClaim" />
+                                                </resource>
+
+                                        </resource>
+                                </resource>
+                        </resource>
+                </resource>
+        </resources>
+
+<!--*******************************************************-->
+<!--               All Methods                             -->
+<!--*******************************************************-->
+
+<!--*******************************************************-->
+<!--               Get Home Document                       -->
+<!--*******************************************************-->
+        <method name="GET" id="getHomeDocument">
+                <wadl:doc xml:lang="EN" title="Get Home Document" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Gets the home document.</para>
+                        <para>This operation gets the home document.</para>
+                        <para>The entire API is discoverable from a single starting point, the home document. To explore the entire API, you need to know only this one URI. This document is cacheable.</para>
+                        <para>The home document lets you write clients by using relational links, so clients do not have to construct their own URLs. You can click through and view the JSON doc in your browser.</para>
+                        <para>For more information about home documents, see <link xlink:href="http://tools.ietf.org/html/draft-nottingham-json-home-02"
+                                >http://tools.ietf.org/html/draft-nottingham-json-home-02</link>.</para>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getHomeDocument_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getHomeDocument_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getHomeDocument_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+        </method>
+<!--*******************************************************-->
+<!--              Queues Methods                           -->
+<!--*******************************************************-->
+
+<!--*******************************************************-->
+<!--              Create Queue: createQueue                -->
+<!--*******************************************************-->
+                <method name="PUT" id="createQueue">
+                        <wadl:doc xml:lang="EN" title="Create Queue" xmlns="http://docbook.org/ns/docbook">
+                                <para role="shortdesc">Creates a queue.</para>
+                                <para>This operation creates a new queue.</para>
+                                <para>The body of the request is empty.</para>
+                                <note> <para><code>queue_name</code> is the name that you give to the queue. The name must not exceed 64 bytes in length, and it is limited to US-ASCII letters, digits, underscores, and hyphens.</para>
+                                </note>
+                        </wadl:doc>
+                        <request>
+                                <representation mediaType="application/json" element="queues:Queue" >
+                                        <doc>
+                                                <xsdxt:code href="../wadl/samples/createQueue_request-http.txt"/>
+                                        </doc>
+                                </representation>
+                        </request>
+                        <response status="201">
+                                <representation mediaType="application/json" >
+                                        <doc>
+                                                <xsdxt:code href="../wadl/samples/createQueue_response-http.txt"/>
+                                        </doc>
+                                </representation>
+                        </response>
+                        &commonFaults;
+                </method>
+
+<!--*******************************************************-->
+<!--               List Queues: listQueues                 -->
+<!--*******************************************************-->
+
+        <method name="GET" id="listQueues" >
+                <wadl:doc xml:lang="EN" title="List Queues" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Lists queues.</para>
+                        <para>A request to list queues when you have no queues in your account returns 204, instead of 200, because there was no information to send back.</para>
+                        <para>This operation lists queues for the project. The queues are sorted alphabetically by name.</para>
+                </wadl:doc>
+                <request>
+                        <param name="marker" style="query" type="xsd:string" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                Specifies the name of the last queue received in a previous request, or none to get the first page of results.
+                                </wadl:doc>
+                        </param>
+                        <param name="limit" style="query" type="xsd:integer" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Specifies the number of queues to return. The default value for the number of queues returned is 10. If you do not specify this parameter, the default number of queues is returned.
+                                </wadl:doc>
+                        </param>
+                        <param name="detailed" style="query" type="xsd:boolean" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Determines whether queue metadata is included in the response. The default value for this parameter is <code>false</code>, which excludes the metadata.
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/listQueues_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/listQueues_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/listQueues_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+
+<!--*******************************************************-->
+<!--       Set Queue Metadata: setQueueMetadata *****      -->
+<!--*******************************************************-->
+        <method name="PUT" id="setQueueMetadata">
+                <wadl:doc xml:lang="EN" title="Set Queue Metadata" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Sets metadata for the specified queue.</para>
+                        <para>This operation sets metadata for the specified queue.</para>
+                        <para>The request body has a limit of 256 KB, including whitespace (when re-serialized as JSON).</para>
+                        <para>This operation replaces any existing metadata document in its entirety. Ensure that you do not accidentally overwrite existing metadata that you want to retain.</para>
+                        <para>The body of the request includes contextual information about the way a particular application interacts with the queue. The document must be valid JSON. (The Message Queuing service validates it.)</para>
+                        <note> <para><code>queue_name</code> is the name that you give to the queue. The name must not exceed 64 bytes in length, and it is limited to US-ASCII letters, digits, underscores, and hyphens.</para>
+                        </note>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/setQueueMetadata_request-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/setQueueMetadata_request.json"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/setQueueMetadata_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+        </method>
+
+
+<!--*******************************************************-->
+<!--       Get Queue Metadata: getQueueMetadata *****      -->
+<!--*******************************************************-->
+        <method name="GET" id="getQueueMetadata">
+                <wadl:doc xml:lang="EN" title="Get Queue Metadata" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Returns metadata for the specified queue.</para>
+                        <para>This operation returns metadata, such as message TTL, for the queue.</para>
+                        <note> <para><code>queue_name</code> is the name that you give to the queue. The name must not exceed 64 bytes in length, and it is limited to US-ASCII letters, digits, underscores, and hyphens.</para>
+                        </note>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getQueueMetadata_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getQueueMetadata_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getQueueMetadata_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--          Get Queue Stats: getQueueStats               -->
+<!--*******************************************************-->
+        <method name="GET" id="getQueueStats">
+                <wadl:doc xml:lang="EN" title="Get Queue Stats" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Returns statistics for the specified queue.</para>
+                        <para>This operation returns queue statistics, including how many messages are in the queue, categorized by status.</para>
+                        <note><para>If the value of the <code>total</code> attribute is 0, then <code>oldest</code> and <code>newest</code> message statistics are not included in the response.</para></note>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getQueueStats_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getQueueStats_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getQueueStats_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--              Delete Queue: deleteQueue                -->
+<!--*******************************************************-->
+        <method name="DELETE" id="deleteQueue">
+                <wadl:doc xml:lang="EN" title="Delete Queue" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Deletes the specified queue.</para>
+                        <para>This operation immediately deletes a queue and all of its existing messages.</para>
+                        <note> <para><code>queue_name</code> is the name that you give to the queue. The name must not exceed 64 bytes in length, and it is limited to US-ASCII letters, digits, underscores, and hyphens.</para>
+                        </note>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteQueue_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteQueue_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+        </method>
+
+        <!--*******************************************************-->
+        <!--              Delete Queue: checkQueueExists            -->
+        <!--*******************************************************-->
+        <method name="GET" id="checkQueueExists">
+                <wadl:doc xml:lang="EN" title="Check Queue Existence" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Verifies whether the specified queue exists.</para>
+                        <para>This operation verifies whether the specified queue exists.</para>
+                        <para>You can also use HEAD instead of GET for the verb.</para>
+                        <note> <para><code>queue_name</code> is the name that you give to the queue. The name must not exceed 64 bytes in length, and it is limited to US-ASCII letters, digits, underscores, and hyphens.</para>
+                        </note>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/checkQueueExists_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/checkQueueExists_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--               Messages Methods                        -->
+<!--*******************************************************-->
+
+<!--*******************************************************-->
+<!--           Post Message: postMessage                   -->
+<!--*******************************************************-->
+        <method name="POST" id="postMessage">
+                <wadl:doc xml:lang="EN" title="Post Message" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Posts the message or messages for the specified queue.</para>
+                        <para>This operation posts the specified message or messages.</para>
+                        <para>You can submit up to 10 messages in a single request, but you must always encapsulate the messages in a collection container (an array in JSON, even for a single message - without the JSON array, you receive the "Invalid request body" message). The resulting value of the Location header or response body might be used to retrieve the created messages for further processing.</para>
+                        <para>The client specifies only the body and TTL for the message. The server inserts metadata, such as ID and age.</para>
+                        <para>The response body contains a list of resource paths that correspond to each message submitted in the request, in the order of the messages. If a server-side error occurs during the processing of the submitted messages, a partial list is returned, the partial attribute is set to true, and the client tries to post the remaining messages again. If the server cannot enqueue any messages, the server returns a <code>503 Service Unavailable</code> error message.</para>
+
+                        <para>The <code>body</code> attribute specifies an arbitrary document that constitutes the body of the message being sent.</para>.
+                        <para>The following rules apply for the maximum size:</para>
+
+
+
+                        <itemizedlist spacing="compact">
+                                <listitem>
+                                        <para>The maximum size of posted messages is the maximum size of the entire request document (rather than the sum of the individual message body field values as it was in earlier releases). On error, the client will now be notified of how much it exceeded the limit.</para>
+                                </listitem>
+                                <listitem>
+                                        <para>The size is limited to 256 KB, including whitespace.</para>
+                                </listitem>
+                        </itemizedlist>
+
+                        <para>The document must be valid JSON. (The Message Queuing service validates it.)</para>
+                        <para>The <code>ttl</code> attribute specifies how long the server waits before marking the message as expired and removing it from the queue. The value of <code>ttl</code> must be between 60 and 1209600 seconds (14 days). Note that the server might not actually delete the message until its age has reached up to (ttl + 60) seconds, to allow for flexibility in storage implementations.</para>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/postMessage_request-http.txt" />
+                                        <xsdxt:code href="../wadl/samples/postMessage_request.json" />
+                                </doc>
+                        </representation>
+                </request>
+                <response status="201">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/postMessage_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/postMessage_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--           Get Messages: getMessages                   -->
+<!--*******************************************************-->
+        <method name="GET" id="getMessages">
+                <wadl:doc xml:lang="EN" title="Get Messages" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Gets the message or messages in the specified queue.</para>
+                        <para>A request to list messages when the queue is not found or when messages are not found returns 204, instead of 200, because there was no information to send back. Messages with malformed IDs or messages that are not found by ID are ignored.</para>
+                        <para>This operation gets the message or messages in the specified queue.</para>
+                        <para>Message IDs and markers are opaque strings. Clients should make no assumptions about their format or length. Furthermore, clients should assume that there is no relationship between markers and message IDs (that is, one cannot be derived from the other). This allows for a wide variety of storage driver implementations.</para>
+                        <para>Results are ordered by age, oldest message first.</para>
+                </wadl:doc>
+                <request>
+                        <param name="marker" style="query" type="xsd:string" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Specifies an opaque string that the client can use to request the next batch of messages. The <code>marker</code> parameter communicates to the server which messages the client has already received. If you do not specify a value,  the API returns all messages at the head of the queue (up to the limit).
+                                </wadl:doc>
+                        </param>
+                        <param name="limit" style="query" type="xsd:integer" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">When more messages are available than can be returned in a single request, the client can pick up the next batch of messages by simply using the URI template parameters returned from the previous call in the "next" field.
+                                        Specifies up to 10 messages (the default value) to return. If you do not specify a value for the limit parameter, the default value of 10 is used.
+                                </wadl:doc>
+                        </param>
+                        <param name="echo" style="query" type="xsd:boolean" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Determines whether the API returns a client's own messages. The <code>echo</code> parameter is a Boolean value (<code>true</code> or <code>false</code>) that determines whether the API returns a client's own messages, as determined by the <code>uuid</code> portion of the User-Agent header. If you do not specify a value, <code>echo</code> uses the default value of <code>false</code>. If you are experimenting with the API, you might want to set <code>echo=true</code> in order to see the messages that you posted.
+                                </wadl:doc>
+                        </param>
+                        <param name="include_claimed" style="query" type="xsd:boolean" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Determines whether the API returns claimed messages and unclaimed messages. The <code>include_claimed</code> parameter is a Boolean value (<code>true</code> or <code>false</code>) that determines whether the API returns claimed messages and unclaimed messages. If you do not specify a value, <code>include_claimed</code> uses the default value of <code>false</code> (only unclaimed messages are returned).
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getMessages_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200 204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getMessages_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getMessages_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--      Get a Specific Message: getSpecificMessage       -->
+<!--*******************************************************-->
+        <method name="GET" id="getSpecificMessage">
+                <wadl:doc xml:lang="EN" title="Get a Specific Message" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Gets the specified message from the specified queue.</para>
+                        <para>This operation gets the specified message from the specified queue.</para>
+                        <para>If either the message ID is malformed or nonexistent, no message is returned.</para>
+                        <para>Message fields are defined as follows:<itemizedlist><listitem><para><code>href</code> is an opaque relative URI that the client can use to uniquely identify a message resource and interact with it.</para></listitem><listitem><para><code>ttl</code> is the TTL that was set on the message when it was posted. The message expires after (ttl - age) seconds.</para></listitem><listitem><para><code>age</code> is the number of seconds relative to the server's clock.</para></listitem><listitem><para><code>body</code> is the arbitrary document that was submitted with the original request to post the message.</para></listitem></itemizedlist></para>
+                </wadl:doc>
+                <request>
+
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getSpecificMessage_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getSpecificMessage_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getSpecificMessage_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--     Get a Set of Messages by ID: getSetMessagesByID   -->
+<!--*******************************************************-->
+        <method name="GET" id="getSetMessagesByID">
+                <wadl:doc xml:lang="EN" title="Get a Set of Messages by ID" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Gets a specified set of messages from the specified queue.</para>
+                        <para>This operation provides a more efficient way to query multiple messages compared to using a series of individual <command>GET</command>s. Note that the list of IDs cannot exceed 20. If a malformed ID or a nonexistent message ID is provided, it is ignored, and the remaining messages are returned.</para>
+                        <para>Unlike the Get Messages operation, a client's own messages are always returned in this operation. If you use the ids parameter, the echo parameter is not used and is ignored if it is specified.</para>
+                        <para>The message attributes are defined as follows:<itemizedlist><listitem><para><code>href</code> is an opaque relative URI that the client can use to uniquely identify a message resource and interact with it.</para></listitem><listitem><para><code>ttl</code> is the TTL that was set on the message when it was posted. The message expires after (ttl - age) seconds.</para></listitem><listitem><para><code>age</code> is the number of seconds relative to the server's clock.</para></listitem><listitem><para><code>body</code> is the arbitrary document that was submitted with the original request to post the message.</para></listitem></itemizedlist></para>
+                </wadl:doc>
+                <request>
+                        <param name="ids" style="query" type="xsd:string" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Specifies the IDs of the messages to get. Format multiple message ID values by separating them with commas (comma-separated).
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getSetMessagesByID_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/getSetMessagesByID_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/getSetMessagesByID_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--           Delete Message: deleteMessage               -->
+<!--*******************************************************-->
+        <method name="DELETE" id="deleteMessage">
+                <wadl:doc xml:lang="EN" title="Delete Message" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Deletes the specified message from the specified queue.</para>
+                        <para>This operation immediately deletes the specified message.</para>
+                        <para>The <code>claim_id</code> parameter specifies that the message is deleted only if it has the specified claim ID and that claim has not expired. This specification is useful for ensuring only one worker processes any given message. When a worker's claim expires before it can delete a message that it has processed, the worker must roll back any actions it took based on that message because another worker can now claim and process the same message.</para>
+                                <para>If you do not specify <code>claim_id</code>, but the message is claimed, the operation fails. You can only delete claimed messages by providing an appropriate <code>claim_id</code>.</para>
+                </wadl:doc>
+                <request>
+                        <param name="claim_id" style="query" type="xsd:string" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Identifies the claim.
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteMessage_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteMessage_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &deleteFaults;
+        </method>
+
+        <!--*******************************************************-->
+        <!--           Delete Messages: deleteMessages               -->
+        <!--*******************************************************-->
+        <method name="DELETE" id="deleteMessages">
+                <wadl:doc xml:lang="EN" title="Delete a Set of Messages by ID" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Provides a bulk delete for messages.</para>
+                        <para>This operation immediately deletes the specified messages. If any of the message IDs are malformed or non-existent, they are ignored. The remaining valid messages IDs are deleted.</para>
+                </wadl:doc>
+                <request>
+                        <param name="ids" style="query" type="xsd:string" required="true">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Specifies the IDs of the messages to delete.
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteMessages_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/deleteMessages_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &deleteFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--                 CLAIMS METHODS                        -->
+<!--*******************************************************-->
+
+<!--*******************************************************-->
+<!--            Claim Messages: claimMessages              -->
+<!--*******************************************************-->
+        <method name="POST" id="claimMessages">
+                <wadl:doc xml:lang="EN" title="Claim Messages" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Claims a set of messages from the specified queue.</para>
+                        <para>This operation claims a set of messages (up to the value of the <code>limit</code> parameter) from oldest to newest and skips any messages that are already claimed. If no unclaimed messages are available, the API returns a <code>204 No Content</code> message.</para>
+                        <para>When a  client (worker) finishes processing a message, it should delete the message before the claim expires to ensure that the message is processed only once. As part of the delete operation, workers should specify the claim ID (which is best done by simply using the provided href). If workers perform these actions, then if a claim simply expires, the server can return an error and notify the worker of the race condition. This action gives the worker a chance to roll back its own processing of the given message because another worker can claim the message and process it.</para>
+                        <para>The age given for a claim is relative to the server's clock. The claim's age is useful for determining how quickly messages are getting processed and whether a given message's claim is about to expire.</para>
+                        <para>When a claim expires, it is released. If the original worker failed to process the message, another client worker can then claim the message.</para>
+                        <note><para>Note that claim creation is best-effort, meaning the worker may claim and return less than the requested number of messages.</para></note>
+                        <para>The <code>ttl</code> attribute specifies how long the server waits before releasing the claim. The ttl value must be between 60 and 43200 seconds (12 hours). You must include a value for this attribute in your request.</para>
+                        <para>The <code>grace</code> attribute specifies the message grace period in seconds. The value of <code>grace</code> value must be between 60 and 43200 seconds (12 hours). You must include a value for this attribute in your request. To deal with workers that have stopped responding (for up to 1209600 seconds or 14 days, including claim lifetime), the server extends the lifetime of claimed messages to be at least as long as the lifetime of the claim itself, plus the specified grace period. If a claimed message would normally live longer than the grace period, its expiration is not adjusted.</para>
+                </wadl:doc>
+                <request>
+                        <param name="limit" style="query" type="xsd:integer" required="false">
+                                <wadl:doc xmlns="http://docbook.org/ns/docbook" xml:lang="EN">
+                                        Specifies the number of messages to claim. The <parameter>limit</parameter> parameter is configurable.
+                                        The default is 20. Messages
+                                        are claimed based on the number of messages available.
+                                        The server might claim and return less than the
+                                        requested number of messages.
+                                </wadl:doc>
+                        </param>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/claimMessages_request-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/claimMessages_request.json"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="201 204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/claimMessages_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/claimMessages_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+<!--*******************************************************-->
+<!--               Query Claim: queryClaim                 -->
+<!--*******************************************************-->
+        <method name="GET" id="queryClaim">
+                <wadl:doc xml:lang="EN" title="Query Claim" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Queries the specified claim for the specified queue.</para>
+                        <para>This operation queries the specified claim for the specified queue. Claims with malformed IDs or claims that are not found by ID are ignored.</para>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/queryClaim_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="200">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/queryClaim_response-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/queryClaim_response.json"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--               Update Claim: updateClaim                 -->
+<!--*******************************************************-->
+        <method name="PATCH" id="updateClaim">
+                <wadl:doc xml:lang="EN" title="Update Claim" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Updates the specified claim for the specified queue.</para>
+                        <para>This operation updates the specified claim for the specified queue. Claims with malformed IDs or claims that are not found by ID are ignored.</para>
+                        <para>Clients should periodically renew claims during long-running batches of work to avoid losing a claim while processing a message. The client can renew a claim by issuing a <command>PATCH</command> command to a specific claim resource and including a new TTL for the claim (which can be different from the original TTL). The server resets the age of the claim and applies the new TTL.</para>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/updateClaim_request-http.txt"/>
+                                        <xsdxt:code href="../wadl/samples/updateClaim_request.json"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/updateClaim_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+<!--*******************************************************-->
+<!--               Release Claim: deleteClaim              -->
+<!--*******************************************************-->
+        <method name="DELETE" id="deleteClaim">
+                <wadl:doc xml:lang="EN" title="Release Claim" xmlns="http://docbook.org/ns/docbook">
+                        <para role="shortdesc">Releases the specified claim for the specified queue.</para>
+                        <para>This operation immediately releases a claim, making any remaining, undeleted) messages that are associated with the claim available to other workers. Claims with malformed IDs or claims that are not found by ID are ignored.</para>
+                        <para>This operation is useful when a worker is performing a graceful shutdown, fails to process one or more messages, or is taking longer than expected to process messages, and wants to make the remainder of the messages available to other workers.</para>
+                </wadl:doc>
+                <request>
+                        <representation mediaType="application/json" element="queues:Queue" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/releaseClaim_request-http.txt"/>
+                                </doc>
+                        </representation>
+                </request>
+                <response status="204">
+                        <representation mediaType="application/json" >
+                                <doc>
+                                        <xsdxt:code href="../wadl/samples/releaseClaim_response-http.txt"/>
+                                </doc>
+                        </representation>
+                </response>
+                &commonFaults;
+                &getFaults;
+        </method>
+
+</application>

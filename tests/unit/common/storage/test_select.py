@@ -15,7 +15,7 @@
 
 import testtools
 
-from marconi.common.storage import select
+from zaqar.common.storage import select
 
 
 class TestSelect(testtools.TestCase):

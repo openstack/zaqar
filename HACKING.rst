@@ -1,9 +1,9 @@
-Marconi Style Commandments
-==========================
+Zaqar Style Commandments
+========================
 
 - Step 1: Read the OpenStack Style Commandments
   http://docs.openstack.org/developer/hacking/
-- Step 2: Read on for Marconi specific commandments
+- Step 2: Read on for Zaqar specific commandments
 
 General
 -------
@@ -74,11 +74,11 @@ More Import Examples
 
 **INCORRECT** ::
 
-  import marconi.queues.transport.wsgi as wsgi
+  import zaqar.queues.transport.wsgi as wsgi
 
 **CORRECT** ::
 
-  from marconi.queues.transport import wsgi
+  from zaqar.queues.transport import wsgi
 
 Docstrings
 ----------

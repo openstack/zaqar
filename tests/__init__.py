@@ -17,7 +17,7 @@ import os
 
 
 tests_dir = os.path.abspath(os.path.dirname(__file__))
-os.environ.setdefault("MARCONI_TESTS_DIR", tests_dir)
+os.environ.setdefault("ZAQAR_TESTS_DIR", tests_dir)
 
-if "MARCONI_TESTS_CONFIGS_DIR" not in os.environ:
-    os.environ["MARCONI_TESTS_CONFIGS_DIR"] = os.path.join(tests_dir, "etc")
+if "ZAQAR_TESTS_CONFIGS_DIR" not in os.environ:
+    os.environ["ZAQAR_TESTS_CONFIGS_DIR"] = os.path.join(tests_dir, "etc")

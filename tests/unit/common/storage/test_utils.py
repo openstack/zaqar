@@ -15,8 +15,8 @@
 
 import ddt
 
-from marconi.queues.storage import utils
-from marconi import tests as testing
+from zaqar.queues.storage import utils
+from zaqar import tests as testing
 
 
 @ddt.ddt

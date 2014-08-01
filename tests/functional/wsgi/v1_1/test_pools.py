@@ -14,27 +14,27 @@
 # limitations under the License.
 import ddt
 
-from marconi.tests.functional import base
-from marconi.tests.functional import helpers
+from zaqar.tests.functional import base
+from zaqar.tests.functional import helpers
 
 
 @ddt.ddt
 class TestPools(base.V1_1FunctionalTestBase):
 
-    server_class = base.MarconiServer
+    server_class = base.ZaqarServer
 
     def setUp(self):
         super(TestPools, self).setUp()
 
         self.pool_url = ("{url}/{version}/pools".format(
-            url=self.cfg.marconi.url,
+            url=self.cfg.zaqar.url,
             version="v1.1"
         ))
-        self.cfg.marconi.version = "v1.1"
+        self.cfg.zaqar.version = "v1.1"
 
         self.skipTest("NOT IMPLEMENTED")
 
-        self.headers = helpers.create_marconi_headers(self.cfg)
+        self.headers = helpers.create_zaqar_headers(self.cfg)
         self.client.headers = self.headers
 
         self.client.set_base_url(self.pool_url)

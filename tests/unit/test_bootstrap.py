@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marconi.common import errors
-from marconi.queues import bootstrap
-from marconi.queues.storage import pipeline
-from marconi.queues.storage import pooling
-from marconi.queues.storage import sqlalchemy
-from marconi.queues.transport import wsgi
-from marconi.tests import base
+from zaqar.common import errors
+from zaqar.queues import bootstrap
+from zaqar.queues.storage import pipeline
+from zaqar.queues.storage import pooling
+from zaqar.queues.storage import sqlalchemy
+from zaqar.queues.transport import wsgi
+from zaqar.tests import base
 
 
 class TestBootstrap(base.TestBase):
