@@ -8,7 +8,7 @@ iso8601>=0.1.9
 msgpack-python>=0.4.0
 posix_ipc
 pymongo>=2.5
-python-keystoneclient>=0.9.0
+python-keystoneclient>=0.10.0
 python-memcached>=1.48
 WebOb>=1.2.3
 stevedore>=0.14
