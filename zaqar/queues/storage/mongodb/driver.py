@@ -21,6 +21,7 @@ import pymongo
 import pymongo.errors
 
 from zaqar.common import decorators
+from zaqar.i18n import _
 from zaqar.openstack.common import log as logging
 from zaqar.queues import storage
 from zaqar.queues.storage.mongodb import controllers
@@ -80,6 +81,11 @@ class DataDriver(storage.DataDriverBase):
         self.conf.register_opts(opts,
                                 group=options.MONGODB_GROUP)
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+
+        server_version = self.connection.server_info()['version']
+        if tuple(map(int, server_version.split('.'))) < (2, 2):
+            raise RuntimeError(_('The mongodb driver requires mongodb>=2.2,  '
+                                 '%s found') % server_version)
 
     def is_alive(self):
         try:

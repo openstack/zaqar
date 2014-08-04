@@ -151,6 +151,21 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
             self.assertThat(db.name, matchers.StartsWith(
                 driver.mongodb_conf.database))
 
+    def test_version_match(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.server_info') as info:
+            info.return_value = {'version': '2.1'}
+            self.assertRaises(RuntimeError, mongodb.DataDriver,
+                              self.conf, cache)
+
+            info.return_value = {'version': '2.11'}
+
+            try:
+                mongodb.DataDriver(self.conf, cache)
+            except RuntimeError:
+                self.fail('version match failed')
+
 
 @testing.requires_mongodb
 class MongodbQueueTests(MongodbSetupMixin, base.QueueControllerTest):
