@@ -185,7 +185,8 @@ class QueueController(RoutingController):
             return {}
 
     def create(self, name, metadata=None, project=None):
-        self._pool_catalog.register(name, project)
+        flavor = metadata and metadata.get('_flavor', None)
+        self._pool_catalog.register(name, project=project, flavor=flavor)
 
         # NOTE(cpp-cabrera): This should always succeed since we just
         # registered the project/queue. There is a race condition,
@@ -380,6 +381,7 @@ class Catalog(object):
         self._catalog_conf = self._conf[_CATALOG_GROUP]
 
         self._pools_ctrl = control.pools_controller
+        self._flavor_ctrl = control.flavors_controller
         self._catalogue_ctrl = control.catalogue_controller
 
     # FIXME(cpp-cabrera): https://bugs.launchpad.net/zaqar/+bug/1252791
@@ -408,7 +410,7 @@ class Catalog(object):
         """
         return self._catalogue_ctrl.get(project, queue)['pool']
 
-    def register(self, queue, project=None):
+    def register(self, queue, project=None, flavor=None):
         """Register a new queue in the pool catalog.
 
         This method should be called whenever a new queue is being
@@ -425,19 +427,39 @@ class Catalog(object):
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
         :type project: six.text_type
+        :param flavor: Flavor for the queue (OPTIONAL)
+        :type flavor: six.text_type
+
         :raises: NoPoolFound
+
         """
+
         # NOTE(cpp-cabrera): only register a queue if the entry
         # doesn't exist
         if not self._catalogue_ctrl.exists(project, queue):
-            # NOTE(cpp-cabrera): limit=0 implies unlimited - select from
-            # all pools
-            pool = select.weighted(self._pools_ctrl.list(limit=0))
 
+            if flavor is not None:
+                # TODO(flaper87): If the flavor doesn't exist, this will
+                # raise a `FlavorDoesNotExist` making the transport to treat
+                # this failure as an internal error. However, this is actually
+                # an user error erro since a non valid flavor has been used.
+                # Make sure this error is caught in the queue creation endpoint
+                # and a proper message is logged.
+                flavor = self._flavor_ctrl.get(flavor, project=project)
+                pool = flavor['pool']
+            else:
+                # NOTE(cpp-cabrera): limit=0 implies unlimited - select from
+                # all pools
+                pool = select.weighted(self._pools_ctrl.list(limit=0))
+                pool = pool and pool['name'] or None
+
+            # TODO(flaper87): If the pool is being registered by a
+            # queue creation, we shouldn't raise `NotFound` but a 500
+            # and a proper error message should be logged.wq
             if not pool:
                 raise errors.NoPoolFound()
 
-            self._catalogue_ctrl.insert(project, queue, pool['name'])
+            self._catalogue_ctrl.insert(project, queue, pool)
 
     @_pool_id.purges
     def deregister(self, queue, project=None):

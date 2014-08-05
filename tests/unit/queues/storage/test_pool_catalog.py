@@ -17,6 +17,7 @@ import uuid
 from oslo.config import cfg
 
 from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.queues.storage import errors
 from zaqar.queues.storage import pooling
 from zaqar.queues.storage import sqlalchemy
 from zaqar.queues.storage import utils
@@ -40,16 +41,21 @@ class PoolCatalogTest(testing.TestBase):
         control = utils.load_storage_driver(self.conf, cache,
                                             control_mode=True)
 
-        self.catalogue_ctrl = control.catalogue_controller
         self.pools_ctrl = control.pools_controller
+        self.flavors_ctrl = control.flavors_controller
+        self.catalogue_ctrl = control.catalogue_controller
 
         # NOTE(cpp-cabrera): populate catalogue
         self.pool = str(uuid.uuid1())
         self.queue = str(uuid.uuid1())
+        self.flavor = str(uuid.uuid1())
         self.project = str(uuid.uuid1())
+
         self.pools_ctrl.create(self.pool, 100, 'sqlite://:memory:')
         self.catalogue_ctrl.insert(self.project, self.queue, self.pool)
         self.catalog = pooling.Catalog(self.conf, cache, control)
+        self.flavors_ctrl.create(self.flavor, self.pool,
+                                 project=self.project)
 
     def tearDown(self):
         self.catalogue_ctrl.drop_all()
@@ -71,3 +77,16 @@ class PoolCatalogTest(testing.TestBase):
         self.catalog.register('not_yet', 'mapped')
         storage = self.catalog.lookup('not_yet', 'mapped')
         self.assertIsInstance(storage, sqlalchemy.DataDriver)
+
+    def test_register_with_flavor(self):
+        queue = 'test'
+        self.catalog.register(queue, project=self.project,
+                              flavor=self.flavor)
+        storage = self.catalog.lookup(queue, self.project)
+        self.assertIsInstance(storage, sqlalchemy.DataDriver)
+
+    def test_register_with_fake_flavor(self):
+        self.assertRaises(errors.FlavorDoesNotExist,
+                          self.catalog.register,
+                          'test', project=self.project,
+                          flavor='fake')
