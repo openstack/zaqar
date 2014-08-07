@@ -40,26 +40,4 @@ Concepts
 
    glossary
 
-Installing/Configuring Zaqar
-============================
 
-.. toctree::
-   :maxdepth: 1
-
-   installing
-
-Operating Zaqar
-===============
-
-.. toctree::
-   :maxdepth: 1
-
-   ha
-
-Using Zaqar
-===========
-
-.. toctree::
-   :maxdepth: 1
-
-   api
