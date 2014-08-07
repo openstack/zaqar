@@ -81,3 +81,11 @@ Concepts
    glossary
 
 
+Running and writing tests
+=========================
+
+.. toctree::
+   :maxdepth: 1
+
+   running_tests
+   test_suite
