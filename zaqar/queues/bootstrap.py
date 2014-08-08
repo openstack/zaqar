@@ -29,6 +29,8 @@ LOG = log.getLogger(__name__)
 _CLI_OPTIONS = (
     cfg.BoolOpt('daemon', default=False,
                 help='Run Zaqar server in background.'),
+    cfg.BoolOpt('admin_mode', default=False,
+                help='Activate endpoints to manage pool registry.'),
 )
 
 # NOTE (Obulpathi): Register daemon command line option for
