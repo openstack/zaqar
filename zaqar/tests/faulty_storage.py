@@ -53,6 +53,10 @@ class ControlDriver(storage.ControlDriverBase):
     def pools_controller(self):
         return None
 
+    @property
+    def flavors_controller(self):
+        return None
+
 
 class QueueController(storage.Queue):
     def __init__(self, driver):

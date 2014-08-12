@@ -110,6 +110,11 @@ class ControlDriverBase(DriverBase):
         """Returns storage's pool management controller."""
         raise NotImplementedError
 
+    @abc.abstractproperty
+    def flavors_controller(self):
+        """Returns storage's flavor management controller."""
+        raise NotImplementedError
+
 
 class ControllerBase(object):
     """Top-level class for controllers.

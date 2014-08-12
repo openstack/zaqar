@@ -991,6 +991,153 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.controller.insert(self.project, q2, u'a')
 
 
+class FlavorsControllerTest(ControllerBaseTest):
+    """Flavors Controller base tests.
+
+    NOTE(flaper87): Implementations of this class should
+    override the tearDown method in order
+    to clean up storage's state.
+    """
+    controller_base_class = storage.FlavorsBase
+
+    def setUp(self):
+        super(FlavorsControllerTest, self).setUp()
+        self.pools_controller = self.driver.pools_controller
+        self.flavors_controller = self.driver.flavors_controller
+
+        # Let's create one pool
+        self.pool = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, 'localhost', {})
+
+    def tearDown(self):
+        self.flavors_controller.drop_all()
+        super(FlavorsControllerTest, self).tearDown()
+
+    def test_create_succeeds(self):
+        self.flavors_controller.create('durable', self.pool,
+                                       project=self.project,
+                                       capabilities={})
+
+    def _flavors_expects(self, flavor, xname, xproject, xpool):
+        self.assertIn('name', flavor)
+        self.assertEqual(flavor['name'], xname)
+        self.assertIn('project', flavor)
+        self.assertEqual(flavor['project'], xproject)
+        self.assertIn('pool', flavor)
+        self.assertEqual(flavor['pool'], xpool)
+
+    def test_create_replaces_on_duplicate_insert(self):
+        name = str(uuid.uuid1())
+        self.flavors_controller.create(name, self.pool,
+                                       project=self.project,
+                                       capabilities={})
+        self.flavors_controller.create(name, 'another_pool',
+                                       project=self.project,
+                                       capabilities={})
+        entry = self.flavors_controller.get(name, project=self.project)
+        self._flavors_expects(entry, name, self.project, 'another_pool')
+
+    def test_get_returns_expected_content(self):
+        name = 'durable'
+        capabilities = {'fifo': True}
+        self.flavors_controller.create(name, self.pool,
+                                       project=self.project,
+                                       capabilities=capabilities)
+        res = self.flavors_controller.get(name, project=self.project)
+        self._flavors_expects(res, name, self.project, self.pool)
+        self.assertNotIn('capabilities', res)
+
+    def test_detailed_get_returns_expected_content(self):
+        name = 'durable'
+        capabilities = {'fifo': True}
+        self.flavors_controller.create(name, self.pool,
+                                       project=self.project,
+                                       capabilities=capabilities)
+        res = self.flavors_controller.get(name, project=self.project,
+                                          detailed=True)
+        self._flavors_expects(res, name, self.project, self.pool)
+        self.assertIn('capabilities', res)
+        self.assertEqual(res['capabilities'], capabilities)
+
+    def test_get_raises_if_not_found(self):
+        self.assertRaises(storage.errors.FlavorDoesNotExist,
+                          self.flavors_controller.get, 'notexists')
+
+    def test_exists(self):
+        self.flavors_controller.create('exists', self.pool,
+                                       project=self.project,
+                                       capabilities={})
+        self.assertTrue(self.flavors_controller.exists('exists',
+                                                       project=self.project))
+        self.assertFalse(self.flavors_controller.exists('notexists',
+                                                        project=self.project))
+
+    def test_update_raises_assertion_error_on_bad_fields(self):
+        self.assertRaises(AssertionError, self.pools_controller.update,
+                          self.pool)
+
+    def test_update_works(self):
+        name = 'yummy'
+        self.flavors_controller.create(name, self.pool,
+                                       project=self.project,
+                                       capabilities={})
+
+        res = self.flavors_controller.get(name, project=self.project,
+                                          detailed=True)
+
+        new_capabilities = {'fifo': False}
+        self.flavors_controller.update(name, project=self.project,
+                                       pool='olympic',
+                                       capabilities={'fifo': False})
+        res = self.flavors_controller.get(name, project=self.project,
+                                          detailed=True)
+        self._flavors_expects(res, name, self.project, 'olympic')
+        self.assertEqual(res['capabilities'], new_capabilities)
+
+    def test_delete_works(self):
+        name = 'puke'
+        self.flavors_controller.create(name, self.pool,
+                                       project=self.project,
+                                       capabilities={})
+        self.flavors_controller.delete(name, project=self.project)
+        self.assertFalse(self.flavors_controller.exists(name))
+
+    def test_delete_nonexistent_is_silent(self):
+        self.flavors_controller.delete('nonexisting')
+
+    def test_drop_all_leads_to_empty_listing(self):
+        self.flavors_controller.drop_all()
+        cursor = self.flavors_controller.list()
+        self.assertRaises(StopIteration, next, cursor)
+
+    def test_listing_simple(self):
+        name_gen = lambda i: chr(ord('A') + i)
+        for i in range(15):
+            self.flavors_controller.create(name_gen(i), project=self.project,
+                                           pool=str(i), capabilities={})
+
+        res = list(self.flavors_controller.list(project=self.project))
+        self.assertEqual(len(res), 10)
+        for i, entry in enumerate(res):
+            self._flavors_expects(entry, name_gen(i), self.project, str(i))
+            self.assertNotIn('capabilities', entry)
+
+        res = list(self.flavors_controller.list(project=self.project, limit=5))
+        self.assertEqual(len(res), 5)
+
+        res = next(self.flavors_controller.list(project=self.project,
+                                                marker=name_gen(3)))
+        self._flavors_expects(res, name_gen(4), self.project, '4')
+
+        res = list(self.flavors_controller.list(project=self.project,
+                                                detailed=True))
+        self.assertEqual(len(res), 10)
+        for i, entry in enumerate(res):
+            self._flavors_expects(entry, name_gen(i), self.project, str(i))
+            self.assertIn('capabilities', entry)
+            self.assertEqual(entry['capabilities'], {})
+
+
 def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
 
