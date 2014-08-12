@@ -18,7 +18,7 @@ import uuid
 
 import falcon
 from falcon import testing
-from keystoneclient.middleware import auth_token
+from keystonemiddleware import auth_token
 
 from zaqar.tests.queues.transport.wsgi import base
 
