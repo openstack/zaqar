@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT_NAME=${PROJECT_NAME:-zaqar}
+PROJECT_NAME=${PROJECT_NAME:-oslo}
 CFGFILE_NAME=${PROJECT_NAME}.conf.sample
 
 if [ -e etc/${PROJECT_NAME}/${CFGFILE_NAME} ]; then
@@ -16,6 +16,10 @@ TEMPDIR=`mktemp -d /tmp/${PROJECT_NAME}.XXXXXX`
 trap "rm -rf $TEMPDIR" EXIT
 
 tools/config/generate_sample.sh -b ./ -p ${PROJECT_NAME} -o ${TEMPDIR}
+if [ $? != 0 ]
+then
+    exit 1
+fi
 
 if ! diff -u ${TEMPDIR}/${CFGFILE_NAME} ${CFGFILE}
 then
