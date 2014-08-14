@@ -80,6 +80,13 @@ Concepts
 
    glossary
 
+Setting up a development environment
+====================================
+
+.. toctree::
+   :maxdepth: 1
+
+   development-environment
 
 Running and writing tests
 =========================
