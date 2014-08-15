@@ -9,6 +9,7 @@
     <modules>
         <module>zaqar-api-ref</module>
         <module>zaqar-get-started</module>
+        <module>zaqar-config-ref</module>
     </modules>
     <profiles>
         <profile>
