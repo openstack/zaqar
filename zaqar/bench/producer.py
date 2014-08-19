@@ -13,10 +13,10 @@
 # limitations under the License.
 
 from __future__ import division
+from __future__ import print_function
 
 import json
 import multiprocessing as mp
-import os
 import random
 import sys
 import time
@@ -28,26 +28,10 @@ import marktime
 from zaqarclient.queues.v1 import client
 from zaqarclient.transport.errors import TransportError
 
-from zaqar.bench.cli_config import conf
+from zaqar.bench.config import conf
 
 
-# TODO(TheSriram): Make configurable
-URL = 'http://localhost:8888'
-QUEUE_PREFIX = 'ogre-test-queue-'
-
-# TODO(TheSriram) : Migrate from env variable to config
-if os.environ.get('MESSAGES_PATH'):
-    with open(os.environ.get('MESSAGES_PATH')) as f:
-        message_pool = json.loads(f.read())
-else:
-    print("Error : $MESSAGES_PATH needs to be set")
-    sys.exit(1)
-
-
-message_pool.sort(key=lambda msg: msg['weight'])
-
-
-def choose_message():
+def choose_message(message_pool):
     """Choose a message from our pool of possibilities."""
 
     # Assume message_pool is sorted by weight, ascending
@@ -62,6 +46,21 @@ def choose_message():
     assert False
 
 
+def load_messages():
+    default_file_name = 'zaqar-benchmark-messages.json'
+    messages_path = conf.messages_path or conf.find_file(default_file_name)
+    if messages_path:
+        with open(messages_path) as f:
+            message_pool = json.load(f)
+        message_pool.sort(key=lambda msg: msg['weight'])
+        return message_pool
+    else:
+        return [{"weight": 1.0,
+                 "doc": {"ttl": 60,
+                         "body": {"id": "7FA23C90-62F7-40D2-9360-FBD5D7D61CD1",
+                                  "evt": "Single"}}}]
+
+
 def producer(stats, test_duration):
     """Producer Worker
 
@@ -70,10 +69,12 @@ def producer(stats, test_duration):
     is recorded for calculating throughput and latency.
     """
 
-    cli = client.Client(URL)
-    queue = cli.queue(QUEUE_PREFIX + '1')
+    cli = client.Client(conf.server_url)
+    queue = cli.queue(conf.queue_prefix + '1')
+    message_pool = load_messages()
 
     total_requests = 0
+    successful_requests = 0
     total_elapsed = 0
     end = time.time() + test_duration
 
@@ -82,16 +83,20 @@ def producer(stats, test_duration):
 
         # TODO(TheSriram): Track/report errors
         try:
-            queue.post(choose_message())
+            queue.post(choose_message(message_pool))
 
         except TransportError as ex:
-            print("Could not post a message : {0}".format(ex))
+            sys.stderr.write("Could not post a message : {0}\n".format(ex))
 
         else:
+            successful_requests += 1
             total_elapsed += marktime.stop('post message').seconds
+
+        finally:
             total_requests += 1
 
     stats.put({
+        'successful_requests': successful_requests,
         'total_requests': total_requests,
         'total_elapsed': total_elapsed
     })
@@ -113,17 +118,18 @@ def load_generator(stats, num_workers, test_duration):
 def crunch(stats):
     total_requests = 0
     total_latency = 0.0
+    successful_requests = 0
 
     while not stats.empty():
         entry = stats.get_nowait()
         total_requests += entry['total_requests']
         total_latency += entry['total_elapsed']
+        successful_requests += entry['successful_requests']
 
-    return total_requests, total_latency
+    return successful_requests, total_requests, total_latency
 
 
-def run():
-
+def run(upstream_queue):
     num_procs = conf.processes
     num_workers = conf.workers
     test_duration = conf.time
@@ -139,7 +145,8 @@ def run():
         for _ in range(num_procs)
     ]
 
-    print('\nStarting Producer...')
+    if conf.verbose:
+        print('\nStarting Producer...')
     start = time.time()
 
     for each_proc in procs:
@@ -148,22 +155,15 @@ def run():
     for each_proc in procs:
         each_proc.join()
 
-    total_requests, total_latency = crunch(stats)
+    successful_requests, total_requests, total_latency = crunch(stats)
 
-    # TODO(TheSriram): Add one more stat: "attempted req/sec" so can
-    # graph that on the x axis vs. achieved throughput and
-    # latency.
     duration = time.time() - start
-    throughput = total_requests / duration
-    latency = 1000 * total_latency / total_requests
+    throughput = successful_requests / duration
+    latency = 1000 * total_latency / successful_requests
 
-    print('Duration: {0:.1f} sec'.format(duration))
-    print('Total Requests: {0}'.format(total_requests))
-    print('Throughput: {0:.0f} req/sec'.format(throughput))
-    print('Latency: {0:.1f} ms/req'.format(latency))
-
-    print('')  # Blank line
-
-
-def main():
-    run()
+    upstream_queue.put({'producer': {
+        'duration_sec': duration,
+        'total_reqs': total_requests,
+        'successful_reqs': successful_requests,
+        'reqs_per_sec': throughput,
+        'ms_per_req': latency}})
