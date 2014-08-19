@@ -18,15 +18,25 @@ import psutil
 conf = cfg.CONF
 _CLI_OPTIONS = (
     cfg.IntOpt(
-        'processes',
-        short='p',
+        'producer_processes',
+        short='pp',
         default=psutil.NUM_CPUS,
-        help='Number of Processes'),
+        help='Number of Producer Processes'),
     cfg.IntOpt(
-        'workers',
-        short='w',
+        'producer_workers',
+        short='pw',
         default=psutil.NUM_CPUS * 2,
-        help='Number of Workers'),
+        help='Number of Producer Workers'),
+    cfg.IntOpt(
+        'consumer_processes',
+        short='cp',
+        default=psutil.NUM_CPUS,
+        help='Number of Consumer Processes'),
+    cfg.IntOpt(
+        'consumer_workers',
+        short='cw',
+        default=psutil.NUM_CPUS * 2,
+        help='Number of Consumer Workers'),
     cfg.IntOpt('time', short='t', default=3, help="time in seconds"),
     cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
     cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue-'),
