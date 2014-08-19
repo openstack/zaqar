@@ -88,6 +88,16 @@ Setting up a development environment
 
    development-environment
 
+Your first patch and your first review
+======================================
+
+.. toctree::
+   :maxdepth: 1
+
+   first_patch
+   first_review
+
+
 Running and writing tests
 =========================
 
@@ -107,7 +117,7 @@ Other resources
    gerrit
    jenkins
 
-Modules Reference
+Modules reference
 =================
 
 .. toctree::
