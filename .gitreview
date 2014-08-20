@@ -1,5 +1,5 @@
 [gerrit]
 host=review.openstack.org
 port=29418
-project=openstack/marconi.git
+project=openstack/zaqar.git
 defaultbranch=stable/icehouse
