@@ -60,10 +60,17 @@ class ResponseSchema(api.Api):
 
         self.schema = {
             'message_get_many': {
-                "type": "array",
-                "items": message,
-                "minItems": 1,
-                "maxItems": self.limits.max_messages_per_page
+                'type': 'object',
+                'properties': {
+                    'messages': {
+                        "type": "array",
+                        "items": message,
+                        "minItems": 1,
+                        "maxItems": self.limits.max_messages_per_page
+                    }
+                },
+                'required': ['messages'],
+                'additionalProperties': False,
             },
 
             'queue_list': {
@@ -241,26 +248,33 @@ class ResponseSchema(api.Api):
             },
 
             'claim_create': {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "href": claim_href,
-                        "ttl": {
-                            "type": "number",
-                            "minimum": 1,
-                            "maximum": self.limits.max_message_ttl
+                'type': 'object',
+                'properties': {
+                    'messages': {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "href": claim_href,
+                                "ttl": {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "maximum": self.limits.max_message_ttl
+                                },
+                                "age": age,
+                                "body": {
+                                    "type": "object"
+                                }
+                            },
+                            "required": ["href", "ttl", "age", "body"],
+                            "additionalProperties": False,
                         },
-                        "age": age,
-                        "body": {
-                            "type": "object"
-                        }
-                    },
-                    "required": ["href", "ttl", "age", "body"],
-                    "additionalProperties": False,
+                        "minItems": 1,
+                        "maxItems": self.limits.max_messages_per_page
+                    }
                 },
-                "minItems": 1,
-                "maxItems": self.limits.max_messages_per_page
+                'required': ['messages'],
+                'additionalProperties': False
             },
 
             'claim_get': {

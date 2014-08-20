@@ -122,19 +122,17 @@ class TestMessages(base.V1_1FunctionalTestBase):
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
 
-        self.skipTest('Bug #1273335 - Get set of messages returns wrong hrefs '
-                      '(happens randomly)')
-
         # Verify that the response json schema matches the expected schema
         self.assertSchema(result.json(), 'message_get_many')
 
+        self.skipTest('Bug #1273335 - Get set of messages returns wrong hrefs '
+                      '(happens randomly)')
+
         # Compare message metadata
-        result_body = [result.json()[i]['body']
-                       for i in range(len(result.json()))]
+        result_body = [msg['body'] for msg in result.json()['messages']]
         result_body.sort()
 
-        posted_metadata = [doc[i]['body']
-                           for i in range(message_count)]
+        posted_metadata = [msg['body'] for msg in doc['messages']]
         posted_metadata.sort()
 
         self.assertEqual(result_body, posted_metadata)

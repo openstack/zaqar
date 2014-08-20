@@ -133,7 +133,7 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         result_doc = jsonutils.loads(result[0])
         expected_ttls = set(m['ttl'] for m in sample_messages)
-        actual_ttls = set(m['ttl'] for m in result_doc)
+        actual_ttls = set(m['ttl'] for m in result_doc['messages'])
         self.assertFalse(expected_ttls - actual_ttls)
 
     def test_exceeded_payloads(self):
@@ -487,7 +487,7 @@ class MessagesBaseTest(base.V1_1Base):
         messages = jsonutils.loads(body[0])
 
         self.assertNotIn(self.queue_path + '/messages/messages',
-                         messages[0]['href'])
+                         messages['messages'][0]['href'])
 
     def _post_messages(self, target, repeat=1):
         doc = {'messages': [{'body': 239, 'ttl': 300}] * repeat}

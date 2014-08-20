@@ -62,8 +62,9 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
         result = self.client.post(params=params, data=doc)
         self.assertEqual(result.status_code, 201)
+        self.assertSchema(result.json(), 'claim_create')
 
-        actual_message_count = len(result.json())
+        actual_message_count = len(result.json()['messages'])
         self.assertMessageCount(actual_message_count, message_count)
 
         response_headers = set(result.headers.keys())
@@ -151,7 +152,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
         self.assertEqual(result.status_code, 201)
 
         # Delete Claimed Messages
-        for rst in result.json():
+        for rst in result.json()['messages']:
             href = rst['href']
             url = self.cfg.zaqar.url + href
             result = self.client.delete(url)

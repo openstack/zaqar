@@ -98,7 +98,7 @@ class TestDefaultLimits(base.V1_1Base):
 
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        messages = jsonutils.loads(result[0])
+        messages = jsonutils.loads(result[0])['messages']
         self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
 
     @contextlib.contextmanager

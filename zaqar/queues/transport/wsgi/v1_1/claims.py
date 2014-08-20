@@ -110,7 +110,7 @@ class CollectionResource(object):
                 del msg['id']
 
             resp.location = req.path + '/' + cid
-            resp.body = utils.to_json(resp_msgs)
+            resp.body = utils.to_json({'messages': resp_msgs})
             resp.status = falcon.HTTP_201
         else:
             resp.status = falcon.HTTP_204
