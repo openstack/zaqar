@@ -668,9 +668,7 @@ class MessageController(storage.Message):
                          queue=queue_name,
                          project=project))
 
-        succeeded_ids = []
-        raise errors.MessageConflict(queue_name, project,
-                                     succeeded_ids)
+        raise errors.MessageConflict(queue_name, project)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect

@@ -120,7 +120,7 @@ def keyify(key, iterable):
 
 
 def can_connect(uri):
-    """Given a URI, verifies whether its possible to connect to it.
+    """Given a URI, verifies whether it's possible to connect to it.
 
     :param uri: connection string to a storage endpoint
     :type uri: six.text_type

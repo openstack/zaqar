@@ -226,6 +226,119 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertNotIn('newest', message_stats)
         self.assertNotIn('oldest', message_stats)
 
+    def test_queue_count_on_bulk_delete(self):
+        self.addCleanup(self.controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.controller.create(queue_name, project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.message_controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 5 messages
+        self.message_controller.bulk_delete(queue_name, msg_keys[0:5],
+                                            self.project)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 5)
+
+    def test_queue_count_on_bulk_delete_with_invalid_id(self):
+        self.addCleanup(self.controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.controller.create(queue_name, project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.message_controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 5 messages
+        self.message_controller.bulk_delete(queue_name,
+                                            msg_keys[0:5] + ['invalid'],
+                                            self.project)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 5)
+
+    def test_queue_count_on_delete(self):
+        self.addCleanup(self.controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.controller.create(queue_name, project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.message_controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 1 message
+        self.message_controller.delete(queue_name, msg_keys[0],
+                                       self.project)
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 9)
+
+    def test_queue_count_on_claim_delete(self):
+        self.addCleanup(self.controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.controller.create(queue_name, project=self.project)
+        self.assertTrue(created)
+
+        # Create 15 messages.
+        _insert_fixtures(self.message_controller, queue_name,
+                         project=self.project,
+                         client_uuid=client_uuid, num=15)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 15)
+
+        metadata = {'ttl': 120, 'grace': 60}
+        # Claim 10 messages
+        claim_id, _ = self.claim_controller.create(queue_name, metadata,
+                                                   self.project)
+
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['claimed'], 10)
+
+        # Delete the claim
+        self.claim_controller.delete(queue_name, claim_id,
+                                     self.project)
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+
+        self.assertEqual(stats['claimed'], 0)
+
 
 class MessageControllerTest(ControllerBaseTest):
     """Message Controller base tests.
@@ -1164,5 +1277,5 @@ def _insert_fixtures(controller, queue_name, project=None,
                     'event': 'Event number {0}'.format(n)
                 }}
 
-    controller.post(queue_name, messages(),
-                    project=project, client_uuid=client_uuid)
+    return controller.post(queue_name, messages(),
+                           project=project, client_uuid=client_uuid)

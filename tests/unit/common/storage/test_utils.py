@@ -29,11 +29,15 @@ class TestUtils(testing.TestBase):
     def test_can_connect_suceeds_if_good_uri_sqlite(self):
         self.assertTrue(utils.can_connect('sqlite://:memory:'))
 
-    @ddt.data(
-        'mongodb://localhost:27018',  # wrong port
-        'localhost:27017',  # missing scheme
-        'redis://localhost:6379'  # not supported with default install
-    )
+    def test_can_connect_fails_if_bad_uri_missing_schema(self):
+        self.assertFalse(utils.can_connect('localhost:27017'))
+
     @testing.requires_mongodb
-    def test_can_connect_fails_if_bad_uri(self, uri):
-        self.assertFalse(utils.can_connect(uri))
+    def test_can_connect_fails_if_bad_uri_mongodb(self):
+        self.assertFalse(utils.can_connect('mongodb://localhost:8080'))
+        self.assertFalse(utils.can_connect('mongodb://example.com:27017'))
+
+    @testing.requires_redis
+    def test_can_connect_fails_if_bad_uri_redis(self):
+        self.assertFalse(utils.can_connect('redis://localhost:8080'))
+        self.assertFalse(utils.can_connect('redis://example.com:6379'))
