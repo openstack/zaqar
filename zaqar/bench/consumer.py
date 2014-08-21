@@ -119,6 +119,17 @@ def run(upstream_queue):
     num_procs = conf.consumer_processes
     num_workers = conf.consumer_workers
 
+    # Stats that will be reported
+    duration = 0
+    total_requests = 0
+    successful_requests = 0
+    claim_total_requests = 0
+    delete_total_requests = 0
+    throughput = 0
+    claim_latency = 0
+    delete_latency = 0
+
+    # Performance test
     if num_procs and num_workers:
         test_duration = conf.time
         stats = mp.Queue()
@@ -145,23 +156,25 @@ def run(upstream_queue):
 
         successful_requests = claim_total_requests + delete_total_requests
         duration = time.time() - start
-        throughput = successful_requests / duration
-        claim_latency = 1000 * claim_total_elapsed / claim_total_requests
-        delete_latency = 1000 * delete_total_elapsed / delete_total_requests
 
-    else:
-        duration = 0
-        total_requests = 0
-        successful_requests = 0
-        throughput = 0
-        claim_latency = 0
-        delete_latency = 0
+        # NOTE(kgriffs): Duration should never be zero
+        throughput = successful_requests / duration
+
+        if claim_total_requests:
+            claim_latency = (1000 * claim_total_elapsed /
+                             claim_total_requests)
+
+        if delete_total_requests:
+            delete_latency = (1000 * delete_total_elapsed /
+                              delete_total_requests)
 
     upstream_queue.put({
         'consumer': {
             'duration_sec': duration,
             'total_reqs': total_requests,
+            'claim_total_requests': claim_total_requests,
             'successful_reqs': successful_requests,
+            'messages_processed': delete_total_requests,
             'reqs_per_sec': throughput,
             'ms_per_claim': claim_latency,
             'ms_per_delete': delete_latency,
