@@ -43,7 +43,8 @@ _CLI_OPTIONS = (
     cfg.IntOpt('time', short='t', default=3,
                help="Duration of the performance test, in seconds"),
     cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
-    cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue-'),
+    cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue'),
+    cfg.IntOpt('num_queues', short='qno', default=4),
     cfg.StrOpt('messages_path', short='m')
 )
 conf.register_cli_opts(_CLI_OPTIONS)

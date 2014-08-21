@@ -61,7 +61,7 @@ def load_messages():
                                   "evt": "Single"}}}]
 
 
-def producer(stats, test_duration):
+def producer(queues, message_pool, stats, test_duration):
     """Producer Worker
 
     The Producer Worker continuously post messages for
@@ -69,31 +69,26 @@ def producer(stats, test_duration):
     is recorded for calculating throughput and latency.
     """
 
-    cli = client.Client(conf.server_url)
-    queue = cli.queue(conf.queue_prefix + '1')
-    message_pool = load_messages()
-
     total_requests = 0
     successful_requests = 0
     total_elapsed = 0
     end = time.time() + test_duration
 
     while time.time() < end:
-        marktime.start('post message')
+        queue = random.choice(queues)
 
-        # TODO(TheSriram): Track/report errors
         try:
+            marktime.start('post_message')
+
             queue.post(choose_message(message_pool))
+
+            total_elapsed += marktime.stop('post_message').seconds
+            successful_requests += 1
 
         except TransportError as ex:
             sys.stderr.write("Could not post a message : {0}\n".format(ex))
 
-        else:
-            successful_requests += 1
-            total_elapsed += marktime.stop('post message').seconds
-
-        finally:
-            total_requests += 1
+        total_requests += 1
 
     stats.put({
         'successful_requests': successful_requests,
@@ -105,12 +100,18 @@ def producer(stats, test_duration):
 # TODO(TheSriram): make distributed across multiple machines
 # TODO(TheSriram): post across several queues (which workers to which queues?
 # weight them, so can have some busy queues, some not.)
-def load_generator(stats, num_workers, test_duration):
-    # TODO(TheSriram): Have some way to get all of the workers to line up and
-    # start at the same time (is this really useful?)
+def load_generator(stats, num_workers, num_queues, test_duration):
+
+    cli = client.Client(conf.server_url)
+    queues = [cli.queue(conf.queue_prefix + '-' + str(i))
+              for i in range(num_queues)]
+
+    message_pool = load_messages()
 
     gevent.joinall([
-        gevent.spawn(producer, stats, test_duration)
+        gevent.spawn(producer,
+                     queues, message_pool, stats, test_duration)
+
         for _ in range(num_workers)
     ])
 
@@ -132,6 +133,7 @@ def crunch(stats):
 def run(upstream_queue):
     num_procs = conf.producer_processes
     num_workers = conf.producer_workers
+    num_queues = conf.num_queues
 
     duration = 0
     total_requests = 0
@@ -142,7 +144,7 @@ def run(upstream_queue):
     if num_procs and num_workers:
         test_duration = conf.time
         stats = mp.Queue()
-        args = (stats, num_workers, test_duration)
+        args = (stats, num_workers, num_queues, test_duration)
 
         # TODO(TheSriram): Multiple test runs, vary num workers and
         # drain/delete queues in between each run. Plot these on a
