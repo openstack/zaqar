@@ -33,4 +33,3 @@ _CLI_OPTIONS = (
     cfg.StrOpt('messages_path', short='m')
 )
 conf.register_cli_opts(_CLI_OPTIONS)
-conf(project='zaqar', prog='zaqar-benchmark')

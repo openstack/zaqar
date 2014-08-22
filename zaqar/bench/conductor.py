@@ -23,6 +23,8 @@ from zaqar.bench import producer
 
 
 def main():
+    conf(project='zaqar', prog='zaqar-benchmark')
+
     downstream_queue = mp.Queue()
     procs = [mp.Process(target=worker.run, args=(downstream_queue,))
              for worker in [producer, consumer]]
