@@ -1,6 +1,5 @@
 export OSLO_CONFIG_GENERATOR_EXTRA_MODULES="keystonemiddleware.auth_token"
 export OSLO_CONFIG_GENERATOR_EXTRA_LIBRARIES="zaqar.queues.bootstrap
-                                              zaqar.queues.storage.base
                                               zaqar.queues.storage.pipeline
                                               zaqar.queues.storage.pooling
                                               zaqar.queues.storage.mongodb
