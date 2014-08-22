@@ -28,7 +28,9 @@ import marktime
 from zaqarclient.queues.v1 import client
 from zaqarclient.transport.errors import TransportError
 
-from zaqar.bench.config import conf
+from zaqar.bench import config
+
+CONF = config.conf
 
 
 def choose_message(message_pool):
@@ -48,7 +50,7 @@ def choose_message(message_pool):
 
 def load_messages():
     default_file_name = 'zaqar-benchmark-messages.json'
-    messages_path = conf.messages_path or conf.find_file(default_file_name)
+    messages_path = CONF.messages_path or CONF.find_file(default_file_name)
     if messages_path:
         with open(messages_path) as f:
             message_pool = json.load(f)
@@ -102,8 +104,8 @@ def producer(queues, message_pool, stats, test_duration):
 # weight them, so can have some busy queues, some not.)
 def load_generator(stats, num_workers, num_queues, test_duration):
 
-    cli = client.Client(conf.server_url)
-    queues = [cli.queue(conf.queue_prefix + '-' + str(i))
+    cli = client.Client(CONF.server_url)
+    queues = [cli.queue(CONF.queue_prefix + '-' + str(i))
               for i in range(num_queues)]
 
     message_pool = load_messages()
@@ -131,9 +133,9 @@ def crunch(stats):
 
 
 def run(upstream_queue):
-    num_procs = conf.producer_processes
-    num_workers = conf.producer_workers
-    num_queues = conf.num_queues
+    num_procs = CONF.producer_processes
+    num_workers = CONF.producer_workers
+    num_queues = CONF.num_queues
 
     duration = 0
     total_requests = 0
@@ -142,7 +144,7 @@ def run(upstream_queue):
     latency = 0
 
     if num_procs and num_workers:
-        test_duration = conf.time
+        test_duration = CONF.time
         stats = mp.Queue()
         args = (stats, num_workers, num_queues, test_duration)
 
@@ -155,8 +157,9 @@ def run(upstream_queue):
             for _ in range(num_procs)
         ]
 
-        if conf.verbose:
-            print('\nStarting Producer...')
+        if CONF.verbose:
+            print('\nStarting producer (pp={0}, pw={1})...'.format(
+                  num_procs, num_workers))
 
         start = time.time()
 

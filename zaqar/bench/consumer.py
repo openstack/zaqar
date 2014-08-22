@@ -27,7 +27,9 @@ import marktime
 from zaqarclient.queues.v1 import client
 from zaqarclient.transport.errors import TransportError
 
-from zaqar.bench.config import conf
+from zaqar.bench import config
+
+CONF = config.conf
 
 
 def claim_delete(queues, stats, test_duration, ttl, grace, limit):
@@ -93,8 +95,8 @@ def claim_delete(queues, stats, test_duration, ttl, grace, limit):
 def load_generator(stats, num_workers, num_queues,
                    test_duration, url, ttl, grace, limit):
 
-    cli = client.Client(conf.server_url)
-    queues = [cli.queue(conf.queue_prefix + '-' + str(i))
+    cli = client.Client(CONF.server_url)
+    queues = [cli.queue(CONF.queue_prefix + '-' + str(i))
               for i in range(num_queues)]
 
     gevent.joinall([
@@ -125,9 +127,9 @@ def crunch(stats):
 
 
 def run(upstream_queue):
-    num_procs = conf.consumer_processes
-    num_workers = conf.consumer_workers
-    num_queues = conf.num_queues
+    num_procs = CONF.consumer_processes
+    num_workers = CONF.consumer_workers
+    num_queues = CONF.num_queues
 
     # Stats that will be reported
     duration = 0
@@ -141,17 +143,18 @@ def run(upstream_queue):
 
     # Performance test
     if num_procs and num_workers:
-        test_duration = conf.time
+        test_duration = CONF.time
         stats = mp.Queue()
         # TODO(TheSriram) : Make ttl and grace configurable
         args = (stats, num_workers, num_queues, test_duration,
-                conf.server_url, 300, 200, conf.messages_per_claim)
+                CONF.server_url, 300, 200, CONF.messages_per_claim)
 
         procs = [mp.Process(target=load_generator, args=args)
                  for _ in range(num_procs)]
 
-        if conf.verbose:
-            print("\nStarting Consumer...")
+        if CONF.verbose:
+            print('\nStarting consumers (cp={0}, cw={1})...'.format(
+                  num_procs, num_workers))
 
         start = time.time()
 

@@ -17,17 +17,52 @@ from __future__ import print_function
 import json
 import multiprocessing as mp
 
-from zaqar.bench.config import conf
+from zaqarclient.queues.v1 import client
+
+from zaqar.bench import config
 from zaqar.bench import consumer
+from zaqar.bench import observer
 from zaqar.bench import producer
+
+CONF = config.conf
+
+
+def _print_verbose_stats(name, stats):
+    print(name.capitalize())
+    print('=' * len(name))
+
+    values = sorted(stats.items(), key=lambda v: v[0])
+    formatted_vals = ['{}: {:.1f}'.format(*v) for v in values]
+
+    print('\n'.join(formatted_vals))
+    print()  # Blank line
+
+
+def _reset_queues():
+    cli = client.Client(CONF.server_url)
+
+    for i in range(CONF.num_queues):
+        # TODO(kgriffs): DRY up name generation so it is done
+        # in a helper, vs. being copy-pasted everywhere.
+        queue = cli.queue(CONF.queue_prefix + '-' + str(i))
+        queue.delete()
 
 
 def main():
-    conf(project='zaqar', prog='zaqar-benchmark')
+    CONF(project='zaqar', prog='zaqar-benchmark')
+
+    # NOTE(kgriffs): Reset queues since last time. We don't
+    # clean them up after the performance test, in case
+    # the user wants to examine the state of the system.
+    if not CONF.skip_queue_reset:
+        if CONF.verbose:
+            print('Resetting queues...')
+
+        _reset_queues()
 
     downstream_queue = mp.Queue()
     procs = [mp.Process(target=worker.run, args=(downstream_queue,))
-             for worker in [producer, consumer]]
+             for worker in [producer, consumer, observer]]
 
     for each_proc in procs:
         each_proc.start()
@@ -39,29 +74,32 @@ def main():
     for each_proc in procs:
         stats.update(downstream_queue.get_nowait())
 
-    if conf.verbose:
+    if CONF.verbose:
         print()
 
-        for name, stats_group in stats.items():
-            print(name.capitalize())
-            print('=' * len(name))
+        for name in ('producer', 'observer', 'consumer'):
+            stats_group = stats[name]
 
-            values = sorted(stats_group.items(), key=lambda v: v[0])
-            formatted_vals = ["{}: {:.1f}".format(*v) for v in values]
+            # Skip disabled workers
+            if not stats_group['duration_sec']:
+                continue
 
-            print("\n".join(formatted_vals))
-            print('')  # Blank line
+            _print_verbose_stats(name, stats_group)
 
     else:
         stats['params'] = {
             'producer': {
-                'processes': conf.producer_processes,
-                'workers': conf.producer_workers
+                'processes': CONF.producer_processes,
+                'workers': CONF.producer_workers
             },
             'consumer': {
-                'processes': conf.consumer_processes,
-                'workers': conf.consumer_workers
-            }
+                'processes': CONF.consumer_processes,
+                'workers': CONF.consumer_workers
+            },
+            'observer': {
+                'processes': CONF.observer_processes,
+                'workers': CONF.observer_workers
+            },
         }
 
         print(json.dumps(stats))
