@@ -40,13 +40,14 @@ class Listing(object):
     def on_get(self, request, response, project_id):
         """Returns a flavor listing as objects embedded in an array:
 
-        [
-            {"href": "", "capabilities": {}, "pool": ""},
-            ...
-        ]
+        ::
+
+            [
+                {"href": "", "capabilities": {}, "pool": ""},
+                ...
+            ]
 
         :returns: HTTP | [200, 204]
-
         """
 
         LOG.debug(u'LIST flavors for project_id %s' % project_id)
@@ -87,10 +88,11 @@ class Resource(object):
     def on_get(self, request, response, project_id, flavor):
         """Returns a JSON object for a single flavor entry:
 
-        {"pool": "", capabilities: {...}}
+        ::
+
+            {"pool": "", capabilities: {...}}
 
         :returns: HTTP | [200, 404]
-
         """
 
         LOG.debug(u'GET flavor - name: %s', flavor)
@@ -115,7 +117,9 @@ class Resource(object):
     def on_put(self, request, response, project_id, flavor):
         """Registers a new flavor. Expects the following input:
 
-        {"pool": "my-pool", "capabilities": {}}
+        ::
+
+            {"pool": "my-pool", "capabilities": {}}
 
         A capabilities object may also be provided.
 
@@ -145,7 +149,6 @@ class Resource(object):
         """Deregisters a flavor.
 
         :returns: HTTP | [204]
-
         """
 
         LOG.debug(u'DELETE flavor - name: %s', flavor)
@@ -163,7 +166,6 @@ class Resource(object):
         badly formatted input.
 
         :returns: HTTP | [200, 400]
-
         """
 
         LOG.debug(u'PATCH flavor - name: %s', flavor)

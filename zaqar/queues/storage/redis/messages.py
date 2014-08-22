@@ -51,44 +51,52 @@ class MessageController(storage.Message):
     Messages are scoped by project + queue.
 
     Redis Data Structures:
-    ----------------------
+
     1. Message id's list (Redis sorted set)
 
-    Each queue in the system has a set of message ids currently
-    in the queue. The list is sorted based on a ranking which is
-    incremented atomically using the counter(MESSAGE_RANK_COUNTER_SUFFIX)
-    also stored in the database for every queue.
+        Each queue in the system has a set of message ids currently
+        in the queue. The list is sorted based on a ranking which is
+        incremented atomically using the counter(MESSAGE_RANK_COUNTER_SUFFIX)
+        also stored in the database for every queue.
 
-    Key: <project_id>.<queue_name>.messages
+        Key: <project_id>.<queue_name>.messages
 
     2. Index of message ID lists (Redis sorted set)
 
-    This is a sorted set that facilitates discovery of all the
-    message ID lists. This is necessary when performing
-    garbage collection on the IDs contained within these lists.
+        This is a sorted set that facilitates discovery of all the
+        message ID lists. This is necessary when performing
+        garbage collection on the IDs contained within these lists.
 
-    Key: msgset_index
+        Key: msgset_index
 
     3. Messages(Redis Hash):
 
-    Scoped by the UUID of the message, the redis datastructure
-    has the following information.
+        Scoped by the UUID of the message, the redis datastructure
+        has the following information.
 
-
-        Name                    Field
-        -----------------------------
-        id                ->     id
-        ttl               ->     t
-        expires           ->     e
-        body              ->     b
-        claim             ->     c
-        claim expiry time ->     c.e
-        client uuid       ->     u
-        created time      ->     cr
+        +---------------------+---------+
+        |  Name               |  Field  |
+        +=====================+=========+
+        |  id                 |  id     |
+        +---------------------+---------+
+        |  ttl                |  t      |
+        +---------------------+---------+
+        |  expires            |  e      |
+        +---------------------+---------+
+        |  body               |  b      |
+        +---------------------+---------+
+        |  claim              |  c      |
+        +---------------------+---------+
+        |  claim expiry time  |  c.e    |
+        +---------------------+---------+
+        |  client uuid        |  u      |
+        +---------------------+---------+
+        |  created time       |  cr     |
+        +---------------------+---------+
 
     4. Messages rank counter (Redis Hash):
 
-    Key: <project_id>.<queue_name>.rank_counter
+        Key: <project_id>.<queue_name>.rank_counter
     """
 
     def __init__(self, *args, **kwargs):

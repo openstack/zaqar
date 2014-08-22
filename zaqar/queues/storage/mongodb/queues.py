@@ -65,20 +65,22 @@ class QueueController(storage.Queue):
     Queues are scoped by project, which is prefixed to the
     queue name.
 
-    Queues:
+    ::
 
-        Name            Field
-        ---------------------
-        name         ->   p_q
-        msg counter  ->     c
-        metadata     ->     m
+        Queues:
 
-    Message Counter:
+            Name            Field
+            ---------------------
+            name         ->   p_q
+            msg counter  ->     c
+            metadata     ->     m
 
-        Name          Field
-        -------------------
-        value        ->   v
-        modified ts  ->   t
+        Message Counter:
+
+            Name          Field
+            -------------------
+            value        ->   v
+            modified ts  ->   t
     """
 
     def __init__(self, *args, **kwargs):

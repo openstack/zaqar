@@ -15,12 +15,14 @@
 
 """MongoDB storage controller for the queues catalogue.
 
-Serves to construct an association between a project + queue -> pool
+Serves to construct an association between a project + queue -> pool.
 
-{
-    'p_q': project_queue :: six.text_type,
-    's': pool_identifier :: six.text_type
-}
+::
+
+    {
+        'p_q': project_queue :: six.text_type,
+        's': pool_identifier :: six.text_type
+    }
 """
 
 import zaqar.openstack.common.log as logging

@@ -37,25 +37,30 @@ class QueueController(storage.Queue):
     queue name.
 
     Redis Data Structures:
-    ----------------------
+
     1. Queue Index (Redis sorted set):
 
-    Set of all queues for the given project, ordered by name.
+        Set of all queues for the given project, ordered by name.
 
-    Key: <project_id>.queues_set
+        Key: <project_id>.queues_set
 
-        Id                                 Value
-        ----------------------------------------
-        name      ->   <project_id>.<queue_name>
+        +--------+-----------------------------+
+        |  Id    |  Value                      |
+        +========+=============================+
+        |  name  |  <project_id>.<queue_name>  |
+        +--------+-----------------------------+
 
     2. Queue Information (Redis hash):
 
         Key: <project_id>.<queue_name>
 
-        Name                      Field
-        -------------------------------
-        metadata              ->     m
-        creation timestamp    ->     t
+        +----------------------+---------+
+        |  Name                |  Field  |
+        +======================+=========+
+        |  metadata            |  m      |
+        +----------------------+---------+
+        |  creation timestamp  |  t      |
+        +----------------------+---------+
     """
 
     def __init__(self, *args, **kwargs):

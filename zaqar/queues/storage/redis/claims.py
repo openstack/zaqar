@@ -45,31 +45,39 @@ class ClaimController(storage.Claim):
     """Implements claim resource operations using Redis.
 
     Redis Data Structures:
-    ----------------------
+
     1. Claims list (Redis set) contains claim IDs
 
-    Key: <project_id>.<queue_name>.claims
+        Key: <project_id>.<queue_name>.claims
 
-        Name                Field
-        -------------------------
-        claim_ids               m
+        +-------------+---------+
+        |  Name       |  Field  |
+        +=============+=========+
+        |  claim_ids  |  m      |
+        +-------------+---------+
 
-    2. Claimed Messages (Redis set) contains the list of
-    message ids stored per claim
+    2. Claimed Messages (Redis set) contains the list
+    of message ids stored per claim
 
-    Key: <claim_id>.messages
+        Key: <claim_id>.messages
 
     3. Claim info (Redis hash):
 
-    Key: <claim_id>
+        Key: <claim_id>
 
-        Name                Field
-        -------------------------
-        ttl             ->     t
-        id              ->     id
-        expires         ->     e
-        num_messages    ->     n
+        +----------------+---------+
+        |  Name          |  Field  |
+        +================+=========+
+        |  ttl           |  t      |
+        +----------------+---------+
+        |  id            |  id     |
+        +----------------+---------+
+        |  expires       |  e      |
+        +----------------+---------+
+        |  num_messages  |  n      |
+        +----------------+---------+
     """
+
     def __init__(self, *args, **kwargs):
         super(ClaimController, self).__init__(*args, **kwargs)
         self._client = self.driver.connection

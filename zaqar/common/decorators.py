@@ -58,7 +58,7 @@ def caches(keygen, ttl, cond=None):
     msgpack.
 
     Note that you can also flag a remover method such that it
-    will purge an associated item from the cache, e.g.:
+    will purge an associated item from the cache, e.g.::
 
         def project_cache_key(user, project=None):
             return user + ':' + str(project)

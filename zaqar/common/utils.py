@@ -30,7 +30,7 @@ def fields(d, names, pred=lambda x: True,
     :param key_transform: a transform to apply to the key before returning it
     :type key_transform: a -> a
     :param value_transform: a transform to apply to the value before
-    returning it
+        returning it
     :type value_transform: a -> a
     :rtype: dict
     """

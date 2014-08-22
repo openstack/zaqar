@@ -19,18 +19,21 @@ A pool is added by an operator by interacting with the
 pooling-related endpoints. When specifying a pool, the
 following fields are required:
 
-{
-    "name": string,
-    "weight": integer,
-    "uri": string::uri
-}
+::
+
+    {
+        "name": string,
+        "weight": integer,
+        "uri": string::uri
+    }
 
 Furthermore, depending on the underlying storage type of pool being
 registered, there is an optional field:
+::
 
-{
-    "options": {...}
-}
+    {
+        "options": {...}
+    }
 """
 
 import falcon
@@ -53,19 +56,23 @@ class Listing(object):
 
     :param pools_controller: means to interact with storage
     """
+
     def __init__(self, pools_controller):
         self._ctrl = pools_controller
 
     def on_get(self, request, response, project_id):
         """Returns a pool listing as objects embedded in an array:
 
-        [
-            {"href": "", "weight": 100, "uri": ""},
-            ...
-        ]
+        ::
+
+            [
+                {"href": "", "weight": 100, "uri": ""},
+                ...
+            ]
 
         :returns: HTTP | [200, 204]
         """
+
         LOG.debug(u'LIST pools')
 
         store = {}
@@ -91,6 +98,7 @@ class Resource(object):
 
     :param pools_controller: means to interact with storage
     """
+
     def __init__(self, pools_controller):
         self._ctrl = pools_controller
         validator_type = jsonschema.Draft4Validator
@@ -104,10 +112,13 @@ class Resource(object):
     def on_get(self, request, response, project_id, pool):
         """Returns a JSON object for a single pool entry:
 
-        {"weight": 100, "uri": "", options: {...}}
+        ::
+
+            {"weight": 100, "uri": "", options: {...}}
 
         :returns: HTTP | [200, 404]
         """
+
         LOG.debug(u'GET pool - name: %s', pool)
         data = None
         detailed = request.get_param_as_bool('detailed') or False
@@ -128,12 +139,15 @@ class Resource(object):
     def on_put(self, request, response, project_id, pool):
         """Registers a new pool. Expects the following input:
 
-        {"weight": 100, "uri": ""}
+        ::
+
+            {"weight": 100, "uri": ""}
 
         An options object may also be provided.
 
         :returns: HTTP | [201, 204]
         """
+
         LOG.debug(u'PUT pool - name: %s', pool)
 
         data = wsgi_utils.load(request)
@@ -153,6 +167,7 @@ class Resource(object):
 
         :returns: HTTP | 204
         """
+
         LOG.debug(u'DELETE pool - name: %s', pool)
         self._ctrl.delete(pool)
         response.status = falcon.HTTP_204
@@ -169,6 +184,7 @@ class Resource(object):
 
         :returns: HTTP | 200,400
         """
+
         LOG.debug(u'PATCH pool - name: %s', pool)
         data = wsgi_utils.load(request)
 

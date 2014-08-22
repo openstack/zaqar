@@ -117,6 +117,14 @@ Other resources
    gerrit
    jenkins
 
+API reference
+=============
+
+.. toctree::
+   :maxdepth: 3
+
+   api/autoindex
+
 Modules reference
 =================
 
@@ -125,3 +133,10 @@ Modules reference
 
    transport
    storage
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

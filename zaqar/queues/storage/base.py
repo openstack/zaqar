@@ -545,6 +545,7 @@ class PoolsBase(ControllerBase):
         :returns: A list of pools - name, weight, uri
         :rtype: [{}]
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -556,11 +557,12 @@ class PoolsBase(ControllerBase):
         :param weight: the likelihood that this pool will be used
         :type weight: int
         :param uri: A URI that can be used by a storage client
-        (e.g., pymongo) to access this pool.
+            (e.g., pymongo) to access this pool.
         :type uri: six.text_type
         :param options: Options used to configure this pool
         :type options: dict
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -575,6 +577,7 @@ class PoolsBase(ControllerBase):
         :rtype: {}
         :raises: PoolDoesNotExist if not found
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -586,6 +589,7 @@ class PoolsBase(ControllerBase):
         :returns: True if the pool exists
         :rtype: bool
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -596,6 +600,7 @@ class PoolsBase(ControllerBase):
         :type name: six.text_type
         :rtype: None
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -608,11 +613,13 @@ class PoolsBase(ControllerBase):
         :type kwargs: dict
         :raises: PoolDoesNotExist
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def drop_all(self):
         """Deletes all pools from storage."""
+
         raise NotImplementedError
 
 
@@ -634,6 +641,7 @@ class CatalogueBase(ControllerBase):
         :returns: [{'project': ..., 'queue': ..., 'pool': ...},]
         :rtype: [dict]
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -648,6 +656,7 @@ class CatalogueBase(ControllerBase):
         :rtype: dict
         :raises: QueueNotMapped
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -673,6 +682,7 @@ class CatalogueBase(ControllerBase):
         :param pool: pool identifier to associate this queue with
         :type pool: six.text_type
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -684,6 +694,7 @@ class CatalogueBase(ControllerBase):
         :param queue: The queue name to remove
         :type queue: six.text_type
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -698,11 +709,13 @@ class CatalogueBase(ControllerBase):
         :type pools: six.text_type
         :raises: QueueNotMapped
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def drop_all(self):
         """Drops all catalogue entries from storage."""
+
         raise NotImplementedError
 
 
@@ -725,6 +738,7 @@ class FlavorsBase(ControllerBase):
         :returns: A list of flavors - name, project, flavor
         :rtype: [{}]
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -740,6 +754,7 @@ class FlavorsBase(ControllerBase):
         :param capabilities: Flavor capabilities
         :type capabilities: dict
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -755,6 +770,7 @@ class FlavorsBase(ControllerBase):
         :rtype: {}
         :raises: FlavorDoesNotExist if not found
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -768,6 +784,7 @@ class FlavorsBase(ControllerBase):
         :returns: True if the flavor exists
         :rtype: bool
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -780,6 +797,7 @@ class FlavorsBase(ControllerBase):
         :type project: six.text_type
         :rtype: None
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -794,9 +812,11 @@ class FlavorsBase(ControllerBase):
         :type kwargs: dict
         :raises: FlavorDoesNotExist
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def drop_all(self):
         """Deletes all flavors from storage."""
+
         raise NotImplementedError

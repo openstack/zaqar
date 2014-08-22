@@ -32,15 +32,16 @@ class Api(object):
         """Returns the schema for an operation
 
         :param operation: Operation for which params need
-        to be validated.
+            to be validated.
         :type operation: `six.text_type`
 
         :returns: Operation's schema
         :rtype: dict
 
         :raises: `errors.InvalidOperation` if the operation
-        does not exist
+            does not exist
         """
+
         try:
             return self.schema[operation]
         except KeyError:
@@ -57,14 +58,14 @@ class Api(object):
         request since they are already validated server side.
 
         :param operation: Operation's for which params need
-        to be validated.
+            to be validated.
         :type operation: `six.text_type`
         :param params: Params to validate
         :type params: dict
 
         :returns: True if the schema is valid, False otherwise
         :raises: `errors.InvalidOperation` if the operation
-        does not exist
+            does not exist
         """
 
         if operation not in self.validators:

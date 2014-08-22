@@ -24,9 +24,8 @@ class Request(object):
 
     Transport will generate a request object and send to this the API to be
     processed.
-    :param operation: Operation to identify the API call being processed, i.e:
-        - get_queues
-        - get_messages
+    :param operation: Operation to identify the API call being processed,
+    i.e: 'get_queues', 'get_messages'
     :type operation: str
     :param content: Request's body. Default: None
     :type content: str

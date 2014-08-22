@@ -113,17 +113,19 @@ class MessageController(storage.Message):
 
     Messages are scoped by project + queue.
 
-    Messages:
-        Name                Field
-        -------------------------
-        scope            ->   p_q
-        ttl              ->     t
-        expires          ->     e
-        marker           ->     k
-        body             ->     b
-        claim            ->     c
-        client uuid      ->     u
-        transaction      ->    tx
+    ::
+
+        Messages:
+            Name                Field
+            -------------------------
+            scope            ->   p_q
+            ttl              ->     t
+            expires          ->     e
+            marker           ->     k
+            body             ->     b
+            claim            ->     c
+            client uuid      ->     u
+            transaction      ->    tx
     """
 
     def __init__(self, *args, **kwargs):
