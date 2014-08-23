@@ -1,4 +1,5 @@
 # Copyright (c) 2013 Rackspace, Inc.
+# Copyright 2014 Catalyst IT Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License.  You may obtain a copy
@@ -74,6 +75,19 @@ class DataDriver(storage.DataDriverBase):
         return all(self._pool_catalog.get_driver(pool['name']).is_alive()
                    for pool in
                    self._pool_catalog._pools_ctrl.list(limit=0))
+
+    def _health(self):
+        KPI = {}
+        # Leverage the is_alive to indicate if the backend storage is
+        # reachable or not
+        KPI['catalog_reachable'] = self.is_alive()
+
+        # Messages of each pool
+        for pool in self._pool_catalog._pools_ctrl.list():
+            driver = self._pool_catalog.get_driver(pool['name'])
+            KPI[pool['name']] = driver._health()
+
+        return KPI
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):

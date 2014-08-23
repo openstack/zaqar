@@ -95,6 +95,24 @@ class DataDriver(storage.DataDriverBase):
         except pymongo.errors.PyMongoError:
             return False
 
+    def _health(self):
+        KPI = {}
+        KPI['storage_reachable'] = self.is_alive()
+        KPI['operation_status'] = self._get_operation_status()
+        message_volume = {'free': 0, 'claimed': 0, 'total': 0}
+
+        for msg_col in [db.messages for db in self.message_databases]:
+            msg_count_claimed = msg_col.find({'c.id': {'$ne': None}}).count()
+            message_volume['claimed'] += msg_count_claimed
+
+            msg_count_total = msg_col.find().count()
+            message_volume['total'] += msg_count_total
+
+        message_volume['free'] = (message_volume['total'] -
+                                  message_volume['claimed'])
+        KPI['message_volume'] = message_volume
+        return KPI
+
     @decorators.lazy_property(write=False)
     def queues_database(self):
         """Database dedicated to the "queues" collection.

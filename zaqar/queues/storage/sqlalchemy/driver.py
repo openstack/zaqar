@@ -1,4 +1,5 @@
 # Copyright (c) 2013 Red Hat, Inc.
+# Copyright 2014 Catalyst IT Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License.  You may obtain a copy
@@ -121,6 +122,28 @@ class DataDriver(storage.DataDriverBase):
 
     def is_alive(self):
         return True
+
+    def _health(self):
+        KPI = {}
+        # Leverage the is_alive to indicate if the backend storage is
+        # reachable or not
+        KPI['storage_reachable'] = self.is_alive()
+        KPI['operation_status'] = self._get_operation_status()
+        message_volume = {'free': 0, 'claimed': 0, 'total': 0}
+
+        # NOTE(flwang): Using SQL directly to get better performance than
+        # sqlalchemy.
+        msg_count_claimed = self.get('SELECT COUNT(*) FROM MESSAGES'
+                                     ' WHERE CID IS NOT NULL')
+        message_volume['claimed'] = int(msg_count_claimed[0])
+
+        msg_count_total = self.get('SELECT COUNT(*) FROM MESSAGES')
+        message_volume['total'] = int(msg_count_total[0])
+
+        message_volume['free'] = (message_volume['total'] -
+                                  message_volume['claimed'])
+        KPI['message_volume'] = message_volume
+        return KPI
 
 
 class ControlDriver(storage.ControlDriverBase):

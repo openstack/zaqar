@@ -1,4 +1,5 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2014 Rackspace, Inc.
+# Copyright 2014 Catalyst IT Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License.  You may obtain a copy
@@ -12,7 +13,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import falcon
+from zaqar.i18n import _
+from zaqar.openstack.common import log as logging
+from zaqar.queues.transport import utils
+from zaqar.queues.transport.wsgi import errors as wsgi_errors
+
+LOG = logging.getLogger(__name__)
 
 
 class Resource(object):
@@ -23,8 +29,12 @@ class Resource(object):
         self.driver = driver
 
     def on_get(self, req, resp, **kwargs):
-        resp.status = (falcon.HTTP_204 if self.driver.is_alive()
-                       else falcon.HTTP_503)
+        try:
+            resp_dict = self.driver.health()
 
-    def on_head(self, req, resp, **kwargs):
-        resp.status = falcon.HTTP_204
+            resp.content_location = req.path
+            resp.body = utils.to_json(resp_dict)
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _(u'Health status could not be read.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)

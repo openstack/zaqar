@@ -81,8 +81,12 @@ class FunctionalTestBase(testing.TestBase):
 
             self.client = http.Client()
         else:
+            if self.server_class == ZaqarAdminServer:
+                self.mconf.pooling = True
+                self.mconf.admin_mode = True
+
             self.client = http.WSGIClient(
-                bootstrap.Bootstrap(config.cfg.CONF).transport.app)
+                bootstrap.Bootstrap(self.mconf).transport.app)
 
         self.headers = helpers.create_zaqar_headers(self.cfg)
 

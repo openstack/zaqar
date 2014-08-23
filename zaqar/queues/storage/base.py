@@ -1,4 +1,5 @@
 # Copyright (c) 2013 Red Hat, Inc.
+# Copyright 2014 Catalyst IT Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,14 +17,21 @@
 """Implements the DriverBase abstract class for Zaqar storage drivers."""
 
 import abc
+import functools
+import time
+import uuid
 
 import six
+
+import zaqar.openstack.common.log as logging
 
 DEFAULT_QUEUES_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_PAGE = 10
 DEFAULT_POOLS_PER_PAGE = 10
 
 DEFAULT_MESSAGES_PER_CLAIM = 10
+
+LOG = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -65,6 +73,98 @@ class DataDriverBase(DriverBase):
     def is_alive(self):
         """Check whether the storage is ready."""
         raise NotImplementedError
+
+    def health(self):
+        """Return the health status of service."""
+        overall_health = {}
+        # NOTE(flwang): KPI extracted from different storage backends,
+        # _health() will be implemented by different storage drivers.
+        backend_health = self._health()
+        if backend_health:
+            overall_health.update(backend_health)
+
+        return overall_health
+
+    @abc.abstractmethod
+    def _health(self):
+        """Return the health status based on different backends."""
+        raise NotImplementedError
+
+    def _get_operation_status(self):
+        op_status = {}
+        status_template = lambda s, t, r: {'succeeded': s,
+                                           'seconds': t,
+                                           'ref': r}
+        project = str(uuid.uuid4())
+        queue = str(uuid.uuid4())
+        client = str(uuid.uuid4())
+        msg_template = lambda s: {'ttl': 600, 'body': {'event': 'p_%s' % s}}
+        messages = [msg_template(i) for i in range(100)]
+        claim_metadata = {'ttl': 60, 'grace': 300}
+
+        # NOTE (flwang): Using time.time() instead of timeit since timeit will
+        # make the method calling be complicated.
+        def _handle_status(operation_type, callable_operation):
+            succeeded = True
+            ref = None
+            result = None
+            try:
+                start = time.time()
+                result = callable_operation()
+            except Exception as e:
+                ref = str(uuid.uuid4())
+                LOG.exception(e, extra={'instance_uuid': ref})
+                succeeded = False
+            status = status_template(succeeded, time.time() - start, ref)
+            op_status[operation_type] = status
+            return succeeded, result
+
+        # create queue
+        func = functools.partial(self.queue_controller.create,
+                                 queue, project=project)
+        succeeded, _ = _handle_status('create_queue', func)
+
+        # post messages
+        if succeeded:
+            func = functools.partial(self.message_controller.post,
+                                     queue, messages, client, project=project)
+            _, msg_ids = _handle_status('post_messages', func)
+
+            # claim messages
+            if msg_ids:
+                func = functools.partial(self.claim_controller.create,
+                                         queue, claim_metadata,
+                                         project=project)
+                _, (claim_id, claim_msgs) = _handle_status('claim_messages',
+                                                           func)
+
+                # list messages
+                func = functools.partial(self.message_controller.list,
+                                         queue, project, echo=True,
+                                         client_uuid=client,
+                                         include_claimed=True)
+                _handle_status('list_messages', func)
+
+                # delete messages
+                if claim_id and claim_msgs:
+                    for message in claim_msgs:
+                        func = functools.partial(self.
+                                                 message_controller.delete,
+                                                 queue, message['id'],
+                                                 project, claim=claim_id)
+                        succeeded, _ = _handle_status('delete_messages', func)
+                        if not succeeded:
+                            break
+                    # delete claim
+                    func = functools.partial(self.claim_controller.delete,
+                                             queue, claim_id, project)
+                    _handle_status('delete_claim', func)
+
+            # delete queue
+            func = functools.partial(self.queue_controller.delete,
+                                     queue, project=project)
+            _handle_status('delete_queue', func)
+        return op_status
 
     @abc.abstractproperty
     def queue_controller(self):
