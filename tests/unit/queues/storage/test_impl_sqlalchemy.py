@@ -13,8 +13,10 @@
 # the License.
 
 import datetime
+import uuid
 
 import sqlalchemy as sa
+from sqlalchemy.sql import func as sfunc
 
 from zaqar.queues.storage import pooling
 from zaqar.queues.storage import sqlalchemy
@@ -63,6 +65,49 @@ class SqlalchemyQueueTests(base.QueueControllerTest):
 class SqlalchemyMessageTests(base.MessageControllerTest):
     driver_class = sqlalchemy.DataDriver
     controller_class = controllers.MessageController
+
+    def test_expired_messages_be_deleted(self):
+        messages = [{'body': 3.14, 'ttl': 0}, {'body': 0.618, 'ttl': 600}]
+        client_uuid = uuid.uuid4()
+
+        [msgid_expired, msgid] = self.controller.post(self.queue_name,
+                                                      messages,
+                                                      project=self.project,
+                                                      client_uuid=client_uuid)
+        mid = utils.msgid_decode(msgid_expired)
+
+        def _get(count=False):
+            j = sa.join(tables.Messages, tables.Queues,
+                        tables.Messages.c.qid == tables.Queues.c.id)
+
+            sel = sa.sql.select([tables.Messages.c.body,
+                                tables.Messages.c.ttl,
+                                tables.Messages.c.created])
+
+            if count:
+                sel = sa.sql.select([sfunc.count(tables.Messages.c.id)])
+
+            sel = sel.select_from(j)
+            and_stmt = [tables.Messages.c.id == mid,
+                        tables.Queues.c.name == self.queue_name,
+                        tables.Queues.c.project == self.project]
+
+            sel = sel.where(sa.and_(*and_stmt))
+
+            return self.driver.get(sel)
+
+        [count] = _get(count=True)
+        self.assertEqual(count, 1)
+
+        # Expired messages will be removed from db until next Post
+        message = [{'body': 3.14, 'ttl': 300}]
+        self.controller.post(self.queue_name,
+                             message,
+                             project=self.project,
+                             client_uuid=client_uuid)
+
+        with testing.expect(utils.NoResult):
+            _get()
 
 
 class SqlalchemyClaimTests(base.ClaimControllerTest):
