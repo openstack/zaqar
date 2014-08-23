@@ -154,80 +154,109 @@
                 that messages are handled in a First In, First Out (FIFO) order.</para>
             <section xml:id="operating_modes">
                 <title>Messaging Patterns</title>
-                <para>Message Queuing supports a variety of messaging patterns including the
-                    following:</para>
+                <para>The Message Queuing API supports a variety of
+                    messaging patterns including the following:</para>
                 <itemizedlist>
                     <listitem>
-                        <para>producer-consumer</para>
+                        <para>Task distribution</para>
                     </listitem>
                     <listitem>
-                        <para>publish-subscribe</para>
+                        <para>Event broadcasting</para>
+                    </listitem>
+                    <listitem>
+                        <para>Point-to-point messaging</para>
                     </listitem>
                 </itemizedlist>
-                <section xml:id="producer_consumer">
-                    <title>Producer-Consumer</title>
-                    <para>The producer-consumer pattern has the
-                        following characteristics:</para>
-                    <itemizedlist>
-                        <listitem>
-                            <para>A producer is programmed to send
-                                messages to a queue.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Multiple workers (or consumers) are
-                                programmed to monitor a queue.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Only one worker can claim a message
-                                so that no other worker can claim the
-                                message and duplicate the work.</para>
-                        </listitem>
-                        <listitem>
-                            <para>The worker must delete the message
-                                when work is done.</para>
-                        </listitem>
-                        <listitem>
-                            <para>TTL restores a message to an
-                                unclaimed state if the worker never
-                                finishes.</para>
-                        </listitem>
-                    </itemizedlist>
-                    <para>This pattern is ideal for dispatching jobs
-                        to multiple processors.</para>
-                </section>
-                <section xml:id="publish_subscribe">
-                    <title>Publish-Subscribe</title>
-                    <para>Characteristics of the Publish-Subscribe
-                        pattern are:</para>
-                    <itemizedlist>
-                        <listitem>
-                            <para>The publisher sends a message to a
-                                queue.</para>
-                        </listitem>
-                        <listitem>
-                            <para>All workers (or subscribers) listen
-                                to the messages in the queue.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Workers do not claim a
-                                message.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Multiple workers can take action on
-                                a message.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Workers can send a marker or cursor
-                                to skip messages already seen.</para>
-                        </listitem>
-                        <listitem>
-                            <para>TTL eventually deletes
-                                messages.</para>
-                        </listitem>
-                    </itemizedlist>
-                    <para>This pattern is ideal for notification of
-                        events to multiple workers at once.</para>
-                </section>
+            </section>
+            <section xml:id="task_distribution">
+                <title>Task distribution</title>
+                <para>The task distribution pattern has the following
+                    characteristics:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>A producer is programmed to send messages to a
+                            queue.</para>
+                    </listitem>
+                    <listitem>
+                    <para>Multiple workers (or consumers) are programmed to
+                        monitor a queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Only one worker can claim a message so that
+                            no other worker can claim the message and
+                            duplicate the work.</para>
+                    </listitem>
+                    <listitem>
+                        <para>The worker must delete the message when work
+                            is done.</para>
+                    </listitem>
+                    <listitem>
+                        <para>TTL restores a message to an unclaimed state
+                            if the worker never finishes.</para>
+                    </listitem>
+                </itemizedlist>
+                <para>This pattern is ideal for dispatching jobs to multiple
+                    processors.</para>
+            </section>
+            <section xml:id="event_broadcasting">
+                <title>Event Broadcasting</title>
+                <para>Characteristics of the event broadcasting pattern
+                    are:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>The publisher sends messages to a
+                            queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Multiple observers (or subscribers) get the
+                            messages in the queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Multiple observers take action on each
+                            message.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Observers send a marker to skip messages
+                            already seen.</para>
+                    </listitem>
+                    <listitem>
+                        <para>TTL eventually deletes messages.</para>
+                    </listitem>
+                </itemizedlist>
+                <para>This pattern is ideal for notification of events to
+                    multiple observers at once.</para>
+            </section>
+            <section xml:id="point_to_point">
+                <title>Point-to-point messaging</title>
+                <para>Characteristics of the point-to-point messaging
+                    pattern are:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>The publisher sends messages to a queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>The consumer gets the messages in the queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>The consumer can reply with the result of
+                            processing a message by sending another message
+                            to the same queue (queues are duplex by
+                            default).</para>
+                    </listitem>
+                    <listitem>
+                        <para>The publisher gets replies from the queue.</para>
+                    </listitem>
+                    <listitem>
+                        <para>The consumer sends a marker to skip messages
+                            already seen.</para>
+                    </listitem>
+                    <listitem>
+                        <para>TTL eventually deletes messages.</para>
+                    </listitem>
+                </itemizedlist>
+                <para>This pattern is ideal for communicating with a
+                    specific client, especially when a reply is desired
+                    from that client.</para>
             </section>
             <section xml:id="cloud-queuing-actions">
                 <title>Message Queuing Operations</title>
@@ -394,26 +423,25 @@
                 <para>Following are some generic use cases for Message Queuing:</para>
                 <itemizedlist>
                     <listitem>
-                        <para>Distribute tasks among multiple workers
-                            (transactional job queues)</para>
+                        <para>Distribute tasks among multiple workers (transactional
+                            job queues)</para>
                     </listitem>
                     <listitem>
-                        <para>Forward events to data collectors
-                            (transactional event queues)</para>
+                        <para>Forward events to data collectors (transactional event
+                            queues)</para>
                     </listitem>
                     <listitem>
-                        <para>Publish events to any number of
-                            subscribers (publish-subscribe)</para>
+                        <para>Publish events to any number of subscribers
+                            (event broadcasting)</para>
                     </listitem>
                     <listitem>
                         <para>Send commands to one or more agents
-                            (point-to-point or
-                            publish-subscribe)</para>
+                            (point-to-point messaging or event broadcasting)</para>
                     </listitem>
                     <listitem>
-                        <para>Request an action or get information
-                            from a Remote Procedure Call (RPC)
-                            agent</para>
+                        <para>Request an action or get information from a Remote
+                            Procedure Call (RPC) agent (point-to-point
+                            messaging)</para>
                     </listitem>
                 </itemizedlist>
             </section>
