@@ -40,7 +40,8 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     cli = client.Client(conf.server_url)
     queue = cli.queue(conf.queue_prefix + '1')
     end = time.time() + test_duration
-    total_elapsed = 0
+    claim_total_elapsed = 0
+    delete_total_elapsed = 0
     total_requests = 0
     claim_total_requests = 0
     delete_total_requests = 0
@@ -54,7 +55,7 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
             sys.stderr.write("Could not claim messages : {0}\n".format(ex))
 
         else:
-            total_elapsed += marktime.stop('claim_message').seconds
+            claim_total_elapsed += marktime.stop('claim_message').seconds
             claim_total_requests += 1
 
             try:
@@ -62,10 +63,10 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
 
                 for msg in claim:
                     # TODO(TheSriram): Simulate actual work before deletion
+                    delete_total_requests += 1
                     msg.delete()
 
-                total_elapsed += marktime.stop('delete_message').seconds
-                delete_total_requests += 1
+                delete_total_elapsed += marktime.stop('delete_message').seconds
 
             except TransportError as ex:
                 sys.stderr.write("Could not delete messages: {0}\n".format(ex))
@@ -75,10 +76,13 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
         finally:
             total_requests += 1
 
-    stats.put({'total_requests': total_requests,
-               'claim_total_requests': claim_total_requests,
-               'delete_total_requests': delete_total_requests,
-               'total_elapsed': total_elapsed})
+    stats.put({
+        'total_requests': total_requests,
+        'claim_total_requests': claim_total_requests,
+        'delete_total_requests': delete_total_requests,
+        'claim_total_elapsed': claim_total_elapsed,
+        'delete_total_elapsed': delete_total_elapsed,
+    })
 
 
 def load_generator(stats, num_workers, test_duration, url, ttl, grace, limit):
@@ -91,19 +95,21 @@ def load_generator(stats, num_workers, test_duration, url, ttl, grace, limit):
 
 def crunch(stats):
     total_requests = 0
-    total_latency = 0.0
+    claim_total_elapsed = 0.0
+    delete_total_elapsed = 0.0
     claim_total_requests = 0
     delete_total_requests = 0
 
     while not stats.empty():
         entry = stats.get_nowait()
         total_requests += entry['total_requests']
-        total_latency += entry['total_elapsed']
+        claim_total_elapsed += entry['claim_total_elapsed']
+        delete_total_elapsed += entry['delete_total_elapsed']
         claim_total_requests += entry['claim_total_requests']
         delete_total_requests += entry['delete_total_requests']
 
-    return (total_requests, total_latency, claim_total_requests,
-            delete_total_requests)
+    return (total_requests, claim_total_elapsed, delete_total_elapsed,
+            claim_total_requests, delete_total_requests)
 
 
 def run(upstream_queue):
@@ -131,24 +137,30 @@ def run(upstream_queue):
         for each_proc in procs:
             each_proc.join()
 
-        (total_requests, total_latency, claim_total_requests,
-         delete_total_requests) = crunch(stats)
+        (total_requests, claim_total_elapsed, delete_total_elapsed,
+         claim_total_requests, delete_total_requests) = crunch(stats)
 
         successful_requests = claim_total_requests + delete_total_requests
         duration = time.time() - start
         throughput = successful_requests / duration
-        latency = 1000 * total_latency / successful_requests
+        claim_latency = 1000 * claim_total_elapsed / claim_total_requests
+        delete_latency = 1000 * delete_total_elapsed / delete_total_requests
 
     else:
         duration = 0
         total_requests = 0
         successful_requests = 0
         throughput = 0
-        latency = 0
+        claim_latency = 0
+        delete_latency = 0
 
-    upstream_queue.put({'consumer': {
-        'duration_sec': duration,
-        'total_reqs': total_requests,
-        'successful_reqs': successful_requests,
-        'reqs_per_sec': throughput,
-        'ms_per_req': latency}})
+    upstream_queue.put({
+        'consumer': {
+            'duration_sec': duration,
+            'total_reqs': total_requests,
+            'successful_reqs': successful_requests,
+            'reqs_per_sec': throughput,
+            'ms_per_claim': claim_latency,
+            'ms_per_delete': delete_latency,
+        }
+    })

@@ -42,11 +42,16 @@ def main():
     if conf.verbose:
         print()
 
-        for name, stat in stats.items():
+        for name, stats_group in stats.items():
             print(name.capitalize())
             print('=' * len(name))
-            print("\n".join("{}: {:.1f}".format(*it) for it in stat.items()))
+
+            values = sorted(stats_group.items(), key=lambda v: v[0])
+            formatted_vals = ["{}: {:.1f}".format(*v) for v in values]
+
+            print("\n".join(formatted_vals))
             print('')  # Blank line
+
     else:
         stats['params'] = {
             'producer': {

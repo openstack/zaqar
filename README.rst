@@ -132,19 +132,20 @@ Verbose output looks similar to the following::
 
     Consumer
     ========
-    duration_sec: 10.1
-    ms_per_req: 77.1
-    total_reqs: 160.0
-    successful_reqs: 160.0
-    reqs_per_sec: 15.8
+    duration_sec: 10.2
+    ms_per_claim: 37.6
+    ms_per_delete: 11.8
+    reqs_per_sec: 82.0
+    successful_reqs: 833.0
+    total_reqs: 833.0
 
     Producer
     ========
     duration_sec: 10.2
-    ms_per_req: 4.6
-    total_reqs: 8866.0
-    successful_reqs: 8866.0
-    reqs_per_sec: 870.5
+    ms_per_req: 3.8
+    reqs_per_sec: 1033.6
+    successful_reqs: 10523.0
+    total_reqs: 10523.0
 
 
 .. _`OpenStack` : http://openstack.org/
