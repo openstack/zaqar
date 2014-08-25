@@ -119,9 +119,9 @@ def run(upstream_queue):
     if num_procs and num_workers:
         test_duration = conf.time
         stats = mp.Queue()
-        # TODO(TheSriram) : Make ttl,grace and limit configurable
+        # TODO(TheSriram) : Make ttl and grace configurable
         args = (stats, num_workers, test_duration, conf.server_url,
-                300, 200, 1)
+                300, 200, conf.messages_per_claim)
 
         procs = [mp.Process(target=load_generator, args=args)
                  for _ in range(num_procs)]

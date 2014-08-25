@@ -37,7 +37,11 @@ _CLI_OPTIONS = (
         short='cw',
         default=psutil.NUM_CPUS * 2,
         help='Number of Consumer Workers'),
-    cfg.IntOpt('time', short='t', default=3, help="time in seconds"),
+    cfg.IntOpt('messages_per_claim', short='cno', default=5,
+               help=('Number of messages the consumer will attempt to '
+                     'claim at a time')),
+    cfg.IntOpt('time', short='t', default=3,
+               help="Duration of the performance test, in seconds"),
     cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
     cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue-'),
     cfg.StrOpt('messages_path', short='m')
