@@ -24,11 +24,11 @@ import time
 from bson import errors as berrors
 from bson import objectid
 from bson import tz_util
+from oslo.utils import timeutils
 from pymongo import errors
 
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
-from zaqar.openstack.common import timeutils
 from zaqar.queues.storage import errors as storage_errors
 
 

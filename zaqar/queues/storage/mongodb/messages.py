@@ -25,12 +25,12 @@ import datetime
 import time
 
 from bson import objectid
+from oslo.utils import timeutils
 import pymongo.errors
 import pymongo.read_preferences
 
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
-from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.mongodb import utils

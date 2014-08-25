@@ -19,9 +19,9 @@ import multiprocessing
 import os
 
 import jsonschema
+from oslo.utils import timeutils
 import six
 
-from zaqar.openstack.common import timeutils
 from zaqar.queues.api.v1 import response as response_v1
 from zaqar.queues.api.v1_1 import response as response_v1_1
 from zaqar.queues import bootstrap

@@ -20,10 +20,10 @@ import uuid
 import ddt
 import falcon
 import mock
+from oslo.utils import timeutils
 from testtools import matchers
 
 from zaqar.openstack.common import jsonutils
-from zaqar.openstack.common import timeutils
 from zaqar import tests as testing
 from zaqar.tests.queues.transport.wsgi import base
 
