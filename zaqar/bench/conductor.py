@@ -28,19 +28,35 @@ def main():
     downstream_queue = mp.Queue()
     procs = [mp.Process(target=worker.run, args=(downstream_queue,))
              for worker in [producer, consumer]]
+
     for each_proc in procs:
         each_proc.start()
+
     for each_proc in procs:
         each_proc.join()
 
-    stats = {'params': {'processes': conf.processes, 'workers': conf.workers}}
+    stats = {}
     for each_proc in procs:
         stats.update(downstream_queue.get_nowait())
 
     if conf.verbose:
+        print()
+
         for name, stat in stats.items():
             print(name.capitalize())
+            print('=' * len(name))
             print("\n".join("{}: {:.1f}".format(*it) for it in stat.items()))
             print('')  # Blank line
     else:
+        stats['params'] = {
+            'producer': {
+                'processes': conf.producer_processes,
+                'workers': conf.producer_workers
+            },
+            'consumer': {
+                'processes': conf.consumer_processes,
+                'workers': conf.consumer_workers
+            }
+        }
+
         print(json.dumps(stats))

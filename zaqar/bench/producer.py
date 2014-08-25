@@ -130,36 +130,46 @@ def crunch(stats):
 
 
 def run(upstream_queue):
-    num_procs = conf.processes
-    num_workers = conf.workers
-    test_duration = conf.time
-    stats = mp.Queue()
-    args = (stats, num_workers, test_duration)
+    num_procs = conf.producer_processes
+    num_workers = conf.producer_workers
 
-    # TODO(TheSriram): Multiple test runs, vary num workers and drain/delete
-    # queues in between each run. Plot these on a graph, with
-    # concurrency as the X axis.
+    if num_procs and num_workers:
+        test_duration = conf.time
+        stats = mp.Queue()
+        args = (stats, num_workers, test_duration)
 
-    procs = [
-        mp.Process(target=load_generator, args=args)
-        for _ in range(num_procs)
-    ]
+        # TODO(TheSriram): Multiple test runs, vary num workers and
+        # drain/delete queues in between each run. Plot these on a
+        # graph, with concurrency as the X axis.
 
-    if conf.verbose:
-        print('\nStarting Producer...')
-    start = time.time()
+        procs = [
+            mp.Process(target=load_generator, args=args)
+            for _ in range(num_procs)
+        ]
 
-    for each_proc in procs:
-        each_proc.start()
+        if conf.verbose:
+            print('\nStarting Producer...')
 
-    for each_proc in procs:
-        each_proc.join()
+        start = time.time()
 
-    successful_requests, total_requests, total_latency = crunch(stats)
+        for each_proc in procs:
+            each_proc.start()
 
-    duration = time.time() - start
-    throughput = successful_requests / duration
-    latency = 1000 * total_latency / successful_requests
+        for each_proc in procs:
+            each_proc.join()
+
+        successful_requests, total_requests, total_latency = crunch(stats)
+
+        duration = time.time() - start
+        throughput = successful_requests / duration
+        latency = 1000 * total_latency / successful_requests
+
+    else:
+        duration = 0
+        total_requests = 0
+        successful_requests = 0
+        throughput = 0
+        latency = 0
 
     upstream_queue.put({'producer': {
         'duration_sec': duration,

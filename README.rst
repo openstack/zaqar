@@ -74,42 +74,54 @@ Running tests
 
 First install additional requirements::
 
-    pip install tox
+    $ pip install tox
 
 And then run tests::
 
-    tox -e py27
+    $ tox -e py27
 
 You can read more about running functional tests in separate `TESTS_README`_.
 
 Running the benchmarking tool
-----------------------
+-----------------------------
 
 First install and run zaqar-server (see above).
 
 Then install additional requirements::
 
-    pip install -r bench-requirements.txt
+    $ pip install -r bench-requirements.txt
 
 Copy the configuration file to ``~/.zaqar``::
 
-    cp etc/zaqar-benchmark.conf.sample ~/.zaqar/zaqar-benchmark.conf
+    $ cp etc/zaqar-benchmark.conf.sample ~/.zaqar/zaqar-benchmark.conf
 
 In the configuration file specify where zaqar-server can be found::
 
     server_url = http://localhost:8888
 
-The benchmarking tool needs a set of messages to work with. Specify the path to the file with messages
-in the configuration file. Alternatively, put it in the directory with the configuration file and name it
-``zaqar-benchmark-messages.json``. As a starting point, you can use the sample file from the ``etc`` directory:
+The benchmarking tool needs a set of messages to work with. Specify the path
+to the file with messages in the configuration file. Alternatively, put it in
+the directory with the configuration file and name it ``zaqar-benchmark-
+messages.json``. As a starting point, you can use the sample file from the
+``etc`` directory::
 
-    cp etc/zaqar-benchmark-messages.json ~/.zaqar/
+    $ cp etc/zaqar-benchmark-messages.json ~/.zaqar/
 
-If the file is not found or no file is specified, a single hard-coded message is used for all requests.
+If the file is not found or no file is specified, a single hard-coded message
+is used for all requests.
 
 Run the benchmarking tool using the following command::
 
-    zaqar-bench-pc --processes 2 --workers 2 --time 10
+    $ zaqar-bench-pc
+
+By default, the command will run a performance test for 3 seconds, using one
+consumer and one producer for each CPU on the system, with 2 greenlet workers
+per CPU per process. You can override these defaults in the config file or on
+the command line using a variety of options. For example, the following
+command runs a performance test for 10 seconds using 4 producer processes with
+20 workers each, plus 1 consumer process with 4 workers::
+
+    $ zaqar-bench-pc -pp 4 -pw 20 -cp 1 -cw 4 -t 10
 
 By default, the results are in JSON. For more human-readable output add the ``--verbose`` flag.
 Verbose output looks similar to the following::
@@ -117,23 +129,23 @@ Verbose output looks similar to the following::
     Starting Producer...
 
     Starting Consumer...
-    Params
-    processes: 2.0
-    workers: 2.0
 
     Consumer
-    duration_sec: 4.2
-    ms_per_req: 38.9
-    total_reqs: 104.0
-    successful_reqs: 104.0
-    reqs_per_sec: 24.8
+    ========
+    duration_sec: 10.1
+    ms_per_req: 77.1
+    total_reqs: 160.0
+    successful_reqs: 160.0
+    reqs_per_sec: 15.8
 
     Producer
-    duration_sec: 4.1
-    ms_per_req: 6.9
-    total_reqs: 575.0
-    successful_reqs: 575.0
-    reqs_per_sec: 138.6
+    ========
+    duration_sec: 10.2
+    ms_per_req: 4.6
+    total_reqs: 8866.0
+    successful_reqs: 8866.0
+    reqs_per_sec: 870.5
+
 
 .. _`OpenStack` : http://openstack.org/
 .. _`MongoDB` : http://docs.mongodb.org/manual/installation/
