@@ -42,39 +42,42 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     end = time.time() + test_duration
     claim_total_elapsed = 0
     delete_total_elapsed = 0
-    total_requests = 0
+    total_failed_requests = 0
     claim_total_requests = 0
     delete_total_requests = 0
 
     while time.time() < end:
-        marktime.start('claim_message')
         try:
+            marktime.start('claim_message')
+
             claim = queue.claim(ttl=ttl, grace=grace, limit=limit)
 
-        except TransportError as ex:
-            sys.stderr.write("Could not claim messages : {0}\n".format(ex))
-
-        else:
             claim_total_elapsed += marktime.stop('claim_message').seconds
             claim_total_requests += 1
 
-            try:
-                marktime.start('delete_message')
+        except TransportError as ex:
+            sys.stderr.write("Could not claim messages : {0}\n".format(ex))
+            total_failed_requests += 1
 
-                for msg in claim:
-                    # TODO(TheSriram): Simulate actual work before deletion
-                    delete_total_requests += 1
+        else:
+            for msg in claim:
+                try:
+                    marktime.start('delete_message')
+
                     msg.delete()
 
-                delete_total_elapsed += marktime.stop('delete_message').seconds
+                    elapsed = marktime.stop('delete_message').seconds
+                    delete_total_elapsed += elapsed
+                    delete_total_requests += 1
 
-            except TransportError as ex:
-                sys.stderr.write("Could not delete messages: {0}\n".format(ex))
+                except TransportError as ex:
+                    msg = "Could not delete messages: {0}\n".format(ex)
+                    sys.stderr.write(msg)
+                    total_failed_requests += 1
 
-            finally:
-                total_requests += 1
-        finally:
-            total_requests += 1
+    total_requests = (claim_total_requests +
+                      delete_total_requests +
+                      total_failed_requests)
 
     stats.put({
         'total_requests': total_requests,
