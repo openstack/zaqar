@@ -413,7 +413,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.controller.delete(queue_name, message_id, project=self.project)
 
         # Test does not exist
-        with testing.expect(storage.errors.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.get(queue_name, message_id, project=self.project)
 
     def test_get_multi(self):
@@ -511,7 +511,7 @@ class MessageControllerTest(ControllerBaseTest):
         [msg1, msg2] = msgs
 
         # A wrong claim does not ensure the message deletion
-        with testing.expect(storage.errors.NotPermitted):
+        with testing.expect(errors.NotPermitted):
             self.controller.delete(self.queue_name, msg1['id'],
                                    project=self.project,
                                    claim=another_cid)
@@ -521,7 +521,7 @@ class MessageControllerTest(ControllerBaseTest):
                                project=self.project,
                                claim=cid)
 
-        with testing.expect(storage.errors.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.get(self.queue_name, msg1['id'],
                                 project=self.project)
 
@@ -540,7 +540,7 @@ class MessageControllerTest(ControllerBaseTest):
         # perhaps the claim expired before it got around to
         # trying to delete the message, which means another
         # worker could be processing this message now.
-        with testing.expect(storage.errors.NotPermitted):
+        with testing.expect(errors.NotPermitted):
             self.controller.delete(self.queue_name, msg2['id'],
                                    project=self.project,
                                    claim=cid)
@@ -562,7 +562,7 @@ class MessageControllerTest(ControllerBaseTest):
         # triggered to clean up claims and messages.
         self.driver.gc()
 
-        with testing.expect(storage.errors.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.get(self.queue_name, msgid_expired,
                                 project=self.project)
 
@@ -660,7 +660,7 @@ class MessageControllerTest(ControllerBaseTest):
         self.assertEqual(msg_desc['id'], msgid_last)
 
     def test_get_first_with_empty_queue_exception(self):
-        self.assertRaises(storage.errors.QueueIsEmpty,
+        self.assertRaises(errors.QueueIsEmpty,
                           self.controller.first,
                           self.queue_name, project=self.project)
 
@@ -785,7 +785,7 @@ class ClaimControllerTest(ControllerBaseTest):
         self.controller.delete(self.queue_name, claim_id,
                                project=self.project)
 
-        self.assertRaises(storage.errors.ClaimDoesNotExist,
+        self.assertRaises(errors.ClaimDoesNotExist,
                           self.controller.get, self.queue_name,
                           claim_id, project=self.project)
 
@@ -873,11 +873,11 @@ class ClaimControllerTest(ControllerBaseTest):
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
 
-        with testing.expect(storage.errors.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.get(self.queue_name, claim_id,
                                 project=self.project)
 
-        with testing.expect(storage.errors.DoesNotExist):
+        with testing.expect(errors.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, project=self.project)
 
@@ -959,7 +959,7 @@ class PoolsControllerTest(ControllerBaseTest):
         self.assertEqual(res['options'], {})
 
     def test_get_raises_if_not_found(self):
-        self.assertRaises(storage.errors.PoolDoesNotExist,
+        self.assertRaises(errors.PoolDoesNotExist,
                           self.pools_controller.get, 'notexists')
 
     def test_exists(self):
@@ -1246,7 +1246,7 @@ class FlavorsControllerTest(ControllerBaseTest):
         self.assertEqual(res['capabilities'], capabilities)
 
     def test_get_raises_if_not_found(self):
-        self.assertRaises(storage.errors.FlavorDoesNotExist,
+        self.assertRaises(errors.FlavorDoesNotExist,
                           self.flavors_controller.get, 'notexists')
 
     def test_exists(self):
