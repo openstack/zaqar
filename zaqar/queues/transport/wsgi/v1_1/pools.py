@@ -37,13 +37,13 @@ import falcon
 import jsonschema
 
 from zaqar.common.schemas import pools as schema
-from zaqar.common.transport.wsgi import utils
 from zaqar.common import utils as common_utils
 from zaqar.openstack.common import log
 from zaqar.queues.storage import errors
 from zaqar.queues.storage import utils as storage_utils
 from zaqar.queues.transport import utils as transport_utils
 from zaqar.queues.transport.wsgi import errors as wsgi_errors
+from zaqar.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = log.getLogger(__name__)
 
@@ -138,8 +138,8 @@ class Resource(object):
         """
         LOG.debug(u'PUT pool - name: %s', pool)
 
-        data = utils.load(request)
-        utils.validate(self._validators['create'], data)
+        data = wsgi_utils.load(request)
+        wsgi_utils.validate(self._validators['create'], data)
         if not storage_utils.can_connect(data['uri']):
             raise wsgi_errors.HTTPBadRequestBody(
                 'cannot connect to %s' % data['uri']
@@ -172,7 +172,7 @@ class Resource(object):
         :returns: HTTP | 200,400
         """
         LOG.debug(u'PATCH pool - name: %s', pool)
-        data = utils.load(request)
+        data = wsgi_utils.load(request)
 
         EXPECT = ('weight', 'uri', 'options')
         if not any([(field in data) for field in EXPECT]):
@@ -183,7 +183,7 @@ class Resource(object):
             )
 
         for field in EXPECT:
-            utils.validate(self._validators[field], data)
+            wsgi_utils.validate(self._validators[field], data)
 
         if 'uri' in data and not storage_utils.can_connect(data['uri']):
             raise wsgi_errors.HTTPBadRequestBody(

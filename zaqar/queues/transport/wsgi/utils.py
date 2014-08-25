@@ -14,11 +14,12 @@
 
 import uuid
 
+import jsonschema
+
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.queues.transport import utils
 from zaqar.queues.transport.wsgi import errors
-
 
 JSONObject = dict
 """Represents a JSON object in Python."""
@@ -193,3 +194,39 @@ def get_client_uuid(req):
     except ValueError:
         description = _(u'Malformed hexadecimal UUID.')
         raise errors.HTTPBadRequestAPI(description)
+
+
+def load(req):
+    """Reads request body, raising an exception if it is not JSON.
+
+    :param req: The request object to read from
+    :type req: falcon.Request
+    :return: a dictionary decoded from the JSON stream
+    :rtype: dict
+    :raises: errors.HTTPBadRequestBody
+    """
+    try:
+        return utils.read_json(req.stream, req.content_length)
+    except (utils.MalformedJSON, utils.OverflowedJSONInteger) as ex:
+        LOG.exception(ex)
+        raise errors.HTTPBadRequestBody(
+            'JSON could not be parsed.'
+        )
+
+
+# TODO(cpp-cabrera): generalize this
+def validate(validator, document):
+    """Verifies a document against a schema.
+
+    :param validator: a validator to use to check validity
+    :type validator: jsonschema.Draft4Validator
+    :param document: document to check
+    :type document: dict
+    :raises: errors.HTTPBadRequestBody
+    """
+    try:
+        validator.validate(document)
+    except jsonschema.ValidationError as ex:
+        raise errors.HTTPBadRequestBody(
+            '{0}: {1}'.format(ex.args, ex.message)
+        )
