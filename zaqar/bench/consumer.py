@@ -16,6 +16,7 @@ from __future__ import division
 from __future__ import print_function
 
 import multiprocessing as mp
+import random
 import sys
 import time
 
@@ -29,7 +30,7 @@ from zaqarclient.transport.errors import TransportError
 from zaqar.bench.config import conf
 
 
-def claim_delete(stats, test_duration, ttl, grace, limit):
+def claim_delete(queues, stats, test_duration, ttl, grace, limit):
     """Consumer Worker
 
     The Consumer Worker continuously claims and deletes messages
@@ -37,8 +38,6 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     delete is recorded for calculating throughput and latency.
     """
 
-    cli = client.Client(conf.server_url)
-    queue = cli.queue(conf.queue_prefix + '1')
     end = time.time() + test_duration
     claim_total_elapsed = 0
     delete_total_elapsed = 0
@@ -47,6 +46,9 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     delete_total_requests = 0
 
     while time.time() < end:
+        # NOTE(kgriffs): Distribute requests across all queues evenly.
+        queue = random.choice(queues)
+
         try:
             marktime.start('claim_message')
 
@@ -88,10 +90,17 @@ def claim_delete(stats, test_duration, ttl, grace, limit):
     })
 
 
-def load_generator(stats, num_workers, test_duration, url, ttl, grace, limit):
+def load_generator(stats, num_workers, num_queues,
+                   test_duration, url, ttl, grace, limit):
+
+    cli = client.Client(conf.server_url)
+    queues = [cli.queue(conf.queue_prefix + '-' + str(i))
+              for i in range(num_queues)]
+
     gevent.joinall([
-        gevent.spawn(claim_delete, stats, test_duration, ttl,
-                     grace, limit)
+        gevent.spawn(claim_delete,
+                     queues, stats, test_duration, ttl, grace, limit)
+
         for _ in range(num_workers)
     ])
 
@@ -118,6 +127,7 @@ def crunch(stats):
 def run(upstream_queue):
     num_procs = conf.consumer_processes
     num_workers = conf.consumer_workers
+    num_queues = conf.num_queues
 
     # Stats that will be reported
     duration = 0
@@ -134,8 +144,8 @@ def run(upstream_queue):
         test_duration = conf.time
         stats = mp.Queue()
         # TODO(TheSriram) : Make ttl and grace configurable
-        args = (stats, num_workers, test_duration, conf.server_url,
-                300, 200, conf.messages_per_claim)
+        args = (stats, num_workers, num_queues, test_duration,
+                conf.server_url, 300, 200, conf.messages_per_claim)
 
         procs = [mp.Process(target=load_generator, args=args)
                  for _ in range(num_procs)]
