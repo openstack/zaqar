@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 2014.2.dev75.gb3f1b48\n"
+"Project-Id-Version: zaqar 2014.2.dev68.g0300181\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-24 06:07+0000\n"
+"POT-Creation-Date: 2014-08-26 06:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,52 +51,52 @@ msgstr ""
 msgid "The format of the submitted queue name or project id is not valid."
 msgstr ""
 
-#: zaqar/openstack/common/gettextutils.py:320
+#: zaqar/openstack/common/gettextutils.py:301
 msgid "Message objects do not support addition."
 msgstr ""
 
-#: zaqar/openstack/common/gettextutils.py:330
+#: zaqar/openstack/common/gettextutils.py:311
 msgid ""
 "Message objects do not support str() because they may contain non-ascii "
 "characters. Please use unicode() or translate() instead."
 msgstr ""
 
-#: zaqar/openstack/common/lockutils.py:102
+#: zaqar/openstack/common/lockutils.py:101
 #, python-format
 msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
 msgstr ""
 
-#: zaqar/openstack/common/log.py:327
+#: zaqar/openstack/common/log.py:287
 #, python-format
 msgid "Deprecated: %s"
 msgstr ""
 
-#: zaqar/openstack/common/log.py:436
+#: zaqar/openstack/common/log.py:396
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 
-#: zaqar/openstack/common/log.py:487
+#: zaqar/openstack/common/log.py:457
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr ""
 
-#: zaqar/openstack/common/log.py:725
+#: zaqar/openstack/common/log.py:700
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr ""
 
-#: zaqar/openstack/common/strutils.py:92
+#: zaqar/openstack/common/strutils.py:114
 #, python-format
 msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
 msgstr ""
 
-#: zaqar/openstack/common/strutils.py:197
+#: zaqar/openstack/common/strutils.py:219
 #, python-format
 msgid "Invalid unit system: \"%s\""
 msgstr ""
 
-#: zaqar/openstack/common/strutils.py:206
+#: zaqar/openstack/common/strutils.py:228
 #, python-format
 msgid "Invalid string format: %s"
 msgstr ""
@@ -113,35 +113,40 @@ msgstr ""
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:546
+#: zaqar/queues/storage/mongodb/driver.py:87
+#, python-format
+msgid "The mongodb driver requires mongodb>=2.2,  %s found"
+msgstr ""
+
+#: zaqar/queues/storage/mongodb/messages.py:545
 #, python-format
 msgid ""
 "%(attempts)d attempt(s) required to post %(num_messages)d messages to "
 "queue \"%(queue)s\" under project %(project)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:590
+#: zaqar/queues/storage/mongodb/messages.py:589
 #, python-format
 msgid ""
 "First attempt failed while adding messages to queue \"%(queue)s\" under "
 "project %(project)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:604
+#: zaqar/queues/storage/mongodb/messages.py:603
 #, python-format
 msgid ""
 "Exceeded maximum retry duration for queue \"%(queue)s\" under project "
 "%(project)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:664
+#: zaqar/queues/storage/mongodb/messages.py:663
 #, python-format
 msgid ""
 "Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
 "project %(project)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/queues.py:177
+#: zaqar/queues/storage/mongodb/queues.py:169
 #, python-format
 msgid ""
 "Failed to increment the message counter for queue %(name)s and project "
@@ -154,6 +159,12 @@ msgstr ""
 
 #: zaqar/queues/storage/mongodb/utils.py:296
 msgid "Caught AutoReconnect, maximum attempts to {0} exceeded."
+msgstr ""
+
+#: zaqar/queues/storage/sqlalchemy/driver.py:42
+msgid ""
+"sqlalchemy's data plane driver will be removed during the next release. "
+"Please, consider moving your data to one of the other supported drivers."
 msgstr ""
 
 #: zaqar/queues/transport/validation.py:97
@@ -252,31 +263,31 @@ msgstr ""
 msgid "Document type not supported."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:50
+#: zaqar/queues/transport/wsgi/utils.py:51
 msgid "Request body can not be empty"
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:61
+#: zaqar/queues/transport/wsgi/utils.py:62
 msgid "Request body could not be parsed."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:66
+#: zaqar/queues/transport/wsgi/utils.py:67
 msgid "JSON contains integer that is too large."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:72
+#: zaqar/queues/transport/wsgi/utils.py:73
 msgid "Request body could not be read."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:168
+#: zaqar/queues/transport/wsgi/utils.py:169
 msgid "Missing \"{name}\" field."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:176
+#: zaqar/queues/transport/wsgi/utils.py:177
 msgid "The value of the \"{name}\" field must be a {vtype}."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/utils.py:194
+#: zaqar/queues/transport/wsgi/utils.py:195
 msgid "Malformed hexadecimal UUID."
 msgstr ""
 
@@ -301,9 +312,9 @@ msgid "Claim could not be deleted."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:60
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:267
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:270
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:73
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:333
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:329
 msgid "Message could not be retrieved."
 msgstr ""
 
@@ -312,58 +323,57 @@ msgstr ""
 msgid "Messages could not be listed."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:181
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:204
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:177
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:200
 msgid "No messages could be enqueued."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:186
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:209
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:182
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:205
 msgid "Messages could not be enqueued."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:236
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:278
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:239
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:274
 msgid "Messages could not be deleted."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:293
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:360
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:296
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:356
 msgid "Unable to delete"
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:294
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:361
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:297
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:357
 msgid "This message is claimed; it cannot be deleted without a valid claim_id."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:300
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:367
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:303
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:363
 msgid "Message could not be deleted."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/metadata.py:54
-#: zaqar/queues/transport/wsgi/v1_1/metadata.py:54
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:55
 msgid "Queue metadata could not be retrieved."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/metadata.py:91
-#: zaqar/queues/transport/wsgi/v1_1/metadata.py:91
 msgid "Metadata could not be updated."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:48
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:48
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:86
 msgid "Queue could not be created."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:77
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:63
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:101
 msgid "Queue could not be deleted."
 msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:113
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:99
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:137
 msgid "Queues could not be listed."
 msgstr ""
 
@@ -372,11 +382,15 @@ msgstr ""
 msgid "Queue stats could not be read."
 msgstr ""
 
+#: zaqar/queues/transport/wsgi/v1_1/health.py:39
+msgid "Health status could not be read."
+msgstr ""
+
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:166
 msgid "No messages were found in the request body."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:296
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:292
 msgid "Messages could not be popped."
 msgstr ""
 
