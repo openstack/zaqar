@@ -19,13 +19,13 @@ import time
 import uuid
 
 import mock
+from oslo.utils import timeutils
 from pymongo import cursor
 import pymongo.errors
 import six
 from testtools import matchers
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage import mongodb
@@ -273,7 +273,7 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
         self.assertIsNone(unchanged)
 
         now = timeutils.utcnow() + datetime.timedelta(seconds=10)
-        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow'
+        timeutils_utcnow = 'oslo.utils.timeutils.utcnow'
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
             changed = self.queue_controller._inc_counter(queue_name,

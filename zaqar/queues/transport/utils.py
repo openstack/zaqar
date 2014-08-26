@@ -15,7 +15,7 @@
 
 import json
 
-from zaqar.openstack.common import strutils
+from oslo.utils import encodeutils
 
 
 class MalformedJSON(ValueError):
@@ -44,7 +44,7 @@ def read_json(stream, len):
     :param len: the number of bytes to read from stream
     """
     try:
-        content = strutils.safe_decode(stream.read(len), 'utf-8')
+        content = encodeutils.safe_decode(stream.read(len), 'utf-8')
         return json.loads(content, parse_int=_json_int)
     except UnicodeDecodeError as ex:
         raise MalformedJSON(ex)

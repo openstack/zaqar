@@ -19,11 +19,11 @@ import time
 import uuid
 
 import ddt
+from oslo.utils import timeutils
 import six
 from testtools import matchers
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.openstack.common import timeutils
 from zaqar.queues import bootstrap
 from zaqar.queues import storage
 from zaqar.queues.storage import errors

@@ -19,11 +19,11 @@ import uuid
 import ddt
 import falcon
 import mock
+from oslo.utils import timeutils
 import six
 from testtools import matchers
 
 from zaqar.openstack.common import jsonutils
-from zaqar.openstack.common import timeutils
 from zaqar.queues.transport import validation
 from zaqar import tests as testing
 from zaqar.tests.queues.transport.wsgi import base

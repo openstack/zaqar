@@ -15,13 +15,13 @@
 
 import functools
 
+from oslo.utils import encodeutils
 import sqlalchemy as sa
 from sqlalchemy import exc
 from sqlalchemy.sql import func as sfunc
 
 from zaqar.openstack.common import jsonutils
 from zaqar.openstack.common import log as logging
-from zaqar.openstack.common import strutils
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.sqlalchemy import tables
 
@@ -128,7 +128,7 @@ def stat_message(message):
 
 
 def json_encode(obj):
-    return strutils.safe_encode(jsonutils.dumps(obj), 'utf-8')
+    return encodeutils.safe_encode(jsonutils.dumps(obj), 'utf-8')
 
 
 def json_decode(binary):

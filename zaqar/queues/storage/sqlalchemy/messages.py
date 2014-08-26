@@ -15,10 +15,10 @@
 
 import calendar
 
+from oslo.utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
 
-from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.sqlalchemy import tables
