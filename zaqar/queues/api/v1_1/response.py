@@ -31,6 +31,9 @@ class ResponseSchema(api.Api):
         message = {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string",
+                },
                 "href": {
                     "type": "string",
                     "pattern": "^(/v1\.1/queues/[a-zA-Z0-9_-]"
@@ -47,7 +50,7 @@ class ResponseSchema(api.Api):
                     "type": "object"
                 }
             },
-            "required": ["href", "ttl", "age", "body"],
+            "required": ["href", "ttl", "age", "body", "id"],
             "additionalProperties": False,
         }
 
