@@ -133,6 +133,12 @@ def run(upstream_queue):
     num_procs = conf.producer_processes
     num_workers = conf.producer_workers
 
+    duration = 0
+    total_requests = 0
+    successful_requests = 0
+    throughput = 0
+    latency = 0
+
     if num_procs and num_workers:
         test_duration = conf.time
         stats = mp.Queue()
@@ -161,19 +167,19 @@ def run(upstream_queue):
         successful_requests, total_requests, total_latency = crunch(stats)
 
         duration = time.time() - start
+
+        # NOTE(kgriffs): Duration should never be zero
         throughput = successful_requests / duration
-        latency = 1000 * total_latency / successful_requests
 
-    else:
-        duration = 0
-        total_requests = 0
-        successful_requests = 0
-        throughput = 0
-        latency = 0
+        if successful_requests:
+            latency = 1000 * total_latency / successful_requests
 
-    upstream_queue.put({'producer': {
-        'duration_sec': duration,
-        'total_reqs': total_requests,
-        'successful_reqs': successful_requests,
-        'reqs_per_sec': throughput,
-        'ms_per_req': latency}})
+    upstream_queue.put({
+        'producer': {
+            'duration_sec': duration,
+            'total_reqs': total_requests,
+            'successful_reqs': successful_requests,
+            'reqs_per_sec': throughput,
+            'ms_per_req': latency
+        }
+    })
