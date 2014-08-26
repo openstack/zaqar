@@ -83,7 +83,7 @@ class CollectionResource(object):
             each_message['href'] = base_path + each_message['id']
             del each_message['id']
 
-        return messages
+        return {'messages': messages}
 
     def _get(self, req, project_id, queue_name):
         client_uuid = wsgi_utils.get_client_uuid(req)

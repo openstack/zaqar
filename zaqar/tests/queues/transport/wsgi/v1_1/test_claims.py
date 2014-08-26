@@ -120,7 +120,7 @@ class ClaimsBaseTest(base.V1_1Base):
                                   headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        claimed = jsonutils.loads(body[0])
+        claimed = jsonutils.loads(body[0])['messages']
         claim_href = self.srmock.headers_dict['Location']
         message_href, params = claimed[0]['href'].split('?')
 
