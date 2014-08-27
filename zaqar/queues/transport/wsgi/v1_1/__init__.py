@@ -13,6 +13,7 @@
 # the License.
 
 from zaqar.queues.transport.wsgi.v1_1 import claims
+from zaqar.queues.transport.wsgi.v1_1 import flavors
 from zaqar.queues.transport.wsgi.v1_1 import health
 from zaqar.queues.transport.wsgi.v1_1 import homedoc
 from zaqar.queues.transport.wsgi.v1_1 import messages
@@ -75,6 +76,7 @@ def public_endpoints(driver):
 
 def private_endpoints(driver):
     pools_controller = driver._control.pools_controller
+    flavors_controller = driver._control.flavors_controller
 
     return [
         ('/pools',
@@ -84,4 +86,8 @@ def private_endpoints(driver):
         # Health
         ('/health',
          health.Resource(driver._storage)),
+        ('/flavors',
+         flavors.Listing(flavors_controller)),
+        ('/flavors/{flavor}',
+         flavors.Resource(flavors_controller)),
     ]

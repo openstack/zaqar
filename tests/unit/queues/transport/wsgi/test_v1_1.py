@@ -97,9 +97,13 @@ class TestValidation(v1_1.TestValidation):
     url_prefix = URL_PREFIX
 
 
+class TestFlavorsMongoDB(v1_1.TestFlavorsMongoDB):
+    url_prefix = URL_PREFIX
+
 # --------------------------------------------------------------------------
 # v1.1 only
 # --------------------------------------------------------------------------
+
 
 class TestPing(base.V1_1Base):
 
