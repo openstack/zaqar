@@ -41,13 +41,13 @@ JSON_HOME = {
                 'queue_name': 'param/queue_name',
             },
             'hints': {
-                'allow': ['GET', 'PUT', 'DELETE'],
+                'allow': ['PUT', 'DELETE'],
                 'formats': {
                     'application/json': {},
                 },
             },
         },
-        'rel/queue-stats': {
+        'rel/queue_stats': {
             'href-template': '/v1.1/queues/{queue_name}/stats',
             'href-vars': {
                 'queue_name': 'param/queue_name',
@@ -80,7 +80,7 @@ JSON_HOME = {
                 },
             },
         },
-        'rel/post-messages': {
+        'rel/post_messages': {
             'href-template': '/v1.1/queues/{queue_name}/messages',
             'href-vars': {
                 'queue_name': 'param/queue_name',
@@ -93,11 +93,56 @@ JSON_HOME = {
                 'accept-post': ['application/json'],
             },
         },
+        'rel/messages_delete': {
+            'href-template': '/v1.1/queues/{queue_name}/messages{?ids,pop}',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'ids': 'param/ids',
+                'pop': 'param/pop'
+            },
+            'hints': {
+                'allow': [
+                    'DELETE'
+                ],
+                'formats': {
+                    'application/json': {}
+                }
+            }
+        },
+        'rel/message_delete': {
+            'href-template': '/v1.1/queues/{queue_name}/messages/{message_id}{?claim}',  # noqa
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'message_id': 'param/message_id',
+                'claim': 'param/claim_id'
+            },
+            'hints': {
+                'allow': [
+                    'DELETE'
+                ],
+                'formats': {
+                    'application/json': {}
+                }
+            }
+        },
 
         # -----------------------------------------------------------------
         # Claims
         # -----------------------------------------------------------------
         'rel/claim': {
+            'href-template': '/v1.1/queues/{queue_name}/claims/{claim_id}',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'claim_id': 'param/claim_id',
+            },
+            'hints': {
+                'allow': ['GET'],
+                'formats': {
+                    'application/json': {},
+                },
+            },
+        },
+        'rel/post_claim': {
             'href-template': '/v1.1/queues/{queue_name}/claims{?limit}',
             'href-vars': {
                 'queue_name': 'param/queue_name',
@@ -109,6 +154,33 @@ JSON_HOME = {
                     'application/json': {},
                 },
                 'accept-post': ['application/json']
+            },
+        },
+        'rel/patch_claim': {
+            'href-template': '/v1.1/queues/{queue_name}/claims/{claim_id}',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'claim_id': 'param/claim_id',
+            },
+            'hints': {
+                'allow': ['PATCH'],
+                'formats': {
+                    'application/json': {},
+                },
+                'accept-post': ['application/json']
+            },
+        },
+        'rel/delete_claim': {
+            'href-template': '/v1.1/queues/{queue_name}/claims/{claim_id}',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'claim_id': 'param/claim_id',
+            },
+            'hints': {
+                'allow': ['DELETE'],
+                'formats': {
+                    'application/json': {},
+                },
             },
         },
 
