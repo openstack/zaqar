@@ -29,9 +29,9 @@ class Response(object):
     :type: dict
     """
 
-    __slots__ = ('request', 'content', 'headers')
+    __slots__ = ('_request', '_content', '_headers')
 
     def __init__(self, request, content, headers=None):
-        self.request = request
-        self.content = content
-        self.headers = headers or {}
+        self._request = request
+        self._content = content
+        self._headers = headers or {}

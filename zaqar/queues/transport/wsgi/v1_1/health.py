@@ -23,15 +23,14 @@ LOG = logging.getLogger(__name__)
 
 class Resource(object):
 
-    __slots__ = ('driver',)
+    __slots__ = ('_driver',)
 
     def __init__(self, driver):
-        self.driver = driver
+        self._driver = driver
 
     def on_get(self, req, resp, **kwargs):
         try:
-            resp_dict = self.driver.health()
-
+            resp_dict = self._driver.health()
             resp.body = utils.to_json(resp_dict)
         except Exception as ex:
             LOG.exception(ex)

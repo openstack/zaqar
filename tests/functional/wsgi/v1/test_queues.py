@@ -33,13 +33,13 @@ class NamedUnicodeStr(six.text_type):
     """Unicode string look-alike to facilitate overriding __name__."""
 
     def __init__(self, value):
-        self.value = value
+        self._value = value
 
     def __str__(self):
-        return self.value
+        return self._value
 
     def encode(self, enc):
-        return self.value.encode(enc)
+        return self._value.encode(enc)
 
     def __format__(self, formatstr):
         """Workaround for ddt bug.

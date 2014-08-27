@@ -32,7 +32,7 @@ CLAIM_PATCH_SPEC = (('ttl', int, None),)
 class CollectionResource(object):
 
     __slots__ = (
-        'claim_controller',
+        '_claim_controller',
         '_validate',
         '_claim_post_spec',
         '_default_meta',
@@ -41,7 +41,7 @@ class CollectionResource(object):
     def __init__(self, wsgi_conf, validate, claim_controller,
                  default_claim_ttl, default_grace_ttl):
 
-        self.claim_controller = claim_controller
+        self._claim_controller = claim_controller
         self._validate = validate
 
         self._claim_post_spec = (
@@ -81,7 +81,7 @@ class CollectionResource(object):
         try:
             self._validate.claim_creation(metadata, limit=limit)
 
-            cid, msgs = self.claim_controller.create(
+            cid, msgs = self._claim_controller.create(
                 queue_name,
                 metadata=metadata,
                 project=project_id,
@@ -118,10 +118,10 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('claim_controller', '_validate')
+    __slots__ = ('_claim_controller', '_validate')
 
     def __init__(self, wsgi_conf, validate, claim_controller):
-        self.claim_controller = claim_controller
+        self._claim_controller = claim_controller
         self._validate = validate
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
@@ -131,7 +131,7 @@ class ItemResource(object):
                    'project_id': project_id,
                    'claim_id': claim_id})
         try:
-            meta, msgs = self.claim_controller.get(
+            meta, msgs = self._claim_controller.get(
                 queue_name,
                 claim_id=claim_id,
                 project=project_id)
@@ -175,10 +175,10 @@ class ItemResource(object):
 
         try:
             self._validate.claim_updating(metadata)
-            self.claim_controller.update(queue_name,
-                                         claim_id=claim_id,
-                                         metadata=metadata,
-                                         project=project_id)
+            self._claim_controller.update(queue_name,
+                                          claim_id=claim_id,
+                                          metadata=metadata,
+                                          project=project_id)
 
             resp.status = falcon.HTTP_204
 
@@ -202,9 +202,9 @@ class ItemResource(object):
                    'project_id': project_id,
                    'claim_id': claim_id})
         try:
-            self.claim_controller.delete(queue_name,
-                                         claim_id=claim_id,
-                                         project=project_id)
+            self._claim_controller.delete(queue_name,
+                                          claim_id=claim_id,
+                                          project=project_id)
 
             resp.status = falcon.HTTP_204
 

@@ -31,8 +31,8 @@ LOG = logging.getLogger(__name__)
 class CollectionResource(object):
 
     __slots__ = (
-        'message_controller',
-        'queue_controller',
+        '_message_controller',
+        '_queue_controller',
         '_wsgi_conf',
         '_validate',
         '_message_post_spec',
@@ -44,8 +44,8 @@ class CollectionResource(object):
 
         self._wsgi_conf = wsgi_conf
         self._validate = validate
-        self.message_controller = message_controller
-        self.queue_controller = queue_controller
+        self._message_controller = message_controller
+        self._queue_controller = queue_controller
 
         self._message_post_spec = (
             ('ttl', int, default_message_ttl),
@@ -60,7 +60,7 @@ class CollectionResource(object):
         """Returns one or more messages from the queue by ID."""
         try:
             self._validate.message_listing(limit=len(ids))
-            messages = self.message_controller.bulk_get(
+            messages = self._message_controller.bulk_get(
                 queue_name,
                 message_ids=ids,
                 project=project_id)
@@ -96,7 +96,7 @@ class CollectionResource(object):
 
         try:
             self._validate.message_listing(**kwargs)
-            results = self.message_controller.list(
+            results = self._message_controller.list(
                 queue_name,
                 project=project_id,
                 client_uuid=client_uuid,
@@ -170,10 +170,10 @@ class CollectionResource(object):
         try:
             self._validate.message_posting(messages)
 
-            if not self.queue_controller.exists(queue_name, project_id):
-                self.queue_controller.create(queue_name, project=project_id)
+            if not self._queue_controller.exists(queue_name, project_id):
+                self._queue_controller.create(queue_name, project=project_id)
 
-            message_ids = self.message_controller.post(
+            message_ids = self._message_controller.post(
                 queue_name,
                 messages=messages,
                 project=project_id,
@@ -255,7 +255,7 @@ class CollectionResource(object):
 
     def _delete_messages_by_id(self, queue_name, ids, project_id):
         try:
-            self.message_controller.bulk_delete(
+            self._message_controller.bulk_delete(
                 queue_name,
                 message_ids=ids,
                 project=project_id)
@@ -273,7 +273,7 @@ class CollectionResource(object):
                       u'project: %(project)s',
                       {'queue': queue_name, 'project': project_id})
 
-            messages = self.message_controller.pop(
+            messages = self._message_controller.pop(
                 queue_name,
                 project=project_id,
                 limit=pop_limit)
@@ -294,10 +294,10 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('message_controller')
+    __slots__ = ('_message_controller')
 
     def __init__(self, message_controller):
-        self.message_controller = message_controller
+        self._message_controller = message_controller
 
     def on_get(self, req, resp, project_id, queue_name, message_id):
         LOG.debug(u'Messages item GET - message: %(message)s, '
@@ -306,7 +306,7 @@ class ItemResource(object):
                    'queue': queue_name,
                    'project': project_id})
         try:
-            message = self.message_controller.get(
+            message = self._message_controller.get(
                 queue_name,
                 message_id,
                 project=project_id)
@@ -338,7 +338,7 @@ class ItemResource(object):
         error_title = _(u'Unable to delete')
 
         try:
-            self.message_controller.delete(
+            self._message_controller.delete(
                 queue_name,
                 message_id=message_id,
                 project=project_id,

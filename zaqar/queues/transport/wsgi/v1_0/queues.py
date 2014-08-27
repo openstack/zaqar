@@ -28,11 +28,11 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('queue_controller', 'message_controller')
+    __slots__ = ('_queue_controller', '_message_controller')
 
     def __init__(self, queue_controller, message_controller):
-        self.queue_controller = queue_controller
-        self.message_controller = message_controller
+        self._queue_controller = queue_controller
+        self._message_controller = message_controller
 
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue item PUT - queue: %(queue)s, '
@@ -40,7 +40,7 @@ class ItemResource(object):
                   {'queue': queue_name, 'project': project_id})
 
         try:
-            created = self.queue_controller.create(
+            created = self._queue_controller.create(
                 queue_name, project=project_id)
 
         except Exception as ex:
@@ -56,7 +56,7 @@ class ItemResource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
-        if self.queue_controller.exists(queue_name, project=project_id):
+        if self._queue_controller.exists(queue_name, project=project_id):
             resp.status = falcon.HTTP_204
         else:
             resp.status = falcon.HTTP_404
@@ -70,7 +70,7 @@ class ItemResource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
         try:
-            self.queue_controller.delete(queue_name, project=project_id)
+            self._queue_controller.delete(queue_name, project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -82,10 +82,10 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('queue_controller', '_validate')
+    __slots__ = ('_queue_controller', '_validate')
 
     def __init__(self, validate, queue_controller):
-        self.queue_controller = queue_controller
+        self._queue_controller = queue_controller
         self._validate = validate
 
     def on_get(self, req, resp, project_id):
@@ -102,7 +102,7 @@ class CollectionResource(object):
 
         try:
             self._validate.queue_listing(**kwargs)
-            results = self.queue_controller.list(project=project_id, **kwargs)
+            results = self._queue_controller.list(project=project_id, **kwargs)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)

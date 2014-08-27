@@ -30,12 +30,12 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('validate', 'queue_controller', 'message_controller')
+    __slots__ = ('_validate', '_queue_controller', '_message_controller')
 
     def __init__(self, validate, queue_controller, message_controller):
-        self.validate = validate
-        self.queue_controller = queue_controller
-        self.message_controller = message_controller
+        self._validate = validate
+        self._queue_controller = queue_controller
+        self._message_controller = message_controller
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
@@ -43,8 +43,8 @@ class ItemResource(object):
                   {'queue': queue_name, 'project': project_id})
 
         try:
-            resp_dict = self.queue_controller.get(queue_name,
-                                                  project=project_id)
+            resp_dict = self._queue_controller.get(queue_name,
+                                                   project=project_id)
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
@@ -65,7 +65,7 @@ class ItemResource(object):
 
         try:
             # Place JSON size restriction before parsing
-            self.validate.queue_metadata_length(req.content_length)
+            self._validate.queue_metadata_length(req.content_length)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -77,9 +77,9 @@ class ItemResource(object):
             metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
-            created = self.queue_controller.create(queue_name,
-                                                   metadata=metadata,
-                                                   project=project_id)
+            created = self._queue_controller.create(queue_name,
+                                                    metadata=metadata,
+                                                    project=project_id)
 
         except storage_errors.FlavorDoesNotExist as ex:
             LOG.exception(ex)
@@ -98,7 +98,7 @@ class ItemResource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
         try:
-            self.queue_controller.delete(queue_name, project=project_id)
+            self._queue_controller.delete(queue_name, project=project_id)
 
         except Exception as ex:
             LOG.exception(ex)
@@ -110,10 +110,10 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('queue_controller', '_validate')
+    __slots__ = ('_queue_controller', '_validate')
 
     def __init__(self, validate, queue_controller):
-        self.queue_controller = queue_controller
+        self._queue_controller = queue_controller
         self._validate = validate
 
     def on_get(self, req, resp, project_id):
@@ -130,7 +130,7 @@ class CollectionResource(object):
 
         try:
             self._validate.queue_listing(**kwargs)
-            results = self.queue_controller.list(project=project_id, **kwargs)
+            results = self._queue_controller.list(project=project_id, **kwargs)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)

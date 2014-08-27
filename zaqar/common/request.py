@@ -44,13 +44,13 @@ class Request(object):
         self._api = None
         self._api_mod = api
 
-        self.operation = operation
-        self.content = content
-        self.params = params or {}
-        self.headers = headers or {}
+        self._operation = operation
+        self._content = content
+        self._params = params or {}
+        self._headers = headers or {}
 
     @decorators.lazy_property()
     def deserialized_content(self):
-        if self.content is not None:
-            return json.loads(self.content)
+        if self._content is not None:
+            return json.loads(self._content)
         return None
