@@ -118,6 +118,7 @@ class MessagesBaseTest(base.V1_1Base):
                 message = jsonutils.loads(result[0])
                 self.assertEqual(message['href'], message_uri)
                 self.assertEqual(message['body'], lookup[message['ttl']])
+                self.assertEqual(msg_id, message['id'])
 
                 # no negative age
                 # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
@@ -135,6 +136,8 @@ class MessagesBaseTest(base.V1_1Base):
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in result_doc['messages'])
         self.assertFalse(expected_ttls - actual_ttls)
+        actual_ids = set(m['id'] for m in result_doc['messages'])
+        self.assertFalse(set(msg_ids) - actual_ids)
 
     def test_exceeded_payloads(self):
         # Get a valid message id

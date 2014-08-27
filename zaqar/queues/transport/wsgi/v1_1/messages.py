@@ -81,7 +81,6 @@ class CollectionResource(object):
         base_path += '/'
         for each_message in messages:
             each_message['href'] = base_path + each_message['id']
-            del each_message['id']
 
         return {'messages': messages}
 
@@ -129,7 +128,6 @@ class CollectionResource(object):
             kwargs['marker'] = next(results)
             for each_message in messages:
                 each_message['href'] = req.path + '/' + each_message['id']
-                del each_message['id']
 
         return {
             'messages': messages,
@@ -331,7 +329,6 @@ class ItemResource(object):
 
         # Prepare response
         message['href'] = req.path
-        del message['id']
 
         resp.content_location = req.relative_uri
         resp.body = utils.to_json(message)
