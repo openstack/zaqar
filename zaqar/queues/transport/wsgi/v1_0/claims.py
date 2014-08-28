@@ -81,8 +81,8 @@ class CollectionResource(Resource):
         # the storage driver returned well-formed messages.
         if len(resp_msgs) != 0:
             for msg in resp_msgs:
-                msg['href'] = _msg_uri_from_claim(
-                    req.path.rpartition('/')[0], msg['id'], cid)
+                msg['href'] = wsgi_utils.message_url(
+                    msg, req.path.rpartition('/')[0], cid)
 
                 del msg['id']
 
@@ -128,8 +128,8 @@ class ItemResource(Resource):
         # Serialize claimed messages
         # TODO(kgriffs): Optimize
         for msg in meta['messages']:
-            msg['href'] = _msg_uri_from_claim(
-                req.path.rsplit('/', 2)[0], msg['id'], meta['id'])
+            msg['href'] = wsgi_utils.message_url(
+                msg, req.path.rsplit('/', 2)[0], meta['id'])
             del msg['id']
 
         meta['href'] = req.path
@@ -190,10 +190,3 @@ class ItemResource(Resource):
             LOG.exception(ex)
             description = _(u'Claim could not be deleted.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
-
-
-# TODO(kgriffs): Clean up/optimize and move to wsgi.utils
-def _msg_uri_from_claim(base_path, msg_id, claim_id):
-    return '/'.join(
-        [base_path, 'messages', msg_id]
-    ) + falcon.to_query_str({'claim_id': claim_id})

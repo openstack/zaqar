@@ -115,7 +115,8 @@ class Message(object):
             'id': self.id,
             'age': now - self.created,
             'ttl': self.ttl,
-            'body': self.body
+            'body': self.body,
+            'claim_id': self.claim_id,
         }
 
         if include_created:

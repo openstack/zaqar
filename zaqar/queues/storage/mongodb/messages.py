@@ -743,7 +743,7 @@ class MessageController(storage.Message):
         query['c.e'] = {'$lte': now}
 
         collection = self._collection(queue_name, project)
-        fields = {'_id': 1, 't': 1, 'b': 1}
+        fields = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
 
         messages = (collection.find_and_modify(query,
                                                fields=fields,
@@ -771,4 +771,5 @@ def _basic_message(msg, now):
         'age': int(age),
         'ttl': msg['t'],
         'body': msg['b'],
+        'claim_id': str(msg['c']['id']) if msg['c']['id'] else None
     }

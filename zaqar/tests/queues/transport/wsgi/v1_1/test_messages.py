@@ -417,6 +417,21 @@ class MessagesBaseTest(base.V1_1Base):
         self.simulate_get(path, headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
+    def test_get_claimed_contains_claim_id_in_href(self):
+        path = self.queue_path
+        res = self._post_messages(path + '/messages', repeat=5)
+        for url in jsonutils.loads(res[0])['resources']:
+            message = self.simulate_get(url)
+            self.assertNotIn('claim_id', jsonutils.loads(message[0])['href'])
+
+        self.simulate_post(path + '/claims',
+                           body='{"ttl": 100, "grace": 100}',
+                           headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        for url in jsonutils.loads(res[0])['resources']:
+            message = self.simulate_get(url)
+            self.assertIn('claim_id', jsonutils.loads(message[0])['href'])
+
     # NOTE(cpp-cabrera): regression test against bug #1210633
     def test_when_claim_deleted_then_messages_unclaimed(self):
         path = self.queue_path

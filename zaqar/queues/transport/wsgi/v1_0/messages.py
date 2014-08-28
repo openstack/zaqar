@@ -65,12 +65,7 @@ class CollectionResource(object):
         if not messages:
             return None
 
-        base_path += '/'
-        for each_message in messages:
-            each_message['href'] = base_path + each_message['id']
-            del each_message['id']
-
-        return messages
+        return [_format_message(m, base_path) for m in messages]
 
     def _get(self, req, project_id, queue_name):
         client_uuid = wsgi_utils.get_client_uuid(req)
@@ -113,9 +108,8 @@ class CollectionResource(object):
 
         # Found some messages, so prepare the response
         kwargs['marker'] = next(results)
-        for each_message in messages:
-            each_message['href'] = req.path + '/' + each_message['id']
-            del each_message['id']
+        base_path = req.path.rsplit('/', 1)[0]
+        messages = [_format_message(m, base_path) for m in messages]
 
         return {
             'messages': messages,
@@ -204,7 +198,8 @@ class CollectionResource(object):
         if ids is None:
             response = self._get(req, project_id, queue_name)
         else:
-            response = self._get_by_id(req.path, project_id, queue_name, ids)
+            response = self._get_by_id(req.path.rsplit('/', 1)[0], project_id,
+                                       queue_name, ids)
 
         if response is None:
             resp.status = falcon.HTTP_204
@@ -265,11 +260,8 @@ class ItemResource(object):
             description = _(u'Message could not be retrieved.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        # Prepare response
-        message['href'] = req.path
-        del message['id']
-
         resp.content_location = req.relative_uri
+        message = _format_message(message, req.path.rsplit('/', 2)[0])
         resp.body = utils.to_json(message)
         # status defaults to 200
 
@@ -315,3 +307,12 @@ class ItemResource(object):
 
         # Alles guete
         resp.status = falcon.HTTP_204
+
+
+def _format_message(message, base_path):
+    return {
+        'href': wsgi_utils.message_url(message, base_path),
+        'ttl': message['ttl'],
+        'age': message['age'],
+        'body': message['body'],
+    }

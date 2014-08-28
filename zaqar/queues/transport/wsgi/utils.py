@@ -14,6 +14,7 @@
 
 import uuid
 
+import falcon
 import jsonschema
 
 from zaqar.i18n import _
@@ -230,3 +231,10 @@ def validate(validator, document):
         raise errors.HTTPBadRequestBody(
             '{0}: {1}'.format(ex.args, ex.message)
         )
+
+
+def message_url(message, base_path, claim_id=None):
+    path = "/".join([base_path, 'messages', message['id']])
+    if claim_id:
+        path += falcon.to_query_str({'claim_id': claim_id})
+    return path

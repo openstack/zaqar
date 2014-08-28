@@ -49,7 +49,8 @@ class MessageController(storage.Message):
 
             sel = sa.sql.select([tables.Messages.c.body,
                                  tables.Messages.c.ttl,
-                                 tables.Messages.c.created])
+                                 tables.Messages.c.created,
+                                 tables.Messages.c.cid])
 
             if count:
                 sel = sa.sql.select([sfunc.count(tables.Messages.c.id)])
@@ -85,13 +86,14 @@ class MessageController(storage.Message):
         return self.driver.get(sel)[0]
 
     def get(self, queue, message_id, project):
-        body, ttl, created = self._get(queue, message_id, project)
+        body, ttl, created, cid = self._get(queue, message_id, project)
         now = timeutils.utcnow_ts()
         return {
             'id': message_id,
             'ttl': ttl,
             'age': now - calendar.timegm(created.timetuple()),
             'body': utils.json_decode(body),
+            'claim_id': utils.cid_encode(cid) if cid else None,
         }
 
     def bulk_get(self, queue, message_ids, project):
@@ -105,7 +107,8 @@ class MessageController(storage.Message):
         statement = sa.sql.select([tables.Messages.c.id,
                                    tables.Messages.c.body,
                                    tables.Messages.c.ttl,
-                                   tables.Messages.c.created])
+                                   tables.Messages.c.created,
+                                   tables.Messages.c.cid])
 
         and_stmt = [tables.Messages.c.id.in_(message_ids)]
         and_stmt.extend(self._and_stmt_with_ttl(queue, project))
@@ -117,12 +120,13 @@ class MessageController(storage.Message):
 
         now = timeutils.utcnow_ts()
         records = self.driver.run(statement)
-        for id, body, ttl, created in records:
+        for id, body, ttl, created, cid in records:
             yield {
                 'id': utils.msgid_encode(int(id)),
                 'ttl': ttl,
                 'age': now - calendar.timegm(created.timetuple()),
                 'body': utils.json_decode(body),
+                'claim_id': utils.cid_encode(cid) if cid else None,
             }
 
     def first(self, queue, project=None, sort=1):
@@ -173,7 +177,8 @@ class MessageController(storage.Message):
             sel = sa.sql.select([tables.Messages.c.id,
                                  tables.Messages.c.body,
                                  tables.Messages.c.ttl,
-                                 tables.Messages.c.created])
+                                 tables.Messages.c.created,
+                                 tables.Messages.c.cid])
 
             j = sa.join(tables.Messages, tables.Queues,
                         tables.Messages.c.qid == tables.Queues.c.id)
@@ -207,13 +212,14 @@ class MessageController(storage.Message):
 
             def it():
                 now = timeutils.utcnow_ts()
-                for id, body, ttl, created in records:
+                for id, body, ttl, created, cid in records:
                     marker_id['next'] = id
                     yield {
                         'id': utils.msgid_encode(id),
                         'ttl': ttl,
                         'age': now - calendar.timegm(created.timetuple()),
                         'body': utils.json_decode(body),
+                        'claim_id': utils.cid_encode(cid) if cid else None,
                     }
 
             yield it()
@@ -323,7 +329,8 @@ class MessageController(storage.Message):
             sel = sa.sql.select([tables.Messages.c.id,
                                  tables.Messages.c.body,
                                  tables.Messages.c.ttl,
-                                 tables.Messages.c.created])
+                                 tables.Messages.c.created,
+                                 tables.Messages.c.cid])
 
             j = sa.join(tables.Messages, tables.Queues,
                         tables.Messages.c.qid == tables.Queues.c.id)
@@ -340,12 +347,13 @@ class MessageController(storage.Message):
             now = timeutils.utcnow_ts()
             messages = []
             message_ids = []
-            for id, body, ttl, created in records:
+            for id, body, ttl, created, cid in records:
                 messages.append({
                     'id': utils.msgid_encode(id),
                     'ttl': ttl,
                     'age': now - calendar.timegm(created.timetuple()),
                     'body': utils.json_decode(body),
+                    'claim_id': utils.cid_encode(cid) if cid else None,
                 })
                 message_ids.append(id)
 
