@@ -90,14 +90,6 @@ class MessageDoesNotExist(DoesNotExist):
                                                   project=project)
 
 
-class MessageIsClaimed(NotPermitted):
-
-    msg_format = u'Message {mid} is claimed'
-
-    def __init__(self, mid):
-        super(MessageIsClaimed, self).__init__(mid=mid)
-
-
 class ClaimDoesNotExist(DoesNotExist):
 
     msg_format = (u'Claim {cid} does not exist in '
@@ -108,6 +100,30 @@ class ClaimDoesNotExist(DoesNotExist):
                                                 project=project)
 
 
+class MessageIsClaimed(NotPermitted):
+
+    msg_format = u'Message {mid} is claimed'
+
+    def __init__(self, mid):
+        super(MessageIsClaimed, self).__init__(mid=mid)
+
+
+class MessageNotClaimed(NotPermitted):
+
+    msg_format = u'Message {mid} is no longer claimed'
+
+    def __init__(self, mid):
+        super(MessageNotClaimed, self).__init__(mid=mid)
+
+
+class MessageNotClaimedBy(NotPermitted):
+
+    msg_format = u'Message {mid} is not claimed by {cid}'
+
+    def __init__(self, mid, cid):
+        super(MessageNotClaimedBy, self).__init__(cid=cid, mid=mid)
+
+
 class QueueNotMapped(DoesNotExist):
 
     msg_format = (u'No pool found for '
@@ -115,14 +131,6 @@ class QueueNotMapped(DoesNotExist):
 
     def __init__(self, queue, project):
         super(QueueNotMapped, self).__init__(queue=queue, project=project)
-
-
-class MessageIsClaimedBy(NotPermitted):
-
-    msg_format = u'Message {mid} is not claimed by {cid}'
-
-    def __init__(self, mid, cid):
-        super(MessageIsClaimedBy, self).__init__(cid=cid, mid=mid)
 
 
 class PoolDoesNotExist(DoesNotExist):

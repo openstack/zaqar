@@ -402,6 +402,12 @@ class MessageControllerTest(ControllerBaseTest):
         self.claim_controller.delete(self.queue_name, cid,
                                      project=self.project)
 
+        # NOTE(kgriffs) Message is no longer claimed, but try
+        # to delete it with the claim anyway. It should raise
+        # an error, because the client needs a hint that
+        # perhaps the claim expired before it got around to
+        # trying to delete the message, which means another
+        # worker could be processing this message now.
         with testing.expect(storage.errors.NotPermitted):
             self.controller.delete(self.queue_name, msg2['id'],
                                    project=self.project,
@@ -465,11 +471,20 @@ class MessageControllerTest(ControllerBaseTest):
                                        project=self.project,
                                        client_uuid=uuid.uuid4())
 
-        bad_claim_id = '; DROP TABLE queues'
-        self.controller.delete(self.queue_name,
-                               msgid,
-                               project=self.project,
-                               claim=bad_claim_id)
+        # NOTE(kgriffs): If the client has a typo or
+        # something, they will need a hint that the
+        # request was invalid.
+        #
+        # On the other hand, if they are actually
+        # probing for a vulnerability, telling them
+        # the claim they requested doesn't exist should
+        # be harmless.
+        with testing.expect(storage.errors.ClaimDoesNotExist):
+            bad_claim_id = '; DROP TABLE queues'
+            self.controller.delete(self.queue_name,
+                                   msgid,
+                                   project=self.project,
+                                   claim=bad_claim_id)
 
     def test_bad_marker(self):
         bad_marker = 'xyz'

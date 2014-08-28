@@ -233,7 +233,7 @@ class ClaimsBaseTest(base.V1_1Base):
         # Try to delete a message with an invalid claim ID
         self.simulate_delete(message_href,
                              query_string=params, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_403)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         # Make sure it wasn't deleted!
         self.simulate_get(message_href, query_string=params,

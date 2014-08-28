@@ -279,11 +279,15 @@ class ItemResource(object):
         # status defaults to 200
 
     def on_delete(self, req, resp, project_id, queue_name, message_id):
+
         LOG.debug(u'Messages item DELETE - message: %(message)s, '
                   u'queue: %(queue)s, project: %(project)s',
                   {'message': message_id,
                    'queue': queue_name,
                    'project': project_id})
+
+        error_title = _(u'Unable to delete')
+
         try:
             self.message_controller.delete(
                 queue_name,
@@ -291,12 +295,23 @@ class ItemResource(object):
                 project=project_id,
                 claim=req.get_param('claim_id'))
 
+        except storage_errors.MessageNotClaimed as ex:
+            LOG.debug(ex)
+            description = _(u'A claim was specified, but the message '
+                            u'is not currently claimed.')
+            raise falcon.HTTPBadRequest(error_title, description)
+
+        except storage_errors.ClaimDoesNotExist as ex:
+            LOG.debug(ex)
+            description = _(u'The specified claim does not exist or '
+                            u'has expired.')
+            raise falcon.HTTPBadRequest(error_title, description)
+
         except storage_errors.NotPermitted as ex:
-            LOG.exception(ex)
-            title = _(u'Unable to delete')
+            LOG.debug(ex)
             description = _(u'This message is claimed; it cannot be '
-                            u'deleted without a valid claim_id.')
-            raise falcon.HTTPForbidden(title, description)
+                            u'deleted without a valid claim ID.')
+            raise falcon.HTTPForbidden(error_title, description)
 
         except Exception as ex:
             LOG.exception(ex)

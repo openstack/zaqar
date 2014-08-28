@@ -33,7 +33,7 @@ class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
 class HTTPBadRequestAPI(falcon.HTTPBadRequest):
     """Wraps falcon.HTTPBadRequest with a contextual title."""
 
-    TITLE = _(u'Invalid API call')
+    TITLE = _(u'Invalid API request')
 
     def __init__(self, description):
         super(HTTPBadRequestAPI, self).__init__(self.TITLE, description)

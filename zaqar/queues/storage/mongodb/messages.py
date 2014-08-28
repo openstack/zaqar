@@ -688,12 +688,9 @@ class MessageController(storage.Message):
             PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
         }
 
-        # NOTE(cpp-cabrera): return early - the user gaves us an
-        # invalid claim id and that renders the rest of this
-        # request moot
         cid = utils.to_oid(claim)
         if cid is None:
-            return
+            raise errors.ClaimDoesNotExist(queue_name, project, claim)
 
         now = timeutils.utcnow_ts()
         cursor = collection.find(query).hint(ID_INDEX_FIELDS)
@@ -703,11 +700,8 @@ class MessageController(storage.Message):
         except StopIteration:
             return
 
-        is_claimed = (message['c']['id'] is not None and
-                      message['c']['e'] > now)
-
         if claim is None:
-            if is_claimed:
+            if _is_claimed(message, now):
                 raise errors.MessageIsClaimed(message_id)
 
         else:
@@ -719,7 +713,10 @@ class MessageController(storage.Message):
                 message = collection.find_one(query, read_preference=pref)
 
                 if message['c']['id'] != cid:
-                    raise errors.MessageIsClaimedBy(message_id, claim)
+                    if _is_claimed(message, now):
+                        raise errors.MessageNotClaimedBy(message_id, claim)
+
+                    raise errors.MessageNotClaimed(message_id)
 
         collection.remove(query['_id'], w=0)
 
@@ -760,6 +757,11 @@ class MessageController(storage.Message):
                           if message]
 
         return final_messages
+
+
+def _is_claimed(msg, now):
+    return (msg['c']['id'] is not None and
+            msg['c']['e'] > now)
 
 
 def _basic_message(msg, now):

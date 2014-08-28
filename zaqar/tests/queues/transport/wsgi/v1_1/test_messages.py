@@ -470,7 +470,7 @@ class MessagesBaseTest(base.V1_1Base):
 
         self.simulate_delete(location, query_string='claim_id=invalid',
                              headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_get(location, headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)

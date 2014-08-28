@@ -54,6 +54,13 @@ class MessagesBaseTest(base.V1Base):
         doc = '{"_ttl": 60}'
         self.simulate_put(self.queue_path, self.project_id, body=doc)
 
+        # NOTE(kgriffs): Also register without a project for tests
+        # that do not specify a project.
+        #
+        # TODO(kgriffs): Should a project id always be required or
+        # automatically supplied in the simulate_* methods?
+        self.simulate_put(self.queue_path, body=doc)
+
         self.headers = {
             'Client-ID': str(uuid.uuid4()),
         }
@@ -424,8 +431,9 @@ class MessagesBaseTest(base.V1Base):
         resp = self._post_messages(path + '/messages', 1)
         location = jsonutils.loads(resp[0])['resources'][0]
 
-        self.simulate_delete(location, query_string='claim_id=invalid')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.simulate_delete(location, self.project_id,
+                             query_string='claim_id=invalid')
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
         self.simulate_get(location, self.project_id)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)

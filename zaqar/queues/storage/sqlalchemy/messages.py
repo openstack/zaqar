@@ -73,6 +73,17 @@ class MessageController(storage.Message):
         except errors.MessageDoesNotExist:
             return False
 
+    def _get_cid(self, mid):
+        """Return the decoded claim ID for the given message.
+
+        :param mid: Decoded message ID
+        """
+
+        and_stmt = sa.and_(tables.Messages.c.id == mid)
+        sel = sa.sql.select([tables.Messages.c.cid], and_stmt)
+
+        return self.driver.get(sel)[0]
+
     def get(self, queue, message_id, project):
         body, ttl, created = self._get(queue, message_id, project)
         now = timeutils.utcnow_ts()
@@ -265,7 +276,7 @@ class MessageController(storage.Message):
             cid = claim and utils.cid_decode(claim) or None
 
             if claim and cid is None:
-                return
+                raise errors.ClaimDoesNotExist(queue, project, claim)
 
             and_stmt.append(tables.Messages.c.cid == cid)
 
@@ -273,7 +284,16 @@ class MessageController(storage.Message):
             res = trans.execute(statement)
 
             if res.rowcount == 0:
-                raise errors.MessageIsClaimed(mid)
+                # NOTE(kgriffs): Either the message is not claimed,
+                # or if it is, the specified claim does not exist.
+                cid = self._get_cid(mid)
+                if cid is None:
+                    raise errors.MessageNotClaimed(mid)
+
+                # NOTE(kgriffs): The message exists, but the claim
+                # must have expired or something, since it
+                # was not associated with the message.
+                raise errors.MessageNotClaimedBy(mid, claim)
 
     def bulk_delete(self, queue, message_ids, project):
         if project is None:
