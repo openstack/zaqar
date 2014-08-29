@@ -1008,6 +1008,7 @@ class FlavorsControllerTest(ControllerBaseTest):
         # Let's create one pool
         self.pool = str(uuid.uuid1())
         self.pools_controller.create(self.pool, 100, 'localhost', {})
+        self.addCleanup(self.pools_controller.delete, self.pool)
 
     def tearDown(self):
         self.flavors_controller.drop_all()
@@ -1031,11 +1032,16 @@ class FlavorsControllerTest(ControllerBaseTest):
         self.flavors_controller.create(name, self.pool,
                                        project=self.project,
                                        capabilities={})
-        self.flavors_controller.create(name, 'another_pool',
+
+        pool2 = 'another_pool'
+        self.pools_controller.create(pool2, 100, 'localhost', {})
+        self.addCleanup(self.pools_controller.delete, pool2)
+
+        self.flavors_controller.create(name, pool2,
                                        project=self.project,
                                        capabilities={})
         entry = self.flavors_controller.get(name, project=self.project)
-        self._flavors_expects(entry, name, self.project, 'another_pool')
+        self._flavors_expects(entry, name, self.project, pool2)
 
     def test_get_returns_expected_content(self):
         name = 'durable'
@@ -1113,8 +1119,12 @@ class FlavorsControllerTest(ControllerBaseTest):
     def test_listing_simple(self):
         name_gen = lambda i: chr(ord('A') + i)
         for i in range(15):
+            pool = str(i)
+            self.pools_controller.create(pool, 100, 'localhost', {})
+            self.addCleanup(self.pools_controller.delete, pool)
+
             self.flavors_controller.create(name_gen(i), project=self.project,
-                                           pool=str(i), capabilities={})
+                                           pool=pool, capabilities={})
 
         res = list(self.flavors_controller.list(project=self.project))
         self.assertEqual(len(res), 10)

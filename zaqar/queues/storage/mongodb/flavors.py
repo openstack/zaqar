@@ -51,6 +51,8 @@ class FlavorsController(base.FlavorsBase):
                                name='flavors_name',
                                unique=True)
 
+        self._pools_ctrl = self.driver.pools_controller
+
     @utils.raises_conn_error
     def list(self, project=None, marker=None, limit=10, detailed=False):
         query = {'p': project}
@@ -75,7 +77,13 @@ class FlavorsController(base.FlavorsBase):
 
     @utils.raises_conn_error
     def create(self, name, pool, project=None, capabilities=None):
-        # TODO(flaper87): Verify storage exists
+
+        # NOTE(flaper87): It's faster to call exists and raise an
+        # error than calling get and letting the controller raise
+        # the exception.
+        if not self._pools_ctrl.exists(pool):
+            raise errors.PoolDoesNotExist(pool)
+
         capabilities = {} if capabilities is None else capabilities
         self._col.update({'n': name, 'p': project},
                          {'$set': {'s': pool, 'c': capabilities}},

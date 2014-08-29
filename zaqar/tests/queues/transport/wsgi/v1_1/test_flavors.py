@@ -145,6 +145,16 @@ class FlavorsBaseTest(base.V1_1Base):
         doc = jsonutils.loads(result[0])
         self.assertEqual(doc['pool'], expect['pool'])
 
+    def test_create_flavor_no_pool(self):
+        self.simulate_delete(self.flavor_path)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_delete(self.pool_path)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_put(self.flavor_path, body=jsonutils.dumps(self.doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
     def test_delete_works(self):
         self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)

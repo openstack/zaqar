@@ -18,6 +18,7 @@ import jsonschema
 
 from zaqar.common.schemas import flavors as schema
 from zaqar.common import utils as common_utils
+from zaqar.i18n import _
 from zaqar.openstack.common import log
 from zaqar.queues.storage import errors
 from zaqar.queues.transport import utils as transport_utils
@@ -120,21 +121,27 @@ class Resource(object):
 
         A capabilities object may also be provided.
 
-        :returns: HTTP | [201]
+        :returns: HTTP | [201, 400]
         """
-
-        # TODO(flaper87): Verify pool exists.
 
         LOG.debug(u'PUT flavor - name: %s', flavor)
 
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
-        self._ctrl.create(flavor,
-                          pool=data['pool'],
-                          project=project_id,
-                          capabilities=data['capabilities'])
-        response.status = falcon.HTTP_201
-        response.location = request.path
+
+        try:
+            self._ctrl.create(flavor,
+                              pool=data['pool'],
+                              project=project_id,
+                              capabilities=data['capabilities'])
+            response.status = falcon.HTTP_201
+            response.location = request.path
+        except errors.PoolDoesNotExist as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor {flavor} could not be created. '
+                             u'Pool {pool} does not exist') %
+                           dict(flavor=flavor, pool=data['pool']))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
     def on_delete(self, request, response, project_id, flavor):
         """Deregisters a flavor.
