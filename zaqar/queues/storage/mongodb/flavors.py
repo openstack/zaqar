@@ -31,6 +31,10 @@ FLAVORS_INDEX = [
     ('n', 1),
 ]
 
+FLAVORS_STORAGE_POOL_INDEX = [
+    ('s', 1)
+]
+
 # NOTE(cpp-cabrera): used for get/list operations. There's no need to
 # show the marker or the _id - they're implementation details.
 OMIT_FIELDS = (('_id', False),)
@@ -50,8 +54,20 @@ class FlavorsController(base.FlavorsBase):
                                background=True,
                                name='flavors_name',
                                unique=True)
+        self._col.ensure_index(FLAVORS_STORAGE_POOL_INDEX,
+                               background=True,
+                               name='flavors_storage_pool_name')
 
         self._pools_ctrl = self.driver.pools_controller
+
+    @utils.raises_conn_error
+    def _list_by_pool(self, pool, limit=10, detailed=False):
+        query = {'s': pool}
+        cursor = self._col.find(query, fields=_field_spec(detailed),
+                                limit=limit).sort('n', 1)
+
+        normalizer = functools.partial(_normalize, detailed=detailed)
+        return utils.HookedCursor(cursor, normalizer)
 
     @utils.raises_conn_error
     def list(self, project=None, marker=None, limit=10, detailed=False):
