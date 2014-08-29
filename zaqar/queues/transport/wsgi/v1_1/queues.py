@@ -81,6 +81,10 @@ class ItemResource(object):
                                                    metadata=metadata,
                                                    project=project_id)
 
+        except storage_errors.FlavorDoesNotExist as ex:
+            LOG.exception(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Queue could not be created.')
