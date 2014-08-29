@@ -29,9 +29,8 @@ _PIPELINE_CONFIGS = tuple((
     cfg.ListOpt(resource + '_pipeline', default=[],
                 help=_('Pipeline to use for processing {0} operations. '
                        'This pipeline will be consumed before calling '
-                       'the storage driver\'s controller methods, '
-                       'which will always be appended to this '
-                       'pipeline.').format(resource))
+                       'the storage driver\'s controller methods.')
+                .format(resource))
     for resource in _PIPELINE_RESOURCES
 ))
 
