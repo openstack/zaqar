@@ -70,6 +70,12 @@
                         incubation.</para>
                 </revdescription>
             </revision>
+            <revision>
+                <date>2014-08-30</date>
+                <revdescription>
+                    <para>The <parameter>partial</parameter> attribute is no longer supported.</para>
+                </revdescription>
+            </revision>
         </revhistory>
     </info>
     <chapter xml:id="doc-change-history">
@@ -760,13 +766,22 @@ Location: /v1/queues/samplequeue</programlisting>
                     class="attribute">age</tag>, is added.</para>
             <para>The response body contains a list of resource paths
                 that correspond to each message submitted in the
-                request, in the same order as they were submitted. If
-                a server-side error occurs during the processing of
-                the submitted messages, a partial list is returned.
+                request, in the same order as they were submitted.</para>
+            <para>If a server-side error occurs during the processing
+                of the submitted messages, a partial list is returned.
                 The <parameter>partial</parameter> attribute is set to
                     <parameter>true</parameter>, and the client tries
-                to post the remaining messages again. The
-                    <parameter>body</parameter> attribute specifies an
+                to post the remaining messages again.
+            </para>
+            <important>
+                <para>The <parameter>partial</parameter> attribute has been deprecated in the v1.0 API
+                    and is not available in the v1.1 API.
+                    Drivers are now required to operate in a transactional manner.
+                    In other words, either all messages must be posted, or none of them.
+                </para>
+            </important>
+            <para>
+                The <parameter>body</parameter> attribute specifies an
                 arbitrary document that constitutes the body of the
                 message being sent.</para>
             <para>The following rules apply for the maximum size:<itemizedlist>
