@@ -16,6 +16,7 @@ import collections
 import time
 import uuid
 
+import mock
 import redis
 
 from zaqar.openstack.common.cache import cache as oslo_cache
@@ -89,7 +90,21 @@ class RedisUtilsTest(testing.TestBase):
         self.assertEqual(utils.scope_message_ids_set(None, '123'), '123..')
         self.assertEqual(utils.scope_message_ids_set(None, None, 's'), '..s')
 
+    def test_descope_messages_set(self):
+        key = utils.scope_message_ids_set('my-q')
+        self.assertEqual(utils.descope_message_ids_set(key), ('my-q', None))
+
+        key = utils.scope_message_ids_set('my-q', '123')
+        self.assertEqual(utils.descope_message_ids_set(key), ('my-q', '123'))
+
+        key = utils.scope_message_ids_set(None, '123')
+        self.assertEqual(utils.descope_message_ids_set(key), (None, '123'))
+
+        key = utils.scope_message_ids_set()
+        self.assertEqual(utils.descope_message_ids_set(key), (None, None))
+
     def test_normalize_none_str(self):
+
         self.assertEqual(utils.normalize_none_str('my-q'), 'my-q')
         self.assertEqual(utils.normalize_none_str(None), '')
 
@@ -210,7 +225,7 @@ class RedisMessagesTest(base.MessageControllerTest):
     def setUp(self):
         super(RedisMessagesTest, self).setUp()
         self.connection = self.driver.connection
-        self.q_controller = self.driver.queue_controller
+        self.queue_ctrl = self.driver.queue_controller
 
     def tearDown(self):
         super(RedisMessagesTest, self).tearDown()
@@ -218,7 +233,7 @@ class RedisMessagesTest(base.MessageControllerTest):
 
     def test_get_count(self):
         queue_name = 'get-count'
-        self.q_controller.create(queue_name)
+        self.queue_ctrl.create(queue_name)
 
         msgs = [{
             'ttl': 300,
@@ -237,10 +252,27 @@ class RedisMessagesTest(base.MessageControllerTest):
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'
-        self.q_controller.create(queue_name)
+        self.queue_ctrl.create(queue_name)
 
         self.assertRaises(storage.errors.QueueIsEmpty,
                           self.controller.first, queue_name)
+
+    def test_gc(self):
+        self.queue_ctrl.create(self.queue_name)
+        self.controller.post(self.queue_name,
+                             [{'ttl': 0, 'body': {}}],
+                             client_uuid=str(uuid.uuid4()))
+
+        num_removed = self.controller.gc()
+        self.assertEqual(num_removed, 1)
+
+        for _ in range(100):
+            self.controller.post(self.queue_name,
+                                 [{'ttl': 0, 'body': {}}],
+                                 client_uuid=str(uuid.uuid4()))
+
+        num_removed = self.controller.gc()
+        self.assertEqual(num_removed, 100)
 
 
 @testing.requires_redis
@@ -252,7 +284,8 @@ class RedisClaimsTest(base.ClaimControllerTest):
     def setUp(self):
         super(RedisClaimsTest, self).setUp()
         self.connection = self.driver.connection
-        self.q_controller = self.driver.queue_controller
+        self.queue_ctrl = self.driver.queue_controller
+        self.message_ctrl = self.driver.message_controller
 
     def tearDown(self):
         super(RedisClaimsTest, self).tearDown()
@@ -261,7 +294,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
     def test_claim_doesnt_exist(self):
         queue_name = 'no-such-claim'
         epoch = '000000000000000000000000'
-        self.q_controller.create(queue_name)
+        self.queue_ctrl.create(queue_name)
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.get, queue_name,
                           epoch, project=None)
@@ -275,3 +308,37 @@ class RedisClaimsTest(base.ClaimControllerTest):
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, queue_name,
                           claim_id, {}, project=None)
+
+    def test_gc(self):
+        self.queue_ctrl.create(self.queue_name)
+
+        for _ in range(100):
+            self.message_ctrl.post(self.queue_name,
+                                   [{'ttl': 300, 'body': 'yo gabba'}],
+                                   client_uuid=str(uuid.uuid4()))
+
+        now = timeutils.utcnow_ts()
+        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow_ts'
+
+        # Test a single claim
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now - 1
+            self.controller.create(self.queue_name, {'ttl': 1, 'grace': 60})
+
+        num_removed = self.controller._gc(self.queue_name, None)
+        self.assertEqual(num_removed, 1)
+
+        # Test multiple claims
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now - 1
+
+            for _ in range(5):
+                self.controller.create(self.queue_name,
+                                       {'ttl': 1, 'grace': 60})
+
+        # NOTE(kgriffs): These ones should not be cleaned up
+        self.controller.create(self.queue_name, {'ttl': 60, 'grace': 60})
+        self.controller.create(self.queue_name, {'ttl': 60, 'grace': 60})
+
+        num_removed = self.controller._gc(self.queue_name, None)
+        self.assertEqual(num_removed, 5)

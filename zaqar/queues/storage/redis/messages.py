@@ -29,6 +29,8 @@ Message = models.Message
 
 
 MESSAGE_IDS_SUFFIX = 'messages'
+MSGSET_INDEX_KEY = 'msgset_index'
+
 # The rank counter is an atomic index to rank messages
 # in a FIFO manner.
 MESSAGE_RANK_COUNTER_SUFFIX = 'rank_counter'
@@ -36,6 +38,11 @@ MESSAGE_RANK_COUNTER_SUFFIX = 'rank_counter'
 # NOTE(kgriffs): This value, in seconds, should be at least less than the
 # minimum allowed TTL for messages (60 seconds).
 RETRY_POST_TIMEOUT = 10
+
+# TODO(kgriffs): Tune this and/or make it configurable. Don't want
+# it to be so large that it blocks other operations for more than
+# 1-2 milliseconds.
+GC_BATCH_SIZE = 100
 
 
 class MessageController(storage.Message):
@@ -52,9 +59,17 @@ class MessageController(storage.Message):
     incremented atomically using the counter(MESSAGE_RANK_COUNTER_SUFFIX)
     also stored in the database for every queue.
 
-    Key: <project-id.q-name>
+    Key: <project_id>.<queue_name>.messages
 
-    2. Messages(Redis Hash):
+    2. Index of message ID lists (Redis sorted set)
+
+    This is a sorted set that facilitates discovery of all the
+    message ID lists. This is necessary when performing
+    garbage collection on the IDs contained within these lists.
+
+    Key: msgset_index
+
+    3. Messages(Redis Hash):
 
     Scoped by the UUID of the message, the redis datastructure
     has the following information.
@@ -70,6 +85,10 @@ class MessageController(storage.Message):
         claim expiry time ->     c.e
         client uuid       ->     u
         created time      ->     cr
+
+    4. Messages rank counter (Redis Hash):
+
+    Key: <project_id>.<queue_name>.rank_counter
     """
 
     def __init__(self, *args, **kwargs):
@@ -99,6 +118,18 @@ class MessageController(storage.Message):
         queue and project.
         """
         return self._client.zcard(msgset_key)
+
+    def _create_msgset(self, queue, project, pipe):
+        msgset_key = utils.scope_message_ids_set(queue, project,
+                                                 MESSAGE_IDS_SUFFIX)
+
+        pipe.zadd(MSGSET_INDEX_KEY, 1, msgset_key)
+
+    def _delete_msgset(self, queue, project, pipe):
+        msgset_key = utils.scope_message_ids_set(queue, project,
+                                                 MESSAGE_IDS_SUFFIX)
+
+        pipe.zrem(MSGSET_INDEX_KEY, msgset_key)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -161,8 +192,8 @@ class MessageController(storage.Message):
         msgset_key = utils.scope_message_ids_set(queue, project,
                                                  MESSAGE_IDS_SUFFIX)
 
-        sorter = self._client.zrange if sort == 1 else self._client.zrevrange
-        message_ids = sorter(msgset_key, 0, 0)
+        zrange = self._client.zrange if sort == 1 else self._client.zrevrange
+        message_ids = zrange(msgset_key, 0, 0)
         return message_ids[0] if message_ids else None
 
     def _get(self, message_id):
@@ -240,6 +271,73 @@ class MessageController(storage.Message):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
+    def gc(self):
+        """Garbage-collect expired message data.
+
+        Not all message data can be automatically expired. This method
+        cleans up the remainder.
+
+        :returns: Number of messages removed
+        """
+        client = self._client
+
+        num_removed = 0
+        offset_msgsets = 0
+
+        while True:
+            # NOTE(kgriffs): Iterate across all message sets; there will
+            # be one set of message IDs per queue.
+            msgset_keys = client.zrange(MSGSET_INDEX_KEY,
+                                        offset_msgsets,
+                                        offset_msgsets + GC_BATCH_SIZE - 1)
+            if not msgset_keys:
+                break
+
+            offset_msgsets += len(msgset_keys)
+
+            for msgset_key in msgset_keys:
+                msgset_key = strutils.safe_decode(msgset_key)
+
+                # NOTE(kgriffs): Drive the claim controller GC from
+                # here, because we already know the queue and project
+                # scope.
+                queue, project = utils.descope_message_ids_set(msgset_key)
+                self._claim_ctrl._gc(queue, project)
+
+                offset_mids = 0
+
+                while True:
+                    # NOTE(kgriffs): Look up each message in the message set,
+                    # see if it has expired, and if so, remove it from msgset.
+                    mids = client.zrange(msgset_key, offset_mids,
+                                         offset_mids + GC_BATCH_SIZE - 1)
+
+                    if not mids:
+                        break
+
+                    offset_mids += len(mids)
+
+                    # NOTE(kgriffs): If redis expired the message, it will
+                    # not exist, so all we have to do is remove mid from
+                    # the msgset collection.
+                    with client.pipeline() as pipe:
+                        for mid in mids:
+                            pipe.exists(mid)
+
+                        mid_exists_flags = pipe.execute()
+
+                    with client.pipeline() as pipe:
+                        for mid, exists in zip(mids, mid_exists_flags):
+                            if not exists:
+                                pipe.zrem(msgset_key, mid)
+                                num_removed += 1
+
+                        pipe.execute()
+
+        return num_removed
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
     def list(self, queue, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None,
@@ -259,8 +357,12 @@ class MessageController(storage.Message):
         if not message_id:
             raise errors.QueueIsEmpty(queue, project)
 
+        raw_message = self._get(message_id)
+        if raw_message is None:
+            raise errors.QueueIsEmpty(queue, project)
+
         now = timeutils.utcnow_ts()
-        return self._get(message_id).to_basic(now, include_created=True)
+        return raw_message.to_basic(now, include_created=True)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -407,8 +509,10 @@ class MessageController(storage.Message):
         msgset_key = utils.scope_message_ids_set(queue, project,
                                                  MESSAGE_IDS_SUFFIX)
         with self._client.pipeline() as pipe:
-            results = pipe.delete(message_id).zrem(msgset_key,
-                                                   message_id).execute()
+            pipe.delete(message_id)
+            pipe.zrem(msgset_key, message_id)
+
+            results = pipe.execute()
 
         # NOTE(prashanthr_): results[0] is 1 when the delete is
         # successful. Hence we use that case to identify successful
@@ -427,8 +531,9 @@ class MessageController(storage.Message):
                                                  MESSAGE_IDS_SUFFIX)
 
         with self._client.pipeline() as pipe:
-            for message_id in message_ids:
-                pipe.delete(message_id).zrem(msgset_key, message_id)
+            for mid in message_ids:
+                pipe.delete(mid)
+                pipe.zrem(msgset_key, mid)
 
             results = pipe.execute()
 

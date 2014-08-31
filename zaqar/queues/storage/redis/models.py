@@ -109,6 +109,7 @@ class Message(object):
         }
 
         pipe.hmset(self.id, doc)
+        pipe.expire(self.id, self.ttl)
 
     def to_basic(self, now, include_created=False):
         basic_msg = {

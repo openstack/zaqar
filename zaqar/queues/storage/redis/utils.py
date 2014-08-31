@@ -86,6 +86,17 @@ def scope_message_ids_set(queue=None, project=None, message_suffix=''):
             normalize_none_str(queue) + '.' +
             message_suffix)
 
+
+def descope_message_ids_set(msgset_key):
+    """Descope messages set with '.'
+
+    :returns: (queue, project)
+    """
+
+    tokens = msgset_key.split('.')
+
+    return (tokens[1] or None, tokens[0] or None)
+
 # NOTE(prashanthr_): Aliasing the scope_message_ids_set function
 # to be used in the pools and claims controller as similar
 # functionality is required to scope redis id's.

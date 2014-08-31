@@ -526,7 +526,7 @@ class MessageControllerTest(ControllerBaseTest):
                                    project=self.project,
                                    claim=cid)
 
-    @testing.is_slow(condition=lambda self: self.gc_interval != 0)
+    @testing.is_slow(condition=lambda self: self.gc_interval > 1)
     def test_expired_messages(self):
         messages = [{'body': 3.14, 'ttl': 0}, {'body': 0.618, 'ttl': 600}]
         client_uuid = uuid.uuid4()
@@ -536,7 +536,12 @@ class MessageControllerTest(ControllerBaseTest):
                                                       project=self.project,
                                                       client_uuid=client_uuid)
 
+        # NOTE(kgriffs): Allow for automatic GC of claims, messages
         time.sleep(self.gc_interval)
+
+        # NOTE(kgriffs): Some drivers require a manual GC to be
+        # triggered to clean up claims and messages.
+        self.driver.gc()
 
         with testing.expect(storage.errors.DoesNotExist):
             self.controller.get(self.queue_name, msgid_expired,
