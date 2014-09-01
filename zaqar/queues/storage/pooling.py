@@ -447,11 +447,8 @@ class Catalog(object):
                 pool = select.weighted(self._pools_ctrl.list(limit=0))
                 pool = pool and pool['name'] or None
 
-            # TODO(flaper87): If the pool is being registered by a
-            # queue creation, we shouldn't raise `NotFound` but a 500
-            # and a proper error message should be logged.wq
-            if not pool:
-                raise errors.NoPoolFound()
+                if not pool:
+                    raise errors.NoPoolFound()
 
             self._catalogue_ctrl.insert(project, queue, pool)
 
