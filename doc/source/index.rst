@@ -97,6 +97,16 @@ Running and writing tests
    running_tests
    test_suite
 
+Other resources
+===============
+
+.. toctree::
+   :maxdepth: 3
+
+   launchpad
+   gerrit
+   jenkins
+
 Modules Reference
 =================
 
