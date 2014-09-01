@@ -66,16 +66,16 @@ def flavors(test, count, pool):
     """
 
     base = test.url_prefix + '/flavors/'
-    args = sorted([(base + str(i), {str(i): i}) for i in range(count)],
-                  key=lambda tup: tup[1])
-    for path, capabilities in args:
+    args = sorted([(base + str(i), {str(i): i}, str(i)) for i in range(count)],
+                  key=lambda tup: tup[2])
+    for path, capabilities, _ in args:
         doc = {'pool': pool, 'capabilities': capabilities}
         test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
         yield args
     finally:
-        for path, _ in args:
+        for path, _, _ in args:
             test.simulate_delete(path)
 
 
