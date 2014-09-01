@@ -112,40 +112,45 @@ is used for all requests.
 
 Run the benchmarking tool using the following command::
 
-    $ zaqar-bench-pc
+    $ zaqar-bench
 
-By default, the command will run a performance test for 3 seconds, using one
-consumer and one producer for each CPU on the system, with 2 greenlet workers
-per CPU per process. You can override these defaults in the config file or on
-the command line using a variety of options. For example, the following
-command runs a performance test for 10 seconds using 4 producer processes with
-20 workers each, plus 1 consumer process with 4 workers::
+By default, the command will run a performance test for 5 seconds, using one
+producer process with 10 greenlet workers, and one observer process with
+5 workers. The consumer role is disabled by default.
 
-    $ zaqar-bench-pc -pp 4 -pw 20 -cp 1 -cw 4 -t 10
+You can override these defaults in the config file or on the command line
+using a variety of options. For example, the following command runs a
+performance test for 30 seconds using 4 producer processes with
+20 workers each, plus 4 consumer processes with 20 workers each. Note that
+the observer role is also disabled in this example by setting its number of
+workers to zero::
 
-By default, the results are in JSON. For more human-readable output add the ``--verbose`` flag.
-Verbose output looks similar to the following::
+    $ zaqar-bench -pp 4 -pw 10 -cw 4 -cw 20 -ow 0 -t 30
 
-    Starting Producer...
+By default, the results are in JSON. For more human-readable output add
+the ``--verbose`` flag. Verbose output looks similar to the following::
 
-    Starting Consumer...
+    $ zaqar-bench --verbose
 
-    Consumer
-    ========
-    duration_sec: 10.2
-    ms_per_claim: 37.6
-    ms_per_delete: 11.8
-    reqs_per_sec: 82.0
-    successful_reqs: 833.0
-    total_reqs: 833.0
+    Starting producer (pp=1 , pw=10)...
+
+    Starting observer (op=1 , ow=5)...
 
     Producer
     ========
-    duration_sec: 10.2
-    ms_per_req: 3.8
-    reqs_per_sec: 1033.6
-    successful_reqs: 10523.0
-    total_reqs: 10523.0
+    duration_sec: 5.1
+    ms_per_req: 2.9
+    reqs_per_sec: 344.5
+    successful_reqs: 1742.0
+    total_reqs: 1742.0
+
+    Observer
+    ========
+    duration_sec: 5.0
+    ms_per_req: 2.9
+    reqs_per_sec: 339.3
+    successful_reqs: 1706.0
+    total_reqs: 1706.0
 
 
 .. _`OpenStack` : http://openstack.org/

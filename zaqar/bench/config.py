@@ -13,38 +13,61 @@
 # limitations under the License.
 
 from oslo.config import cfg
-import psutil
 
 conf = cfg.CONF
 _CLI_OPTIONS = (
     cfg.IntOpt(
         'producer_processes',
         short='pp',
-        default=psutil.NUM_CPUS,
+        default=1,
         help='Number of Producer Processes'),
     cfg.IntOpt(
         'producer_workers',
         short='pw',
-        default=psutil.NUM_CPUS * 2,
+        default=10,
         help='Number of Producer Workers'),
+
     cfg.IntOpt(
         'consumer_processes',
         short='cp',
-        default=psutil.NUM_CPUS,
+        default=1,
         help='Number of Consumer Processes'),
     cfg.IntOpt(
         'consumer_workers',
         short='cw',
-        default=psutil.NUM_CPUS * 2,
+        default=0,
         help='Number of Consumer Workers'),
+
+    cfg.IntOpt(
+        'observer_processes',
+        short='op',
+        default=1,
+        help='Number of Observer Processes'),
+    cfg.IntOpt(
+        'observer_workers',
+        short='ow',
+        default=5,
+        help='Number of Observer Workers'),
+
     cfg.IntOpt('messages_per_claim', short='cno', default=5,
                help=('Number of messages the consumer will attempt to '
                      'claim at a time')),
-    cfg.IntOpt('time', short='t', default=3,
+    cfg.IntOpt('messages_per_list', short='lno', default=5,
+               help=('Number of messages the obserer will attempt to '
+                     'list at a time')),
+
+    cfg.IntOpt('time', short='t', default=5,
                help="Duration of the performance test, in seconds"),
+
     cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
+
     cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue'),
     cfg.IntOpt('num_queues', short='qno', default=4),
-    cfg.StrOpt('messages_path', short='m')
+
+    cfg.StrOpt('messages_path', short='m'),
+
+    cfg.BoolOpt('skip_queue_reset', default=False,
+                help=('Do not reset queues before running'
+                      'the performance test')),
 )
 conf.register_cli_opts(_CLI_OPTIONS)
