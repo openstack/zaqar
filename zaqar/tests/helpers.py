@@ -24,6 +24,7 @@ import testtools
 
 SKIP_SLOW_TESTS = os.environ.get('ZAQAR_TEST_SLOW') is None
 SKIP_MONGODB_TESTS = os.environ.get('ZAQAR_TEST_MONGODB') is None
+SKIP_REDIS_TESTS = os.environ.get('ZAQAR_TEST_REDIS') is None
 
 
 @contextlib.contextmanager
@@ -203,6 +204,22 @@ def requires_mongodb(test_case):
               'that are specific to this storage backend. ')
 
     return testtools.skipIf(SKIP_MONGODB_TESTS, reason)(test_case)
+
+
+def requires_redis(test_case):
+    """Decorator to flag a test case as being dependent on Redis.
+
+    Redis-specific tests will be skipped unless the MARCONI_TEST_REDIS
+    environment variable is set. If the variable is set, the tests will
+    assume that redis is running and listening on localhost.
+    """
+
+    reason = ('Skipping tests that require Redis. Ensure '
+              'Redis is running on localhost and then set '
+              'ZAQAR_TEST_REDIS in order to enable tests '
+              'that are specific to this storage backend. ')
+
+    return testtools.skipIf(SKIP_REDIS_TESTS, reason)(test_case)
 
 
 def is_slow(condition=lambda self: True):

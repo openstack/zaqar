@@ -42,26 +42,34 @@ class Conflict(ExceptionBase):
 class MessageConflict(Conflict):
 
     msg_format = (u'Message could not be enqueued due to a conflict '
-                  u'with another message that is already in '
+                  u'with one or more other messages that are already in '
                   u'queue {queue} for project {project}')
 
-    def __init__(self, queue, project, message_ids):
+    def __init__(self, queue, project):
         """Initializes the error with contextual information.
 
         :param queue: name of the queue to which the message was posted
 
         :param project: name of the project to which the queue belongs
-        :param message_ids: list of IDs for messages successfully
-            posted. Note that these must be in the same order as the
-            list of messages originally submitted to be enqueued.
         """
 
         super(MessageConflict, self).__init__(queue=queue, project=project)
-        self._succeeded_ids = message_ids
 
-        @property
-        def succeeded_ids(self):
-            return self._succeeded_ids
+
+class ClaimConflict(Conflict):
+
+    msg_format = (u'Messages could not be claimed due to a conflict '
+                  u'with another parallel claim that is already in '
+                  u'queue {queue} for project {project}')
+
+    def __init__(self, queue, project):
+        """Initializes the error with contextual information.
+
+        :param queue: name of the queue to which the message was posted
+        :param project: name of the project to which the queue belongs
+        """
+
+        super(ClaimConflict, self).__init__(queue=queue, project=project)
 
 
 class QueueDoesNotExist(DoesNotExist):

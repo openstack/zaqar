@@ -190,13 +190,8 @@ class CollectionResource(object):
 
         except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
-            message_ids = ex.succeeded_ids
-
-            if not message_ids:
-                # TODO(kgriffs): Include error code that is different
-                # from the code used in the generic case, below.
-                description = _(u'No messages could be enqueued.')
-                raise wsgi_errors.HTTPServiceUnavailable(description)
+            description = _(u'No messages could be enqueued.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         except Exception as ex:
             LOG.exception(ex)

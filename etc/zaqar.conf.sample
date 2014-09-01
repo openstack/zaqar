@@ -142,6 +142,26 @@
 # Storage driver to use. (string value)
 #storage=sqlite
 
+[drivers:storage:redis]
+
+#
+# Options defined in zaqar.queues.storage.redis
+#
+
+# Redis Server URI. Socket file based connectors are supported.
+# Example for socket file connector: redis:/tmp/redis.sock'
+#uri=<None>
+
+# Maximum number of times to retry an operation that failed
+# due to a primary node failover. (integer value)
+#max_reconnect_attempts=10
+
+# Base sleep interval between attempts to reconnect after a
+# primary node failover. The actual sleep time increases
+# exponentially (power of 2) each time the operation is
+# retried. (floating point value)
+#reconnect_sleep=0.02
+
 
 [drivers:storage:mongodb]
 
