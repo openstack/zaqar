@@ -84,16 +84,26 @@ class FlavorsBaseTest(base.V1_1Base):
 
     def setUp(self):
         super(FlavorsBaseTest, self).setUp()
+        self.queue = 'test-queue'
+        self.queue_path = self.url_prefix + '/queues/' + self.queue
+
+        self.pool = 'mypool'
+        self.pool_path = self.url_prefix + '/pools/' + self.pool
+        self.pool_doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
+        self.simulate_put(self.pool_path, body=jsonutils.dumps(self.pool_doc))
+
         self.flavor = 'test-flavor'
         self.doc = {'capabilities': {}, 'pool': 'mypool'}
-        self.flavor = self.url_prefix + '/flavors/' + self.flavor
-        self.simulate_put(self.flavor, body=jsonutils.dumps(self.doc))
+        self.flavor_path = self.url_prefix + '/flavors/' + self.flavor
+        self.simulate_put(self.flavor_path, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
         super(FlavorsBaseTest, self).tearDown()
-        self.simulate_delete(self.flavor)
+        self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_delete(self.queue_path)
 
     def test_put_flavor_works(self):
         name = str(uuid.uuid1())
@@ -126,20 +136,20 @@ class FlavorsBaseTest(base.V1_1Base):
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default flavor
         expect = self.doc
-        self.simulate_put(self.flavor,
+        self.simulate_put(self.flavor_path,
                           body=jsonutils.dumps(expect))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
-        result = self.simulate_get(self.flavor)
+        result = self.simulate_get(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         doc = jsonutils.loads(result[0])
         self.assertEqual(doc['pool'], expect['pool'])
 
     def test_delete_works(self):
-        self.simulate_delete(self.flavor)
+        self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-        self.simulate_get(self.flavor)
+        self.simulate_get(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_get_nonexisting_raises_404(self):
@@ -153,35 +163,35 @@ class FlavorsBaseTest(base.V1_1Base):
         self.assertEqual(flavor['pool'], xpool)
 
     def test_get_works(self):
-        result = self.simulate_get(self.flavor)
+        result = self.simulate_get(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor, self.doc['pool'])
+        self._flavor_expect(pool, self.flavor_path, self.doc['pool'])
 
     def test_detailed_get_works(self):
-        result = self.simulate_get(self.flavor,
+        result = self.simulate_get(self.flavor_path,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor, self.doc['pool'])
+        self._flavor_expect(pool, self.flavor_path, self.doc['pool'])
         self.assertIn('capabilities', pool)
         self.assertEqual(pool['capabilities'], {})
 
     def test_patch_raises_if_missing_fields(self):
-        self.simulate_patch(self.flavor,
+        self.simulate_patch(self.flavor_path,
                             body=jsonutils.dumps({'location': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def _patch_test(self, doc):
-        self.simulate_patch(self.flavor,
+        self.simulate_patch(self.flavor_path,
                             body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        result = self.simulate_get(self.flavor,
+        result = self.simulate_get(self.flavor_path,
                                    query_string='?detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor, doc['pool'])
+        self._flavor_expect(pool, self.flavor_path, doc['pool'])
         self.assertEqual(pool['capabilities'], doc['capabilities'])
 
     def test_patch_works(self):
@@ -195,14 +205,14 @@ class FlavorsBaseTest(base.V1_1Base):
 
     @ddt.data(-1, 2**32+1, [])
     def test_patch_raises_400_on_invalid_pool(self, pool):
-        self.simulate_patch(self.flavor,
+        self.simulate_patch(self.flavor_path,
                             body=jsonutils.dumps({'pool': pool}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 'wee', [])
     def test_patch_raises_400_on_invalid_capabilities(self, capabilities):
         doc = {'capabilities': capabilities}
-        self.simulate_patch(self.flavor, body=jsonutils.dumps(doc))
+        self.simulate_patch(self.flavor_path, body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_patch_raises_404_if_flavor_not_found(self):
@@ -211,7 +221,7 @@ class FlavorsBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
     def test_empty_listing_returns_204(self):
-        self.simulate_delete(self.flavor)
+        self.simulate_delete(self.flavor_path)
         self.simulate_get(self.url_prefix + '/flavors')
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
@@ -219,7 +229,7 @@ class FlavorsBaseTest(base.V1_1Base):
                       marker=None, detailed=False):
         # NOTE(cpp-cabrera): delete initial flavor - it will interfere
         # with listing tests
-        self.simulate_delete(self.flavor)
+        self.simulate_delete(self.flavor_path)
         query = '?limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
             query += '&marker={2}'.format(marker)
@@ -254,7 +264,7 @@ class FlavorsBaseTest(base.V1_1Base):
         self._listing_test(count=15, limit=limit)
 
     def test_listing_marker_is_respected(self):
-        self.simulate_delete(self.flavor)
+        self.simulate_delete(self.flavor_path)
 
         with flavors(self, 10, self.doc['pool']) as expected:
             result = self.simulate_get(self.url_prefix + '/flavors',
@@ -265,10 +275,24 @@ class FlavorsBaseTest(base.V1_1Base):
             path, capabilities = expected[4][:2]
             self._flavor_expect(flavor_list[0], path, self.doc['pool'])
 
+    def test_queue_create_works(self):
+        metadata = {'_flavor': self.flavor}
+        self.simulate_put(self.queue_path, body=jsonutils.dumps(metadata))
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+    def test_queue_create_no_flavor(self):
+        metadata = {'_flavor': self.flavor}
+
+        self.simulate_delete(self.flavor_path)
+        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+
+        self.simulate_put(self.queue_path, body=jsonutils.dumps(metadata))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
 
 class TestFlavorsMongoDB(FlavorsBaseTest):
 
-    config_file = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     @testing.requires_mongodb
     def setUp(self):

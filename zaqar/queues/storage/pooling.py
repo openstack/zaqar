@@ -439,12 +439,6 @@ class Catalog(object):
         if not self._catalogue_ctrl.exists(project, queue):
 
             if flavor is not None:
-                # TODO(flaper87): If the flavor doesn't exist, this will
-                # raise a `FlavorDoesNotExist` making the transport to treat
-                # this failure as an internal error. However, this is actually
-                # an user error erro since a non valid flavor has been used.
-                # Make sure this error is caught in the queue creation endpoint
-                # and a proper message is logged.
                 flavor = self._flavor_ctrl.get(flavor, project=project)
                 pool = flavor['pool']
             else:
