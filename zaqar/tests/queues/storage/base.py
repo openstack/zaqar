@@ -314,9 +314,9 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertTrue(created)
 
         # Create 15 messages.
-        _insert_fixtures(self.message_controller, queue_name,
-                         project=self.project,
-                         client_uuid=client_uuid, num=15)
+        msg_keys = _insert_fixtures(self.message_controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=15)
 
         stats = self.controller.stats(queue_name,
                                       self.project)['messages']
@@ -330,6 +330,25 @@ class QueueControllerTest(ControllerBaseTest):
         stats = self.controller.stats(queue_name,
                                       self.project)['messages']
         self.assertEqual(stats['claimed'], 10)
+
+        # Delete one message and ensure stats are updated even
+        # thought the claim itself has not been deleted.
+        self.message_controller.delete(queue_name, msg_keys[0],
+                                       self.project, claim_id)
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 14)
+        self.assertEqual(stats['claimed'], 9)
+        self.assertEqual(stats['free'], 5)
+
+        # Same thing but use bulk_delete interface
+        self.message_controller.bulk_delete(queue_name, msg_keys[1:3],
+                                            self.project)
+        stats = self.controller.stats(queue_name,
+                                      self.project)['messages']
+        self.assertEqual(stats['total'], 12)
+        self.assertEqual(stats['claimed'], 7)
+        self.assertEqual(stats['free'], 5)
 
         # Delete the claim
         self.claim_controller.delete(queue_name, claim_id,

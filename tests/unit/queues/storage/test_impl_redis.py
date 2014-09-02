@@ -192,29 +192,6 @@ class RedisQueuesTest(base.QueueControllerTest):
         super(RedisQueuesTest, self).tearDown()
         self.connection.flushdb()
 
-    def test_inc_counter(self):
-        queue_name = 'inc-counter'
-        self.controller.create(queue_name)
-        self.controller._inc_counter(queue_name, None, 10)
-
-        scoped_q_name = utils.scope_queue_name(queue_name)
-        count = self.controller._get_queue_info(scoped_q_name, b'c', int)[0]
-        self.assertEqual(count, 10)
-
-    def test_inc_claimed(self):
-        self.addCleanup(self.controller.delete, 'test-queue',
-                        project=self.project)
-
-        queue_name = 'inc-claimed'
-
-        self.controller.create(queue_name)
-        self.controller._inc_claimed(queue_name, None, 10)
-
-        scoped_q_name = utils.scope_queue_name(queue_name)
-        claimed = self.controller._get_queue_info(scoped_q_name,
-                                                  b'cl', int)[0]
-        self.assertEqual(claimed, 10)
-
 
 @testing.requires_redis
 class RedisMessagesTest(base.MessageControllerTest):
@@ -231,7 +208,7 @@ class RedisMessagesTest(base.MessageControllerTest):
         super(RedisMessagesTest, self).tearDown()
         self.connection.flushdb()
 
-    def test_get_count(self):
+    def test_count(self):
         queue_name = 'get-count'
         self.queue_ctrl.create(queue_name)
 
@@ -244,10 +221,7 @@ class RedisMessagesTest(base.MessageControllerTest):
         # Creating 10 messages
         self.controller.post(queue_name, msgs, client_id)
 
-        messages_set_id = utils.scope_message_ids_set(queue_name, None,
-                                                      'messages')
-
-        num_msg = self.controller._get_count(messages_set_id)
+        num_msg = self.controller._count(queue_name, None)
         self.assertEqual(num_msg, 10)
 
     def test_empty_queue_exception(self):
