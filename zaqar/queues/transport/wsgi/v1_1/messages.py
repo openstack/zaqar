@@ -217,8 +217,6 @@ class CollectionResource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
-        resp.content_location = req.relative_uri
-
         ids = req.get_param_as_list('ids')
 
         if ids is None:
@@ -330,7 +328,6 @@ class ItemResource(object):
         # Prepare response
         message['href'] = req.path
 
-        resp.content_location = req.relative_uri
         resp.body = utils.to_json(message)
         # status defaults to 200
 

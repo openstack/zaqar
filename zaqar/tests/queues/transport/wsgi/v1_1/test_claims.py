@@ -181,8 +181,6 @@ class ClaimsBaseTest(base.V1_1Base):
         claim = jsonutils.loads(body[0])
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         claim_href)
         self.assertEqual(claim['ttl'], 100)
         # NOTE(cpp-cabrera): verify that claim age is non-negative
         self.assertThat(claim['age'], matchers.GreaterThan(-1))

@@ -158,7 +158,6 @@ class ItemResource(object):
         meta['href'] = req.path
         del meta['id']
 
-        resp.content_location = req.relative_uri
         resp.body = utils.to_json(meta)
         # status defaults to 200
 

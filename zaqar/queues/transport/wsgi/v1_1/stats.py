@@ -50,7 +50,6 @@ class Resource(object):
                 oldest['href'] = base_path + oldest['id']
                 del oldest['id']
 
-            resp.content_location = req.path
             resp.body = utils.to_json(resp_dict)
             # status defaults to 200
 
@@ -62,7 +61,6 @@ class Resource(object):
                     'total': 0
                 }
             }
-            resp.content_location = req.path
             resp.body = utils.to_json(resp_dict)
 
         except storage_errors.DoesNotExist as ex:

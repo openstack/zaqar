@@ -111,8 +111,6 @@ class MessagesBaseTest(base.V1_1Base):
                 # Correct project ID
                 result = self.simulate_get(message_uri, headers=self.headers)
                 self.assertEqual(self.srmock.status, falcon.HTTP_200)
-                self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                                 message_uri)
 
                 # Check message properties
                 message = jsonutils.loads(result[0])
@@ -352,8 +350,6 @@ class MessagesBaseTest(base.V1_1Base):
                                  headers=self.headers)
 
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         path + '?' + query_string)
 
         cnt = 0
         while jsonutils.loads(body[0])['messages'] != []:
@@ -379,8 +375,6 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         message_stats = jsonutils.loads(body[0])['messages']
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         self.queue_path + '/stats')
 
         # NOTE(kgriffs): The other parts of the stats are tested
         # in tests.storage.base and so are not repeated here.
