@@ -21,6 +21,7 @@ import six
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.queues.transport import validation
+from zaqar.queues.transport.wsgi import utils
 
 
 LOG = logging.getLogger(__name__)
@@ -50,6 +51,25 @@ and retry.'''))
     if not params['project_id'] and 'v1.1' in req.path:
         raise falcon.HTTPBadRequest('Project-Id Missing',
                                     _(u'The header X-PROJECT-ID was missing'))
+
+
+def require_client_id(req, resp, params):
+    """Makes sure the header `Client-ID` is present in the request
+
+    Use as a before hook.
+    :param req: request sent
+    :type req: falcon.request.Request
+    :param resp: response object to return
+    :type resp: falcon.response.Response
+    :param params: additional parameters passed to responders
+    :type params: dict
+    :rtype: None
+    """
+
+    if 'v1.1' in req.path:
+        # NOTE(flaper87): `get_client_uuid` already raises 400
+        # it the header is missing.
+        utils.get_client_uuid(req)
 
 
 def validate_queue_identification(validate, req, resp, params):

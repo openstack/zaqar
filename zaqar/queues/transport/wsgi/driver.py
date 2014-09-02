@@ -64,6 +64,7 @@ class Driver(transport.DriverBase):
         """Exposed to facilitate unit testing."""
         return [
             helpers.require_accepts_json,
+            helpers.require_client_id,
             helpers.extract_project_id,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
