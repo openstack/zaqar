@@ -150,7 +150,8 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
     def test_insert_queue_header_asterisk(self):
         """Insert Queue with 'Accept': '*/*'."""
         path = '/queues/asteriskinheader'
-        headers = {"Accept": '*/*'}
+        headers = {"Accept": '*/*',
+                   'X-Project-ID': '518b51ea133c4facadae42c328d6b77b'}
         self.addCleanup(self.client.delete, url=path, headers=headers)
 
         result = self.client.put(path, headers=headers)

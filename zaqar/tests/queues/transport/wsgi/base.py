@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import uuid
+
 from falcon import testing as ftest
 
 from zaqar.openstack.common import jsonutils
@@ -46,6 +48,10 @@ class TestBase(testing.TestBase):
 
         self.srmock = ftest.StartResponseMock()
 
+        self.headers = {
+            'Client-ID': str(uuid.uuid4()),
+        }
+
     def tearDown(self):
         if self.conf.pooling:
             self.boot.control.pools_controller.drop_all()
@@ -65,10 +71,15 @@ class TestBase(testing.TestBase):
         :returns: standard WSGI iterable response
         """
 
-        if project_id is not None:
-            headers = dict(kwargs['headers']) if 'headers' in kwargs else {}
-            headers['X-Project-ID'] = project_id
-            kwargs['headers'] = headers
+        # NOTE(flaper87): We create a copy regardless the headers
+        # were passed or not. This will prevent modifying `self.headers`
+        # in cases where simulate methods are called like:
+        # self.simulate_put(path, headers=self.headers)
+        headers = kwargs.get('headers', self.headers).copy()
+        project_id = ('518b51ea133c4facadae42c328d6b77b' if project_id
+                      is None else project_id)
+        headers['X-Project-ID'] = headers.get('X-Project-ID', project_id)
+        kwargs['headers'] = headers
 
         return self.app(ftest.create_environ(path=path, **kwargs),
                         self.srmock)
@@ -132,24 +143,6 @@ class V1_1Base(TestBase):
 
     def _empty_message_list(self, body):
         self.assertEqual(jsonutils.loads(body[0])['messages'], [])
-
-    def simulate_request(self, path, project_id=None, **kwargs):
-        """Simulate a request.
-
-        Simulates a WSGI request to the API for testing.
-
-        :param path: Request path for the desired resource
-        :param kwargs: Same as falcon.testing.create_environ()
-
-        :returns: standard WSGI iterable response
-        """
-        if project_id is not None:
-            headers = dict(kwargs['headers']) if 'headers' in kwargs else {}
-            headers['X-Project-ID'] = project_id
-            kwargs['headers'] = headers
-
-        return self.app(ftest.create_environ(path=path, **kwargs),
-                        self.srmock)
 
 
 class V1_1BaseFaulty(TestBaseFaulty):

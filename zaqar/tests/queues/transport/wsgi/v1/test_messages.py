@@ -381,11 +381,13 @@ class MessagesBaseTest(base.V1Base):
     def test_no_uuid(self):
         path = self.queue_path + '/messages'
 
-        self.simulate_post(path, '7e7e7e', body='[{"body": 0, "ttl": 100}]')
+        self.simulate_post(path, '7e7e7e',
+                           headers={},
+                           body='[{"body": 0, "ttl": 100}]')
 
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
-        self.simulate_get(path, '7e7e7e')
+        self.simulate_get(path, '7e7e7e', headers={})
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     # NOTE(cpp-cabrera): regression test against bug #1210633

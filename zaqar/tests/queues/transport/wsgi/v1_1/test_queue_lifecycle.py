@@ -259,25 +259,11 @@ class QueueLifecycleBaseTest(base.V1_1Base):
             uri = self.queue_path + '/' + name
             self.simulate_put(uri, headers=altheader, body=body)
 
-        create_queue('g1', None, '{"answer": 42}')
-        create_queue('g2', None, '{"answer": 42}')
-
         create_queue('q1', project_id, '{"node": 31}')
         create_queue('q2', project_id, '{"node": 32}')
         create_queue('q3', project_id, '{"node": 33}')
 
         create_queue('q3', alt_project_id, '{"alt": 1}')
-
-        # List (global queues)
-        result = self.simulate_get(self.queue_path,
-                                   query_string='limit=2&detailed=true')
-
-        result_doc = jsonutils.loads(result[0])
-        queues = result_doc['queues']
-        self.assertEqual(len(queues), 2)
-
-        for queue in queues:
-            self.assertEqual(queue['metadata'], {'answer': 42})
 
         # List (limit)
         result = self.simulate_get(self.queue_path, headers=header,
