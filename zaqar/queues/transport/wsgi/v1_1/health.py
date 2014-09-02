@@ -32,7 +32,6 @@ class Resource(object):
         try:
             resp_dict = self.driver.health()
 
-            resp.content_location = req.path
             resp.body = utils.to_json(resp_dict)
         except Exception as ex:
             LOG.exception(ex)

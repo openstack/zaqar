@@ -65,7 +65,6 @@ class Listing(object):
             response.status = falcon.HTTP_204
             return
 
-        response.content_location = request.relative_uri
         response.body = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 
@@ -112,7 +111,6 @@ class Resource(object):
         # remove the name entry - it isn't needed on GET
         del data['name']
         response.body = transport_utils.to_json(data)
-        response.content_location = request.relative_uri
 
     def on_put(self, request, response, project_id, flavor):
         """Registers a new flavor. Expects the following input:
