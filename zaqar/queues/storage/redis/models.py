@@ -16,9 +16,9 @@ import functools
 import uuid
 
 import msgpack
+from oslo.utils import timeutils
 
 from zaqar.openstack.common import strutils
-from zaqar.openstack.common import timeutils
 
 
 _pack = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack

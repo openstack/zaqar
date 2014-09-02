@@ -15,11 +15,11 @@
 import functools
 
 import msgpack
+from oslo.utils import timeutils
 import redis
 
 from zaqar.common import decorators
 from zaqar.openstack.common import log as logging
-from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.redis import messages

@@ -17,10 +17,10 @@ import time
 import uuid
 
 import mock
+from oslo.utils import timeutils
 import redis
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage.redis import controllers
 from zaqar.queues.storage.redis import driver
@@ -292,7 +292,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
                                    client_uuid=str(uuid.uuid4()))
 
         now = timeutils.utcnow_ts()
-        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow_ts'
+        timeutils_utcnow = 'oslo.utils.timeutils.utcnow_ts'
 
         # Test a single claim
         with mock.patch(timeutils_utcnow) as mock_utcnow:
