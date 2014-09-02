@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-01 06:20+0000\n"
-"PO-Revision-Date: 2014-09-01 00:31+0000\n"
+"POT-Creation-Date: 2014-09-02 06:08+0000\n"
+"PO-Revision-Date: 2014-09-01 21:23+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -182,6 +182,14 @@ msgstr ""
 "Exceção AutoReconnect capturada, número máximo de tentativas para {0} "
 "excedido."
 
+#: zaqar/queues/storage/redis/utils.py:146
+msgid "Caught ConnectionError, retrying the call to {0}"
+msgstr ""
+
+#: zaqar/queues/storage/redis/utils.py:151
+msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
+msgstr ""
+
 #: zaqar/queues/storage/sqlalchemy/driver.py:42
 msgid ""
 "sqlalchemy's data plane driver will be removed during the next release. "
@@ -341,9 +349,9 @@ msgid "Claim could not be deleted."
 msgstr "Não foi possível excluir o pedido."
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:60
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:270
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:265
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:73
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:327
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:322
 msgid "Message could not be retrieved."
 msgstr "Não foi possível recuperar a mensagem."
 
@@ -352,43 +360,43 @@ msgstr "Não foi possível recuperar a mensagem."
 msgid "Messages could not be listed."
 msgstr "Não foi possível listar a mensagem."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:177
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:198
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:172
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:193
 msgid "No messages could be enqueued."
 msgstr "Nenhuma mensagem pode ser adicionada à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:182
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:203
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:177
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:198
 msgid "Messages could not be enqueued."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:239
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:272
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:234
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:267
 msgid "Messages could not be deleted."
 msgstr "Não foi possível excluir as mensagens."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:289
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:345
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:284
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:340
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:300
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:356
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:295
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:351
 msgid "A claim was specified, but the message is not currently claimed."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:306
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:362
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:301
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:357
 msgid "The specified claim does not exist or has expired."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:312
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:368
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:307
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:363
 msgid "This message is claimed; it cannot be deleted without a valid claim ID."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:318
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:374
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:313
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:369
 msgid "Message could not be deleted."
 msgstr "A mensagem não pode ser excluída."
 
@@ -402,17 +410,17 @@ msgid "Metadata could not be updated."
 msgstr "Não foi possível atualizar os metadados."
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:48
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:86
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:90
 msgid "Queue could not be created."
 msgstr "Não foi possível criar a fila."
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:77
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:101
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:105
 msgid "Queue could not be deleted."
 msgstr "Não foi possível excluir a fila."
 
 #: zaqar/queues/transport/wsgi/v1_0/queues.py:113
-#: zaqar/queues/transport/wsgi/v1_1/queues.py:137
+#: zaqar/queues/transport/wsgi/v1_1/queues.py:141
 msgid "Queues could not be listed."
 msgstr "Não foi possível listar as filas."
 
@@ -420,6 +428,14 @@ msgstr "Não foi possível listar as filas."
 #: zaqar/queues/transport/wsgi/v1_1/stats.py:74
 msgid "Queue stats could not be read."
 msgstr "Não foi possível ler as estatísticas da fila."
+
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:141
+msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
+msgstr ""
+
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:144
+msgid "Unable to create"
+msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_1/health.py:39
 msgid "Health status could not be read."
@@ -429,7 +445,7 @@ msgstr ""
 msgid "No messages were found in the request body."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:290
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:285
 msgid "Messages could not be popped."
 msgstr ""
 
