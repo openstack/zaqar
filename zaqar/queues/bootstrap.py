@@ -44,9 +44,9 @@ CONF.register_cli_opts(_CLI_OPTIONS)
 _GENERAL_OPTIONS = (
     ADMIN_MODE_OPT,
     cfg.BoolOpt('pooling', default=False,
-                help=('Enable pooling across multiple storage backends. ',
-                      'If pooling is enabled, the storage driver ',
-                      'configuration is used to determine where the ',
+                help=('Enable pooling across multiple storage backends. '
+                      'If pooling is enabled, the storage driver '
+                      'configuration is used to determine where the '
                       'catalogue/control plane data is kept.'),
                 deprecated_opts=[cfg.DeprecatedOpt('pooling')]),
 )
