@@ -118,28 +118,31 @@ class MessageController(storage.Message):
         for msg_id in message_ids:
             pipe.delete(msg_id)
 
-    # TODO(prashanthr_): Looking for better ways to solve the issue.
+    # TODO(prashanthr_): Look for better ways to solve the issue.
     def _find_first_unclaimed(self, queue, project, limit):
         """Find the first unclaimed message in the queue."""
 
         msgset_key = utils.scope_message_ids_set(queue, project,
                                                  MESSAGE_IDS_SUFFIX)
-        marker = 0
         now = timeutils.utcnow_ts()
 
-        # NOTE(prashanthr_): This will not be an infinite loop.
-        while True:
-            msg_keys = self._client.zrange(msgset_key, marker,
-                                           marker + limit)
-            if msg_keys:
-                messages = [Message.from_redis(self._client.hgetall(msg_key))
-                            for msg_key in msg_keys]
+        # TODO(kgriffs): Generalize this paging pattern (DRY)
+        offset = 0
 
-                for msg in messages:
-                    if not utils.msg_claimed_filter(msg, now):
-                        return msg.id
-            else:
+        while True:
+            msg_keys = self._client.zrange(msgset_key, offset,
+                                           offset + limit - 1)
+            if not msg_keys:
                 return None
+
+            offset += len(msg_keys)
+
+            messages = [Message.from_redis(self._client.hgetall(msg_key))
+                        for msg_key in msg_keys]
+
+            for msg in messages:
+                if not utils.msg_claimed_filter(msg, now):
+                    return msg.id
 
     def _exists(self, key):
         """Check if message exists in the Queue.
@@ -194,9 +197,10 @@ class MessageController(storage.Message):
         client = self._client
 
         with self._client.pipeline() as pipe:
-            # NOTE(prashanthr_): Iterate through the queue to find the first
-            # unclaimed message.
             if not marker and not include_claimed:
+                # NOTE(kgriffs): Skip unclaimed messages at the head
+                # of the queue; otherwise we would just filter them all
+                # out and likely end up with an empty list to return.
                 marker = self._find_first_unclaimed(queue, project, limit)
                 start = client.zrank(msgset_key, marker) or 0
             else:
