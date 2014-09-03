@@ -16,9 +16,8 @@ import functools
 import uuid
 
 import msgpack
+from oslo.utils import encodeutils
 from oslo.utils import timeutils
-
-from zaqar.openstack.common import strutils
 
 
 _pack = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack
@@ -76,19 +75,19 @@ class Message(object):
     def from_redis(doc):
         claim_id = doc[b'c']
         if claim_id:
-            claim_id = strutils.safe_decode(claim_id)
+            claim_id = encodeutils.safe_decode(claim_id)
         else:
             claim_id = None
 
         # NOTE(kgriffs): Under Py3K, redis-py converts all strings
         # into binary. Woohoo!
         return Message(
-            id=strutils.safe_decode(doc[b'id']),
+            id=encodeutils.safe_decode(doc[b'id']),
             ttl=int(doc[b't']),
             created=int(doc[b'cr']),
             expires=int(doc[b'e']),
 
-            client_uuid=strutils.safe_decode(doc[b'u']),
+            client_uuid=encodeutils.safe_decode(doc[b'u']),
 
             claim_id=claim_id,
             claim_expires=int(doc[b'c.e']),

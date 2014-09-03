@@ -15,11 +15,11 @@
 import functools
 import uuid
 
+from oslo.utils import encodeutils
 from oslo.utils import timeutils
 import redis
 
 from zaqar.common import decorators
-from zaqar.openstack.common import strutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.redis import models
@@ -215,7 +215,7 @@ class MessageController(storage.Message):
 
         info = {
             # NOTE(kgriffs): A "None" claim is serialized as an empty str
-            'id': strutils.safe_decode(claim[0]) or None,
+            'id': encodeutils.safe_decode(claim[0]) or None,
             'expires': int(claim[1]),
         }
 
@@ -310,7 +310,7 @@ class MessageController(storage.Message):
             offset_msgsets += len(msgset_keys)
 
             for msgset_key in msgset_keys:
-                msgset_key = strutils.safe_decode(msgset_key)
+                msgset_key = encodeutils.safe_decode(msgset_key)
 
                 # NOTE(kgriffs): Drive the claim controller GC from
                 # here, because we already know the queue and project

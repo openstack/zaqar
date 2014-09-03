@@ -17,12 +17,12 @@ import sys
 import time
 import uuid
 
+from oslo.utils import encodeutils
 import redis
 import six
 
 from zaqar.i18n import _
 from zaqar.openstack.common import log as logging
-from zaqar.openstack.common import strutils
 from zaqar.queues.storage import errors
 
 LOG = logging.getLogger(__name__)
@@ -198,7 +198,7 @@ class QueueListCursor(object):
     def next(self):
         curr = next(self.queue_iter)
         queue = self.client.hmget(curr, ['c', 'm'])
-        return self.denormalizer(queue, strutils.safe_decode(curr))
+        return self.denormalizer(queue, encodeutils.safe_decode(curr))
 
     def __next__(self):
         return self.next()
