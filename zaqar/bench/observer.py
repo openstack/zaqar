@@ -70,7 +70,8 @@ def observer(queues, stats, test_duration, limit):
 
         try:
             marktime.start('list_messages')
-            cursor = queue['q'].messages(limit=limit, marker=queue['m'])
+            cursor = queue['q'].messages(limit=limit, marker=queue['m'],
+                                         include_claimed=True)
             total_elapsed += marktime.stop('list_messages').seconds
             total_succeeded += 1
 
