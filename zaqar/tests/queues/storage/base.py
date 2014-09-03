@@ -765,17 +765,30 @@ class ClaimControllerTest(ControllerBaseTest):
                           self.controller.get, self.queue_name,
                           claim_id, project=self.project)
 
-    def test_claim_create_default_limit(self):
+    def test_claim_create_default_limit_multi(self):
+        num_claims = 5
+        num_messages = storage.DEFAULT_MESSAGES_PER_CLAIM * num_claims
+
+        # NOTE(kgriffs): + 1 on num_messages to check for off-by-one error
         _insert_fixtures(self.message_controller, self.queue_name,
                          project=self.project, client_uuid=uuid.uuid4(),
-                         num=storage.DEFAULT_MESSAGES_PER_CLAIM + 1)
+                         num=num_messages + 1)
+
         meta = {'ttl': 70, 'grace': 30}
+        total_claimed = 0
 
-        claim_id, messages = self.controller.create(self.queue_name, meta,
-                                                    project=self.project)
+        for _ in range(num_claims):
+            claim_id, messages = self.controller.create(
+                self.queue_name, meta, project=self.project)
 
-        messages = list(messages)
-        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
+            messages = list(messages)
+            num_claimed = len(messages)
+            self.assertEqual(num_claimed,
+                             storage.DEFAULT_MESSAGES_PER_CLAIM)
+
+            total_claimed += num_claimed
+
+        self.assertEqual(total_claimed, num_messages)
 
     def test_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
