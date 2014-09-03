@@ -233,8 +233,10 @@ class QueueLifecycleBaseTest(base.V1_1Base):
     def test_list(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
+        client_id = str(uuid.uuid4())
         header = {
-            'X-Project-ID': project_id
+            'X-Project-ID': project_id,
+            'Client-ID': client_id
         }
 
         # NOTE(kgriffs): It's important that this one sort after the one
@@ -253,7 +255,7 @@ class QueueLifecycleBaseTest(base.V1_1Base):
 
         # Create some
         def create_queue(name, project_id, body):
-            altheader = {}
+            altheader = {'Client-ID': client_id}
             if project_id is not None:
                 altheader['X-Project-ID'] = project_id
             uri = self.queue_path + '/' + name
