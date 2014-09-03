@@ -37,21 +37,21 @@ class QueueController(storage.Queue):
     Queues are scoped by project, which is prefixed to the
     queue name.
 
-    Queues (Redis sorted set):
+    Redis Data Structures:
+    ----------------------
+    1. Queue Index (Redis sorted set):
 
-        Key: queues_set
+    Set of all queues for the given project, ordered by name.
 
-        Id                   Value
-        ---------------------------------
-        name      ->   <project-id_q-name>
+    Key: <project_id>.queues_set
 
+        Id                                 Value
+        ----------------------------------------
+        name      ->   <project_id>.<queue_name>
 
-    The set helps faster existence checks, while the list helps
-    paginated retrieval of queues.
+    2. Queue Information (Redis hash):
 
-    Queue Information (Redis hash):
-
-        Key: <project-id_q-name>
+        Key: <project_id>.<queue_name>
 
         Name                      Field
         -------------------------------
@@ -87,7 +87,7 @@ class QueueController(storage.Queue):
         client = pipe if pipe is not None else self._client
         client.hincrby(queue_key, 'cl', amount)
 
-    # TODO(kgriffs): Reimplement in Lua; this is way too expensive!
+    # TODO(kgriffs): Remove or optimize
     def _get_expired_message_count(self, name, project):
         """Calculate the number of expired messages in the queue.
 
@@ -171,6 +171,7 @@ class QueueController(storage.Queue):
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
             pipe.zadd(qset_key, 1, queue_key).hmset(queue_key, queue)
+            self._message_ctrl._create_msgset(name, project, pipe)
 
             try:
                 pipe.execute()
@@ -220,6 +221,7 @@ class QueueController(storage.Queue):
         with self._client.pipeline() as pipe:
             pipe.zrem(qset_key, queue_key)
             pipe.delete(queue_key)
+            self._message_ctrl._delete_msgset(name, project, pipe)
             self._message_ctrl._delete_queue_messages(name, project, pipe)
 
             pipe.execute()

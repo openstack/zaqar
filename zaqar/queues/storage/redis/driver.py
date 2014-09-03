@@ -65,6 +65,14 @@ class DataDriver(storage.DataDriverBase):
         # TODO(kgriffs): Add metrics re message volume
         return KPI
 
+    def gc(self):
+        # TODO(kgriffs): Check time since last run, and if
+        # it hasn't been very long, skip. This allows for
+        # running the GC script on multiple boxes for HA,
+        # without having them all attempting to GC at the
+        # same moment.
+        self.message_controller.gc()
+
     @decorators.lazy_property(write=False)
     def connection(self):
         """Redis client connection instance."""

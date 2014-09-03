@@ -38,20 +38,20 @@ class ClaimController(storage.Claim):
 
     Redis Data Structures:
     ----------------------
-    Claims list (Redis set) contains claim ids
+    1. Claims list (Redis set) contains claim IDs
 
-    Key: <project-id_q-name>
+    Key: <project_id>.<queue_name>.claims
 
         Name                Field
         -------------------------
         claim_ids               m
 
-    Claimed Messages (Redis set) contains the list of
+    2. Claimed Messages (Redis set) contains the list of
     message ids stored per claim
 
-    Key: <claim_id>_messages
+    Key: <claim_id>.messages
 
-    Claim info(Redis Hash):
+    3. Claim info (Redis hash):
 
     Key: <claim_id>
 
@@ -82,13 +82,17 @@ class ClaimController(storage.Claim):
 
         # Return False if no such claim exists
         # TODO(prashanthr_): Discuss the feasibility of a bloom filter.
-        if not client.sismember(claims_set_key, claim_id):
+        if client.zscore(claims_set_key, claim_id) is None:
             return False
 
         expires = self._get_claim_info(claim_id, b'e')[0]
         now = timeutils.utcnow_ts()
 
-        if now > expires:
+        if expires <= now:
+            # NOTE(kgriffs): Redis should automatically remove the
+            # other records in the very near future. This one
+            # has to be manually deleted, however.
+            client.zrem(claims_set_key, claim_id)
             return False
 
         return True
@@ -103,6 +107,23 @@ class ClaimController(storage.Claim):
     @decorators.lazy_property(write=False)
     def _queue_ctrl(self):
         return self.driver.queue_controller
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def _gc(self, queue, project):
+        """Garbage-collect expired claim data.
+
+        Not all claim data can be automatically expired. This method
+        cleans up the remainder.
+
+        :returns: Number of claims removed
+        """
+
+        claims_set_key = utils.scope_claims_set(queue, project,
+                                                QUEUE_CLAIMS_SUFFIX)
+        now = timeutils.utcnow_ts()
+        num_removed = self._client.zremrangebyscore(claims_set_key, 0, now)
+        return num_removed
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -145,23 +166,18 @@ class ClaimController(storage.Claim):
     def create(self, queue, metadata, project=None,
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
 
-        ttl = int(metadata.get('ttl', 60))
+        claim_ttl = int(metadata.get('ttl', 60))
         grace = int(metadata.get('grace', 60))
-        msg_ttl = ttl + grace
+        msg_ttl = claim_ttl + grace
 
         claim_id = utils.generate_uuid()
-        claim_key = utils.scope_claim_messages(claim_id,
-                                               CLAIM_MESSAGES_SUFFIX)
+        claim_msgs_key = utils.scope_claim_messages(claim_id,
+                                                    CLAIM_MESSAGES_SUFFIX)
 
         claims_set_key = utils.scope_claims_set(queue, project,
                                                 QUEUE_CLAIMS_SUFFIX)
 
-        counter_key = self._queue_ctrl._claim_counter_key(queue, project)
-
         with self._client.pipeline() as pipe:
-
-            start_ts = timeutils.utcnow_ts()
-
             # NOTE(kgriffs): Retry the operation if another transaction
             # completes before this one, in which case it will have
             # claimed the same messages the current thread is trying
@@ -173,6 +189,8 @@ class ClaimController(storage.Claim):
 
             # TODO(kgriffs): Would it be beneficial (or harmful) to
             # introducce a backoff sleep in between retries?
+
+            start_ts = timeutils.utcnow_ts()
             while (timeutils.utcnow_ts() - start_ts) < RETRY_CLAIM_TIMEOUT:
 
                 # NOTE(kgriffs): The algorithm for claiming messages:
@@ -203,19 +221,32 @@ class ClaimController(storage.Claim):
                 try:
                     # TODO(kgriffs): Is it faster/better to do this all
                     # in a Lua script instead of using an app-layer
-                    # transaction?
+                    # transaction? Lua requires Redis 2.6 or better.
 
                     # NOTE(kgriffs): Abort the entire transaction if
                     # another request beats us to the punch. We detect
                     # this by putting a watch on the key that will have
                     # one of its fields updated as the final step of
                     # the transaction.
-                    pipe.watch(counter_key)
+                    #
+                    # No other request to list active messages can
+                    # proceed while this current transaction is in
+                    # progress; therefore, it is not possible for
+                    # a different process to get some active messages
+                    # while the pipeline commands have partway
+                    # completed. Either the other process will query
+                    # for active messages at the same moment as
+                    # the current proc and get the exact same set,
+                    # or its request will have to wait while the
+                    # current process performs the transaction in
+                    # its entirety.
+                    mids = [msg.id for msg in msg_list]
+                    pipe.watch(*mids)
                     pipe.multi()
 
                     now = timeutils.utcnow_ts()
 
-                    claim_expires = now + ttl
+                    claim_expires = now + claim_ttl
                     msg_expires = claim_expires + grace
 
                     # Associate the claim with each message
@@ -227,7 +258,7 @@ class ClaimController(storage.Claim):
                             msg.ttl = msg_ttl
                             msg.expires = msg_expires
 
-                        pipe.rpush(claim_key, msg.id)
+                        pipe.rpush(claim_msgs_key, msg.id)
 
                         # TODO(kgriffs): Rather than writing back the
                         # entire message, only set the fields that
@@ -236,18 +267,24 @@ class ClaimController(storage.Claim):
 
                         basic_messages.append(msg.to_basic(now))
 
+                    pipe.expire(claim_msgs_key, claim_ttl)
+
                     # Create the claim
                     claim_info = {
                         'id': claim_id,
-                        't': ttl,
-                        'e': claim_expires
+                        't': claim_ttl,
+                        'e': claim_expires,
                     }
 
                     pipe.hmset(claim_id, claim_info)
+                    pipe.expire(claim_id, claim_ttl)
 
                     # NOTE(kgriffs): Add the claim ID to a set so that
                     # existence checks can be performed quickly.
-                    pipe.sadd(claims_set_key, claim_id)
+                    #
+                    # A sorted set is used to facilitate cleaning
+                    # up the IDs of expired claims.
+                    pipe.zadd(claims_set_key, claim_expires, claim_id)
 
                     # NOTE(kgriffs): Update a counter that facilitates
                     # the queue stats calculation.
@@ -278,10 +315,10 @@ class ClaimController(storage.Claim):
         msg_ttl = claim_ttl + grace
         msg_expires = claim_expires + grace
 
-        claim_messages = utils.scope_claim_messages(claim_id,
+        claim_msgs_key = utils.scope_claim_messages(claim_id,
                                                     CLAIM_MESSAGES_SUFFIX)
 
-        msg_keys = self._get_claimed_message_keys(claim_messages)
+        msg_keys = self._get_claimed_message_keys(claim_msgs_key)
 
         with self._client.pipeline() as pipe:
             for key in msg_keys:
@@ -308,11 +345,22 @@ class ClaimController(storage.Claim):
                     # TODO(kgriffs): Rather than writing back the
                     # entire message, only set the fields that
                     # have changed.
+                    #
+                    # When this change is made, don't forget to
+                    # also call pipe.expire with the new TTL value.
                     msg.to_redis(pipe)
 
             # Update the claim id and claim expiration info
             # for all the messages.
             pipe.hmset(claim_id, claim_info)
+            pipe.expire(claim_id, claim_ttl)
+
+            pipe.expire(claim_msgs_key, claim_ttl)
+
+            claims_set_key = utils.scope_claims_set(queue, project,
+                                                    QUEUE_CLAIMS_SUFFIX)
+
+            pipe.zadd(claims_set_key, claim_expires, claim_id)
 
             pipe.execute()
 
@@ -325,10 +373,10 @@ class ClaimController(storage.Claim):
             return
 
         now = timeutils.utcnow_ts()
-        claim_messages_key = utils.scope_claim_messages(claim_id,
-                                                        CLAIM_MESSAGES_SUFFIX)
+        claim_msgs_key = utils.scope_claim_messages(claim_id,
+                                                    CLAIM_MESSAGES_SUFFIX)
 
-        msg_keys = self._get_claimed_message_keys(claim_messages_key)
+        msg_keys = self._get_claimed_message_keys(claim_msgs_key)
 
         with self._client.pipeline() as pipe:
             for msg_key in msg_keys:
@@ -342,9 +390,9 @@ class ClaimController(storage.Claim):
                                                 QUEUE_CLAIMS_SUFFIX)
 
         with self._client.pipeline() as pipe:
-            pipe.srem(claims_set_key, claim_id)
+            pipe.zrem(claims_set_key, claim_id)
             pipe.delete(claim_id)
-            pipe.delete(claim_messages_key)
+            pipe.delete(claim_msgs_key)
 
             for msg in claimed_msgs:
                 if msg:
@@ -365,4 +413,4 @@ class ClaimController(storage.Claim):
 
 
 def _msg_would_expire(message, now):
-    return message.expires < now
+    return message.expires <= now

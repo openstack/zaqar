@@ -166,6 +166,17 @@ class DataDriverBase(DriverBase):
             _handle_status('delete_queue', func)
         return op_status
 
+    def gc(self):
+        """Perform manual garbage collection of claims and messages.
+
+        This method can be overridden in order to provide a trigger
+        that can be called by so-called "garbage collection" scripts
+        that are required by some drivers.
+
+        By default, this method does nothing.
+        """
+        pass
+
     @abc.abstractproperty
     def queue_controller(self):
         """Returns the driver's queue controller."""

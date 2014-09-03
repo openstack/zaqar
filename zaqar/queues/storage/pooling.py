@@ -89,6 +89,11 @@ class DataDriver(storage.DataDriverBase):
 
         return KPI
 
+    def gc(self):
+        for pool in self._pool_catalog._pools_ctrl.list():
+            driver = self._pool_catalog.get_driver(pool['name'])
+            driver.gc()
+
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         return QueueController(self._pool_catalog)
