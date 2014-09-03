@@ -246,28 +246,28 @@ class MessageController(storage.Message):
 
             messages = pipe.execute()
 
-            # NOTE(prashanthr_): Build a list of filters for checking
-            # the following:
-            #
-            #     1. Message is expired
-            #     2. Message is claimed
-            #     3. Message should not be echoed
-            #
-            now = timeutils.utcnow_ts()
-            filters = [functools.partial(utils.msg_expired_filter, now=now)]
+        # NOTE(prashanthr_): Build a list of filters for checking
+        # the following:
+        #
+        #     1. Message is expired
+        #     2. Message is claimed
+        #     3. Message should not be echoed
+        #
+        now = timeutils.utcnow_ts()
+        filters = [functools.partial(utils.msg_expired_filter, now=now)]
 
-            if not include_claimed:
-                filters.append(functools.partial(utils.msg_claimed_filter,
-                                                 now=now))
+        if not include_claimed:
+            filters.append(functools.partial(utils.msg_claimed_filter,
+                                             now=now))
 
-            if not echo:
-                filters.append(functools.partial(utils.msg_echo_filter,
-                                                 client_uuid=client_uuid))
+        if not echo:
+            filters.append(functools.partial(utils.msg_echo_filter,
+                                             client_uuid=client_uuid))
 
-            marker = {}
+        marker = {}
 
-            yield _filter_messages(messages, pipe, filters, to_basic, marker)
-            yield marker['next']
+        yield _filter_messages(messages, filters, to_basic, marker)
+        yield marker['next']
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -564,7 +564,7 @@ class MessageController(storage.Message):
         return messages
 
 
-def _filter_messages(messages, pipe, filters, to_basic, marker):
+def _filter_messages(messages, filters, to_basic, marker):
     """Create a filtering iterator over a list of messages.
 
     The function accepts a list of filters to be filtered
