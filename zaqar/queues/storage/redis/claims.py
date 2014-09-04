@@ -32,6 +32,14 @@ CLAIM_MESSAGES_SUFFIX = 'messages'
 
 RETRY_CLAIM_TIMEOUT = 10
 
+# NOTE(kgriffs): Number of claims to read at a time when counting
+# the total number of claimed messages for a queue.
+#
+# TODO(kgriffs): Tune this parameter and/or make it configurable. It
+# takes  ~0.8 ms to retrieve 100 items from a sorted set on a 2.7 GHz
+# Intel Core i7 (not including network latency).
+COUNTING_BATCH_SIZE = 100
+
 
 class ClaimController(storage.Claim):
     """Implements claim resource operations using Redis.
@@ -60,6 +68,7 @@ class ClaimController(storage.Claim):
         ttl             ->     t
         id              ->     id
         expires         ->     e
+        num_messages    ->     n
     """
     def __init__(self, *args, **kwargs):
         super(ClaimController, self).__init__(*args, **kwargs)
@@ -68,6 +77,14 @@ class ClaimController(storage.Claim):
         self._packer = msgpack.Packer(encoding='utf-8',
                                       use_bin_type=True).pack
         self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
+
+    @decorators.lazy_property(write=False)
+    def _message_ctrl(self):
+        return self.driver.message_controller
+
+    @decorators.lazy_property(write=False)
+    def _queue_ctrl(self):
+        return self.driver.queue_controller
 
     def _get_claim_info(self, claim_id, fields, transform=int):
         """Get one or more fields from the claim Info."""
@@ -97,16 +114,66 @@ class ClaimController(storage.Claim):
 
         return True
 
-    def _get_claimed_message_keys(self, claim_id):
-        return self._client.lrange(claim_id, 0, -1)
+    def _get_claimed_message_keys(self, claim_msgs_key):
+        return self._client.lrange(claim_msgs_key, 0, -1)
 
-    @decorators.lazy_property(write=False)
-    def _message_ctrl(self):
-        return self.driver.message_controller
+    def _count_messages(self, queue, project):
+        """Count and return the total number of claimed messages."""
 
-    @decorators.lazy_property(write=False)
-    def _queue_ctrl(self):
-        return self.driver.queue_controller
+        # NOTE(kgriffs): Iterate through all claims, adding up the
+        # number of messages per claim. This is obviously slower
+        # than keeping a side counter, but is also less error-prone.
+        # Plus, it avoids having to do a lot of extra work during
+        # garbage collection passes. Also, considering that most
+        # workloads won't require a large number of claims, most of
+        # the time we can do this in a single pass, so it is still
+        # pretty fast.
+
+        claims_set_key = utils.scope_claims_set(queue, project,
+                                                QUEUE_CLAIMS_SUFFIX)
+        num_claimed = 0
+        offset = 0
+
+        while True:
+            claim_ids = self._client.zrange(claims_set_key, offset,
+                                            offset + COUNTING_BATCH_SIZE - 1)
+            if not claim_ids:
+                break
+
+            offset += len(claim_ids)
+
+            with self._client.pipeline() as pipe:
+                for cid in claim_ids:
+                    pipe.hmget(cid, 'n')
+
+                claim_infos = pipe.execute()
+
+            for info in claim_infos:
+                # NOTE(kgriffs): In case the claim was deleted out
+                # from under us, sanity-check that we got a non-None
+                # info list.
+                if info:
+                    num_claimed += int(info[0])
+
+        return num_claimed
+
+    def _del_message(self, queue, project, claim_id, message_id, pipe):
+        """Called by MessageController when messages are being deleted.
+
+        This method removes the message from claim data structures.
+        """
+
+        claim_msgs_key = utils.scope_claim_messages(claim_id,
+                                                    CLAIM_MESSAGES_SUFFIX)
+
+        # NOTE(kgriffs): In practice, scanning will be quite fast,
+        # since the usual pattern is to delete messages from oldest
+        # to newest, and the list is sorted in that order. Also,
+        # the length of the list will usually be ~10 messages.
+        pipe.lrem(claim_msgs_key, 1, message_id)
+
+        # NOTE(kgriffs): Decrement the message counter used for stats
+        pipe.hincrby(claim_id, 'n', -1)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -210,6 +277,7 @@ class ClaimController(storage.Claim):
 
                 cursor = next(results)
                 msg_list = list(cursor)
+                num_messages = len(msg_list)
 
                 # NOTE(kgriffs): If there are no active messages to
                 # claim, simply return an empty list.
@@ -274,6 +342,7 @@ class ClaimController(storage.Claim):
                         'id': claim_id,
                         't': claim_ttl,
                         'e': claim_expires,
+                        'n': num_messages,
                     }
 
                     pipe.hmset(claim_id, claim_info)
@@ -285,14 +354,8 @@ class ClaimController(storage.Claim):
                     # A sorted set is used to facilitate cleaning
                     # up the IDs of expired claims.
                     pipe.zadd(claims_set_key, claim_expires, claim_id)
-
-                    # NOTE(kgriffs): Update a counter that facilitates
-                    # the queue stats calculation.
-                    self._queue_ctrl._inc_claimed(queue, project,
-                                                  len(msg_list),
-                                                  pipe=pipe)
-
                     pipe.execute()
+
                     return claim_id, basic_messages
 
                 except redis.exceptions.WatchError:
@@ -404,10 +467,6 @@ class ClaimController(storage.Claim):
                     # entire message, only set the fields that
                     # have changed.
                     msg.to_redis(pipe)
-
-            self._queue_ctrl._inc_claimed(queue, project,
-                                          -1 * len(claimed_msgs),
-                                          pipe=pipe)
 
             pipe.execute()
 

@@ -111,12 +111,16 @@ class MessageController(storage.Message):
                           include_claimed=False,
                           limit=limit, to_basic=False)
 
-    def _get_count(self, msgset_key):
-        """Get num messages in a Queue.
+    def _count(self, queue, project):
+        """Return total number of messages in a queue.
 
-        Return the number of messages in a queue scoped by
-        queue and project.
+        Note: Some expired messages may be included in the count if
+            they haven't been GC'd yet. This is done for performance.
         """
+
+        msgset_key = utils.scope_message_ids_set(queue, project,
+                                                 MESSAGE_IDS_SUFFIX)
+
         return self._client.zcard(msgset_key)
 
     def _create_msgset(self, queue, project, pipe):
@@ -175,13 +179,9 @@ class MessageController(storage.Message):
                 if not utils.msg_claimed_filter(msg, now):
                     return msg.id
 
-    def _exists(self, key):
-        """Check if message exists in the Queue.
-
-        Helper function which checks if a particular message_id
-        exists in the sorted set of the queues message ids.
-        """
-        return self._client.exists(key)
+    def _exists(self, message_id):
+        """Check if message exists in the Queue."""
+        return self._client.exists(message_id)
 
     def _get_first_message_id(self, queue, project, sort):
         """Fetch head/tail of the Queue.
@@ -201,17 +201,31 @@ class MessageController(storage.Message):
         return Message.from_redis(msg) if msg else None
 
     def _get_claim(self, message_id):
+        """Gets minimal claim doc for a message.
+
+        :returns: {'id': cid, 'expires': ts} IFF the message is claimed,
+            and that claim has not expired.
+        """
+
         claim = self._client.hmget(message_id, 'c', 'c.e')
 
         if claim == [None, None]:
             # NOTE(kgriffs): message_id was not found
             return None
 
-        return {
+        info = {
             # NOTE(kgriffs): A "None" claim is serialized as an empty str
             'id': strutils.safe_decode(claim[0]) or None,
             'expires': int(claim[1]),
         }
+
+        # Is the message claimed?
+        now = timeutils.utcnow_ts()
+        if info['id'] and (now < info['expires']):
+            return info
+
+        # Not claimed
+        return None
 
     def _list(self, queue, project=None, marker=None,
               limit=storage.DEFAULT_MESSAGES_PER_PAGE,
@@ -456,11 +470,8 @@ class MessageController(storage.Message):
                         keys.append(msg.id)
 
                     pipe.incrby(counter_key, len(keys))
-                    self._queue_ctrl._inc_counter(queue, project,
-                                                  len(prepared_messages),
-                                                  pipe=pipe)
-
                     pipe.execute()
+
                     return keys
 
                 except redis.exceptions.WatchError:
@@ -474,6 +485,11 @@ class MessageController(storage.Message):
         if not self._queue_ctrl.exists(queue, project):
             raise errors.QueueDoesNotExist(queue, project)
 
+        # NOTE(kgriffs): The message does not exist, so
+        # it is essentially "already" deleted.
+        if not self._exists(message_id):
+            return
+
         # TODO(kgriffs): Create decorator for validating claim and message
         # IDs, since those are not checked at the transport layer. This
         # decorator should be applied to all relevant methods.
@@ -484,15 +500,9 @@ class MessageController(storage.Message):
                 raise errors.ClaimDoesNotExist(queue, project, claim)
 
         msg_claim = self._get_claim(message_id)
+        is_claimed = (msg_claim is not None)
 
-        # NOTE(kgriffs): The message does not exist, so
-        # it is essentially "already deleted".
-        if msg_claim is None:
-            return
-
-        now = timeutils.utcnow_ts()
-        is_claimed = msg_claim['id'] and (now < msg_claim['expires'])
-
+        # Authorize the request based on having the correct claim ID
         if claim is None:
             if is_claimed:
                 raise errors.MessageIsClaimed(message_id)
@@ -512,13 +522,12 @@ class MessageController(storage.Message):
             pipe.delete(message_id)
             pipe.zrem(msgset_key, message_id)
 
-            results = pipe.execute()
+            if is_claimed:
+                self._claim_ctrl._del_message(queue, project,
+                                              msg_claim['id'], message_id,
+                                              pipe)
 
-        # NOTE(prashanthr_): results[0] is 1 when the delete is
-        # successful. Hence we use that case to identify successful
-        # deletes.
-        if results[0] == 1:
-            self._queue_ctrl._inc_counter(queue, project, -1)
+            pipe.execute()
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -532,17 +541,18 @@ class MessageController(storage.Message):
 
         with self._client.pipeline() as pipe:
             for mid in message_ids:
+                if not self._exists(mid):
+                    continue
+
                 pipe.delete(mid)
                 pipe.zrem(msgset_key, mid)
 
-            results = pipe.execute()
-
-        # NOTE(prashanthr_): None is returned for the cases where
-        # the message might not exist or has been deleted/expired.
-        # Hence we calculate the number of deletes as the
-        # total number of message ids - number of failed deletes.
-        amount = -1 * (len(results) - results.count(0)) / 2
-        self._queue_ctrl._inc_counter(queue, project, int(amount))
+                msg_claim = self._get_claim(mid)
+                if msg_claim is not None:
+                    self._claim_ctrl._del_message(queue, project,
+                                                  msg_claim['id'], mid,
+                                                  pipe)
+            pipe.execute()
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error

@@ -22,7 +22,6 @@ from zaqar.openstack.common import log as logging
 from zaqar.openstack.common import timeutils
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
-from zaqar.queues.storage.redis import messages
 from zaqar.queues.storage.redis import utils
 
 LOG = logging.getLogger(__name__)
@@ -55,8 +54,6 @@ class QueueController(storage.Queue):
 
         Name                      Field
         -------------------------------
-        count                 ->     c
-        num_msgs_claimed      ->     cl
         metadata              ->     m
         creation timestamp    ->     t
     """
@@ -72,49 +69,9 @@ class QueueController(storage.Queue):
     def _message_ctrl(self):
         return self.driver.message_controller
 
-    def _claim_counter_key(self, name, project):
-        return utils.scope_queue_name(name, project)
-
-    def _inc_counter(self, name, project, amount=1, pipe=None):
-        queue_key = utils.scope_queue_name(name, project)
-
-        client = pipe if pipe is not None else self._client
-        client.hincrby(queue_key, 'c', amount)
-
-    def _inc_claimed(self, name, project, amount=1, pipe=None):
-        queue_key = utils.scope_queue_name(name, project)
-
-        client = pipe if pipe is not None else self._client
-        client.hincrby(queue_key, 'cl', amount)
-
-    # TODO(kgriffs): Remove or optimize
-    def _get_expired_message_count(self, name, project):
-        """Calculate the number of expired messages in the queue.
-
-        Used to compute the stats on the queue.
-        Method has O(n) complexity as we iterate the entire list of
-        messages.
-        """
-
-        messages_set_key = utils.scope_message_ids_set(name, project,
-                                                       MESSAGE_IDS_SUFFIX)
-
-        with self._client.pipeline() as pipe:
-            for msg_key in self._client.zrange(messages_set_key, 0, -1):
-                pipe.hgetall(msg_key)
-
-            raw_messages = pipe.execute()
-
-        expired = 0
-        now = timeutils.utcnow_ts()
-
-        for msg in raw_messages:
-            if msg:
-                msg = messages.Message.from_redis(msg)
-                if utils.msg_expired_filter(msg, now):
-                    expired += 1
-
-        return expired
+    @decorators.lazy_property(write=False)
+    def _claim_ctrl(self):
+        return self.driver.claim_controller
 
     def _get_queue_info(self, queue_key, fields, transform=str):
         """Get one or more fields from Queue Info."""
@@ -232,24 +189,27 @@ class QueueController(storage.Queue):
         if not self.exists(name, project=project):
             raise errors.QueueDoesNotExist(name, project)
 
-        queue_key = utils.scope_queue_name(name, project)
+        total = self._message_ctrl._count(name, project)
 
-        claimed, total = self._get_queue_info(queue_key, [b'cl', b'c'], int)
-        expired = self._get_expired_message_count(name, project)
+        if total:
+            claimed = self._claim_ctrl._count_messages(name, project)
+        else:
+            claimed = 0
 
         message_stats = {
             'claimed': claimed,
-            'free': total - claimed - expired,
-            'total': total
+            'free': total - claimed,
+            'total': total,
         }
 
-        try:
-            newest = self._message_ctrl.first(name, project, -1)
-            oldest = self._message_ctrl.first(name, project, 1)
-        except errors.QueueIsEmpty:
-            pass
-        else:
-            message_stats['newest'] = newest
-            message_stats['oldest'] = oldest
+        if total:
+            try:
+                newest = self._message_ctrl.first(name, project, -1)
+                oldest = self._message_ctrl.first(name, project, 1)
+            except errors.QueueIsEmpty:
+                pass
+            else:
+                message_stats['newest'] = newest
+                message_stats['oldest'] = oldest
 
         return {'messages': message_stats}
