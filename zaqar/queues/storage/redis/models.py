@@ -19,17 +19,12 @@ import msgpack
 from oslo.utils import encodeutils
 from oslo.utils import timeutils
 
-
-_pack = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack
-_unpack = functools.partial(msgpack.unpackb, encoding='utf-8')
+MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e')
 
 
 # TODO(kgriffs): Make similar classes for claims and queues
-class Message(object):
-    """Message is used to organize,store and retrieve messages from redis.
-
-    Message class helps organize,store and retrieve messages in a version
-    compatible manner.
+class MessageEnvelope(object):
+    """Encapsulates the message envelope (metadata only, no body).
 
     :param id: Message ID in the form of a hexadecimal UUID. If not
         given, one will be automatically generated.
@@ -39,11 +34,9 @@ class Message(object):
     :param claim_id: If claimed, the UUID of the claim. Set to None
         for messages that have never been claimed.
     :param claim_expires: Claim expiration as a UNIX timestamp
-    :param body: Message payload. Must be serializable to mspack.
     """
-    message_data = {}
 
-    __slots__ = (
+    __slots__ = [
         'id',
         'ttl',
         'created',
@@ -51,8 +44,7 @@ class Message(object):
         'client_uuid',
         'claim_id',
         'claim_expires',
-        'body',
-    )
+    ]
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', str(uuid.uuid4()))
@@ -65,49 +57,108 @@ class Message(object):
         self.claim_id = kwargs.get('claim_id')
         self.claim_expires = kwargs['claim_expires']
 
-        self.body = kwargs['body']
-
     @property
     def created_iso(self):
         return timeutils.iso8601_from_timestamp(self.created)
 
     @staticmethod
-    def from_redis(doc):
-        claim_id = doc[b'c']
-        if claim_id:
-            claim_id = encodeutils.safe_decode(claim_id)
-        else:
-            claim_id = None
+    def from_hmap(hmap):
+        kwargs = _hmap_to_msgenv_kwargs(hmap)
+        return MessageEnvelope(**kwargs)
 
-        # NOTE(kgriffs): Under Py3K, redis-py converts all strings
-        # into binary. Woohoo!
-        return Message(
-            id=encodeutils.safe_decode(doc[b'id']),
-            ttl=int(doc[b't']),
-            created=int(doc[b'cr']),
-            expires=int(doc[b'e']),
+    @staticmethod
+    def from_redis(mid, client):
+        values = client.hmget(mid, MSGENV_FIELD_KEYS)
 
-            client_uuid=encodeutils.safe_decode(doc[b'u']),
+        # NOTE(kgriffs): If the key does not exist, redis-py returns
+        # an array of None values.
+        if values[0] is None:
+            return None
 
-            claim_id=claim_id,
-            claim_expires=int(doc[b'c.e']),
+        return _hmap_kv_to_msgenv(MSGENV_FIELD_KEYS, values)
 
-            body=_unpack(doc[b'b']),
-        )
+    @staticmethod
+    def from_redis_bulk(message_ids, client):
+        with client.pipeline() as pipe:
+            for mid in message_ids:
+                pipe.hmget(mid, MSGENV_FIELD_KEYS)
+
+            results = pipe.execute()
+
+        message_envs = []
+        for value_list in results:
+            if value_list is None:
+                env = None
+            else:
+                env = _hmap_kv_to_msgenv(MSGENV_FIELD_KEYS, value_list)
+
+            message_envs.append(env)
+
+        return message_envs
 
     def to_redis(self, pipe):
-        doc = {
-            'id': self.id,
-            't': self.ttl,
-            'cr': self.created,
-            'e': self.expires,
-            'u': self.client_uuid,
-            'c': self.claim_id or '',
-            'c.e': self.claim_expires,
-            'b': _pack(self.body),
-        }
+        hmap = _msgenv_to_hmap(self)
 
-        pipe.hmset(self.id, doc)
+        pipe.hmset(self.id, hmap)
+        pipe.expire(self.id, self.ttl)
+
+
+# NOTE(kgriffs): This could have implemented MessageEnvelope functionality
+# by adding an "include_body" param to all the methods, but then you end
+# up with tons of if statements that make the code rather ugly.
+class Message(MessageEnvelope):
+    """Represents an entire message, including envelope and body.
+
+    :param id: Message ID in the form of a hexadecimal UUID. If not
+        given, one will be automatically generated.
+    :param ttl: Message TTL in seconds
+    :param created: Message creation time as a UNIX timestamp
+    :param client_uuid: UUID of the client that posted the message
+    :param claim_id: If claimed, the UUID of the claim. Set to None
+        for messages that have never been claimed.
+    :param claim_expires: Claim expiration as a UNIX timestamp
+    :param body: Message payload. Must be serializable to mspack.
+    """
+
+    __slots__ = MessageEnvelope.__slots__ + ['body']
+
+    def __init__(self, **kwargs):
+        super(Message, self).__init__(**kwargs)
+        self.body = kwargs['body']
+
+    @staticmethod
+    def from_hmap(hmap):
+        kwargs = _hmap_to_msgenv_kwargs(hmap)
+        kwargs['body'] = _unpack(hmap[b'b'])
+
+        return Message(**kwargs)
+
+    @staticmethod
+    def from_redis(mid, client):
+        hmap = client.hgetall(mid)
+        return Message.from_hmap(hmap) if hmap else None
+
+    @staticmethod
+    def from_redis_bulk(message_ids, client):
+        with client.pipeline() as pipe:
+            for mid in message_ids:
+                pipe.hgetall(mid)
+
+            results = pipe.execute()
+
+        messages = [Message.from_hmap(hmap) if hmap else None
+                    for hmap in results]
+
+        return messages
+
+    def to_redis(self, pipe, include_body=True):
+        if not include_body:
+            super(Message, self).to_redis(pipe)
+
+        hmap = _msgenv_to_hmap(self)
+        hmap['b'] = _pack(self.body)
+
+        pipe.hmset(self.id, hmap)
         pipe.expire(self.id, self.ttl)
 
     def to_basic(self, now, include_created=False):
@@ -123,3 +174,52 @@ class Message(object):
             basic_msg['created'] = self.created_iso
 
         return basic_msg
+
+
+# ==========================================================================
+# Helpers
+# ==========================================================================
+
+
+_pack = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack
+_unpack = functools.partial(msgpack.unpackb, encoding='utf-8')
+
+
+def _hmap_kv_to_msgenv(keys, values):
+    hmap = dict(zip(keys, values))
+    kwargs = _hmap_to_msgenv_kwargs(hmap)
+    return MessageEnvelope(**kwargs)
+
+
+def _hmap_to_msgenv_kwargs(hmap):
+    claim_id = hmap[b'c']
+    if claim_id:
+        claim_id = encodeutils.safe_decode(claim_id)
+    else:
+        claim_id = None
+
+    # NOTE(kgriffs): Under Py3K, redis-py converts all strings
+    # into binary. Woohoo!
+    return {
+        'id': encodeutils.safe_decode(hmap[b'id']),
+        'ttl': int(hmap[b't']),
+        'created': int(hmap[b'cr']),
+        'expires': int(hmap[b'e']),
+
+        'client_uuid': encodeutils.safe_decode(hmap[b'u']),
+
+        'claim_id': claim_id,
+        'claim_expires': int(hmap[b'c.e']),
+    }
+
+
+def _msgenv_to_hmap(msg):
+    return {
+        'id': msg.id,
+        't': msg.ttl,
+        'cr': msg.created,
+        'e': msg.expires,
+        'u': msg.client_uuid,
+        'c': msg.claim_id or '',
+        'c.e': msg.claim_expires,
+    }

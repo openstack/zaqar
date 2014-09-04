@@ -203,16 +203,11 @@ class ClaimController(storage.Claim):
 
         # basic_messages
         msg_keys = self._get_claimed_message_keys(claim_msgs_key)
-
-        with self._client.pipeline() as pipe:
-            for key in msg_keys:
-                pipe.hgetall(key)
-
-            raw_messages = pipe.execute()
-
+        claimed_msgs = messages.Message.from_redis_bulk(msg_keys,
+                                                        self._client)
         now = timeutils.utcnow_ts()
-        basic_messages = [messages.Message.from_redis(msg).to_basic(now)
-                          for msg in raw_messages if msg]
+        basic_messages = [msg.to_basic(now)
+                          for msg in claimed_msgs if msg]
 
         # claim_meta
         now = timeutils.utcnow_ts()
@@ -331,7 +326,7 @@ class ClaimController(storage.Claim):
                         # TODO(kgriffs): Rather than writing back the
                         # entire message, only set the fields that
                         # have changed.
-                        msg.to_redis(pipe)
+                        msg.to_redis(pipe, include_body=False)
 
                         basic_messages.append(msg.to_basic(now))
 
@@ -382,13 +377,8 @@ class ClaimController(storage.Claim):
                                                     CLAIM_MESSAGES_SUFFIX)
 
         msg_keys = self._get_claimed_message_keys(claim_msgs_key)
-
-        with self._client.pipeline() as pipe:
-            for key in msg_keys:
-                pipe.hgetall(key)
-
-            claimed_msgs = pipe.execute()
-
+        claimed_msgs = messages.MessageEnvelope.from_redis_bulk(msg_keys,
+                                                                self._client)
         claim_info = {
             't': claim_ttl,
             'e': claim_expires,
@@ -397,7 +387,6 @@ class ClaimController(storage.Claim):
         with self._client.pipeline() as pipe:
             for msg in claimed_msgs:
                 if msg:
-                    msg = messages.Message.from_redis(msg)
                     msg.claim_id = claim_id
                     msg.claim_expires = claim_expires
 
@@ -440,13 +429,8 @@ class ClaimController(storage.Claim):
                                                     CLAIM_MESSAGES_SUFFIX)
 
         msg_keys = self._get_claimed_message_keys(claim_msgs_key)
-
-        with self._client.pipeline() as pipe:
-            for msg_key in msg_keys:
-                pipe.hgetall(msg_key)
-
-            claimed_msgs = pipe.execute()
-
+        claimed_msgs = messages.MessageEnvelope.from_redis_bulk(msg_keys,
+                                                                self._client)
         # Update the claim id and claim expiration info
         # for all the messages.
         claims_set_key = utils.scope_claims_set(queue, project,
@@ -459,7 +443,6 @@ class ClaimController(storage.Claim):
 
             for msg in claimed_msgs:
                 if msg:
-                    msg = messages.Message.from_redis(msg)
                     msg.claim_id = None
                     msg.claim_expires = now
 
