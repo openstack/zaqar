@@ -26,7 +26,7 @@ import gevent
 import marktime
 from six.moves import urllib
 from zaqarclient.queues.v1 import client
-from zaqarclient.transport.errors import TransportError
+from zaqarclient.transport import errors
 
 from zaqar.bench import config
 
@@ -83,7 +83,7 @@ def observer(queues, stats, test_duration, limit):
                 # per request.
                 queue['m'] = _extract_marker(cursor._links)
 
-        except TransportError as ex:
+        except errors.TransportError as ex:
             sys.stderr.write("Could not list messages : {0}\n".format(ex))
             total_failed += 1
 

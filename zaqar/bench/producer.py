@@ -26,7 +26,7 @@ curious_george.patch_all(thread=False, select=False)
 import gevent
 import marktime
 from zaqarclient.queues.v1 import client
-from zaqarclient.transport.errors import TransportError
+from zaqarclient.transport import errors
 
 from zaqar.bench import config
 
@@ -87,7 +87,7 @@ def producer(queues, message_pool, stats, test_duration):
             total_elapsed += marktime.stop('post_message').seconds
             successful_requests += 1
 
-        except TransportError as ex:
+        except errors.TransportError as ex:
             sys.stderr.write("Could not post a message : {0}\n".format(ex))
 
         total_requests += 1
