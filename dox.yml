@@ -1,0 +1,12 @@
+images:
+  - infra/trusty
+add:
+  - requirements.txt
+  - test-requirements.txt
+prep:
+  - apt-get install -y python-dev mongodb-server python-pymongo pkg-config redis-server python-redis libxml2-dev libxslt-dev lib32z1-dev
+  - pip install -U -r requirements.txt -r test-requirements.txt
+  - service mongodb start
+  - service redis-server start
+  - export ZAQAR_TEST_EVERYTHING=1p
+commands: python setup.py testr --slowest
