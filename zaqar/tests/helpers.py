@@ -22,9 +22,16 @@ import six
 import testtools
 
 
-SKIP_SLOW_TESTS = os.environ.get('ZAQAR_TEST_SLOW') is None
-SKIP_MONGODB_TESTS = os.environ.get('ZAQAR_TEST_MONGODB') is None
-SKIP_REDIS_TESTS = os.environ.get('ZAQAR_TEST_REDIS') is None
+RUN_ALL_TESTS = os.environ.get('ZAQAR_TEST_EVERYTHING')
+
+
+def _test_variable_set(variable):
+    return os.environ.get(variable, RUN_ALL_TESTS) is None
+
+
+SKIP_SLOW_TESTS = _test_variable_set('ZAQAR_TEST_SLOW')
+SKIP_MONGODB_TESTS = _test_variable_set('ZAQAR_TEST_MONGODB')
+SKIP_REDIS_TESTS = _test_variable_set('ZAQAR_TEST_REDIS')
 
 
 @contextlib.contextmanager
