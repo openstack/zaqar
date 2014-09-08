@@ -25,7 +25,7 @@ curious_george.patch_all(thread=False, select=False)
 import gevent
 import marktime
 from zaqarclient.queues.v1 import client
-from zaqarclient.transport.errors import TransportError
+from zaqarclient.transport import errors
 
 from zaqar.bench import config
 
@@ -59,7 +59,7 @@ def claim_delete(queues, stats, test_duration, ttl, grace, limit):
             claim_total_elapsed += marktime.stop('claim_message').seconds
             claim_total_requests += 1
 
-        except TransportError as ex:
+        except errors.TransportError as ex:
             sys.stderr.write("Could not claim messages : {0}\n".format(ex))
             total_failed_requests += 1
 
@@ -74,7 +74,7 @@ def claim_delete(queues, stats, test_duration, ttl, grace, limit):
                     delete_total_elapsed += elapsed
                     delete_total_requests += 1
 
-                except TransportError as ex:
+                except errors.TransportError as ex:
                     msg = "Could not delete messages: {0}\n".format(ex)
                     sys.stderr.write(msg)
                     total_failed_requests += 1
