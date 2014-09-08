@@ -1,7 +1,7 @@
 pbr>=0.6,!=0.7,<1.0
 
 Babel>=1.3
-netaddr>=0.7.6
+netaddr>=0.7.12
 falcon>=0.1.6,<0.2.0
 jsonschema>=2.0.0,<3.0.0
 iso8601>=0.1.9
