@@ -15,16 +15,34 @@
 
 """wsgi transport helpers."""
 
+import uuid
+
 import falcon
 import six
 
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.queues.transport import validation
-from zaqar.queues.transport.wsgi import utils
 
 
 LOG = logging.getLogger(__name__)
+
+
+def get_client_uuid(req):
+    """Read a required Client-ID from a request.
+
+    :param req: A falcon.Request object
+    :raises: HTTPBadRequest if the Client-ID header is missing or
+        does not represent a valid UUID
+    :returns: A UUID object
+    """
+
+    try:
+        return uuid.UUID(req.get_header('Client-ID', required=True))
+
+    except ValueError:
+        description = _(u'Malformed hexadecimal UUID.')
+        raise falcon.HTTPBadRequest('Wrong UUID value', description)
 
 
 def extract_project_id(req, resp, params):
@@ -69,7 +87,7 @@ def require_client_id(req, resp, params):
     if 'v1.1' in req.path:
         # NOTE(flaper87): `get_client_uuid` already raises 400
         # it the header is missing.
-        utils.get_client_uuid(req)
+        get_client_uuid(req)
 
 
 def validate_queue_identification(validate, req, resp, params):

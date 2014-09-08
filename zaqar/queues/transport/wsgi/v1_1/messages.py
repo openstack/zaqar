@@ -16,6 +16,7 @@
 import falcon
 import six
 
+from zaqar.common.transport.wsgi import helpers as wsgi_helpers
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.queues.storage import errors as storage_errors
@@ -83,7 +84,7 @@ class CollectionResource(object):
         return {'messages': messages}
 
     def _get(self, req, project_id, queue_name):
-        client_uuid = wsgi_utils.get_client_uuid(req)
+        client_uuid = wsgi_helpers.get_client_uuid(req)
         kwargs = {}
 
         # NOTE(kgriffs): This syntax ensures that
@@ -146,7 +147,7 @@ class CollectionResource(object):
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
-        client_uuid = wsgi_utils.get_client_uuid(req)
+        client_uuid = wsgi_helpers.get_client_uuid(req)
 
         try:
             # Place JSON size restriction before parsing
