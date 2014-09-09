@@ -21,8 +21,8 @@ from zaqar.queues import storage
 from zaqar.queues.storage.redis import controllers
 from zaqar.queues.storage.redis import options
 
-
 LOG = logging.getLogger(__name__)
+REDIS_DEFAULT_PORT = 6379
 
 
 def _get_redis_client(conf):
@@ -30,8 +30,8 @@ def _get_redis_client(conf):
     parsed_url = urllib.parse.urlparse(conf.uri)
 
     if parsed_url.hostname:
-        return redis.StrictRedis(host=parsed_url.hostname,
-                                 port=parsed_url.port)
+        port = parsed_url.port or REDIS_DEFAULT_PORT
+        return redis.StrictRedis(host=parsed_url.hostname, port=port)
     else:
         return redis.StrictRedis(unix_socket_path=parsed_url.path)
 

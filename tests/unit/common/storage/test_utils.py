@@ -26,6 +26,11 @@ class TestUtils(testing.TestBase):
     def test_can_connect_suceeds_if_good_uri_mongo(self):
         self.assertTrue(utils.can_connect('mongodb://localhost:27017'))
 
+    @testing.requires_redis
+    def test_can_connect_suceeds_if_good_uri_redis(self):
+        self.assertTrue(utils.can_connect('redis://localhost'))
+        self.assertTrue(utils.can_connect('redis://localhost:6379'))
+
     def test_can_connect_suceeds_if_good_uri_sqlite(self):
         self.assertTrue(utils.can_connect('sqlite://:memory:'))
 
