@@ -275,20 +275,6 @@ class ClaimController(storage.Claim):
                 # 5. Add the claim's ID to a set to facilitate fast
                 #    existence checks.
 
-                results = self._message_ctrl._active(queue, project=project,
-                                                     limit=limit)
-
-                cursor = next(results)
-                msg_list = list(cursor)
-                num_messages = len(msg_list)
-
-                # NOTE(kgriffs): If there are no active messages to
-                # claim, simply return an empty list.
-                if not msg_list:
-                    return (None, iter([]))
-
-                basic_messages = []
-
                 try:
                     # TODO(kgriffs): Is it faster/better to do this all
                     # in a Lua script instead of using an app-layer
@@ -311,9 +297,22 @@ class ClaimController(storage.Claim):
                     # or its request will have to wait while the
                     # current process performs the transaction in
                     # its entirety.
-                    mids = [msg.id for msg in msg_list]
-                    pipe.watch(*mids)
+                    pipe.watch(claims_set_key)
                     pipe.multi()
+
+                    results = self._message_ctrl._active(
+                        queue, project=project, limit=limit)
+
+                    cursor = next(results)
+                    msg_list = list(cursor)
+                    num_messages = len(msg_list)
+
+                    # NOTE(kgriffs): If there are no active messages to
+                    # claim, simply return an empty list.
+                    if not msg_list:
+                        return (None, iter([]))
+
+                    basic_messages = []
 
                     now = timeutils.utcnow_ts()
 
@@ -352,7 +351,9 @@ class ClaimController(storage.Claim):
                     pipe.expire(claim_id, claim_ttl)
 
                     # NOTE(kgriffs): Add the claim ID to a set so that
-                    # existence checks can be performed quickly.
+                    # existence checks can be performed quickly. This
+                    # is also used as a watch key in order to gaurd
+                    # against race conditions.
                     #
                     # A sorted set is used to facilitate cleaning
                     # up the IDs of expired claims.
