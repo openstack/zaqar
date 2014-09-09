@@ -57,10 +57,6 @@ class MessageEnvelope(object):
         self.claim_id = kwargs.get('claim_id')
         self.claim_expires = kwargs['claim_expires']
 
-    @property
-    def created_iso(self):
-        return timeutils.iso8601_from_timestamp(self.created)
-
     @staticmethod
     def from_hmap(hmap):
         kwargs = _hmap_to_msgenv_kwargs(hmap)
@@ -171,7 +167,8 @@ class Message(MessageEnvelope):
         }
 
         if include_created:
-            basic_msg['created'] = self.created_iso
+            created_iso = timeutils.iso8601_from_timestamp(self.created)
+            basic_msg['created'] = created_iso
 
         return basic_msg
 
