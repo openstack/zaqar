@@ -26,6 +26,7 @@ from zaqar.queues.storage.redis import models
 from zaqar.queues.storage.redis import utils
 
 Message = models.Message
+MessageEnvelope = models.MessageEnvelope
 
 
 MESSAGE_IDS_SUFFIX = 'messages'
@@ -180,11 +181,11 @@ class MessageController(storage.Message):
 
             offset += len(msg_keys)
 
-            messages = [Message.from_redis(self._client.hgetall(msg_key))
+            messages = [MessageEnvelope.from_redis(msg_key, self._client)
                         for msg_key in msg_keys]
 
             for msg in messages:
-                if not utils.msg_claimed_filter(msg, now):
+                if msg and not utils.msg_claimed_filter(msg, now):
                     return msg.id
 
     def _exists(self, message_id):
@@ -203,10 +204,6 @@ class MessageController(storage.Message):
         zrange = self._client.zrange if sort == 1 else self._client.zrevrange
         message_ids = zrange(msgset_key, 0, 0)
         return message_ids[0] if message_ids else None
-
-    def _get(self, message_id):
-        msg = self._client.hgetall(message_id)
-        return Message.from_redis(msg) if msg else None
 
     def _get_claim(self, message_id):
         """Gets minimal claim doc for a message.
@@ -238,7 +235,8 @@ class MessageController(storage.Message):
     def _list(self, queue, project=None, marker=None,
               limit=storage.DEFAULT_MESSAGES_PER_PAGE,
               echo=False, client_uuid=None,
-              include_claimed=False, to_basic=True):
+              include_claimed=False,
+              to_basic=True):
 
         if not self._queue_ctrl.exists(queue, project):
             raise errors.QueueDoesNotExist(queue,
@@ -249,24 +247,20 @@ class MessageController(storage.Message):
                                                  MESSAGE_IDS_SUFFIX)
         client = self._client
 
-        with self._client.pipeline() as pipe:
-            if not marker and not include_claimed:
-                # NOTE(kgriffs): Skip unclaimed messages at the head
-                # of the queue; otherwise we would just filter them all
-                # out and likely end up with an empty list to return.
-                marker = self._find_first_unclaimed(queue, project, limit)
-                start = client.zrank(msgset_key, marker) or 0
-            else:
-                rank = client.zrank(msgset_key, marker)
-                start = rank + 1 if rank else 0
+        if not marker and not include_claimed:
+            # NOTE(kgriffs): Skip unclaimed messages at the head
+            # of the queue; otherwise we would just filter them all
+            # out and likely end up with an empty list to return.
+            marker = self._find_first_unclaimed(queue, project, limit)
+            start = client.zrank(msgset_key, marker) or 0
+        else:
+            rank = client.zrank(msgset_key, marker)
+            start = rank + 1 if rank else 0
 
-            message_ids = client.zrange(msgset_key, start,
-                                        start + (limit - 1))
+        message_ids = client.zrange(msgset_key, start,
+                                    start + (limit - 1))
 
-            for msg_id in message_ids:
-                pipe.hgetall(msg_id)
-
-            messages = pipe.execute()
+        messages = Message.from_redis_bulk(message_ids, client)
 
         # NOTE(prashanthr_): Build a list of filters for checking
         # the following:
@@ -379,12 +373,12 @@ class MessageController(storage.Message):
         if not message_id:
             raise errors.QueueIsEmpty(queue, project)
 
-        raw_message = self._get(message_id)
-        if raw_message is None:
+        message = Message.from_redis(message_id, self._client)
+        if message is None:
             raise errors.QueueIsEmpty(queue, project)
 
         now = timeutils.utcnow_ts()
-        return raw_message.to_basic(now, include_created=True)
+        return message.to_basic(now, include_created=True)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -392,7 +386,7 @@ class MessageController(storage.Message):
         if not self._queue_ctrl.exists(queue, project):
             raise errors.QueueDoesNotExist(queue, project)
 
-        message = self._get(message_id)
+        message = Message.from_redis(message_id, self._client)
         now = timeutils.utcnow_ts()
 
         if message and not utils.msg_expired_filter(message, now):
@@ -416,7 +410,7 @@ class MessageController(storage.Message):
 
         # NOTE(kgriffs): Skip messages that may have been deleted
         now = timeutils.utcnow_ts()
-        return (Message.from_redis(msg).to_basic(now)
+        return (Message.from_hmap(msg).to_basic(now)
                 for msg in messages if msg)
 
     @utils.raises_conn_error
@@ -593,18 +587,18 @@ def _filter_messages(messages, filters, to_basic, marker):
     for msg in messages:
         # NOTE(kgriffs): Message may have been deleted, so
         # check each value to ensure we got a message back
-        if msg:
-            msg = Message.from_redis(msg)
+        if msg is None:
+            continue
 
-            # NOTE(kgriffs): Check to see if any of the filters
-            # indiciate that this message should be skipped.
-            for should_skip in filters:
-                if should_skip(msg):
-                    break
+        # NOTE(kgriffs): Check to see if any of the filters
+        # indiciate that this message should be skipped.
+        for should_skip in filters:
+            if should_skip(msg):
+                break
+        else:
+            marker['next'] = msg.id
+
+            if to_basic:
+                yield msg.to_basic(now)
             else:
-                marker['next'] = msg.id
-
-                if to_basic:
-                    yield msg.to_basic(now)
-                else:
-                    yield msg
+                yield msg
