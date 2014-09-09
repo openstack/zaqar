@@ -108,8 +108,12 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def pools_controller(self):
-        return None
+        raise NotImplementedError()
 
     @property
     def catalogue_controller(self):
-        return None
+        raise NotImplementedError()
+
+    @property
+    def flavors_controller(self):
+        raise NotImplementedError()
