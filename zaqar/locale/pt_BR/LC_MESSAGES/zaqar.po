@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-03 06:05+0000\n"
+"POT-Creation-Date: 2014-09-09 06:06+0000\n"
 "PO-Revision-Date: 2014-09-02 21:53+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
@@ -37,7 +37,11 @@ msgstr "O estágio %(stage)s não implementa o método %(method)s"
 msgid "Method %s not found in any of the registered stages"
 msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
 
-#: zaqar/common/transport/wsgi/helpers.py:46
+#: zaqar/common/transport/wsgi/helpers.py:44
+msgid "Malformed hexadecimal UUID."
+msgstr "UUID hexadecimal inválido."
+
+#: zaqar/common/transport/wsgi/helpers.py:64
 msgid ""
 "\n"
 "X-PROJECT-ID cannot be an empty string. Specify the right header X"
@@ -49,15 +53,15 @@ msgstr ""
 "-PROJECT-ID\n"
 "e tente novemente."
 
-#: zaqar/common/transport/wsgi/helpers.py:53
+#: zaqar/common/transport/wsgi/helpers.py:71
 msgid "The header X-PROJECT-ID was missing"
 msgstr ""
 
-#: zaqar/common/transport/wsgi/helpers.py:111
+#: zaqar/common/transport/wsgi/helpers.py:129
 msgid "Invalid queue identification"
 msgstr "Identificação de fila inválida"
 
-#: zaqar/common/transport/wsgi/helpers.py:112
+#: zaqar/common/transport/wsgi/helpers.py:130
 msgid "The format of the submitted queue name or project id is not valid."
 msgstr ""
 "O formato do nome da fila submetida ou o identificador do projeto não é "
@@ -186,11 +190,11 @@ msgstr ""
 "Exceção AutoReconnect capturada, número máximo de tentativas para {0} "
 "excedido."
 
-#: zaqar/queues/storage/redis/utils.py:146
+#: zaqar/queues/storage/redis/utils.py:157
 msgid "Caught ConnectionError, retrying the call to {0}"
 msgstr ""
 
-#: zaqar/queues/storage/redis/utils.py:151
+#: zaqar/queues/storage/redis/utils.py:162
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
@@ -304,33 +308,29 @@ msgstr "Corpo da requisição inválido"
 msgid "Document type not supported."
 msgstr "Tipo de documento não suportado."
 
-#: zaqar/queues/transport/wsgi/utils.py:51
+#: zaqar/queues/transport/wsgi/utils.py:50
 msgid "Request body can not be empty"
 msgstr "O corpo da requisição não pode ser vazio"
 
-#: zaqar/queues/transport/wsgi/utils.py:62
+#: zaqar/queues/transport/wsgi/utils.py:61
 msgid "Request body could not be parsed."
 msgstr "Não foi possível analisar o corpo da requisição."
 
-#: zaqar/queues/transport/wsgi/utils.py:67
+#: zaqar/queues/transport/wsgi/utils.py:66
 msgid "JSON contains integer that is too large."
 msgstr "JSON possui um numero inteiro muito grande."
 
-#: zaqar/queues/transport/wsgi/utils.py:73
+#: zaqar/queues/transport/wsgi/utils.py:72
 msgid "Request body could not be read."
 msgstr "O corpo da requisição não pode ser lido."
 
-#: zaqar/queues/transport/wsgi/utils.py:169
+#: zaqar/queues/transport/wsgi/utils.py:168
 msgid "Missing \"{name}\" field."
 msgstr "Faltando o campo \"{name}\"."
 
-#: zaqar/queues/transport/wsgi/utils.py:177
+#: zaqar/queues/transport/wsgi/utils.py:176
 msgid "The value of the \"{name}\" field must be a {vtype}."
 msgstr "O valor do campo \"{name}\" deve ser do tipo {vtype}."
-
-#: zaqar/queues/transport/wsgi/utils.py:195
-msgid "Malformed hexadecimal UUID."
-msgstr "UUID hexadecimal inválido."
 
 #: zaqar/queues/transport/wsgi/v1_0/claims.py:77
 #: zaqar/queues/transport/wsgi/v1_1/claims.py:100
@@ -352,55 +352,55 @@ msgstr "Não foi possível atualizar o pedido."
 msgid "Claim could not be deleted."
 msgstr "Não foi possível excluir o pedido."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:60
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:265
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:73
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:61
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:261
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:74
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:320
 msgid "Message could not be retrieved."
 msgstr "Não foi possível recuperar a mensagem."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:108
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:120
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:104
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:119
 msgid "Messages could not be listed."
 msgstr "Não foi possível listar a mensagem."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:172
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:193
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:167
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:192
 msgid "No messages could be enqueued."
 msgstr "Nenhuma mensagem pode ser adicionada à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:177
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:198
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:172
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:197
 msgid "Messages could not be enqueued."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:234
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:230
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:265
 msgid "Messages could not be deleted."
 msgstr "Não foi possível excluir as mensagens."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:284
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:337
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:277
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:338
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:295
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:348
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:288
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:349
 msgid "A claim was specified, but the message is not currently claimed."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:301
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:354
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:294
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:355
 msgid "The specified claim does not exist or has expired."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:307
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:360
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:300
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:361
 msgid "This message is claimed; it cannot be deleted without a valid claim ID."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:313
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:366
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:306
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:367
 msgid "Message could not be deleted."
 msgstr "A mensagem não pode ser excluída."
 
@@ -445,7 +445,7 @@ msgstr ""
 msgid "Health status could not be read."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:164
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:163
 msgid "No messages were found in the request body."
 msgstr ""
 
