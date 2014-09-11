@@ -219,3 +219,12 @@ def message_url(message, base_path, claim_id=None):
     if claim_id:
         path += falcon.to_query_str({'claim_id': claim_id})
     return path
+
+
+def format_message_v1(message, base_path, claim_id=None):
+    return {
+        'href': message_url(message, base_path, claim_id),
+        'ttl': message['ttl'],
+        'age': message['age'],
+        'body': message['body'],
+    }
