@@ -25,7 +25,7 @@ from gevent import monkey as curious_george
 curious_george.patch_all(thread=False, select=False)
 import gevent
 import marktime
-from zaqarclient.queues.v1 import client
+from zaqarclient.queues import client
 from zaqarclient.transport import errors
 
 from zaqar.bench import config
