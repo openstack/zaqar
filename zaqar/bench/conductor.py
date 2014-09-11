@@ -17,7 +17,7 @@ from __future__ import print_function
 import json
 import multiprocessing as mp
 
-from zaqarclient.queues.v1 import client
+from zaqarclient.queues import client
 
 from zaqar.bench import config
 from zaqar.bench import consumer
