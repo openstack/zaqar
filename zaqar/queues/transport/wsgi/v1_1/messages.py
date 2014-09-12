@@ -79,7 +79,8 @@ class CollectionResource(object):
         if not messages:
             return None
 
-        messages = [_format_message(m, base_path) for m in messages]
+        messages = [wsgi_utils.format_message_v1_1(m, base_path, m['claim_id'])
+                    for m in messages]
 
         return {'messages': messages}
 
@@ -126,7 +127,9 @@ class CollectionResource(object):
             # Found some messages, so prepare the response
             kwargs['marker'] = next(results)
             base_path = req.path.rsplit('/', 1)[0]
-            messages = [_format_message(m, base_path) for m in messages]
+            messages = [wsgi_utils.format_message_v1_1(m, base_path,
+                                                       m['claim_id'])
+                        for m in messages]
 
         return {
             'messages': messages,
@@ -322,7 +325,9 @@ class ItemResource(object):
 
         # Prepare response
         message['href'] = req.path
-        message = _format_message(message, req.path.rsplit('/', 2)[0])
+        message = wsgi_utils.format_message_v1_1(message,
+                                                 req.path.rsplit('/', 2)[0],
+                                                 message['claim_id'])
 
         resp.body = utils.to_json(message)
         # status defaults to 200
@@ -369,14 +374,3 @@ class ItemResource(object):
 
         # Alles guete
         resp.status = falcon.HTTP_204
-
-
-def _format_message(message, base_path):
-    url = wsgi_utils.message_url(message, base_path, message['claim_id'])
-    return {
-        'id': message['id'],
-        'href': url,
-        'ttl': message['ttl'],
-        'age': message['age'],
-        'body': message['body'],
-    }

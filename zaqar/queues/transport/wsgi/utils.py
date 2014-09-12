@@ -228,3 +228,14 @@ def format_message_v1(message, base_path, claim_id=None):
         'age': message['age'],
         'body': message['body'],
     }
+
+
+def format_message_v1_1(message, base_path, claim_id=None):
+    url = message_url(message, base_path, claim_id)
+    return {
+        'id': message['id'],
+        'href': url,
+        'ttl': message['ttl'],
+        'age': message['age'],
+        'body': message['body'],
+    }
