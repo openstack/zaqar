@@ -29,7 +29,6 @@ sys.path.insert(0, os.path.abspath('./'))
 # or your custom ones.
 
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.intersphinx',
               'sphinx.ext.coverage',
               'sphinx.ext.pngmath',
               'sphinx.ext.ifconfig',
@@ -231,7 +230,3 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
-
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
