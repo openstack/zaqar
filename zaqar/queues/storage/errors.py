@@ -163,3 +163,16 @@ class NoPoolFound(ExceptionBase):
 
     def __init__(self):
         super(NoPoolFound, self).__init__()
+
+
+class PoolInUseByFlavor(NotPermitted):
+
+    msg_format = u'Pool {pid} is in use by flavor {fid}'
+
+    def __init__(self, pid, fid):
+        super(PoolInUseByFlavor, self).__init__(pid=pid, fid=fid)
+        self._flavor = fid
+
+    @property
+    def flavor(self):
+        return self._flavor

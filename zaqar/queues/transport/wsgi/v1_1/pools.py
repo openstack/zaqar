@@ -41,6 +41,7 @@ import jsonschema
 
 from zaqar.common.schemas import pools as schema
 from zaqar.common import utils as common_utils
+from zaqar.i18n import _
 from zaqar.openstack.common import log
 from zaqar.queues.storage import errors
 from zaqar.queues.storage import utils as storage_utils
@@ -165,11 +166,21 @@ class Resource(object):
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.
 
-        :returns: HTTP | 204
+        :returns: HTTP | [204, 403]
         """
 
         LOG.debug(u'DELETE pool - name: %s', pool)
-        self._ctrl.delete(pool)
+
+        try:
+            self._ctrl.delete(pool)
+        except errors.PoolInUseByFlavor as ex:
+            LOG.exception(ex)
+            title = _(u'Unable to delete')
+            description = _(u'This pool is used by flavors {flavor}; '
+                            u'It cannot be deleted.')
+            description = description.format(flavor=ex.flavor)
+            raise falcon.HTTPForbidden(title, description)
+
         response.status = falcon.HTTP_204
 
     def on_patch(self, request, response, project_id, pool):

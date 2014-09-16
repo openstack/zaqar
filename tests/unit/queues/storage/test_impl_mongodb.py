@@ -395,9 +395,18 @@ class MongodbPoolsTests(base.PoolsControllerTest):
     def setUp(self):
         super(MongodbPoolsTests, self).setUp()
         self.load_conf('wsgi_mongodb.conf')
+        self.flavors_controller = self.driver.flavors_controller
 
     def tearDown(self):
         super(MongodbPoolsTests, self).tearDown()
+
+    def test_delete_pool_used_by_flavor(self):
+        self.flavors_controller.create('durable', self.pool,
+                                       project=self.project,
+                                       capabilities={})
+
+        with testing.expect(errors.PoolInUseByFlavor):
+            self.pools_controller.delete(self.pool)
 
 
 @testing.requires_mongodb

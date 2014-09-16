@@ -100,6 +100,16 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def delete(self, name):
+        # NOTE(wpf): Initializing the Flavors controller here instead of
+        # doing so in __init__ is required to avoid falling in a maximum
+        # recursion error.
+        flavor_ctl = self.driver.flavors_controller
+        res = list(flavor_ctl._list_by_pool(name))
+
+        if res:
+            flavors = ', '.join([x['name'] for x in res])
+            raise errors.PoolInUseByFlavor(name, flavors)
+
         self._col.remove({'n': name}, w=0)
 
     @utils.raises_conn_error
