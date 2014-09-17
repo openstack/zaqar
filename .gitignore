@@ -23,3 +23,4 @@ versioninfo
 var/*
 ChangeLog
 AUTHORS
+etc/zaqar.conf.sample
