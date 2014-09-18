@@ -76,7 +76,9 @@ def get_age(created):
 
 
 def msgid_encode(id):
-    return hex(id ^ 0x5c693a53)[2:]
+    # NOTE(jeffrey4l): When using mysql-python, the id is converted to
+    # long type, which will lead to a L letter in the last.
+    return hex(int(id) ^ 0x5c693a53)[2:]
 
 
 def msgid_decode(id):
