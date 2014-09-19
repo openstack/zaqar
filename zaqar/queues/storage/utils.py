@@ -81,7 +81,7 @@ def load_storage_driver(conf, cache, control_mode=False):
 
         return mgr.driver
 
-    except RuntimeError as exc:
+    except Exception as exc:
         LOG.exception(exc)
         raise errors.InvalidDriver(exc)
 
@@ -141,5 +141,6 @@ def can_connect(uri):
                                    invoke_args=[conf, None])
         return mgr.driver.is_alive()
 
-    except RuntimeError:
+    except Exception:
+        LOG.debug('Can\'t connect to: %s' % uri)
         return False
