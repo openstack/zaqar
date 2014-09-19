@@ -78,7 +78,7 @@ transport/default_claim_ttl transport
 transport/default_message_ttl transport
 transport/max_claim_grace transport
 transport/max_claim_ttl transport
-transport/max_message_size transport
+transport/max_messages_post_size transport
 transport/max_message_ttl transport
 transport/max_messages_per_claim_or_pop transport
 transport/max_messages_per_page transport

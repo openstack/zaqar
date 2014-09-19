@@ -254,7 +254,7 @@ class MessagesBaseTest(base.V1Base):
         doc = jsonutils.dumps([{'body': "some body", 'ttl': 100}] * 20,
                               indent=4)
 
-        max_len = self.transport_cfg.max_message_size
+        max_len = self.transport_cfg.max_messages_post_size
         long_doc = doc + (' ' * (max_len - len(doc) + 1))
 
         self.simulate_post(self.queue_path + '/messages',

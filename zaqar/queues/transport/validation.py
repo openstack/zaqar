@@ -39,9 +39,10 @@ _TRANSPORT_LIMITS_OPTIONS = (
     cfg.IntOpt('max_queue_metadata', default=64 * 1024,
                deprecated_name='metadata_size_uplimit',
                deprecated_group='limits:transport'),
-    cfg.IntOpt('max_message_size', default=256 * 1024,
+    cfg.IntOpt('max_messages_post_size', default=256 * 1024,
                deprecated_name='message_size_uplimit',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               deprecated_opts=[cfg.DeprecatedOpt('max_message_size')]),
 
     cfg.IntOpt('max_message_ttl', default=1209600,
                deprecated_name='message_ttl_max',
@@ -153,10 +154,10 @@ class Validator(object):
         """
         if content_length is None:
             return
-        if content_length > self._limits_conf.max_message_size:
+        if content_length > self._limits_conf.max_messages_post_size:
             raise ValidationFailed(
                 _(u'Message collection size is too large. Max size {0}'),
-                self._limits_conf.max_message_size)
+                self._limits_conf.max_messages_post_size)
 
     def message_content(self, message):
         """Restrictions on each message."""

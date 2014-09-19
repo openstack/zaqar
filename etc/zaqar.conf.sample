@@ -491,7 +491,7 @@
 
 #  (integer value)
 # Deprecated group/name - [limits:transport]/message_size_uplimit
-#max_message_size=262144
+#max_messages_post_size=262144
 
 #  (integer value)
 # Deprecated group/name - [limits:transport]/message_ttl_max
