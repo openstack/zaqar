@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-09 06:06+0000\n"
-"PO-Revision-Date: 2014-09-02 21:53+0000\n"
+"POT-Creation-Date: 2014-09-19 06:37+0000\n"
+"PO-Revision-Date: 2014-09-16 09:26+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: zaqar/common/api.py:48
+#: zaqar/common/api.py:49
 msgid "{0} is not a valid operation"
 msgstr "{0} não é uma operação válida"
 
@@ -135,7 +135,7 @@ msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:545
+#: zaqar/queues/storage/mongodb/messages.py:547
 #, python-format
 msgid ""
 "%(attempts)d attempt(s) required to post %(num_messages)d messages to "
@@ -144,7 +144,7 @@ msgstr ""
 "%(attempts)d tentativa(s) necessária(s) para enviar %(num_messages)d "
 "mensagens para a fila \"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:589
+#: zaqar/queues/storage/mongodb/messages.py:591
 #, python-format
 msgid ""
 "First attempt failed while adding messages to queue \"%(queue)s\" under "
@@ -153,7 +153,7 @@ msgstr ""
 "Primeira tentativa falhou durante a adição de mensagens à fila "
 "\"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:603
+#: zaqar/queues/storage/mongodb/messages.py:605
 #, python-format
 msgid ""
 "Exceeded maximum retry duration for queue \"%(queue)s\" under project "
@@ -162,7 +162,7 @@ msgstr ""
 "Excedido o tempo máximo de tentativas para a fila \"%(queue)s\" do "
 "projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:663
+#: zaqar/queues/storage/mongodb/messages.py:665
 #, python-format
 msgid ""
 "Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
@@ -171,7 +171,7 @@ msgstr ""
 "Excedido o número máximo de tentativas (%(max)s) para a fila "
 "\"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/queues.py:169
+#: zaqar/queues/storage/mongodb/queues.py:171
 #, python-format
 msgid ""
 "Failed to increment the message counter for queue %(name)s and project "
@@ -381,6 +381,7 @@ msgstr "Não foi possível excluir as mensagens."
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:277
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:338
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:178
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
@@ -433,11 +434,11 @@ msgstr "Não foi possível listar as filas."
 msgid "Queue stats could not be read."
 msgstr "Não foi possível ler as estatísticas da fila."
 
-#: zaqar/queues/transport/wsgi/v1_1/flavors.py:139
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:143
 msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/flavors.py:142
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:146
 msgid "Unable to create"
 msgstr ""
 
@@ -451,5 +452,9 @@ msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:283
 msgid "Messages could not be popped."
+msgstr ""
+
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:179
+msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr ""
 
