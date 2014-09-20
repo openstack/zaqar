@@ -27,7 +27,7 @@ REDIS_OPTIONS = (
                help=('Maximum number of times to retry an operation that '
                      'failed due to a redis node failover.')),
 
-    cfg.FloatOpt('reconnect_sleep', default=1,
+    cfg.FloatOpt('reconnect_sleep', default=1.0,
                  help=('Base sleep interval between attempts to reconnect '
                        'after a redis node failover. '))
 
