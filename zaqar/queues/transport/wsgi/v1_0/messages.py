@@ -66,7 +66,7 @@ class CollectionResource(object):
         if not messages:
             return None
 
-        return [_format_message(m, base_path) for m in messages]
+        return [wsgi_utils.format_message_v1(m, base_path) for m in messages]
 
     def _get(self, req, project_id, queue_name):
         client_uuid = wsgi_helpers.get_client_uuid(req)
@@ -110,7 +110,8 @@ class CollectionResource(object):
         # Found some messages, so prepare the response
         kwargs['marker'] = next(results)
         base_path = req.path.rsplit('/', 1)[0]
-        messages = [_format_message(m, base_path) for m in messages]
+        messages = [wsgi_utils.format_message_v1(
+            m, base_path) for m in messages]
 
         return {
             'messages': messages,
@@ -262,7 +263,8 @@ class ItemResource(object):
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.content_location = req.relative_uri
-        message = _format_message(message, req.path.rsplit('/', 2)[0])
+        message = wsgi_utils.format_message_v1(
+            message, req.path.rsplit('/', 2)[0])
         resp.body = utils.to_json(message)
         # status defaults to 200
 
@@ -308,12 +310,3 @@ class ItemResource(object):
 
         # Alles guete
         resp.status = falcon.HTTP_204
-
-
-def _format_message(message, base_path):
-    return {
-        'href': wsgi_utils.message_url(message, base_path),
-        'ttl': message['ttl'],
-        'age': message['age'],
-        'body': message['body'],
-    }
