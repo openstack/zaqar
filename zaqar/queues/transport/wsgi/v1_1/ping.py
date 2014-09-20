@@ -17,13 +17,13 @@ import falcon
 
 class Resource(object):
 
-    __slots__ = ('driver',)
+    __slots__ = ('_driver',)
 
     def __init__(self, driver):
-        self.driver = driver
+        self._driver = driver
 
     def on_get(self, req, resp, **kwargs):
-        resp.status = (falcon.HTTP_204 if self.driver.is_alive()
+        resp.status = (falcon.HTTP_204 if self._driver.is_alive()
                        else falcon.HTTP_503)
 
     def on_head(self, req, resp, **kwargs):

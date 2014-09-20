@@ -27,15 +27,15 @@ LOG = logging.getLogger(__name__)
 
 class Resource(object):
 
-    __slots__ = ('queue_ctrl')
+    __slots__ = ('_queue_ctrl')
 
     def __init__(self, queue_controller):
-        self.queue_ctrl = queue_controller
+        self._queue_ctrl = queue_controller
 
     def on_get(self, req, resp, project_id, queue_name):
         try:
-            resp_dict = self.queue_ctrl.stats(queue_name,
-                                              project=project_id)
+            resp_dict = self._queue_ctrl.stats(queue_name,
+                                               project=project_id)
 
             message_stats = resp_dict['messages']
 

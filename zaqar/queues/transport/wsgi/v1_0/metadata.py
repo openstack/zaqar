@@ -29,12 +29,12 @@ LOG = logging.getLogger(__name__)
 
 
 class Resource(object):
-    __slots__ = ('_wsgi_conf', '_validate', 'queue_ctrl')
+    __slots__ = ('_wsgi_conf', '_validate', '_queue_ctrl')
 
     def __init__(self, _wsgi_conf, validate, queue_controller):
         self._wsgi_conf = _wsgi_conf
         self._validate = validate
-        self.queue_ctrl = queue_controller
+        self._queue_ctrl = queue_controller
 
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
@@ -42,8 +42,8 @@ class Resource(object):
                   {'queue': queue_name, 'project': project_id})
 
         try:
-            resp_dict = self.queue_ctrl.get_metadata(queue_name,
-                                                     project=project_id)
+            resp_dict = self._queue_ctrl.get_metadata(queue_name,
+                                                      project=project_id)
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
@@ -75,9 +75,9 @@ class Resource(object):
         metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
-            self.queue_ctrl.set_metadata(queue_name,
-                                         metadata=metadata,
-                                         project=project_id)
+            self._queue_ctrl.set_metadata(queue_name,
+                                          metadata=metadata,
+                                          project=project_id)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
