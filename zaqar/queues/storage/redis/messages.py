@@ -29,7 +29,6 @@ Message = models.Message
 MessageEnvelope = models.MessageEnvelope
 
 
-MESSAGE_IDS_SUFFIX = 'messages'
 MSGSET_INDEX_KEY = 'msgset_index'
 
 # The rank counter is an atomic index to rank messages
@@ -112,14 +111,6 @@ class MessageController(storage.Message):
     def _claim_ctrl(self):
         return self.driver.claim_controller
 
-    def _active(self, queue_name, marker=None, echo=False,
-                client_uuid=None, project=None,
-                limit=None):
-        return self._list(queue_name, project=project, marker=marker,
-                          echo=echo, client_uuid=client_uuid,
-                          include_claimed=False,
-                          limit=limit, to_basic=False)
-
     def _count(self, queue, project):
         """Return total number of messages in a queue.
 
@@ -127,22 +118,13 @@ class MessageController(storage.Message):
             they haven't been GC'd yet. This is done for performance.
         """
 
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
-
-        return self._client.zcard(msgset_key)
+        return self._client.zcard(utils.msgset_key(queue, project))
 
     def _create_msgset(self, queue, project, pipe):
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
-
-        pipe.zadd(MSGSET_INDEX_KEY, 1, msgset_key)
+        pipe.zadd(MSGSET_INDEX_KEY, 1, utils.msgset_key(queue, project))
 
     def _delete_msgset(self, queue, project, pipe):
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
-
-        pipe.zrem(MSGSET_INDEX_KEY, msgset_key)
+        pipe.zrem(MSGSET_INDEX_KEY, utils.msgset_key(queue, project))
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -154,8 +136,7 @@ class MessageController(storage.Message):
         executing the operation.
         """
         client = self._client
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
         message_ids = client.zrange(msgset_key, 0, -1)
 
         pipe.delete(msgset_key)
@@ -166,8 +147,7 @@ class MessageController(storage.Message):
     def _find_first_unclaimed(self, queue, project, limit):
         """Find the first unclaimed message in the queue."""
 
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
         now = timeutils.utcnow_ts()
 
         # TODO(kgriffs): Generalize this paging pattern (DRY)
@@ -198,8 +178,7 @@ class MessageController(storage.Message):
         Helper function to get the first message in the queue
         sort > 0 get from the left else from the right.
         """
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
 
         zrange = self._client.zrange if sort == 1 else self._client.zrevrange
         message_ids = zrange(msgset_key, 0, 0)
@@ -242,9 +221,7 @@ class MessageController(storage.Message):
             raise errors.QueueDoesNotExist(queue,
                                            project)
 
-        msgset_key = utils.scope_message_ids_set(queue,
-                                                 project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
         client = self._client
 
         if not marker and not include_claimed:
@@ -419,9 +396,7 @@ class MessageController(storage.Message):
         if not self._queue_ctrl.exists(queue, project):
             raise errors.QueueDoesNotExist(queue, project)
 
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
-
+        msgset_key = utils.msgset_key(queue, project)
         counter_key = utils.scope_queue_index(queue, project,
                                               MESSAGE_RANK_COUNTER_SUFFIX)
 
@@ -518,8 +493,8 @@ class MessageController(storage.Message):
 
             raise errors.MessageNotClaimedBy(message_id, claim)
 
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
+
         with self._client.pipeline() as pipe:
             pipe.delete(message_id)
             pipe.zrem(msgset_key, message_id)
@@ -538,8 +513,7 @@ class MessageController(storage.Message):
             raise errors.QueueDoesNotExist(queue,
                                            project)
 
-        msgset_key = utils.scope_message_ids_set(queue, project,
-                                                 MESSAGE_IDS_SUFFIX)
+        msgset_key = utils.msgset_key(queue, project)
 
         with self._client.pipeline() as pipe:
             for mid in message_ids:

@@ -175,6 +175,21 @@ class RedisDriverTest(testing.TestBase):
 
         self.assertTrue(isinstance(redis_driver.connection, redis.StrictRedis))
 
+    def test_version_match(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('redis.StrictRedis.info') as info:
+            info.return_value = {'redis_version': '2.4.6'}
+            self.assertRaises(RuntimeError, driver.DataDriver,
+                              self.conf, cache)
+
+            info.return_value = {'redis_version': '2.11'}
+
+            try:
+                driver.DataDriver(self.conf, cache)
+            except RuntimeError:
+                self.fail('version match failed')
+
 
 @testing.requires_redis
 class RedisQueuesTest(base.QueueControllerTest):
