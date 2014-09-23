@@ -72,9 +72,10 @@ class DataDriver(storage.DataDriverBase):
         self._pool_catalog = Catalog(conf, cache, control)
 
     def is_alive(self):
+        cursor = self._pool_catalog._pools_ctrl.list(limit=0)
+        pools = next(cursor)
         return all(self._pool_catalog.get_driver(pool['name']).is_alive()
-                   for pool in
-                   self._pool_catalog._pools_ctrl.list(limit=0))
+                   for pool in pools)
 
     def _health(self):
         KPI = {}
@@ -82,15 +83,17 @@ class DataDriver(storage.DataDriverBase):
         # reachable or not
         KPI['catalog_reachable'] = self.is_alive()
 
+        cursor = self._pool_catalog._pools_ctrl.list(limit=0)
         # Messages of each pool
-        for pool in self._pool_catalog._pools_ctrl.list():
+        for pool in next(cursor):
             driver = self._pool_catalog.get_driver(pool['name'])
             KPI[pool['name']] = driver._health()
 
         return KPI
 
     def gc(self):
-        for pool in self._pool_catalog._pools_ctrl.list():
+        cursor = self._pool_catalog._pools_ctrl.list(limit=0)
+        for pool in next(cursor):
             driver = self._pool_catalog.get_driver(pool['name'])
             driver.gc()
 
@@ -158,7 +161,8 @@ class QueueController(RoutingController):
              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         def all_pages():
-            for pool in self._pool_catalog._pools_ctrl.list(limit=0):
+            cursor = self._pool_catalog._pools_ctrl.list(limit=0)
+            for pool in next(cursor):
                 yield next(self._pool_catalog.get_driver(pool['name'])
                            .queue_controller.list(
                                project=project,

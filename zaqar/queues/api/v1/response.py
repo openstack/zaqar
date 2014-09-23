@@ -143,6 +143,58 @@ class ResponseSchema(api.Api):
                 'required': ['messages'],
                 'additionalProperties': False
             },
+
+            'pool_list': {
+                'type': 'object',
+                'properties': {
+                    'links': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'rel': {
+                                    'type': 'string'
+                                },
+                                'href': {
+                                    'type': 'string',
+                                    'pattern': '^/v1/pools\?'
+                                }
+                            },
+                            'required': ['rel', 'href'],
+                            'additionalProperties': False
+                        }
+                    },
+                    'pools': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'href': {
+                                    'type': 'string',
+                                    'pattern': '^/v1/'
+                                               'pools/[a-zA-Z0-9_-]{1,64}$'
+                                },
+                                'weight': {
+                                    'type': 'number',
+                                    'minimum': -1
+                                },
+                                'uri': {
+                                    'type': 'string'
+                                },
+                                'options': {
+                                    'type': 'object',
+                                    'additionalProperties': True
+                                }
+                            },
+                            'required': ['href', 'weight', 'uri'],
+                            'additionalProperties': False,
+                        },
+                    }
+                },
+                'required': ['links', 'pools'],
+                'additionalProperties': False
+            },
+
             'message_list': {
                 'type': 'object',
                 'properties': {

@@ -86,7 +86,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         # Test existence
         result = self.client.get('/'+pool_name+'?detailed=true')
         self.assertEqual(result.status_code, 200)
-        self.assertSchema(result.json(), 'pool-detail')
+        self.assertSchema(result.json(), 'pool_detail')
 
     @ddt.data(
         {
@@ -142,7 +142,7 @@ class TestPools(base.V1_1FunctionalTestBase):
 
         result = self.client.get()
         self.assertEqual(result.status_code, 200)
-        self.assertSchema(result.json(), 'pool-list')
+        self.assertSchema(result.json(), 'pool_list')
 
     @ddt.data(
         {
