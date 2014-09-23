@@ -62,16 +62,21 @@ class Listing(object):
         self._ctrl = pools_controller
 
     def on_get(self, request, response, project_id):
-        """Returns a pool listing as objects embedded in an array:
+        """Returns a pool listing as objects embedded in an object:
 
         ::
 
-            [
-                {"href": "", "weight": 100, "uri": ""},
-                ...
-            ]
+            {
+                "pools": [
+                    {"href": "", "weight": 100, "uri": ""},
+                    ...
+                ],
+                "links": [
+                    {"href": "", "rel": "next"}
+                ]
+            }
 
-        :returns: HTTP | [200, 204]
+        :returns: HTTP | 200
         """
 
         LOG.debug(u'LIST pools')
@@ -81,15 +86,26 @@ class Listing(object):
         request.get_param_as_int('limit', store=store)
         request.get_param_as_bool('detailed', store=store)
 
+        cursor = self._ctrl.list(**store)
+        pools = list(next(cursor))
+
         results = {}
-        results['pools'] = list(self._ctrl.list(**store))
-        for entry in results['pools']:
-            entry['href'] = request.path + '/' + entry.pop('name')
 
-        if not results['pools']:
-            response.status = falcon.HTTP_204
-            return
+        if pools:
+            store['marker'] = next(cursor)
 
+            for entry in pools:
+                entry['href'] = request.path + '/' + entry.pop('name')
+
+        results['links'] = [
+            {
+                'rel': 'next',
+                'href': request.path + falcon.to_query_str(store)
+            }
+        ]
+        results['pools'] = pools
+
+        response.content_location = request.relative_uri
         response.body = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 

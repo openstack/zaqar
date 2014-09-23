@@ -990,7 +990,8 @@ class PoolsControllerTest(ControllerBaseTest):
     def test_drop_all_leads_to_empty_listing(self):
         self.pools_controller.drop_all()
         cursor = self.pools_controller.list()
-        self.assertRaises(StopIteration, next, cursor)
+        pools = next(cursor)
+        self.assertRaises(StopIteration, next, pools)
 
     def test_listing_simple(self):
         # NOTE(cpp-cabrera): base entry interferes with listing results
@@ -1021,7 +1022,15 @@ class PoolsControllerTest(ControllerBaseTest):
 
             return n, w, u
 
-        res = list(self.pools_controller.list())
+        def get_res(**kwargs):
+            cursor = self.pools_controller.list(**kwargs)
+            res = list(next(cursor))
+            marker = next(cursor)
+            # TODO(jeffrey4l): marker should exist
+            self.assertTrue(marker)
+            return res
+
+        res = get_res()
         self.assertEqual(len(res), 10)
         for entry in res:
             n, w, u = _pool(entry['name'])
@@ -1029,19 +1038,19 @@ class PoolsControllerTest(ControllerBaseTest):
             self._pool_expects(entry, n, w, u)
             self.assertNotIn('options', entry)
 
-        res = list(self.pools_controller.list(limit=5))
+        res = get_res(limit=5)
         self.assertEqual(len(res), 5)
 
-        res = list(self.pools_controller.list(limit=0))
+        res = get_res(limit=0)
         self.assertEqual(len(res), 15)
 
         next_name = marker + 'n'
         self.pools_controller.create(next_name, 123, '123', options={})
-        res = next(self.pools_controller.list(marker=marker))
-        self._pool_expects(res, next_name, 123, '123')
+        res = get_res(marker=marker)
+        self._pool_expects(res[0], next_name, 123, '123')
         self.pools_controller.delete(next_name)
 
-        res = list(self.pools_controller.list(detailed=True))
+        res = get_res(detailed=True)
         self.assertEqual(len(res), 10)
         for entry in res:
             n, w, u = _pool(entry['name'])
