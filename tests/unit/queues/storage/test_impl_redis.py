@@ -20,6 +20,7 @@ import mock
 from oslo.utils import timeutils
 import redis
 
+from zaqar.common import errors
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.queues import storage
 from zaqar.queues.storage.redis import controllers
@@ -189,6 +190,88 @@ class RedisDriverTest(testing.TestBase):
                 driver.DataDriver(self.conf, cache)
             except RuntimeError:
                 self.fail('version match failed')
+
+    def test_connection_url_invalid(self):
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'red://example.com')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis://')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis://example.com:not_an_integer')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis://s1:not_an_integer,s2?master=obi-wan')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis://s1,s2')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis:')
+
+        self.assertRaises(errors.ConfigurationError,
+                          driver.ConnectionURI,
+                          'redis:')
+
+    def test_connection_url_tcp(self):
+        uri = driver.ConnectionURI('redis://example.com')
+        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
+        self.assertEqual(uri.port, 6379)
+        self.assertEqual(uri.socket_timeout, 0.1)
+
+        uri = driver.ConnectionURI('redis://example.com:7777')
+        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
+        self.assertEqual(uri.port, 7777)
+
+        uri = driver.ConnectionURI(
+            'redis://example.com:7777?socket_timeout=1')
+        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
+        self.assertEqual(uri.port, 7777)
+        self.assertEqual(uri.socket_timeout, 1.0)
+
+    def test_connection_uri_unix_socket(self):
+        uri = driver.ConnectionURI('redis:/tmp/redis.sock')
+        self.assertEqual(uri.strategy, driver.STRATEGY_UNIX)
+        self.assertEqual(uri.unix_socket_path, '/tmp/redis.sock')
+        self.assertEqual(uri.socket_timeout, 0.1)
+
+        uri = driver.ConnectionURI('redis:/tmp/redis.sock?socket_timeout=1.5')
+        self.assertEqual(uri.strategy, driver.STRATEGY_UNIX)
+        self.assertEqual(uri.unix_socket_path, '/tmp/redis.sock')
+        self.assertEqual(uri.socket_timeout, 1.5)
+
+    def test_connection_uri_sentinel(self):
+        uri = driver.ConnectionURI('redis://s1?master=dumbledore')
+        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
+        self.assertEqual(uri.sentinels, [('s1', 26379)])
+        self.assertEqual(uri.master, 'dumbledore')
+        self.assertEqual(uri.socket_timeout, 0.1)
+
+        uri = driver.ConnectionURI('redis://s1,s2?master=dumbledore')
+        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
+        self.assertEqual(uri.sentinels, [('s1', 26379), ('s2', 26379)])
+        self.assertEqual(uri.master, 'dumbledore')
+        self.assertEqual(uri.socket_timeout, 0.1)
+
+        uri = driver.ConnectionURI('redis://s1:26389,s1?master=dumbledore')
+        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
+        self.assertEqual(uri.sentinels, [('s1', 26389), ('s1', 26379)])
+        self.assertEqual(uri.master, 'dumbledore')
+        self.assertEqual(uri.socket_timeout, 0.1)
+
+        uri = driver.ConnectionURI(
+            'redis://s1?master=dumbledore&socket_timeout=0.5')
+        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
+        self.assertEqual(uri.sentinels, [('s1', 26379)])
+        self.assertEqual(uri.master, 'dumbledore')
+        self.assertEqual(uri.socket_timeout, 0.5)
 
 
 @testing.requires_redis

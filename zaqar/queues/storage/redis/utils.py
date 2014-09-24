@@ -157,7 +157,23 @@ def retries_on_connection_error(func):
         for attempt in range(max_attemps):
             try:
                 return func(self, *args, **kwargs)
+
             except redis.exceptions.ConnectionError:
+                # NOTE(kgriffs): redis-py will retry once itself,
+                # but if the command cannot be sent the second time after
+                # disconnecting and reconnecting, the error is raised
+                # and we will catch it here.
+                #
+                # NOTE(kgriffs): When using a sentinel, if a master fails
+                # the initial retry will gracefully fail over to the
+                # new master if the sentinel failover delay is low enough;
+                # if the delay is too long, then redis-py will get a
+                # MasterNotFoundError (a subclass of ConnectionError) on
+                # it's retry, which will then just get raised and caught
+                # here, in which case we will keep retrying until the
+                # sentinel completes the failover and stops raising
+                # MasterNotFoundError.
+
                 ex = sys.exc_info()[1]
                 LOG.warn(_(u'Caught ConnectionError, retrying the '
                            'call to {0}').format(func))

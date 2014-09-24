@@ -11,11 +11,12 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import redis
+import redis.sentinel
 from six.moves import urllib
 
 from zaqar.common import decorators
+from zaqar.common import errors
 from zaqar.i18n import _
 from zaqar.openstack.common import log as logging
 from zaqar.queues import storage
@@ -24,17 +25,117 @@ from zaqar.queues.storage.redis import options
 
 LOG = logging.getLogger(__name__)
 REDIS_DEFAULT_PORT = 6379
+SENTINEL_DEFAULT_PORT = 26379
+DEFAULT_SOCKET_TIMEOUT = 0.1
+
+STRATEGY_TCP = 1
+STRATEGY_UNIX = 2
+STRATEGY_SENTINEL = 3
 
 
-def _get_redis_client(conf):
-    # TODO(prashanthr_): Add SSL support
-    parsed_url = urllib.parse.urlparse(conf.uri)
+class ConnectionURI(object):
+    def __init__(self, uri):
+        # TODO(prashanthr_): Add SSL support
+        try:
+            parsed_url = urllib.parse.urlparse(uri)
+        except SyntaxError:
+            raise errors.ConfigurationError(_('Malformed Redis URI'))
 
-    if parsed_url.hostname:
-        port = parsed_url.port or REDIS_DEFAULT_PORT
-        return redis.StrictRedis(host=parsed_url.hostname, port=port)
-    else:
-        return redis.StrictRedis(unix_socket_path=parsed_url.path)
+        if parsed_url.scheme != 'redis':
+            raise errors.ConfigurationError(_('Invalid scheme in Redis URI'))
+
+        # NOTE(kgriffs): Python 2.6 has a bug that causes the
+        # query string to be appended to the path when given a
+        # hostless URL.
+        path = parsed_url.path
+        if '?' in path:
+            path, sep, query = path.partition('?')
+        else:
+            query = parsed_url.query
+
+        query_params = dict(urllib.parse.parse_qsl(query))
+
+        # Generic
+        self.strategy = None
+        self.socket_timeout = float(query_params.get('socket_timeout',
+                                                     DEFAULT_SOCKET_TIMEOUT))
+
+        # TCP
+        self.port = None
+        self.hostname = None
+
+        # UNIX socket
+        self.unix_socket_path = None
+
+        # Sentinel
+        self.master = None
+        self.sentinels = []
+
+        if 'master' in query_params:
+            # NOTE(prashanthr_): Configure redis driver in sentinel mode
+            self.strategy = STRATEGY_SENTINEL
+            self.master = query_params['master']
+
+            # NOTE(kgriffs): Have to parse list of sentinel hosts ourselves
+            # since urllib doesn't support it.
+            for each_host in parsed_url.netloc.split(','):
+                name, sep, port = each_host.partition(':')
+
+                if port:
+                    try:
+                        port = int(port)
+                    except ValueError:
+                        msg = _('The Redis configuration URI contains an '
+                                'invalid port')
+                        raise errors.ConfigurationError(msg)
+
+                else:
+                    port = SENTINEL_DEFAULT_PORT
+
+                self.sentinels.append((name, port))
+
+            if not self.sentinels:
+                msg = _('The Redis configuration URI does not define any '
+                        'sentinel hosts')
+                raise errors.ConfigurationError(msg)
+
+        elif parsed_url.netloc:
+            if ',' in parsed_url.netloc:
+                # NOTE(kgriffs): They probably were specifying
+                # a list of sentinel hostnames, but forgot to
+                # add 'master' to the query string.
+                msg = _('The Redis URI specifies multiple sentinel hosts, '
+                        'but is missing the "master" query string '
+                        'parameter. Please set "master" to the name of '
+                        'the Redis master server as specified in the '
+                        'sentinel configuration file.')
+                raise errors.ConfigurationError(msg)
+
+            self.strategy = STRATEGY_TCP
+            try:
+                self.port = parsed_url.port or REDIS_DEFAULT_PORT
+            except ValueError:
+                msg = _('The Redis configuration URI contains an '
+                        'invalid port')
+                raise errors.ConfigurationError(msg)
+
+            if not parsed_url.hostname:
+                msg = _('Missing host name in Redis URI')
+                raise errors.ConfigurationError(msg)
+
+            self.hostname = parsed_url.hostname
+
+        else:
+            self.strategy = STRATEGY_UNIX
+
+            if not path:
+                msg = _('Missing path in Redis URI')
+                raise errors.ConfigurationError(msg)
+
+            self.unix_socket_path = path
+
+        assert self.strategy in (STRATEGY_TCP, STRATEGY_UNIX,
+                                 STRATEGY_SENTINEL)
 
 
 class DataDriver(storage.DataDriverBase):
@@ -77,7 +178,7 @@ class DataDriver(storage.DataDriverBase):
     @decorators.lazy_property(write=False)
     def connection(self):
         """Redis client connection instance."""
-        return _get_redis_client(self.redis_conf)
+        return _get_redis_client(self)
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
@@ -105,7 +206,7 @@ class ControlDriver(storage.ControlDriverBase):
     @decorators.lazy_property(write=False)
     def connection(self):
         """Redis client connection instance."""
-        return _get_redis_client(self.redis_conf)
+        return _get_redis_client(self)
 
     @property
     def pools_controller(self):
@@ -118,3 +219,28 @@ class ControlDriver(storage.ControlDriverBase):
     @property
     def flavors_controller(self):
         raise NotImplementedError()
+
+
+def _get_redis_client(driver):
+    conf = driver.redis_conf
+    connection_uri = ConnectionURI(conf.uri)
+
+    if connection_uri.strategy == STRATEGY_SENTINEL:
+        sentinel = redis.sentinel.Sentinel(
+            connection_uri.sentinels,
+            socket_timeout=connection_uri.socket_timeout)
+
+        # NOTE(prashanthr_): The socket_timeout parameter being generic
+        # to all redis connections is inherited from the parameters for
+        # sentinel.
+        return sentinel.master_for(connection_uri.master)
+
+    elif connection_uri.strategy == STRATEGY_TCP:
+        return redis.StrictRedis(
+            host=connection_uri.hostname,
+            port=connection_uri.port,
+            socket_timeout=connection_uri.socket_timeout)
+    else:
+        return redis.StrictRedis(
+            unix_socket_path=connection_uri.unix_socket_path,
+            socket_timeout=connection_uri.socket_timeout)
