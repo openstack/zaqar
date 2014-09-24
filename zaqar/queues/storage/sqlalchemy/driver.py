@@ -32,12 +32,11 @@ LOG = logging.getLogger(__name__)
 
 class DataDriver(storage.DataDriverBase):
 
+    _DRIVER_OPTIONS = options._config_options()
+
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        opts = options.SQLALCHEMY_OPTIONS
-        self.conf.register_opts(opts,
-                                group=options.SQLALCHEMY_GROUP)
         self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
         LOG.warn(_('sqlalchemy\'s data plane driver will be removed during '
                    'the next release. Please, consider moving your data to '

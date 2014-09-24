@@ -21,6 +21,7 @@ import functools
 import time
 import uuid
 
+from oslo.config import cfg
 import six
 
 import zaqar.openstack.common.log as logging
@@ -44,9 +45,20 @@ class DriverBase(object):
         for certain lookups.
     :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
     """
+    _DRIVER_OPTIONS = []
+
     def __init__(self, conf, cache):
         self.conf = conf
         self.cache = cache
+        self._register_opts()
+
+    def _register_opts(self):
+        for group, options in self._DRIVER_OPTIONS:
+            for opt in options:
+                try:
+                    self.conf.register_opt(opt, group=group)
+                except cfg.DuplicateOptError:
+                    pass
 
 
 @six.add_metaclass(abc.ABCMeta)
