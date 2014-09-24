@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import copy
+
 from oslo.config import cfg
 import six
 from stevedore import driver
@@ -23,24 +25,20 @@ from zaqar.openstack.common import log
 LOG = log.getLogger(__name__)
 
 
-def dynamic_conf(uri, options):
+def dynamic_conf(uri, options, conf=None):
     """Given metadata, yields a dynamic configuration.
 
     :param uri: pool location
     :type uri: six.text_type
     :param options: additional pool metadata
     :type options: dict
+    :param conf: Optional conf object to copy
+    :type conf: `oslo.config.cfg.ConfigOpts`
     :returns: Configuration object suitable for constructing storage
               drivers
     :rtype: oslo.config.cfg.ConfigOpts
     """
-    # NOTE(cpp-cabrera): make it *very* clear to data storage
-    # drivers that we are operating in a dynamic mode.
-    general_opts = utils.dict_to_conf({'dynamic': True})
-
-    # NOTE(cpp-cabrera): parse general opts: 'drivers'
     storage_type = six.moves.urllib_parse.urlparse(uri).scheme
-    driver_opts = utils.dict_to_conf({'storage': storage_type})
 
     # NOTE(cpp-cabrera): parse storage-specific opts:
     # 'drivers:storage:{type}'
@@ -48,14 +46,25 @@ def dynamic_conf(uri, options):
     storage_group = u'drivers:storage:%s' % storage_type
 
     # NOTE(cpp-cabrera): register those options!
-    conf = cfg.ConfigOpts()
-    conf.register_opts(general_opts)
-    conf.register_opts(driver_opts, group=u'drivers')
-    conf.register_opts(storage_opts, group=storage_group)
+    if conf is None:
+        conf = cfg.ConfigOpts()
+    else:
+        conf = copy.deepcopy(conf)
+
+    if storage_group not in conf:
+        conf.register_opts(storage_opts,
+                           group=storage_group)
+
+    if 'drivers' not in conf:
+        # NOTE(cpp-cabrera): parse general opts: 'drivers'
+        driver_opts = utils.dict_to_conf({'storage': storage_type})
+        conf.register_opts(driver_opts, group=u'drivers')
+
+    conf.set_override('uri', uri, group=storage_group)
     return conf
 
 
-def load_storage_driver(conf, cache, control_mode=False):
+def load_storage_driver(conf, cache, storage_type=None, control_mode=False):
     """Loads a storage driver and returns it.
 
     The driver's initializer will be passed conf and cache as
@@ -65,6 +74,8 @@ def load_storage_driver(conf, cache, control_mode=False):
         driver. Must include a 'drivers' group.
     :param cache: Cache instance that the driver can (optionally)
         use to reduce latency for some operations.
+    :param storage_type: The storage_type to load. If None, then
+        the `drivers` option will be used.
     :param control_mode: (Default False). Determines which
         driver type to load; if False, the data driver is
         loaded. If True, the control driver is loaded.
@@ -72,10 +83,11 @@ def load_storage_driver(conf, cache, control_mode=False):
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'zaqar.queues.{0}.storage'.format(mode)
+    storage_type = storage_type or conf['drivers'].storage
 
     try:
         mgr = driver.DriverManager(driver_type,
-                                   conf['drivers'].storage,
+                                   storage_type,
                                    invoke_on_load=True,
                                    invoke_args=[conf, cache])
 
@@ -119,7 +131,7 @@ def keyify(key, iterable):
         yield Keyed(item)
 
 
-def can_connect(uri):
+def can_connect(uri, conf=None):
     """Given a URI, verifies whether it's possible to connect to it.
 
     :param uri: connection string to a storage endpoint
@@ -127,20 +139,16 @@ def can_connect(uri):
     :returns: True if can connect else False
     :rtype: bool
     """
-    driver_type = 'zaqar.queues.data.storage'
-    storage_type = six.moves.urllib.parse.urlparse(uri).scheme
+    conf = dynamic_conf(uri, {}, conf=conf)
+    storage_type = six.moves.urllib_parse.urlparse(uri).scheme
 
     try:
         # NOTE(cabrera): create a mock configuration containing only
         # the URI field. This should be sufficient to initialize a
         # storage driver.
-        conf = dynamic_conf(uri, {})
-        mgr = driver.DriverManager(driver_type,
-                                   storage_type,
-                                   invoke_on_load=True,
-                                   invoke_args=[conf, None])
-        return mgr.driver.is_alive()
-
-    except Exception:
-        LOG.debug('Can\'t connect to: %s' % uri)
+        driver = load_storage_driver(conf, None,
+                                     storage_type=storage_type)
+        return driver.is_alive()
+    except Exception as exc:
+        LOG.debug('Can\'t connect to: %s \n%s' % (uri, exc))
         return False
