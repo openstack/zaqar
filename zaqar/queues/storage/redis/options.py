@@ -19,9 +19,25 @@ from oslo.config import cfg
 
 REDIS_OPTIONS = (
     cfg.StrOpt('uri', default="redis://127.0.0.1:6379",
-               help=('Redis Server URI. Can also use a '
-                     'socket file based connector. '
-                     'Ex: redis:/tmp/redis.sock')),
+               help=('Redis connection URI, taking one of three forms. '
+                     'For a direct connection to a Redis server, use '
+                     'the form "redis://host[:port][?options]", where '
+                     'port defaults to 6379 if not specified. For an '
+                     'HA master-slave Redis cluster using Redis Sentinel, '
+                     'use the form "redis://host1[:port1]'
+                     '[,host2[:port2],...,hostN[:portN]][?options]", '
+                     'where each host specified corresponds to an '
+                     'instance of redis-sentinel. In this form, the '
+                     'name of the Redis master used in the Sentinel '
+                     'configuration must be included in the query '
+                     'string as "master=<name>". Finally, to connect '
+                     'to a local instance of Redis over a unix socket, '
+                     'you may use the form '
+                     '"redis:/path/to/redis.sock[?options]". In all '
+                     'forms, the "socket_timeout" option may be '
+                     'specified in the query string. Its value is '
+                     'given in seconds. If not provided, '
+                     '"socket_timeout" defaults to 0.1 seconds.')),
 
     cfg.IntOpt('max_reconnect_attempts', default=10,
                help=('Maximum number of times to retry an operation that '

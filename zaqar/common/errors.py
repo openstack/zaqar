@@ -24,3 +24,7 @@ class PatternNotFound(Exception):
 
 class InvalidOperation(Exception):
     """Raised when attempted a non existent operation."""
+
+
+class ConfigurationError(Exception):
+    """An invalid value was used for a Zaqar configuration option."""
