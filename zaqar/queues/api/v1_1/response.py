@@ -61,6 +61,28 @@ class ResponseSchema(api.Api):
             "\?claim_id=[a-zA-Z0-9_-]+$"
         }
 
+        flavor = {
+            'type': 'object',
+            'properties': {
+                'href': {
+                    'type': 'string',
+                    'pattern': '^/v1\.1/flavors/[a-zA-Z0-9_-]{1,64}$'
+                },
+                'pool': {
+                    'type': 'string',
+                },
+                'project': {
+                    'type': 'string'
+                },
+                'capabilities': {
+                    'type': 'object',
+                    'additionalProperties': True
+                }
+            },
+            'required': ['href', 'pool', 'project'],
+            'additionalProperties': False,
+        }
+
         self.schema = {
             'message_get_many': {
                 'type': 'object',
@@ -330,6 +352,35 @@ class ResponseSchema(api.Api):
                     }
                 },
                 'required': ['age', 'ttl', 'messages', 'href'],
+                'additionalProperties': False
+            },
+
+            'flavor_list': {
+                'type': 'object',
+                'properties': {
+                    'links': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'rel': {
+                                    'type': 'string'
+                                },
+                                'href': {
+                                    'type': 'string',
+                                    'pattern': '^/v1\.1/flavors\?'
+                                }
+                            },
+                            'required': ['rel', 'href'],
+                            'additionalProperties': False
+                        }
+                    },
+                    'flavors': {
+                        'type': 'array',
+                        'items': flavor,
+                    }
+                },
+                'required': ['links', 'flavors'],
                 'additionalProperties': False
             }
 
