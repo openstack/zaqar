@@ -26,6 +26,7 @@ import six
 from testtools import matchers
 
 from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.queues import bootstrap
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage import mongodb
@@ -140,7 +141,14 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
 
     config_file = 'wsgi_mongodb.conf'
 
+    def setUp(self):
+        super(MongodbDriverTest, self).setUp()
+
+        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+        self.config(unreliable=False)
+
     def test_db_instance(self):
+        self.config(unreliable=True)
         cache = oslo_cache.get_cache()
         driver = mongodb.DataDriver(self.conf, cache)
 
@@ -152,6 +160,7 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
                 driver.mongodb_conf.database))
 
     def test_version_match(self):
+        self.config(unreliable=True)
         cache = oslo_cache.get_cache()
 
         with mock.patch('pymongo.MongoClient.server_info') as info:
@@ -165,6 +174,54 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
                 mongodb.DataDriver(self.conf, cache)
             except RuntimeError:
                 self.fail('version match failed')
+
+    def test_replicaset_or_mongos_needed(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.nodes') as nodes:
+            nodes.__get__ = mock.Mock(return_value=[])
+            with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
+                is_mongos.__get__ = mock.Mock(return_value=False)
+                self.assertRaises(RuntimeError, mongodb.DataDriver,
+                                  self.conf, cache)
+
+    def test_using_replset(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.nodes') as nodes:
+            nodes.__get__ = mock.Mock(return_value=['node1', 'node2'])
+            mongodb.DataDriver(self.conf, cache)
+
+    def test_using_mongos(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
+            is_mongos.__get__ = mock.Mock(return_value=True)
+            mongodb.DataDriver(self.conf, cache)
+
+    def test_write_concern_check_works(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
+            is_mongos.__get__ = mock.Mock(return_value=True)
+
+            with mock.patch('pymongo.MongoClient.write_concern') as wc:
+                wc.__get__ = mock.Mock(return_value={'w': 1})
+                self.assertRaises(RuntimeError, mongodb.DataDriver,
+                                  self.conf, cache)
+
+                wc.__get__ = mock.Mock(return_value={'w': 2})
+                mongodb.DataDriver(self.conf, cache)
+
+    def test_write_concern_is_set(self):
+        cache = oslo_cache.get_cache()
+
+        with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
+            is_mongos.__get__ = mock.Mock(return_value=True)
+            driver = mongodb.DataDriver(self.conf, cache)
+            wc = driver.connection.write_concern
+            self.assertEqual(wc['w'], 'majority')
+            self.assertEqual(wc['j'], False)
 
 
 @testing.requires_mongodb

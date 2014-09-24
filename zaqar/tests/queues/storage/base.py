@@ -24,7 +24,6 @@ import six
 from testtools import matchers
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues import bootstrap
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar import tests as testing
@@ -52,7 +51,6 @@ class ControllerBaseTest(testing.TestBase):
         oslo_cache.register_oslo_configs(self.conf)
         cache = oslo_cache.get_cache(self.conf.cache_url)
 
-        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
         pooling = 'pooling' in self.conf and self.conf.pooling
         if pooling and not self.control_driver_class:
             self.skipTest("Pooling is enabled, "
