@@ -20,6 +20,8 @@ from oslo.config import cfg
 import six
 import testtools
 
+from zaqar.queues import bootstrap
+
 
 class TestBase(testtools.TestCase):
     """Child class of testtools.TestCase for testing Zaqar.
@@ -45,6 +47,8 @@ class TestBase(testtools.TestCase):
             self.conf = self.load_conf(self.config_file)
         else:
             self.conf = cfg.ConfigOpts()
+
+        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
 
     @classmethod
     def conf_path(cls, filename):
