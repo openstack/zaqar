@@ -14,14 +14,17 @@
 # limitations under the License.
 import ddt
 
+from zaqar import tests as testing
 from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
 
 
 @ddt.ddt
+@testing.requires_mongodb
 class TestPools(base.V1_1FunctionalTestBase):
 
-    server_class = base.ZaqarServer
+    server_class = base.ZaqarAdminServer
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     def setUp(self):
         super(TestPools, self).setUp()
@@ -32,15 +35,10 @@ class TestPools(base.V1_1FunctionalTestBase):
         ))
         self.cfg.zaqar.version = "v1.1"
 
-        self.skipTest("NOT IMPLEMENTED")
-
         self.headers = helpers.create_zaqar_headers(self.cfg)
         self.client.headers = self.headers
 
         self.client.set_base_url(self.pool_url)
-
-    def tearDown(self):
-        super(TestPools, self).tearDown()
 
     @ddt.data(
         {
@@ -227,6 +225,7 @@ class TestPools(base.V1_1FunctionalTestBase):
     )
     def test_insert_pool_bad_data(self, params):
         """Create pools with invalid names and weights. Assert 400."""
+        self.skip("FIXME: https://bugs.launchpad.net/zaqar/+bug/1373486")
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
             uri=params.get('uri', "mongodb://127.0.0.1:27017")
