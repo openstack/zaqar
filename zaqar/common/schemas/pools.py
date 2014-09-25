@@ -38,6 +38,16 @@ patch_uri = {
     }
 }
 
+patch_group = {
+    'type': 'object', 'properties': {
+        'uri': {
+            'type': 'string'
+        },
+        'additionalProperties': False
+    }
+}
+
+
 patch_weight = {
     'type': 'object', 'properties': {
         'weight': {
@@ -50,6 +60,7 @@ patch_weight = {
 create = {
     'type': 'object', 'properties': {
         'weight': patch_weight['properties']['weight'],
+        'group': patch_group['properties']['uri'],
         'uri': patch_uri['properties']['uri'],
         'options': patch_options['properties']['options']
     },

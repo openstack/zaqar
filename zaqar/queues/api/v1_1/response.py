@@ -183,12 +183,15 @@ class ResponseSchema(api.Api):
                                 'uri': {
                                     'type': 'string'
                                 },
+                                'group': {
+                                    'type': ['string', 'null']
+                                },
                                 'options': {
                                     'type': 'object',
                                     'additionalProperties': True
                                 }
                             },
-                            'required': ['href', 'weight', 'uri'],
+                            'required': ['href', 'weight', 'uri', 'group'],
                             'additionalProperties': False,
                         },
                     }
@@ -231,6 +234,9 @@ class ResponseSchema(api.Api):
                 'properties': {
                     'uri': {
                         'type': 'string'
+                    },
+                    'group': {
+                        'type': ['string', 'null']
                     },
                     'weight': {
                         'type': 'number',

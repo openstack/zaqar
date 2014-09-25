@@ -561,7 +561,7 @@ class PoolsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, name, weight, uri, options=None):
+    def create(self, name, weight, uri, group=None, options=None):
         """Registers a pool entry.
 
         :param name: The name of this pool
@@ -571,8 +571,26 @@ class PoolsBase(ControllerBase):
         :param uri: A URI that can be used by a storage client
             (e.g., pymongo) to access this pool.
         :type uri: six.text_type
+        :param group: The group of this pool
+        :type group: six.text_type
         :param options: Options used to configure this pool
         :type options: dict
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_group(self, group=None, detailed=False):
+        """Returns a single pool entry.
+
+        :param group: The group to filter on. `None` returns
+            pools that are not assigned to any pool.
+        :type group: six.text_type
+        :param detailed: Should the options data be included?
+        :type detailed: bool
+        :returns: weight, uri, and options for this pool
+        :rtype: {}
+        :raises: PoolDoesNotExist if not found
         """
 
         raise NotImplementedError

@@ -88,12 +88,15 @@ class FlavorsBaseTest(base.V1_1Base):
         self.queue_path = self.url_prefix + '/queues/' + self.queue
 
         self.pool = 'mypool'
+        self.pool_group = 'mypool-group'
         self.pool_path = self.url_prefix + '/pools/' + self.pool
-        self.pool_doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
+        self.pool_doc = {'weight': 100,
+                         'group': self.pool_group,
+                         'uri': 'sqlite://:memory:'}
         self.simulate_put(self.pool_path, body=jsonutils.dumps(self.pool_doc))
 
         self.flavor = 'test-flavor'
-        self.doc = {'capabilities': {}, 'pool': 'mypool'}
+        self.doc = {'capabilities': {}, 'pool': self.pool_group}
         self.flavor_path = self.url_prefix + '/flavors/' + self.flavor
         self.simulate_put(self.flavor_path, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)

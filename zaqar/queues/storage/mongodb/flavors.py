@@ -94,10 +94,9 @@ class FlavorsController(base.FlavorsBase):
     @utils.raises_conn_error
     def create(self, name, pool, project=None, capabilities=None):
 
-        # NOTE(flaper87): It's faster to call exists and raise an
-        # error than calling get and letting the controller raise
-        # the exception.
-        if not self._pools_ctrl.exists(pool):
+        # NOTE(flaper87): Check if there are pools in this group.
+        # Should there be a `group_exists` method?
+        if not list(self._pools_ctrl.get_group(pool)):
             raise errors.PoolDoesNotExist(pool)
 
         capabilities = {} if capabilities is None else capabilities

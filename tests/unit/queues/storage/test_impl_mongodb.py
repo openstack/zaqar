@@ -401,7 +401,7 @@ class MongodbPoolsTests(base.PoolsControllerTest):
         super(MongodbPoolsTests, self).tearDown()
 
     def test_delete_pool_used_by_flavor(self):
-        self.flavors_controller.create('durable', self.pool,
+        self.flavors_controller.create('durable', self.pool_group,
                                        project=self.project,
                                        capabilities={})
 

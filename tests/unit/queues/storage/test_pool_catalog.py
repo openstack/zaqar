@@ -47,14 +47,19 @@ class PoolCatalogTest(testing.TestBase):
 
         # NOTE(cpp-cabrera): populate catalogue
         self.pool = str(uuid.uuid1())
+        self.pool2 = str(uuid.uuid1())
+        self.pool_group = 'pool-group'
         self.queue = str(uuid.uuid1())
         self.flavor = str(uuid.uuid1())
         self.project = str(uuid.uuid1())
 
         self.pools_ctrl.create(self.pool, 100, 'sqlite://:memory:')
+        self.pools_ctrl.create(self.pool2, 100,
+                               'sqlite://:memory:',
+                               group=self.pool_group)
         self.catalogue_ctrl.insert(self.project, self.queue, self.pool)
         self.catalog = pooling.Catalog(self.conf, cache, control)
-        self.flavors_ctrl.create(self.flavor, self.pool,
+        self.flavors_ctrl.create(self.flavor, self.pool_group,
                                  project=self.project)
 
     def tearDown(self):

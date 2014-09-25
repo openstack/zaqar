@@ -74,10 +74,19 @@ class PoolsController(base.PoolsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, weight, uri, options=None):
+    def get_group(self, group=None, detailed=False):
+        cursor = self._col.find({'g': group}, fields=_field_spec(detailed))
+        normalizer = functools.partial(_normalize, detailed=detailed)
+        return utils.HookedCursor(cursor, normalizer)
+
+    @utils.raises_conn_error
+    def create(self, name, weight, uri, group=None, options=None):
         options = {} if options is None else options
         self._col.update({'n': name},
-                         {'$set': {'n': name, 'w': weight, 'u': uri,
+                         {'$set': {'n': name,
+                                   'w': weight,
+                                   'u': uri,
+                                   'g': group,
                                    'o': options}},
                          upsert=True)
 
@@ -87,11 +96,13 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def update(self, name, **kwargs):
-        names = ('uri', 'weight', 'options')
+        names = ('uri', 'weight', 'group', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None,
                                      key_transform=lambda x: x[0])
-        assert fields, '`weight`, `uri`, or `options` not found in kwargs'
+        assert fields, ('`weight`, `uri`, `group`, '
+                        'or `options` not found in kwargs')
+
         res = self._col.update({'n': name},
                                {'$set': fields},
                                upsert=False)
@@ -103,14 +114,22 @@ class PoolsController(base.PoolsBase):
         # NOTE(wpf): Initializing the Flavors controller here instead of
         # doing so in __init__ is required to avoid falling in a maximum
         # recursion error.
-        flavor_ctl = self.driver.flavors_controller
-        res = list(flavor_ctl._list_by_pool(name))
+        try:
+            pool = self.get(name)
+            pools_group = self.get_group(pool['group'])
+            flavor_ctl = self.driver.flavors_controller
+            res = list(flavor_ctl._list_by_pool(pool['group']))
 
-        if res:
-            flavors = ', '.join([x['name'] for x in res])
-            raise errors.PoolInUseByFlavor(name, flavors)
+            # NOTE(flaper87): If this is the only pool in the
+            # group and it's being used by a flavor, don't allow
+            # it to be deleted.
+            if res and len(pools_group) == 1:
+                flavors = ', '.join([x['name'] for x in res])
+                raise errors.PoolInUseByFlavor(name, flavors)
 
-        self._col.remove({'n': name}, w=0)
+            self._col.remove({'n': name}, w=0)
+        except errors.PoolDoesNotExist:
+            pass
 
     @utils.raises_conn_error
     def drop_all(self):
@@ -121,6 +140,7 @@ class PoolsController(base.PoolsBase):
 def _normalize(pool, detailed=False):
     ret = {
         'name': pool['n'],
+        'group': pool['g'],
         'uri': pool['u'],
         'weight': pool['w'],
     }

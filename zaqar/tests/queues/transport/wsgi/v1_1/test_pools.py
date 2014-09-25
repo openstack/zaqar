@@ -24,7 +24,7 @@ from zaqar.tests.queues.transport.wsgi import base
 
 
 @contextlib.contextmanager
-def pool(test, name, weight, uri, options={}):
+def pool(test, name, weight, uri, group=None, options={}):
     """A context manager for constructing a pool for use in testing.
 
     Deletes the pool after exiting the context.
@@ -38,20 +38,21 @@ def pool(test, name, weight, uri, options={}):
     :returns: (name, weight, uri, options)
     :rtype: see above
     """
-    doc = {'weight': weight, 'uri': uri, 'options': options}
+    doc = {'weight': weight, 'uri': uri,
+           'group': group, 'options': options}
     path = test.url_prefix + '/pools/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
-        yield name, weight, uri, options
+        yield name, weight, uri, group, options
 
     finally:
         test.simulate_delete(path)
 
 
 @contextlib.contextmanager
-def pools(test, count, uri):
+def pools(test, count, uri, group):
     """A context manager for constructing pools for use in testing.
 
     Deletes the pools after exiting the context.
@@ -67,7 +68,8 @@ def pools(test, count, uri):
              {str(i): i})
             for i in range(count)]
     for path, weight, option in args:
-        doc = {'weight': weight, 'uri': uri, 'options': option}
+        doc = {'weight': weight, 'uri': uri,
+               'group': group, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
@@ -82,7 +84,9 @@ class PoolsBaseTest(base.V1_1Base):
 
     def setUp(self):
         super(PoolsBaseTest, self).setUp()
-        self.doc = {'weight': 100, 'uri': 'sqlite://:memory:'}
+        self.doc = {'weight': 100,
+                    'group': 'mygroup',
+                    'uri': 'sqlite://:memory:'}
         self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -95,7 +99,7 @@ class PoolsBaseTest(base.V1_1Base):
     def test_put_pool_works(self):
         name = str(uuid.uuid1())
         weight, uri = self.doc['weight'], self.doc['uri']
-        with pool(self, name, weight, uri):
+        with pool(self, name, weight, uri, group='my-group'):
             self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def test_put_raises_if_missing_fields(self):
@@ -243,7 +247,7 @@ class PoolsBaseTest(base.V1_1Base):
         if marker:
             query += '&marker={2}'.format(marker)
 
-        with pools(self, count, self.doc['uri']) as expected:
+        with pools(self, count, self.doc['uri'], 'my-group') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string=query)
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
@@ -260,7 +264,7 @@ class PoolsBaseTest(base.V1_1Base):
                 # pool weight and the index of pools fixture to get the
                 # right pool to verify.
                 expect = expected[s['weight']]
-                path, weight = expect[:2]
+                path, weight, group = expect[:3]
                 self._pool_expect(s, path, weight, self.doc['uri'])
                 if detailed:
                     self.assertIn('options', s)
@@ -281,7 +285,7 @@ class PoolsBaseTest(base.V1_1Base):
     def test_listing_marker_is_respected(self):
         self.simulate_delete(self.pool)
 
-        with pools(self, 10, self.doc['uri']) as expected:
+        with pools(self, 10, self.doc['uri'], 'my-group') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string='?marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
