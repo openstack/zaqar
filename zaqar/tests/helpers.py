@@ -36,7 +36,7 @@ SKIP_REDIS_TESTS = _test_variable_set('ZAQAR_TEST_REDIS')
 
 @contextlib.contextmanager
 def expect(*exc_type):
-    """A context manager to validate raised expections.
+    """A context manager to validate raised exceptions.
 
     Can be used as an alternative to testtools.ExpectedException.
 

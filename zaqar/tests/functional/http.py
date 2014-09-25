@@ -106,7 +106,7 @@ class ResponseMock(object):
 
 
 class WSGIClient(object):
-    """Same inteface as Client, but speaks directly to a WSGI callable."""
+    """Same interface as Client, but speaks directly to a WSGI callable."""
 
     def __init__(self, app):
         # NOTE(kgriffs): used by @_build_url
