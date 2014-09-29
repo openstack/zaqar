@@ -125,7 +125,7 @@ performance test for 30 seconds using 4 producer processes with
 the observer role is also disabled in this example by setting its number of
 workers to zero::
 
-    $ zaqar-bench -pp 4 -pw 10 -cw 4 -cw 20 -ow 0 -t 30
+    $ zaqar-bench -pp 4 -pw 10 -cp 4 -cw 20 -ow 0 -t 30
 
 By default, the results are in JSON. For more human-readable output add
 the ``--verbose`` flag. Verbose output looks similar to the following::
