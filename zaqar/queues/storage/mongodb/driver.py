@@ -65,21 +65,11 @@ def _connection(conf):
 
 class DataDriver(storage.DataDriverBase):
 
+    _DRIVER_OPTIONS = options._config_options()
+
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        opts = options.MONGODB_OPTIONS
-
-        # NOTE(cpp-cabrera): if this data driver is being loaded
-        # dynamically, as would be the case for a pooled context,
-        # filter out the options that were given by the pool
-        # catalogue to avoid DuplicateOptErrors.
-        if 'dynamic' in conf:
-            names = conf[options.MONGODB_GROUP].keys()
-            opts = filter(lambda x: x.name not in names, opts)
-
-        self.conf.register_opts(opts,
-                                group=options.MONGODB_GROUP)
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
 
         server_version = self.connection.server_info()['version']
