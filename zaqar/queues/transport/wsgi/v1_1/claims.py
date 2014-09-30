@@ -103,11 +103,9 @@ class CollectionResource(object):
         # Serialize claimed messages, if any. This logic assumes
         # the storage driver returned well-formed messages.
         if len(resp_msgs) != 0:
-            for msg in resp_msgs:
-                msg['href'] = wsgi_utils.message_url(
-                    msg, req.path.rpartition('/')[0], cid)
-
-                del msg['id']
+            base_path = req.path.rpartition('/')[0]
+            resp_msgs = [wsgi_utils.format_message_v1_1(msg, base_path, cid)
+                         for msg in resp_msgs]
 
             resp.location = req.path + '/' + cid
             resp.body = utils.to_json({'messages': resp_msgs})
@@ -150,10 +148,10 @@ class ItemResource(object):
 
         # Serialize claimed messages
         # TODO(kgriffs): Optimize
-        for msg in meta['messages']:
-            msg['href'] = wsgi_utils.message_url(
-                msg, req.path.rsplit('/', 2)[0], meta['id'])
-            del msg['id']
+        base_path = req.path.rsplit('/', 2)[0]
+        meta['messages'] = [wsgi_utils.format_message_v1_1(msg, base_path,
+                                                           claim_id)
+                            for msg in meta['messages']]
 
         meta['href'] = req.path
         del meta['id']

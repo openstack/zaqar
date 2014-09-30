@@ -258,6 +258,9 @@ class ResponseSchema(api.Api):
                         "items": {
                             "type": "object",
                             "properties": {
+                                "id": {
+                                    "type": "string",
+                                },
                                 "href": claim_href,
                                 "ttl": {
                                     "type": "number",
@@ -269,7 +272,7 @@ class ResponseSchema(api.Api):
                                     "type": "object"
                                 }
                             },
-                            "required": ["href", "ttl", "age", "body"],
+                            "required": ["href", "ttl", "age", "body", "id"],
                             "additionalProperties": False,
                         },
                         "minItems": 1,
@@ -299,6 +302,9 @@ class ResponseSchema(api.Api):
                         "items": {
                             "type": "object",
                             "properties": {
+                                "id": {
+                                    "type": "string",
+                                },
                                 "href": claim_href,
                                 "ttl": {
                                     "type": "number",
@@ -310,7 +316,7 @@ class ResponseSchema(api.Api):
                                     "type": "object"
                                 }
                             },
-                            "required": ["href", "ttl", "age", "body"],
+                            "required": ["href", "ttl", "age", "body", "id"],
                             "additionalProperties": False,
                         },
                         "minItems": 1,
