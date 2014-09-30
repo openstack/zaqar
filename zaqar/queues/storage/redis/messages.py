@@ -17,12 +17,12 @@ import uuid
 
 from oslo.utils import encodeutils
 from oslo.utils import timeutils
-import redis
 
 from zaqar.common import decorators
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.redis import models
+from zaqar.queues.storage.redis import scripting
 from zaqar.queues.storage.redis import utils
 
 Message = models.Message
@@ -45,7 +45,7 @@ RETRY_POST_TIMEOUT = 10
 GC_BATCH_SIZE = 100
 
 
-class MessageController(storage.Message):
+class MessageController(storage.Message, scripting.Mixin):
     """Implements message resource operations using Redis.
 
     Messages are scoped by project + queue.
@@ -99,6 +99,8 @@ class MessageController(storage.Message):
         Key: <project_id>.<queue_name>.rank_counter
     """
 
+    script_names = ['index_messages']
+
     def __init__(self, *args, **kwargs):
         super(MessageController, self).__init__(*args, **kwargs)
         self._client = self.driver.connection
@@ -110,6 +112,14 @@ class MessageController(storage.Message):
     @decorators.lazy_property(write=False)
     def _claim_ctrl(self):
         return self.driver.claim_controller
+
+    def _index_messages(self, msgset_key, counter_key, message_ids):
+        # NOTE(kgriffs): A watch on a pipe could also be used to ensure
+        # messages are inserted in order, but that would be less efficient.
+        func = self._scripts['index_messages']
+
+        arguments = [len(message_ids)] + message_ids
+        func(keys=[msgset_key, counter_key], args=arguments)
 
     def _count(self, queue, project):
         """Return total number of messages in a queue.
@@ -400,61 +410,33 @@ class MessageController(storage.Message):
         counter_key = utils.scope_queue_index(queue, project,
                                               MESSAGE_RANK_COUNTER_SUFFIX)
 
+        message_ids = []
+        now = timeutils.utcnow_ts()
+
         with self._client.pipeline() as pipe:
+            for msg in messages:
+                prepared_msg = Message(
+                    ttl=msg['ttl'],
+                    created=now,
+                    client_uuid=client_uuid,
+                    claim_id=None,
+                    claim_expires=now,
+                    body=msg.get('body', {}),
+                )
 
-            start_ts = timeutils.utcnow_ts()
+                prepared_msg.to_redis(pipe)
+                message_ids.append(prepared_msg.id)
 
-            # NOTE(kgriffs): Retry the operation if another transaction
-            # completes before this one, in which case it may have
-            # posted messages with the same rank counter the current
-            # thread is trying to use, which would cause messages
-            # to get out of order and introduce the risk of a client
-            # missing a message while reading from the queue.
-            #
-            # This loop will eventually time out if we can't manage to
-            # post any messages due to other threads continually beating
-            # us to the punch.
+            pipe.execute()
 
-            # TODO(kgriffs): Would it be beneficial (or harmful) to
-            # introducce a backoff sleep in between retries?
-            while (timeutils.utcnow_ts() - start_ts) < RETRY_POST_TIMEOUT:
-                now = timeutils.utcnow_ts()
-                prepared_messages = [
-                    Message(
-                        ttl=msg['ttl'],
-                        created=now,
-                        client_uuid=client_uuid,
-                        claim_id=None,
-                        claim_expires=now,
-                        body=msg.get('body', {}),
-                    )
+        # NOTE(kgriffs): If this call fails, we will return
+        # an error to the client and the messages will be
+        # orphaned, but Redis will remove them when they
+        # expire, so we will just pretend they don't exist
+        # in that case.
+        self._index_messages(msgset_key, counter_key, message_ids)
 
-                    for msg in messages
-                ]
-
-                try:
-                    pipe.watch(counter_key)
-
-                    rank_counter = pipe.get(counter_key)
-                    rank_counter = int(rank_counter) if rank_counter else 0
-
-                    pipe.multi()
-
-                    keys = []
-                    for i, msg in enumerate(prepared_messages):
-                        msg.to_redis(pipe)
-                        pipe.zadd(msgset_key, rank_counter + i, msg.id)
-                        keys.append(msg.id)
-
-                    pipe.incrby(counter_key, len(keys))
-                    pipe.execute()
-
-                    return keys
-
-                except redis.exceptions.WatchError:
-                    continue
-
-            raise errors.MessageConflict(queue, project)
+        return message_ids
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
