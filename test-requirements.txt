@@ -12,6 +12,7 @@ redis
 pymongo>=2.5
 
 # Unit testing
+coverage>=3.6
 ddt>=0.4.0
 discover
 fixtures>=0.3.14
