@@ -26,6 +26,7 @@ from zaqar.openstack.common import log as logging
 from zaqar.queues.storage import errors
 
 LOG = logging.getLogger(__name__)
+MESSAGE_IDS_SUFFIX = 'messages'
 
 
 def descope_queue_name(scoped_name):
@@ -102,6 +103,10 @@ def descope_message_ids_set(msgset_key):
 # functionality is required to scope redis id's.
 scope_queue_catalogue = scope_claims_set = scope_message_ids_set
 scope_queue_index = scope_message_ids_set
+
+
+def msgset_key(queue, project=None):
+    return scope_message_ids_set(queue, project, MESSAGE_IDS_SUFFIX)
 
 
 def raises_conn_error(func):

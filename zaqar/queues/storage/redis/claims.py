@@ -16,13 +16,13 @@ import functools
 
 import msgpack
 from oslo.utils import timeutils
-import redis
 
 from zaqar.common import decorators
 from zaqar.openstack.common import log as logging
 from zaqar.queues import storage
 from zaqar.queues.storage import errors
 from zaqar.queues.storage.redis import messages
+from zaqar.queues.storage.redis import scripting
 from zaqar.queues.storage.redis import utils
 
 LOG = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ RETRY_CLAIM_TIMEOUT = 10
 COUNTING_BATCH_SIZE = 100
 
 
-class ClaimController(storage.Claim):
+class ClaimController(storage.Claim, scripting.Mixin):
     """Implements claim resource operations using Redis.
 
     Redis Data Structures:
@@ -78,6 +78,8 @@ class ClaimController(storage.Claim):
         +----------------+---------+
     """
 
+    script_names = ['claim_messages']
+
     def __init__(self, *args, **kwargs):
         super(ClaimController, self).__init__(*args, **kwargs)
         self._client = self.driver.connection
@@ -99,6 +101,17 @@ class ClaimController(storage.Claim):
 
         values = self._client.hmget(claim_id, fields)
         return [transform(v) for v in values] if transform else values
+
+    def _claim_messages(self, msgset_key, now, limit,
+                        claim_id, claim_expires, msg_ttl, msg_expires):
+
+        # NOTE(kgriffs): A watch on a pipe could also be used, but that
+        # is less efficient and predictable, based on our experience in
+        # having to do something similar in the MongoDB driver.
+        func = self._scripts['claim_messages']
+
+        args = [now, limit, claim_id, claim_expires, msg_ttl, msg_expires]
+        return func(keys=[msgset_key], args=args)
 
     def _exists(self, queue, claim_id, project):
         client = self._client
@@ -238,134 +251,60 @@ class ClaimController(storage.Claim):
 
         claim_ttl = int(metadata.get('ttl', 60))
         grace = int(metadata.get('grace', 60))
+
+        now = timeutils.utcnow_ts()
         msg_ttl = claim_ttl + grace
+        claim_expires = now + claim_ttl
+        msg_expires = claim_expires + grace
 
         claim_id = utils.generate_uuid()
-        claim_msgs_key = utils.scope_claim_messages(claim_id,
-                                                    CLAIM_MESSAGES_SUFFIX)
+        claimed_msgs = []
 
-        claims_set_key = utils.scope_claims_set(queue, project,
-                                                QUEUE_CLAIMS_SUFFIX)
+        # NOTE(kgriffs): Claim some messages
+        msgset_key = utils.msgset_key(queue, project)
+        claimed_ids = self._claim_messages(msgset_key, now, limit,
+                                           claim_id, claim_expires,
+                                           msg_ttl, msg_expires)
 
-        with self._client.pipeline() as pipe:
-            # NOTE(kgriffs): Retry the operation if another transaction
-            # completes before this one, in which case it will have
-            # claimed the same messages the current thread is trying
-            # to claim, and therefoe we must try for another batch.
-            #
-            # This loop will eventually time out if we can't manage to
-            # claim any messages due to other threads continually beating
-            # us to the punch.
+        if claimed_ids:
+            claimed_msgs = messages.Message.from_redis_bulk(claimed_ids,
+                                                            self._client)
+            claimed_msgs = [msg.to_basic(now) for msg in claimed_msgs]
 
-            # TODO(kgriffs): Would it be beneficial (or harmful) to
-            # introducce a backoff sleep in between retries?
+            # NOTE(kgriffs): Perist claim records
+            with self._client.pipeline() as pipe:
+                claim_msgs_key = utils.scope_claim_messages(
+                    claim_id, CLAIM_MESSAGES_SUFFIX)
 
-            start_ts = timeutils.utcnow_ts()
-            while (timeutils.utcnow_ts() - start_ts) < RETRY_CLAIM_TIMEOUT:
+                for mid in claimed_ids:
+                    pipe.rpush(claim_msgs_key, mid)
 
-                # NOTE(kgriffs): The algorithm for claiming messages:
+                pipe.expire(claim_msgs_key, claim_ttl)
+
+                claim_info = {
+                    'id': claim_id,
+                    't': claim_ttl,
+                    'e': claim_expires,
+                    'n': len(claimed_ids),
+                }
+
+                pipe.hmset(claim_id, claim_info)
+                pipe.expire(claim_id, claim_ttl)
+
+                # NOTE(kgriffs): Add the claim ID to a set so that
+                # existence checks can be performed quickly. This
+                # is also used as a watch key in order to gaurd
+                # against race conditions.
                 #
-                # 1. Get a batch of messages that are currently active.
-                # 2. For each active message in the batch, extend its
-                #    lifetime IFF it would otherwise expire before the
-                #    claim itself does.
-                # 3. Associate the claim with each message
-                # 4. Create a claim record with details such as TTL
-                #    and expiration time.
-                # 5. Add the claim's ID to a set to facilitate fast
-                #    existence checks.
+                # A sorted set is used to facilitate cleaning
+                # up the IDs of expired claims.
+                claims_set_key = utils.scope_claims_set(queue, project,
+                                                        QUEUE_CLAIMS_SUFFIX)
 
-                try:
-                    # TODO(kgriffs): Is it faster/better to do this all
-                    # in a Lua script instead of using an app-layer
-                    # transaction? Lua requires Redis 2.6 or better.
+                pipe.zadd(claims_set_key, claim_expires, claim_id)
+                pipe.execute()
 
-                    # NOTE(kgriffs): Abort the entire transaction if
-                    # another request beats us to the punch. We detect
-                    # this by putting a watch on the key that will have
-                    # one of its fields updated as the final step of
-                    # the transaction.
-                    #
-                    # No other request to list active messages can
-                    # proceed while this current transaction is in
-                    # progress; therefore, it is not possible for
-                    # a different process to get some active messages
-                    # while the pipeline commands have partway
-                    # completed. Either the other process will query
-                    # for active messages at the same moment as
-                    # the current proc and get the exact same set,
-                    # or its request will have to wait while the
-                    # current process performs the transaction in
-                    # its entirety.
-                    pipe.watch(claims_set_key)
-                    pipe.multi()
-
-                    results = self._message_ctrl._active(
-                        queue, project=project, limit=limit)
-
-                    cursor = next(results)
-                    msg_list = list(cursor)
-                    num_messages = len(msg_list)
-
-                    # NOTE(kgriffs): If there are no active messages to
-                    # claim, simply return an empty list.
-                    if not msg_list:
-                        return (None, iter([]))
-
-                    basic_messages = []
-
-                    now = timeutils.utcnow_ts()
-
-                    claim_expires = now + claim_ttl
-                    msg_expires = claim_expires + grace
-
-                    # Associate the claim with each message
-                    for msg in msg_list:
-                        msg.claim_id = claim_id
-                        msg.claim_expires = claim_expires
-
-                        if _msg_would_expire(msg, msg_expires):
-                            msg.ttl = msg_ttl
-                            msg.expires = msg_expires
-
-                        pipe.rpush(claim_msgs_key, msg.id)
-
-                        # TODO(kgriffs): Rather than writing back the
-                        # entire message, only set the fields that
-                        # have changed.
-                        msg.to_redis(pipe, include_body=False)
-
-                        basic_messages.append(msg.to_basic(now))
-
-                    pipe.expire(claim_msgs_key, claim_ttl)
-
-                    # Create the claim
-                    claim_info = {
-                        'id': claim_id,
-                        't': claim_ttl,
-                        'e': claim_expires,
-                        'n': num_messages,
-                    }
-
-                    pipe.hmset(claim_id, claim_info)
-                    pipe.expire(claim_id, claim_ttl)
-
-                    # NOTE(kgriffs): Add the claim ID to a set so that
-                    # existence checks can be performed quickly. This
-                    # is also used as a watch key in order to gaurd
-                    # against race conditions.
-                    #
-                    # A sorted set is used to facilitate cleaning
-                    # up the IDs of expired claims.
-                    pipe.zadd(claims_set_key, claim_expires, claim_id)
-                    pipe.execute()
-
-                    return claim_id, basic_messages
-
-                except redis.exceptions.WatchError:
-                    continue
-
-        raise errors.ClaimConflict(queue, project)
+        return claim_id, claimed_msgs
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error

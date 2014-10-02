@@ -16,6 +16,7 @@ import redis
 from six.moves import urllib
 
 from zaqar.common import decorators
+from zaqar.i18n import _
 from zaqar.openstack.common import log as logging
 from zaqar.queues import storage
 from zaqar.queues.storage.redis import controllers
@@ -43,6 +44,13 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
         self.redis_conf = self.conf[options.REDIS_GROUP]
+
+        server_version = self.connection.info()['redis_version']
+        if tuple(map(int, server_version.split('.'))) < (2, 6):
+            msg = _('The Redis driver requires redis-server>=2.6, '
+                    '%s found') % server_version
+
+            raise RuntimeError(msg)
 
     def is_alive(self):
         try:
