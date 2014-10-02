@@ -58,6 +58,16 @@ class PoolsController(base.PoolsBase):
         return (normalizer(v) for v in cursor)
 
     @utils.raises_conn_error
+    def get_group(self, group=None, detailed=False):
+        stmt = sa.sql.select([tables.Pools]).where(
+            tables.Pools.c.group == group
+        )
+        cursor = self._conn.execute(stmt)
+
+        normalizer = functools.partial(_normalize, detailed=detailed)
+        return (normalizer(v) for v in cursor)
+
+    @utils.raises_conn_error
     def get(self, name, detailed=False):
         stmt = sa.sql.select([tables.Pools]).where(
             tables.Pools.c.name == name
@@ -71,12 +81,12 @@ class PoolsController(base.PoolsBase):
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
-    def create(self, name, weight, uri, options=None):
+    def create(self, name, weight, uri, group=None, options=None):
         opts = None if options is None else utils.json_encode(options)
 
         try:
             stmt = sa.sql.expression.insert(tables.Pools).values(
-                name=name, weight=weight, uri=uri, options=opts
+                name=name, weight=weight, uri=uri, group=group, options=opts
             )
             self._conn.execute(stmt)
 
@@ -84,7 +94,7 @@ class PoolsController(base.PoolsBase):
             # TODO(cpp-cabrera): merge update/create into a single
             # method with introduction of upsert
             self.update(name, weight=weight, uri=uri,
-                        options=options)
+                        group=group, options=options)
 
     @utils.raises_conn_error
     def exists(self, name):
@@ -98,11 +108,12 @@ class PoolsController(base.PoolsBase):
         # NOTE(cpp-cabrera): by pruning None-valued kwargs, we avoid
         # overwriting the existing options field with None, since that
         # one can be null.
-        names = ('uri', 'weight', 'options')
+        names = ('uri', 'weight', 'group', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None)
 
-        assert fields, '`weight`, `uri`, or `options` not found in kwargs'
+        assert fields, ('`weight`, `uri`, `group`, '
+                        'or `options` not found in kwargs')
 
         if 'options' in fields:
             fields['options'] = utils.json_encode(fields['options'])
@@ -130,11 +141,12 @@ class PoolsController(base.PoolsBase):
 def _normalize(pool, detailed=False):
     ret = {
         'name': pool[0],
-        'uri': pool[1],
-        'weight': pool[2],
+        'group': pool[1],
+        'uri': pool[2],
+        'weight': pool[3],
     }
     if detailed:
-        opts = pool[3]
+        opts = pool[4]
         ret['options'] = utils.json_decode(opts) if opts else {}
 
     return ret

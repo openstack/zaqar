@@ -919,7 +919,9 @@ class PoolsControllerTest(ControllerBaseTest):
 
         # Let's create one pool
         self.pool = str(uuid.uuid1())
-        self.pools_controller.create(self.pool, 100, 'localhost', {})
+        self.pool_group = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, 'localhost',
+                                     group=self.pool_group, options={})
 
     def tearDown(self):
         self.pools_controller.drop_all()
@@ -927,14 +929,17 @@ class PoolsControllerTest(ControllerBaseTest):
 
     def test_create_succeeds(self):
         self.pools_controller.create(str(uuid.uuid1()),
-                                     100, 'localhost', {})
+                                     100, 'localhost',
+                                     options={})
 
     def test_create_replaces_on_duplicate_insert(self):
         name = str(uuid.uuid1())
         self.pools_controller.create(name,
-                                     100, 'localhost', {})
+                                     100, 'localhost',
+                                     options={})
         self.pools_controller.create(name,
-                                     111, 'localhost2', {})
+                                     111, 'localhost2',
+                                     options={})
         entry = self.pools_controller.get(name)
         self._pool_expects(entry, xname=name, xweight=111,
                            xlocation='localhost2')
@@ -1004,7 +1009,7 @@ class PoolsControllerTest(ControllerBaseTest):
             if n > marker:
                 marker = n
 
-            self.pools_controller.create(n, w, str(i), {})
+            self.pools_controller.create(n, w, str(i), options={})
 
         # Get the target pool
         def _pool(name):
@@ -1033,7 +1038,7 @@ class PoolsControllerTest(ControllerBaseTest):
         self.assertEqual(len(res), 15)
 
         next_name = marker + 'n'
-        self.pools_controller.create(next_name, 123, '123', {})
+        self.pools_controller.create(next_name, 123, '123', options={})
         res = next(self.pools_controller.list(marker=marker))
         self._pool_expects(res, next_name, 123, '123')
         self.pools_controller.delete(next_name)
@@ -1174,7 +1179,9 @@ class FlavorsControllerTest(ControllerBaseTest):
 
         # Let's create one pool
         self.pool = str(uuid.uuid1())
-        self.pools_controller.create(self.pool, 100, 'localhost', {})
+        self.pool_group = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, 'localhost',
+                                     group=self.pool_group, options={})
         self.addCleanup(self.pools_controller.delete, self.pool)
 
     def tearDown(self):
@@ -1182,7 +1189,7 @@ class FlavorsControllerTest(ControllerBaseTest):
         super(FlavorsControllerTest, self).tearDown()
 
     def test_create_succeeds(self):
-        self.flavors_controller.create('durable', self.pool,
+        self.flavors_controller.create('durable', self.pool_group,
                                        project=self.project,
                                        capabilities={})
 
@@ -1196,12 +1203,13 @@ class FlavorsControllerTest(ControllerBaseTest):
 
     def test_create_replaces_on_duplicate_insert(self):
         name = str(uuid.uuid1())
-        self.flavors_controller.create(name, self.pool,
+        self.flavors_controller.create(name, self.pool_group,
                                        project=self.project,
                                        capabilities={})
 
         pool2 = 'another_pool'
-        self.pools_controller.create(pool2, 100, 'localhost', {})
+        self.pools_controller.create(pool2, 100, 'localhost',
+                                     group=pool2, options={})
         self.addCleanup(self.pools_controller.delete, pool2)
 
         self.flavors_controller.create(name, pool2,
@@ -1213,22 +1221,22 @@ class FlavorsControllerTest(ControllerBaseTest):
     def test_get_returns_expected_content(self):
         name = 'durable'
         capabilities = {'fifo': True}
-        self.flavors_controller.create(name, self.pool,
+        self.flavors_controller.create(name, self.pool_group,
                                        project=self.project,
                                        capabilities=capabilities)
         res = self.flavors_controller.get(name, project=self.project)
-        self._flavors_expects(res, name, self.project, self.pool)
+        self._flavors_expects(res, name, self.project, self.pool_group)
         self.assertNotIn('capabilities', res)
 
     def test_detailed_get_returns_expected_content(self):
         name = 'durable'
         capabilities = {'fifo': True}
-        self.flavors_controller.create(name, self.pool,
+        self.flavors_controller.create(name, self.pool_group,
                                        project=self.project,
                                        capabilities=capabilities)
         res = self.flavors_controller.get(name, project=self.project,
                                           detailed=True)
-        self._flavors_expects(res, name, self.project, self.pool)
+        self._flavors_expects(res, name, self.project, self.pool_group)
         self.assertIn('capabilities', res)
         self.assertEqual(res['capabilities'], capabilities)
 
@@ -1237,7 +1245,7 @@ class FlavorsControllerTest(ControllerBaseTest):
                           self.flavors_controller.get, 'notexists')
 
     def test_exists(self):
-        self.flavors_controller.create('exists', self.pool,
+        self.flavors_controller.create('exists', self.pool_group,
                                        project=self.project,
                                        capabilities={})
         self.assertTrue(self.flavors_controller.exists('exists',
@@ -1247,11 +1255,11 @@ class FlavorsControllerTest(ControllerBaseTest):
 
     def test_update_raises_assertion_error_on_bad_fields(self):
         self.assertRaises(AssertionError, self.pools_controller.update,
-                          self.pool)
+                          self.pool_group)
 
     def test_update_works(self):
         name = 'yummy'
-        self.flavors_controller.create(name, self.pool,
+        self.flavors_controller.create(name, self.pool_group,
                                        project=self.project,
                                        capabilities={})
 
@@ -1269,7 +1277,7 @@ class FlavorsControllerTest(ControllerBaseTest):
 
     def test_delete_works(self):
         name = 'puke'
-        self.flavors_controller.create(name, self.pool,
+        self.flavors_controller.create(name, self.pool_group,
                                        project=self.project,
                                        capabilities={})
         self.flavors_controller.delete(name, project=self.project)
@@ -1287,7 +1295,8 @@ class FlavorsControllerTest(ControllerBaseTest):
         name_gen = lambda i: chr(ord('A') + i)
         for i in range(15):
             pool = str(i)
-            self.pools_controller.create(pool, 100, 'localhost', {})
+            self.pools_controller.create(pool, 100, 'localhost',
+                                         group=pool, options={})
             self.addCleanup(self.pools_controller.delete, pool)
 
             self.flavors_controller.create(name_gen(i), project=self.project,

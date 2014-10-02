@@ -58,6 +58,7 @@ Queues = sa.Table('Queues', metadata,
 
 Pools = sa.Table('Pools', metadata,
                  sa.Column('name', sa.String(64), primary_key=True),
+                 sa.Column('group', sa.String(64), nullable=True),
                  sa.Column('uri', sa.String(255), nullable=False),
                  sa.Column('weight', sa.INTEGER, nullable=False),
                  sa.Column('options', sa.BINARY))
