@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-19 06:37+0000\n"
-"PO-Revision-Date: 2014-09-16 09:26+0000\n"
+"POT-Creation-Date: 2014-10-03 06:13+0000\n"
+"PO-Revision-Date: 2014-10-02 13:58+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "{0} is not a valid operation"
 msgstr "{0} não é uma operação válida"
 
-#: zaqar/common/cli.py:50
+#: zaqar/common/cli.py:52
 msgid "Terminating"
 msgstr "Finalizando"
 
@@ -130,7 +130,7 @@ msgstr ""
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 
-#: zaqar/queues/storage/mongodb/driver.py:87
+#: zaqar/queues/storage/mongodb/driver.py:77
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
 msgstr ""
@@ -190,29 +190,34 @@ msgstr ""
 "Exceção AutoReconnect capturada, número máximo de tentativas para {0} "
 "excedido."
 
-#: zaqar/queues/storage/redis/utils.py:157
-msgid "Caught ConnectionError, retrying the call to {0}"
+#: zaqar/queues/storage/redis/driver.py:50
+#, python-format
+msgid "The Redis driver requires redis-server>=2.6, %s found"
 msgstr ""
 
 #: zaqar/queues/storage/redis/utils.py:162
+msgid "Caught ConnectionError, retrying the call to {0}"
+msgstr ""
+
+#: zaqar/queues/storage/redis/utils.py:167
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
-#: zaqar/queues/storage/sqlalchemy/driver.py:42
+#: zaqar/queues/storage/sqlalchemy/driver.py:41
 msgid ""
 "sqlalchemy's data plane driver will be removed during the next release. "
 "Please, consider moving your data to one of the other supported drivers."
 msgstr ""
 
-#: zaqar/queues/transport/validation.py:97
+#: zaqar/queues/transport/validation.py:98
 msgid "Project ids may not be more than {0} characters long."
 msgstr "Identificadores de projeto não devem ter mais de {0} carácteres."
 
-#: zaqar/queues/transport/validation.py:101
+#: zaqar/queues/transport/validation.py:102
 msgid "Queue names may not be more than {0} characters long."
 msgstr "Nomes de filas não devem ter mais de {0} carácteres."
 
-#: zaqar/queues/transport/validation.py:106
+#: zaqar/queues/transport/validation.py:107
 msgid ""
 "Queue names may only contain ASCII letters, digits, underscores, and "
 "dashes."
@@ -220,23 +225,23 @@ msgstr ""
 "O nome de uma fila deve conter apenas letras ASCII, números, subtraços e "
 "traços."
 
-#: zaqar/queues/transport/validation.py:119
+#: zaqar/queues/transport/validation.py:120
 msgid "Limit must be at least 1 and no greater than {0}."
 msgstr "O limite deve ser no mínimo 1 e não deve ser superior a {0}."
 
-#: zaqar/queues/transport/validation.py:131
+#: zaqar/queues/transport/validation.py:132
 msgid "Queue metadata is too large. Max size: {0}"
 msgstr "Os métadados da fila são muito grandes. Tamanho máximo: {0}"
 
-#: zaqar/queues/transport/validation.py:143
+#: zaqar/queues/transport/validation.py:144
 msgid "No messages to enqueu."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/queues/transport/validation.py:158
+#: zaqar/queues/transport/validation.py:159
 msgid "Message collection size is too large. Max size {0}"
 msgstr "O tamanho da coleção de mensagens é muito grande. O tamnho máximo é {0}"
 
-#: zaqar/queues/transport/validation.py:167
+#: zaqar/queues/transport/validation.py:168
 msgid ""
 "The TTL for a message may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -244,30 +249,30 @@ msgstr ""
 "O tempo de vida de uma mensagem não pode exceder {0} segundos e não deve "
 "ser menor que {1} segundos."
 
-#: zaqar/queues/transport/validation.py:183
-#: zaqar/queues/transport/validation.py:239
+#: zaqar/queues/transport/validation.py:184
+#: zaqar/queues/transport/validation.py:240
 msgid "Limit must be at least 1 and may not be greater than {0}."
 msgstr "O limite deve ser de no mínimo 1 e não deve exceder {0}."
 
-#: zaqar/queues/transport/validation.py:201
+#: zaqar/queues/transport/validation.py:202
 msgid "pop and id params cannot be present together in the delete request."
 msgstr ""
 
-#: zaqar/queues/transport/validation.py:207
+#: zaqar/queues/transport/validation.py:208
 msgid ""
 "The request should have either \"ids\" or \"pop\" parameter in the "
 "request, to be able to delete."
 msgstr ""
 
-#: zaqar/queues/transport/validation.py:214
+#: zaqar/queues/transport/validation.py:215
 msgid "Pop value must be at least 1 and may not be greater than {0}."
 msgstr ""
 
-#: zaqar/queues/transport/validation.py:221
+#: zaqar/queues/transport/validation.py:222
 msgid "ids parameter should have at least 1 and not greater than {0} values."
 msgstr ""
 
-#: zaqar/queues/transport/validation.py:248
+#: zaqar/queues/transport/validation.py:249
 msgid ""
 "The grace for a claim may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -275,7 +280,7 @@ msgstr ""
 "O prazo de carência para um pedido não deve exceder {0} segundos e não "
 "deve ser menor que {1} segundo."
 
-#: zaqar/queues/transport/validation.py:264
+#: zaqar/queues/transport/validation.py:265
 msgid ""
 "The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
 "seconds long."
@@ -337,71 +342,71 @@ msgstr "O valor do campo \"{name}\" deve ser do tipo {vtype}."
 msgid "Claim could not be created."
 msgstr "Não foi possível criar o pedido."
 
-#: zaqar/queues/transport/wsgi/v1_0/claims.py:125
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:148
+#: zaqar/queues/transport/wsgi/v1_0/claims.py:122
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:146
 msgid "Claim could not be queried."
 msgstr "Não foi possível consultar o pedido."
 
-#: zaqar/queues/transport/wsgi/v1_0/claims.py:173
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:195
+#: zaqar/queues/transport/wsgi/v1_0/claims.py:169
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:193
 msgid "Claim could not be updated."
 msgstr "Não foi possível atualizar o pedido."
 
-#: zaqar/queues/transport/wsgi/v1_0/claims.py:191
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:213
+#: zaqar/queues/transport/wsgi/v1_0/claims.py:187
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:211
 msgid "Claim could not be deleted."
 msgstr "Não foi possível excluir o pedido."
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:61
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:261
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:262
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:74
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:320
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:323
 msgid "Message could not be retrieved."
 msgstr "Não foi possível recuperar a mensagem."
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:104
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:119
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:120
 msgid "Messages could not be listed."
 msgstr "Não foi possível listar a mensagem."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:167
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:192
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:168
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:195
 msgid "No messages could be enqueued."
 msgstr "Nenhuma mensagem pode ser adicionada à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:172
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:197
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:173
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:200
 msgid "Messages could not be enqueued."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:230
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:265
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:231
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:268
 msgid "Messages could not be deleted."
 msgstr "Não foi possível excluir as mensagens."
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:277
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:338
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:178
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:279
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:343
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:180
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:288
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:349
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:290
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:354
 msgid "A claim was specified, but the message is not currently claimed."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:294
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:355
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:296
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:360
 msgid "The specified claim does not exist or has expired."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:300
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:361
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:302
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:366
 msgid "This message is claimed; it cannot be deleted without a valid claim ID."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_0/messages.py:306
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:367
+#: zaqar/queues/transport/wsgi/v1_0/messages.py:308
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:372
 msgid "Message could not be deleted."
 msgstr "A mensagem não pode ser excluída."
 
@@ -442,19 +447,19 @@ msgstr ""
 msgid "Unable to create"
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/health.py:38
+#: zaqar/queues/transport/wsgi/v1_1/health.py:37
 msgid "Health status could not be read."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:163
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:166
 msgid "No messages were found in the request body."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/messages.py:283
+#: zaqar/queues/transport/wsgi/v1_1/messages.py:286
 msgid "Messages could not be popped."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:179
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:181
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr ""
 
