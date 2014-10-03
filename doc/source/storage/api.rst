@@ -1,6 +1,6 @@
--------
-Storage
--------
+---------------------------------
+API reference for storage drivers
+---------------------------------
 
 .. currentmodule:: zaqar.queues.storage.base
 

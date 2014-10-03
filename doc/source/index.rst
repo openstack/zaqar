@@ -89,7 +89,7 @@ Zaqar is composed of two layers:
    :maxdepth: 1
 
    transport
-   storage
+   storage/autoindex
 
 The **transport drivers** are responsible for interacting with Zaqar clients.
 Every query made by clients is processed by the transport layer,
