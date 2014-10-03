@@ -72,10 +72,35 @@ class DataDriver(storage.DataDriverBase):
 
         self.mongodb_conf = self.conf[options.MONGODB_GROUP]
 
-        server_version = self.connection.server_info()['version']
+        conn = self.connection
+        server_version = conn.server_info()['version']
+
         if tuple(map(int, server_version.split('.'))) < (2, 2):
             raise RuntimeError(_('The mongodb driver requires mongodb>=2.2,  '
                                  '%s found') % server_version)
+
+        if not len(conn.nodes) > 1 and not conn.is_mongos:
+            if not self.conf.unreliable:
+                raise RuntimeError(_('Either a replica set or a mongos is '
+                                     'required to guarantee message delivery'))
+        else:
+            wc = conn.write_concern.get('w')
+            majority = (wc == 'majority' or
+                        wc >= 2)
+
+            if not wc:
+                # NOTE(flaper87): No write concern specified, use majority
+                # and don't count journal as a replica. Use `update` to avoid
+                # overwriting `wtimeout`
+                conn.write_concern.update({'w': 'majority'})
+            elif not self.conf.unreliable and not majority:
+                raise RuntimeError(_('Using a write concern other than '
+                                     '`majority` or > 2 make sthe service '
+                                     'unreliable. Please use a different '
+                                     'write concern or set `unreliable` '
+                                     'to True in the config file.'))
+
+            conn.write_concern['j'] = False
 
     def is_alive(self):
         try:

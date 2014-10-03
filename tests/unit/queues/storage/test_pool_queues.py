@@ -27,17 +27,19 @@ from zaqar import tests as testing
 @testing.requires_mongodb
 class PoolQueuesTest(testing.TestBase):
 
+    config_file = 'wsgi_mongodb_pooled.conf'
+
     def setUp(self):
         super(PoolQueuesTest, self).setUp()
-        conf = self.load_conf('wsgi_mongodb_pooled.conf')
 
-        conf.register_opts([cfg.StrOpt('storage')],
-                           group='drivers')
+        self.conf.register_opts([cfg.StrOpt('storage')],
+                                group='drivers')
 
         cache = oslo_cache.get_cache()
-        control = utils.load_storage_driver(conf, cache, control_mode=True)
+        control = utils.load_storage_driver(self.conf, cache,
+                                            control_mode=True)
         self.pools_ctrl = control.pools_controller
-        self.driver = pooling.DataDriver(conf, cache, control)
+        self.driver = pooling.DataDriver(self.conf, cache, control)
         self.controller = self.driver.queue_controller
 
         # fake two pools

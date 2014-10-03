@@ -399,7 +399,8 @@ class Catalog(object):
         :rtype: zaqar.queues.storage.base.DataDriverBase
         """
         pool = self._pools_ctrl.get(pool_id, detailed=True)
-        conf = utils.dynamic_conf(pool['uri'], pool['options'])
+        conf = utils.dynamic_conf(pool['uri'], pool['options'],
+                                  conf=self._conf)
         return utils.load_storage_driver(conf, self._cache)
 
     @decorators.caches(_pool_cache_key, _POOL_CACHE_TTL)

@@ -33,6 +33,7 @@ class TestBase(testing.TestBase):
         if not self.config_file:
             self.skipTest("No config specified")
 
+        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
         self.conf.register_opts(validation._TRANSPORT_LIMITS_OPTIONS,
                                 group=validation._TRANSPORT_LIMITS_GROUP)
         self.transport_cfg = self.conf[validation._TRANSPORT_LIMITS_GROUP]
@@ -41,6 +42,7 @@ class TestBase(testing.TestBase):
                                 group=driver._WSGI_GROUP)
         self.wsgi_cfg = self.conf[driver._WSGI_GROUP]
 
+        self.conf.unreliable = True
         self.conf.admin_mode = True
         self.boot = bootstrap.Bootstrap(self.conf)
 

@@ -15,6 +15,7 @@
 
 import ddt
 
+from zaqar.queues import bootstrap
 from zaqar.queues.storage import utils
 from zaqar import tests as testing
 
@@ -22,9 +23,15 @@ from zaqar import tests as testing
 @ddt.ddt
 class TestUtils(testing.TestBase):
 
+    def setUp(self):
+        super(TestUtils, self).setUp()
+        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+
     @testing.requires_mongodb
     def test_can_connect_suceeds_if_good_uri_mongo(self):
-        self.assertTrue(utils.can_connect('mongodb://localhost:27017'))
+        self.config(unreliable=True)
+        self.assertTrue(utils.can_connect('mongodb://localhost:27017',
+                                          conf=self.conf))
 
     @testing.requires_redis
     def test_can_connect_suceeds_if_good_uri_redis(self):
@@ -39,8 +46,11 @@ class TestUtils(testing.TestBase):
 
     @testing.requires_mongodb
     def test_can_connect_fails_if_bad_uri_mongodb(self):
-        self.assertFalse(utils.can_connect('mongodb://localhost:8080'))
-        self.assertFalse(utils.can_connect('mongodb://example.com:27017'))
+        self.config(unreliable=True)
+        self.assertFalse(utils.can_connect('mongodb://localhost:8080',
+                                           conf=self.conf))
+        self.assertFalse(utils.can_connect('mongodb://example.com:27017',
+                                           conf=self.conf))
 
     @testing.requires_redis
     def test_can_connect_fails_if_bad_uri_redis(self):

@@ -18,6 +18,7 @@ from stevedore import driver
 
 from zaqar.common import decorators
 from zaqar.common import errors
+from zaqar.i18n import _
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.openstack.common import log
 from zaqar.queues.storage import pipeline
@@ -49,6 +50,9 @@ _GENERAL_OPTIONS = (
                       'configuration is used to determine where the '
                       'catalogue/control plane data is kept.'),
                 deprecated_opts=[cfg.DeprecatedOpt('pooling')]),
+
+    cfg.BoolOpt('unreliable', default=None,
+                help=('Disable all reliability constrains.')),
 )
 
 _DRIVER_OPTIONS = (
@@ -80,6 +84,14 @@ class Bootstrap(object):
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
         log.setup('zaqar')
+
+        if self.conf.unreliable is None:
+            msg = _(u'Unreliable\'s default value will be changed to False '
+                    'in the Kilo release. Please, make sure your deployments '
+                    'are working in a reliable mode or that `unreliable` is '
+                    'explicitly set to `True` in your configuration files.')
+            LOG.warn(msg)
+            self.conf.unreliable = True
 
     @decorators.lazy_property(write=False)
     def storage(self):

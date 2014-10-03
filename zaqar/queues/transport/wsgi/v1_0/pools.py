@@ -150,9 +150,10 @@ class Resource(object):
 
         LOG.debug(u'PUT pool - name: %s', pool)
 
+        conf = self._ctrl.driver.conf
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
-        if not storage_utils.can_connect(data['uri']):
+        if not storage_utils.can_connect(data['uri'], conf=conf):
             raise wsgi_errors.HTTPBadRequestBody(
                 'cannot connect to %s' % data['uri']
             )
@@ -199,7 +200,9 @@ class Resource(object):
         for field in EXPECT:
             wsgi_utils.validate(self._validators[field], data)
 
-        if 'uri' in data and not storage_utils.can_connect(data['uri']):
+        conf = self._ctrl.driver.conf
+        if 'uri' in data and not storage_utils.can_connect(data['uri'],
+                                                           conf=conf):
             raise wsgi_errors.HTTPBadRequestBody(
                 'cannot connect to %s' % data['uri']
             )

@@ -49,7 +49,7 @@ def dynamic_conf(uri, options, conf=None):
     if conf is None:
         conf = cfg.ConfigOpts()
     else:
-        conf = copy.deepcopy(conf)
+        conf = copy.copy(conf)
 
     if storage_group not in conf:
         conf.register_opts(storage_opts,
@@ -60,6 +60,7 @@ def dynamic_conf(uri, options, conf=None):
         driver_opts = utils.dict_to_conf({'storage': storage_type})
         conf.register_opts(driver_opts, group=u'drivers')
 
+    conf.set_override('storage', storage_type, 'drivers')
     conf.set_override('uri', uri, group=storage_group)
     return conf
 
