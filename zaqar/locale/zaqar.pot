@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 2015.1.dev85.g4a97371\n"
+"Project-Id-Version: zaqar 2015.1.dev6.g3838217\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-03 06:13+0000\n"
+"POT-Creation-Date: 2014-10-04 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -109,6 +109,13 @@ msgstr ""
 msgid "Invalid string format: %s"
 msgstr ""
 
+#: zaqar/queues/bootstrap.py:89
+msgid ""
+"Unreliable's default value will be changed to False in the Kilo release. "
+"Please, make sure your deployments are working in a reliable mode or that"
+" `unreliable` is explicitly set to `True` in your configuration files."
+msgstr ""
+
 #: zaqar/queues/storage/pipeline.py:30
 msgid ""
 "Pipeline to use for processing {0} operations. This pipeline will be "
@@ -120,9 +127,20 @@ msgstr ""
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/driver.py:77
+#: zaqar/queues/storage/mongodb/driver.py:79
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
+msgstr ""
+
+#: zaqar/queues/storage/mongodb/driver.py:84
+msgid "Either a replica set or a mongos is required to guarantee message delivery"
+msgstr ""
+
+#: zaqar/queues/storage/mongodb/driver.py:97
+msgid ""
+"Using a write concern other than `majority` or > 2 make sthe service "
+"unreliable. Please use a different write concern or set `unreliable` to "
+"True in the config file."
 msgstr ""
 
 #: zaqar/queues/storage/mongodb/messages.py:547
@@ -356,7 +374,7 @@ msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:279
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:343
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:180
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:181
 msgid "Unable to delete"
 msgstr ""
 
@@ -429,7 +447,7 @@ msgstr ""
 msgid "Messages could not be popped."
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:181
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:182
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr ""
 
