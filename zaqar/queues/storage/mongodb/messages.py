@@ -97,10 +97,19 @@ CLAIMED_INDEX_FIELDS = [
     ('c.e', 1),
 ]
 
-# Index used to ensure uniqueness.
+# This index is meant to be used as a shard-key and to ensure
+# uniqueness for markers.
+#
+# As for other compound indexes, order matters. The marker `k`
+# gives enough cardinality to ensure chunks are evenly distributed,
+# whereas the `p_q` field helps keeping chunks from the same project
+# and queue together.
+#
+# In a sharded environment, uniqueness of this index is still guaranteed
+# because it's used as a shard key.
 MARKER_INDEX_FIELDS = [
-    (PROJ_QUEUE, 1),
     ('k', 1),
+    (PROJ_QUEUE, 1),
 ]
 
 TRANSACTION_INDEX_FIELDS = [
