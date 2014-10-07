@@ -95,7 +95,7 @@ class DataDriver(storage.DataDriverBase):
                 conn.write_concern.update({'w': 'majority'})
             elif not self.conf.unreliable and not majority:
                 raise RuntimeError(_('Using a write concern other than '
-                                     '`majority` or > 2 make sthe service '
+                                     '`majority` or > 2 makes the service '
                                      'unreliable. Please use a different '
                                      'write concern or set `unreliable` '
                                      'to True in the config file.'))
