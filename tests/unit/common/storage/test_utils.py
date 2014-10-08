@@ -47,10 +47,12 @@ class TestUtils(testing.TestBase):
     @testing.requires_mongodb
     def test_can_connect_fails_if_bad_uri_mongodb(self):
         self.config(unreliable=True)
-        self.assertFalse(utils.can_connect('mongodb://localhost:8080',
-                                           conf=self.conf))
-        self.assertFalse(utils.can_connect('mongodb://example.com:27017',
-                                           conf=self.conf))
+
+        uri = 'mongodb://localhost:8080?connectTimeoutMS=100'
+        self.assertFalse(utils.can_connect(uri, conf=self.conf))
+
+        uri = 'mongodb://example.com:27017?connectTimeoutMS=100'
+        self.assertFalse(utils.can_connect(uri, conf=self.conf))
 
     @testing.requires_redis
     def test_can_connect_fails_if_bad_uri_redis(self):
