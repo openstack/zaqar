@@ -137,14 +137,14 @@ class FlavorsController(base.FlavorsBase):
         self._col.ensure_index(FLAVORS_INDEX, unique=True)
 
 
-def _normalize(pool, detailed=False):
+def _normalize(flavor, detailed=False):
     ret = {
-        'name': pool['n'],
-        'project': pool['p'],
-        'pool': pool['s'],
+        'name': flavor['n'],
+        'project': flavor['p'],
+        'pool': flavor['s'],
     }
 
     if detailed:
-        ret['capabilities'] = pool['c']
+        ret['capabilities'] = flavor['c']
 
     return ret
