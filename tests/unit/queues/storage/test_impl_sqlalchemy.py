@@ -15,6 +15,7 @@
 import datetime
 import uuid
 
+import six
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
 
@@ -161,3 +162,21 @@ class PooledQueueTests(base.QueueControllerTest):
     driver_class = pooling.DataDriver
     control_driver_class = sqlalchemy.ControlDriver
     controller_base_class = pooling.RoutingController
+
+
+class MsgidTests(testing.TestBase):
+
+    def test_encode(self):
+        if six.PY2:
+            ids = [3, long(1), 0]
+        elif six.PY3:
+            ids = [3, 1, 0]
+        msgids = ['5c693a50', '5c693a52', '5c693a53']
+        for msgid, id in zip(msgids, ids):
+            self.assertEqual(msgid, utils.msgid_encode(id))
+
+    def test_decode(self):
+        msgids = ['5c693a50', '5c693a52', '5c693a53', '']
+        ids = [3, 1, 0, None]
+        for msgid, id in zip(msgids, ids):
+            self.assertEqual(id, utils.msgid_decode(msgid))
