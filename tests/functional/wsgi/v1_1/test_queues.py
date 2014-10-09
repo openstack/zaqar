@@ -253,7 +253,7 @@ class TestQueueMisc(base.V1_1FunctionalTestBase):
 
         path = '/{0}/queues?marker=zzz'.format("v1.1")
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(result.status_code, 200)
 
     test_get_queue_malformed_marker.tags = ['negative']
 

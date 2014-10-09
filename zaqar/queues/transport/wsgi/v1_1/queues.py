@@ -144,13 +144,8 @@ class CollectionResource(object):
         # Buffer list of queues
         queues = list(next(results))
 
-        # Check for an empty list
-        if len(queues) == 0:
-            resp.status = falcon.HTTP_204
-            return
-
         # Got some. Prepare the response.
-        kwargs['marker'] = next(results)
+        kwargs['marker'] = next(results) or kwargs.get('marker', '')
         for each_queue in queues:
             each_queue['href'] = req.path + '/' + each_queue['name']
 

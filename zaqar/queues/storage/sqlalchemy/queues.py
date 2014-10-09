@@ -53,7 +53,7 @@ class QueueController(storage.Queue):
                        {'name': rec[0], 'metadata': utils.json_decode(rec[1])})
 
         yield it()
-        yield marker_name['next']
+        yield marker_name and marker_name['next']
 
     def get_metadata(self, name, project):
         if project is None:
