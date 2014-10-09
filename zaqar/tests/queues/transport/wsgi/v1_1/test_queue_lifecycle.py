@@ -245,8 +245,15 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         alt_project_id = str(arbitrary_number + 1)
 
         # List empty
-        self.simulate_get(self.queue_path, headers=header)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        result = self.simulate_get(self.queue_path, headers=header)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        results = jsonutils.loads(result[0])
+        self.assertEqual(results['queues'], [])
+        self.assertIn('links', results)
+        link = results['links'][0]
+        self.assertEqual('next', link['rel'])
+        href = falcon.uri.parse_query_string(link['href'])
+        self.assertNotIn('marker', href)
 
         # Payload exceeded
         self.simulate_get(self.queue_path, headers=header,
@@ -303,11 +310,11 @@ class QueueLifecycleBaseTest(base.V1_1Base):
 
         # List tail
         self.simulate_get(target, headers=header, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         # List manually-constructed tail
         self.simulate_get(target, headers=header, query_string='marker=zzz')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
 
 class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
