@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-04 06:05+0000\n"
+"POT-Creation-Date: 2014-10-10 06:37+0000\n"
 "PO-Revision-Date: 2014-10-02 13:58+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
@@ -148,12 +148,12 @@ msgstr ""
 
 #: zaqar/queues/storage/mongodb/driver.py:97
 msgid ""
-"Using a write concern other than `majority` or > 2 make sthe service "
+"Using a write concern other than `majority` or > 2 makes the service "
 "unreliable. Please use a different write concern or set `unreliable` to "
 "True in the config file."
 msgstr ""
 
-#: zaqar/queues/storage/mongodb/messages.py:547
+#: zaqar/queues/storage/mongodb/messages.py:556
 #, python-format
 msgid ""
 "%(attempts)d attempt(s) required to post %(num_messages)d messages to "
@@ -162,7 +162,7 @@ msgstr ""
 "%(attempts)d tentativa(s) necessária(s) para enviar %(num_messages)d "
 "mensagens para a fila \"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:591
+#: zaqar/queues/storage/mongodb/messages.py:600
 #, python-format
 msgid ""
 "First attempt failed while adding messages to queue \"%(queue)s\" under "
@@ -171,7 +171,7 @@ msgstr ""
 "Primeira tentativa falhou durante a adição de mensagens à fila "
 "\"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:605
+#: zaqar/queues/storage/mongodb/messages.py:614
 #, python-format
 msgid ""
 "Exceeded maximum retry duration for queue \"%(queue)s\" under project "
@@ -180,7 +180,7 @@ msgstr ""
 "Excedido o tempo máximo de tentativas para a fila \"%(queue)s\" do "
 "projeto %(project)s"
 
-#: zaqar/queues/storage/mongodb/messages.py:665
+#: zaqar/queues/storage/mongodb/messages.py:674
 #, python-format
 msgid ""
 "Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
@@ -208,16 +208,48 @@ msgstr ""
 "Exceção AutoReconnect capturada, número máximo de tentativas para {0} "
 "excedido."
 
-#: zaqar/queues/storage/redis/driver.py:50
+#: zaqar/queues/storage/redis/driver.py:42
+msgid "Malformed Redis URI"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:45
+msgid "Invalid scheme in Redis URI"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:88
+#: zaqar/queues/storage/redis/driver.py:118
+msgid "The Redis configuration URI contains an invalid port"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:98
+msgid "The Redis configuration URI does not define any sentinel hosts"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:107
+msgid ""
+"The Redis URI specifies multiple sentinel hosts, but is missing the "
+"\"master\" query string parameter. Please set \"master\" to the name of "
+"the Redis master server as specified in the sentinel configuration file."
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:123
+msgid "Missing host name in Redis URI"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:132
+msgid "Missing path in Redis URI"
+msgstr ""
+
+#: zaqar/queues/storage/redis/driver.py:151
 #, python-format
 msgid "The Redis driver requires redis-server>=2.6, %s found"
 msgstr ""
 
-#: zaqar/queues/storage/redis/utils.py:162
+#: zaqar/queues/storage/redis/utils.py:178
 msgid "Caught ConnectionError, retrying the call to {0}"
 msgstr ""
 
-#: zaqar/queues/storage/redis/utils.py:167
+#: zaqar/queues/storage/redis/utils.py:183
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
