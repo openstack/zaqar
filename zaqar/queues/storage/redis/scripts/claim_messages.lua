@@ -70,7 +70,7 @@ while (#claimed_msgs < limit) do
                        'c.e', claim_expires)
 
             -- Will the message expire early?
-            if tonumber(msg_expires_prev) < msg_expires then
+            if tonumber(msg_expires_prev) < claim_expires then
                 redis.call('HMSET', mid,
                            't', msg_ttl,
                            'e', msg_expires)

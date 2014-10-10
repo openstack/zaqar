@@ -208,7 +208,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
         # Update the claim
-        new_claim_ttl = '{"ttl": 60}'
+        new_claim_ttl = '{"ttl": 60, "grace": 60}'
         creation = timeutils.utcnow()
         self.simulate_patch(claim_href, body=new_claim_ttl,
                             headers=self.headers)

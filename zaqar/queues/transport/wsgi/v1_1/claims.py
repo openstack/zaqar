@@ -26,11 +26,8 @@ from zaqar.queues.transport.wsgi import utils as wsgi_utils
 
 LOG = logging.getLogger(__name__)
 
-CLAIM_PATCH_SPEC = (('ttl', int, None),)
-
 
 class CollectionResource(object):
-
     __slots__ = (
         '_claim_controller',
         '_validate',
@@ -116,11 +113,17 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('_claim_controller', '_validate')
+    __slots__ = ('_claim_controller', '_validate', '_claim_patch_spec')
 
-    def __init__(self, wsgi_conf, validate, claim_controller):
+    def __init__(self, wsgi_conf, validate, claim_controller,
+                 default_claim_ttl, default_grace_ttl):
         self._claim_controller = claim_controller
         self._validate = validate
+
+        self._claim_patch_spec = (
+            ('ttl', int, default_claim_ttl),
+            ('grace', int, default_grace_ttl),
+        )
 
     def on_get(self, req, resp, project_id, queue_name, claim_id):
         LOG.debug(u'Claim item GET - claim: %(claim_id)s, '
@@ -169,7 +172,7 @@ class ItemResource(object):
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         document = wsgi_utils.deserialize(req.stream, req.content_length)
-        metadata = wsgi_utils.sanitize(document, CLAIM_PATCH_SPEC)
+        metadata = wsgi_utils.sanitize(document, self._claim_patch_spec)
 
         try:
             self._validate.claim_updating(metadata)

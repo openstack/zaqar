@@ -133,6 +133,7 @@ class ClaimController(storage.Claim):
 
         now = timeutils.utcnow_ts()
         claim_expires = now + ttl
+        claim_expires_dt = datetime.datetime.utcfromtimestamp(claim_expires)
 
         message_ttl = ttl + grace
         message_expiration = datetime.datetime.utcfromtimestamp(
@@ -181,7 +182,7 @@ class ClaimController(storage.Claim):
         # expire before claim.
         new_values = {'e': message_expiration, 't': message_ttl}
         collection.update({'p_q': utils.scope_queue_name(queue, project),
-                           'e': {'$lt': message_expiration},
+                           'e': {'$lt': claim_expires_dt},
                            'c.id': oid},
                           {'$set': new_values},
                           upsert=False, multi=True)
@@ -205,8 +206,13 @@ class ClaimController(storage.Claim):
             raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         now = timeutils.utcnow_ts()
-        ttl = int(metadata.get('ttl', 60))
-        expires = now + ttl
+        grace = metadata['grace']
+        ttl = metadata['ttl']
+        claim_expires = now + ttl
+        claim_expires_dt = datetime.datetime.utcfromtimestamp(claim_expires)
+        message_ttl = ttl + grace
+        message_expires = datetime.datetime.utcfromtimestamp(
+            claim_expires + grace)
 
         msg_ctrl = self.driver.message_controller
         claimed = msg_ctrl._claimed(queue, cid, expires=now,
@@ -220,7 +226,7 @@ class ClaimController(storage.Claim):
         meta = {
             'id': cid,
             't': ttl,
-            'e': expires,
+            'e': claim_expires,
         }
 
         # TODO(kgriffs): Create methods for these so we don't interact
@@ -236,9 +242,10 @@ class ClaimController(storage.Claim):
         # `expires` on messages that would
         # expire before claim.
         collection.update({'p_q': scope,
-                           'e': {'$lt': expires},
+                           'e': {'$lt': claim_expires_dt},
                            'c.id': cid},
-                          {'$set': {'e': expires, 't': ttl}},
+                          {'$set': {'e': message_expires,
+                                    't': message_ttl}},
                           upsert=False, multi=True)
 
     @utils.raises_conn_error

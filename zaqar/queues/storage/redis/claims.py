@@ -249,8 +249,8 @@ class ClaimController(storage.Claim, scripting.Mixin):
     def create(self, queue, metadata, project=None,
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
 
-        claim_ttl = int(metadata.get('ttl', 60))
-        grace = int(metadata.get('grace', 60))
+        claim_ttl = metadata['ttl']
+        grace = metadata['grace']
 
         now = timeutils.utcnow_ts()
         msg_ttl = claim_ttl + grace
@@ -314,10 +314,10 @@ class ClaimController(storage.Claim, scripting.Mixin):
 
         now = timeutils.utcnow_ts()
 
-        claim_ttl = int(metadata.get('ttl', 60))
+        claim_ttl = metadata['ttl']
         claim_expires = now + claim_ttl
 
-        grace = int(metadata.get('grace', 60))
+        grace = metadata['grace']
         msg_ttl = claim_ttl + grace
         msg_expires = claim_expires + grace
 
@@ -338,7 +338,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
                     msg.claim_id = claim_id
                     msg.claim_expires = claim_expires
 
-                    if _msg_would_expire(msg, msg_expires):
+                    if _msg_would_expire(msg, claim_expires):
                         msg.ttl = msg_ttl
                         msg.expires = msg_expires
 
