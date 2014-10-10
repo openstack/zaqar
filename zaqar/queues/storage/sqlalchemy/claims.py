@@ -150,7 +150,7 @@ class ClaimController(storage.Claim):
                 raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
             update = (tables.Messages.update().
-                      values(ttl=metadata['ttl']).
+                      values(ttl=metadata['ttl'] + metadata['grace']).
                       where(sa.and_(
                           tables.Messages.c.ttl < metadata['ttl'],
                           tables.Messages.c.cid == cid)))

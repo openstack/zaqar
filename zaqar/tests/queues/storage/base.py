@@ -778,7 +778,7 @@ class ClaimControllerTest(ControllerBaseTest):
         for msg1, msg2 in zip(messages, messages2):
             self.assertEqual(msg1['body'], msg2['body'])
 
-        self.assertEqual(claim['ttl'], 100)
+        self.assertEqual(claim['ttl'], new_meta['ttl'])
         self.assertEqual(claim['id'], claim_id)
 
         # Make sure delete works
@@ -845,15 +845,13 @@ class ClaimControllerTest(ControllerBaseTest):
                          project=self.project, client_uuid=uuid.uuid4(),
                          num=20, ttl=120)
 
-        # Although ttl is less than the message's TTL, the grace
-        # period puts it just over the edge.
-        meta = {'ttl': 100, 'grace': 22}
+        meta = {'ttl': 121, 'grace': 22}
 
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
 
         for message in messages:
-            self.assertEqual(message['ttl'], 122)
+            self.assertEqual(message['ttl'], 143)
 
     def test_do_not_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,

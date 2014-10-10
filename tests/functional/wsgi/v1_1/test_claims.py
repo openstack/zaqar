@@ -131,7 +131,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
         # Patch Claim
         claim_location = result.headers['Location']
         url = self.cfg.zaqar.url + claim_location
-        doc_updated = {"ttl": 300}
+        doc_updated = {"ttl": 300, 'grace': 60}
 
         result = self.client.patch(url, data=doc_updated)
         self.assertEqual(result.status_code, 204)
@@ -139,7 +139,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
         # verify that the claim TTL is updated
         result = self.client.get(url)
         new_ttl = result.json()['ttl']
-        self.assertEqual(new_ttl, 300)
+        self.assertEqual(doc_updated['ttl'], new_ttl)
 
     test_claim_patch.tags = ['smoke', 'positive']
 
