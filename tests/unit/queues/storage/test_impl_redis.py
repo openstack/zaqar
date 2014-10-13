@@ -371,12 +371,12 @@ class RedisClaimsTest(base.ClaimControllerTest):
                           self.controller.get, queue_name,
                           epoch, project=None)
 
-        claim_id, messages = self.controller.create(queue_name, {'ttl': 2,
+        claim_id, messages = self.controller.create(queue_name, {'ttl': 1,
                                                     'grace': 0},
                                                     project=None)
 
         # Lets let it expire
-        time.sleep(2)
+        time.sleep(1)
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, queue_name,
                           claim_id, {}, project=None)

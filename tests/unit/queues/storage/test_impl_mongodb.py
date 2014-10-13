@@ -382,12 +382,11 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
             self.assertEqual(len(created), 1)
 
             # Force infinite retries
-            if testing.RUN_SLOW_TESTS:
-                method.return_value = None
+            method.return_value = None
 
-                with testing.expect(errors.MessageConflict):
-                    self.controller.post(queue_name, messages,
-                                         uuid, project=self.project)
+            with testing.expect(errors.MessageConflict):
+                self.controller.post(queue_name, messages,
+                                     uuid, project=self.project)
 
         created = list(self.controller.post(queue_name,
                                             expected_messages[1:],
