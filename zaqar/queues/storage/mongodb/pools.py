@@ -60,9 +60,15 @@ class PoolsController(base.PoolsBase):
             query['n'] = {'$gt': marker}
 
         cursor = self._col.find(query, fields=_field_spec(detailed),
-                                limit=limit)
-        normalizer = functools.partial(_normalize, detailed=detailed)
-        return utils.HookedCursor(cursor, normalizer)
+                                limit=limit).sort('n')
+        marker_name = {}
+
+        def normalizer(pool):
+            marker_name['next'] = pool['n']
+            return _normalize(pool, detailed=detailed)
+
+        yield utils.HookedCursor(cursor, normalizer)
+        yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
     def get(self, name, detailed=False):

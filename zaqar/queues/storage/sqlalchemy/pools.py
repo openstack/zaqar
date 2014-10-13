@@ -54,8 +54,15 @@ class PoolsController(base.PoolsBase):
             stmt = stmt.limit(limit)
         cursor = self._conn.execute(stmt)
 
-        normalizer = functools.partial(_normalize, detailed=detailed)
-        return (normalizer(v) for v in cursor)
+        marker_name = {}
+
+        def it():
+            for cur in cursor:
+                marker_name['next'] = cur[0]
+                yield _normalize(cur, detailed=detailed)
+
+        yield it()
+        yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
     def get_group(self, group=None, detailed=False):

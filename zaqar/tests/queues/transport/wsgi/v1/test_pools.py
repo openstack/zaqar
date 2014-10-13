@@ -18,7 +18,6 @@ import uuid
 import ddt
 import falcon
 
-
 from zaqar.openstack.common import jsonutils
 from zaqar import tests as testing
 from zaqar.tests.queues.transport.wsgi import base
@@ -230,10 +229,13 @@ class PoolsBaseTest(base.V1Base):
                             body=jsonutils.dumps({'weight': 1}))
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-    def test_empty_listing_returns_204(self):
+    def test_empty_listing(self):
         self.simulate_delete(self.pool)
-        self.simulate_get(self.url_prefix + '/pools')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        result = self.simulate_get(self.url_prefix + '/pools')
+        results = jsonutils.loads(result[0])
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertTrue(len(results['pools']) == 0)
+        self.assertIn('links', results)
 
     def _listing_test(self, count=10, limit=10,
                       marker=None, detailed=False):
@@ -242,7 +244,7 @@ class PoolsBaseTest(base.V1Base):
         self.simulate_delete(self.pool)
         query = '?limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
-            query += '&marker={2}'.format(marker)
+            query += '&marker={0}'.format(marker)
 
         with pools(self, count, self.doc['uri']) as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
@@ -251,9 +253,36 @@ class PoolsBaseTest(base.V1Base):
             results = jsonutils.loads(result[0])
             self.assertIsInstance(results, dict)
             self.assertIn('pools', results)
+            self.assertIn('links', results)
             pool_list = results['pools']
+
+            link = results['links'][0]
+            self.assertEqual('next', link['rel'])
+            href = falcon.uri.parse_query_string(link['href'])
+            self.assertIn('marker', href)
+            self.assertEqual(href['limit'], str(limit))
+            self.assertEqual(href['detailed'], str(detailed).lower())
+
+            next_query_string = ('?marker={marker}&limit={limit}'
+                                 '&detailed={detailed}').format(**href)
+            next_result = self.simulate_get(link['href'].split('?')[0],
+                                            query_string=next_query_string)
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+            next_pool = jsonutils.loads(next_result[0])
+            next_pool_list = next_pool['pools']
+
+            self.assertIn('links', next_pool)
+            if limit < count:
+                self.assertEqual(len(next_pool_list),
+                                 min(limit, count-limit))
+            else:
+                # NOTE(jeffrey4l): when limit >= count, there will be no
+                # pools in the 2nd page.
+                self.assertTrue(len(next_pool_list) == 0)
+
             self.assertEqual(len(pool_list), min(limit, count))
-            for s in pool_list:
+            for s in pool_list + next_pool_list:
                 # NOTE(flwang): It can't assumed that both sqlalchemy and
                 # mongodb can return query result with the same order. Just
                 # like the order they're inserted. Actually, sqlalchemy can't

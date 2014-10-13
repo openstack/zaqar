@@ -163,9 +163,26 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'pool-list': {
+            'pool_list': {
                 'type': 'object',
                 'properties': {
+                    'links': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'rel': {
+                                    'type': 'string'
+                                },
+                                'href': {
+                                    'type': 'string',
+                                    'pattern': '^/v1\.1/pools\?'
+                                }
+                            },
+                            'required': ['rel', 'href'],
+                            'additionalProperties': False
+                        }
+                    },
                     'pools': {
                         'type': 'array',
                         'items': {
@@ -174,7 +191,7 @@ class ResponseSchema(api.Api):
                                 'href': {
                                     'type': 'string',
                                     'pattern': '^/v1\.1/'
-                                    'pools/[a-zA-Z0-9_-]{1,64}$'
+                                               'pools/[a-zA-Z0-9_-]{1,64}$'
                                 },
                                 'weight': {
                                     'type': 'number',
@@ -196,7 +213,7 @@ class ResponseSchema(api.Api):
                         },
                     }
                 },
-                'required': ['pools'],
+                'required': ['links', 'pools'],
                 'additionalProperties': False
             },
 
@@ -229,7 +246,7 @@ class ResponseSchema(api.Api):
                     }
                 }
             },
-            'pool-detail': {
+            'pool_detail': {
                 'type': 'object',
                 'properties': {
                     'uri': {
