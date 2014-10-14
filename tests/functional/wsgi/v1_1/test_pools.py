@@ -20,12 +20,12 @@ from zaqar.tests.functional import helpers
 
 
 @ddt.ddt
-@testing.requires_mongodb
 class TestPools(base.V1_1FunctionalTestBase):
 
     server_class = base.ZaqarAdminServer
     config_file = 'wsgi_mongodb_pooled.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
         super(TestPools, self).setUp()
 
