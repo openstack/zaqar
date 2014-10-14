@@ -77,9 +77,14 @@ class FlavorsController(base.FlavorsBase):
 
         cursor = self._col.find(query, fields=_field_spec(detailed),
                                 limit=limit).sort('n', 1)
+        marker_name = {}
 
-        normalizer = functools.partial(_normalize, detailed=detailed)
-        return utils.HookedCursor(cursor, normalizer)
+        def normalizer(flavor):
+            marker_name['next'] = flavor['n']
+            return _normalize(flavor, detailed=detailed)
+
+        yield utils.HookedCursor(cursor, normalizer)
+        yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
     def get(self, name, project=None, detailed=False):

@@ -38,16 +38,22 @@ class Listing(object):
         self._ctrl = flavors_controller
 
     def on_get(self, request, response, project_id):
-        """Returns a flavor listing as objects embedded in an array:
+        """Returns a flavor listing as objects embedded in an object:
 
         ::
 
-            [
-                {"href": "", "capabilities": {}, "pool": ""},
-                ...
-            ]
+            {
+                "flavors": [
+                    {"href": "", "capabilities": {}, "pool": ""},
+                    ...
+                ],
+                "links": [
+                    {"rel": "next", "href": ""},
+                    ...
+                ]
+            }
 
-        :returns: HTTP | [200, 204]
+        :returns: HTTP | 200
         """
 
         LOG.debug(u'LIST flavors for project_id %s' % project_id)
@@ -57,14 +63,24 @@ class Listing(object):
         request.get_param_as_int('limit', store=store)
         request.get_param_as_bool('detailed', store=store)
 
-        results = {}
-        results['flavors'] = list(self._ctrl.list(project=project_id, **store))
-        for entry in results['flavors']:
-            entry['href'] = request.path + '/' + entry.pop('name')
+        cursor = self._ctrl.list(project=project_id, **store)
+        flavors = list(next(cursor))
 
-        if not results['flavors']:
-            response.status = falcon.HTTP_204
-            return
+        results = {}
+
+        if flavors:
+            store['marker'] = next(cursor)
+
+            for entry in flavors:
+                entry['href'] = request.path + '/' + entry.pop('name')
+
+        results['links'] = [
+            {
+                'rel': 'next',
+                'href': request.path + falcon.to_query_str(store)
+            }
+        ]
+        results['flavors'] = flavors
 
         response.body = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
