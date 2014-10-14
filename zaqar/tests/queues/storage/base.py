@@ -1296,7 +1296,9 @@ class FlavorsControllerTest(ControllerBaseTest):
     def test_drop_all_leads_to_empty_listing(self):
         self.flavors_controller.drop_all()
         cursor = self.flavors_controller.list()
-        self.assertRaises(StopIteration, next, cursor)
+        flavors = next(cursor)
+        self.assertRaises(StopIteration, next, flavors)
+        self.assertFalse(next(cursor))
 
     def test_listing_simple(self):
         name_gen = lambda i: chr(ord('A') + i)
@@ -1309,21 +1311,27 @@ class FlavorsControllerTest(ControllerBaseTest):
             self.flavors_controller.create(name_gen(i), project=self.project,
                                            pool=pool, capabilities={})
 
-        res = list(self.flavors_controller.list(project=self.project))
+        def get_res(**kwargs):
+            cursor = self.flavors_controller.list(project=self.project,
+                                                  **kwargs)
+            res = list(next(cursor))
+            marker = next(cursor)
+            self.assertTrue(marker)
+            return res
+
+        res = get_res()
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
             self._flavors_expects(entry, name_gen(i), self.project, str(i))
             self.assertNotIn('capabilities', entry)
 
-        res = list(self.flavors_controller.list(project=self.project, limit=5))
+        res = get_res(limit=5)
         self.assertEqual(len(res), 5)
 
-        res = next(self.flavors_controller.list(project=self.project,
-                                                marker=name_gen(3)))
-        self._flavors_expects(res, name_gen(4), self.project, '4')
+        res = get_res(marker=name_gen(3))
+        self._flavors_expects(res[0], name_gen(4), self.project, '4')
 
-        res = list(self.flavors_controller.list(project=self.project,
-                                                detailed=True))
+        res = get_res(detailed=True)
         self.assertEqual(len(res), 10)
         for i, entry in enumerate(res):
             self._flavors_expects(entry, name_gen(i), self.project, str(i))

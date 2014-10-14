@@ -233,10 +233,13 @@ class FlavorsBaseTest(base.V1_1Base):
                             body=jsonutils.dumps({'pool': 'test'}))
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
 
-    def test_empty_listing_returns_204(self):
+    def test_empty_listing(self):
         self.simulate_delete(self.flavor_path)
-        self.simulate_get(self.url_prefix + '/flavors')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        result = self.simulate_get(self.url_prefix + '/flavors')
+        results = jsonutils.loads(result[0])
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertTrue(len(results['flavors']) == 0)
+        self.assertIn('links', results)
 
     def _listing_test(self, count=10, limit=10,
                       marker=None, detailed=False):
@@ -254,9 +257,33 @@ class FlavorsBaseTest(base.V1_1Base):
             results = jsonutils.loads(result[0])
             self.assertIsInstance(results, dict)
             self.assertIn('flavors', results)
+            self.assertIn('links', results)
             flavors_list = results['flavors']
+
+            link = results['links'][0]
+            self.assertEqual('next', link['rel'])
+            href = falcon.uri.parse_query_string(link['href'])
+            self.assertIn('marker', href)
+            self.assertEqual(href['limit'], str(limit))
+            self.assertEqual(href['detailed'], str(detailed).lower())
+
+            next_query_string = ('?marker={marker}&limit={limit}'
+                                 '&detailed={detailed}').format(**href)
+            next_result = self.simulate_get(link['href'].split('?')[0],
+                                            query_string=next_query_string)
+            next_flavors = jsonutils.loads(next_result[0])
+            next_flavors_list = next_flavors['flavors']
+
+            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertIn('links', next_flavors)
+            if limit < count:
+                self.assertEqual(len(next_flavors_list),
+                                 min(limit, count-limit))
+            else:
+                self.assertTrue(len(next_flavors_list) == 0)
+
             self.assertEqual(len(flavors_list), min(limit, count))
-            for i, s in enumerate(flavors_list):
+            for i, s in enumerate(flavors_list + next_flavors_list):
                 expect = expected[i]
                 path, capabilities = expect[:2]
                 self._flavor_expect(s, path, self.doc['pool'])
