@@ -432,11 +432,13 @@ class MongodbClaimTests(MongodbSetupMixin, base.ClaimControllerTest):
         time.sleep(1)
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
-                          claim_id, {}, project=self.project)
+                          claim_id, {'ttl': 1, 'grace': 0},
+                          project=self.project)
 
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.update, self.queue_name,
-                          claim_id, {}, project=self.project)
+                          claim_id, {'ttl': 1, 'grace': 0},
+                          project=self.project)
 
 
 #

@@ -66,7 +66,9 @@ def public_endpoints(driver):
         ('/queues/{queue_name}/claims/{claim_id}',
          claims.ItemResource(driver._wsgi_conf,
                              driver._validate,
-                             claim_controller)),
+                             claim_controller,
+                             defaults.claim_ttl,
+                             defaults.claim_grace)),
 
         # Ping
         ('/ping',
