@@ -4,15 +4,18 @@
 # Options defined in zaqar.queues.bootstrap
 #
 
-# ('Enable pooling across multiple storage backends. ', 'If
-# pooling is enabled, the storage driver ', 'configuration is
-# used to determine where the ', 'catalogue/control plane data
-# is kept.') (boolean value)
+# Activate privileged endpoints. (boolean value)
+#admin_mode=false
+
+# Enable pooling across multiple storage backends. If pooling
+# is enabled, the storage driver configuration is used to
+# determine where the catalogue/control plane data is kept.
+# (boolean value)
 # Deprecated group/name - [DEFAULT]/pooling
 #pooling=false
 
-# Activate endpoints to manage pool registry. (boolean value)
-#admin_mode=false
+# Disable all reliability constrains. (boolean value)
+#unreliable=<None>
 
 
 #
@@ -142,26 +145,6 @@
 # Storage driver to use. (string value)
 #storage=sqlite
 
-[drivers:storage:redis]
-
-#
-# Options defined in zaqar.queues.storage.redis
-#
-
-# Redis Server URI. Socket file based connectors are supported.
-# Example for socket file connector: redis:/tmp/redis.sock'
-#uri=<None>
-
-# Maximum number of times to retry an operation that failed
-# due to a primary node failover. (integer value)
-#max_reconnect_attempts=10
-
-# Base sleep interval between attempts to reconnect after a
-# primary node failover. The actual sleep time increases
-# exponentially (power of 2) each time the operation is
-# retried. (floating point value)
-#reconnect_sleep=0.02
-
 
 [drivers:storage:mongodb]
 
@@ -235,6 +218,38 @@
 # exponentially (power of 2) each time the operation is
 # retried. (floating point value)
 #reconnect_sleep=0.02
+
+
+[drivers:storage:redis]
+
+#
+# Options defined in zaqar.queues.storage.redis
+#
+
+# Redis connection URI, taking one of three forms. For a
+# direct connection to a Redis server, use the form
+# "redis://host[:port][?options]", where port defaults to 6379
+# if not specified. For an HA master-slave Redis cluster using
+# Redis Sentinel, use the form "redis://host1[:port1][,host2[:
+# port2],...,hostN[:portN]][?options]", where each host
+# specified corresponds to an instance of redis-sentinel. In
+# this form, the name of the Redis master used in the Sentinel
+# configuration must be included in the query string as
+# "master=<name>". Finally, to connect to a local instance of
+# Redis over a unix socket, you may use the form
+# "redis:/path/to/redis.sock[?options]". In all forms, the
+# "socket_timeout" option may be specified in the query
+# string. Its value is given in seconds. If not provided,
+# "socket_timeout" defaults to 0.1 seconds. (string value)
+#uri=redis://127.0.0.1:6379
+
+# Maximum number of times to retry an operation that failed
+# due to a redis node failover. (integer value)
+#max_reconnect_attempts=10
+
+# Base sleep interval between attempts to reconnect after a
+# redis node failover.  (floating point value)
+#reconnect_sleep=1.0
 
 
 [drivers:storage:sqlalchemy]
@@ -435,38 +450,21 @@
 
 # Pipeline to use for processing queue operations. This
 # pipeline will be consumed before calling the storage
-# driver's controller methods, which will always be appended
-# to this pipeline. (list value)
+# driver's controller methods. (list value)
 #queue_pipeline=
 
 # Pipeline to use for processing message operations. This
 # pipeline will be consumed before calling the storage
-# driver's controller methods, which will always be appended
-# to this pipeline. (list value)
+# driver's controller methods. (list value)
 #message_pipeline=
 
 # Pipeline to use for processing claim operations. This
 # pipeline will be consumed before calling the storage
-# driver's controller methods, which will always be appended
-# to this pipeline. (list value)
+# driver's controller methods. (list value)
 #claim_pipeline=
 
 
 [transport]
-
-#
-# Options defined in zaqar.queues.transport.base
-#
-
-#  (integer value)
-#default_message_ttl=3600
-
-#  (integer value)
-#default_claim_ttl=300
-
-#  (integer value)
-#default_claim_grace=60
-
 
 #
 # Options defined in zaqar.queues.transport.validation
@@ -490,6 +488,7 @@
 #max_queue_metadata=65536
 
 #  (integer value)
+# Deprecated group/name - [DEFAULT]/max_message_size
 # Deprecated group/name - [limits:transport]/message_size_uplimit
 #max_messages_post_size=262144
 
@@ -504,5 +503,19 @@
 #  (integer value)
 # Deprecated group/name - [limits:transport]/claim_grace_max
 #max_claim_grace=43200
+
+
+#
+# Options defined in zaqar.queues.transport.base
+#
+
+#  (integer value)
+#default_message_ttl=3600
+
+#  (integer value)
+#default_claim_ttl=300
+
+#  (integer value)
+#default_claim_grace=60
 
 
