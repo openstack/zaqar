@@ -21,6 +21,24 @@ from zaqar.transport.wsgi.v1_0 import pools
 from zaqar.transport.wsgi.v1_0 import queues
 from zaqar.transport.wsgi.v1_0 import stats
 
+VERSION = {
+    'id': '1',
+    'status': 'SUPPORTED',
+    'updated': '2014-9-11T17:47:05Z',
+    'media-types': [
+        {
+            'base': 'application/json',
+            'type': 'application/vnd.openstack.messaging-v1+json'
+        }
+    ],
+    'links': [
+        {
+            'href': '/v1/',
+            'rel': 'self'
+        }
+    ]
+}
+
 
 def public_endpoints(driver, conf):
     queue_controller = driver._storage.queue_controller

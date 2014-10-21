@@ -28,6 +28,7 @@ from zaqar.transport import auth
 from zaqar.transport import validation
 from zaqar.transport.wsgi import v1_0
 from zaqar.transport.wsgi import v1_1
+from zaqar.transport.wsgi import version
 
 _WSGI_OPTIONS = (
     cfg.StrOpt('bind', default='127.0.0.1',
@@ -82,6 +83,7 @@ class Driver(transport.DriverBase):
         catalog = [
             ('/v1', v1_0.public_endpoints(self, self._conf)),
             ('/v1.1', v1_1.public_endpoints(self, self._conf)),
+            ('/', [('', version.Resource())])
         ]
 
         if self._conf.admin_mode:
