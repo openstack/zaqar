@@ -67,6 +67,10 @@ class Driver(transport.DriverBase):
             helpers.require_client_id,
             helpers.extract_project_id,
 
+            # NOTE(jeffrey4l): Depends on the project_id and client_id being
+            # extracted above
+            helpers.inject_context,
+
             # NOTE(kgriffs): Depends on project_id being extracted, above
             functools.partial(helpers.validate_queue_identification,
                               self._validate.queue_identification)

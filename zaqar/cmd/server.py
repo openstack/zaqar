@@ -26,6 +26,12 @@ def run():
     # to pick up common options from openstack.common.log, since
     # that module uses the global CONF instance exclusively.
     conf = cfg.CONF
+    # NOTE(jeffrey4l): Overwrite the default vaule for
+    # logging_context_format_string. Add project_id into it.
+    conf.set_default('logging_context_format_string',
+                     '%(asctime)s.%(msecs)03d %(process)d %(levelname)s'
+                     ' %(name)s [%(request_id)s %(user_identity)s]'
+                     ' [project_id:%(project_id)s] %(message)s')
     conf(project='zaqar', prog='zaqar-queues')
 
     server = bootstrap.Bootstrap(conf)
