@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""flavors: JSON schema for marconi-queues flavors resources."""
+"""flavors: JSON schema for zaqar-queues flavors resources."""
 
 # NOTE(flaper87): capabilities can be anything. These will be unique to
 # each storage driver, so we don't perform any further validation at
