@@ -514,6 +514,13 @@ class MessageController(storage.Message):
         collection = self._collection(queue_name, project)
 
         # Set the next basis marker for the first attempt.
+        #
+        # Note that we don't increment the counter right away because
+        # if 2 concurrent posts happen and the one with the higher counter
+        # ends before the one with the lower counter, there's a window
+        # where a client paging through the queue may get the messages
+        # with the higher counter and skip the previous ones. This would
+        # make our FIFO guarantee unsound.
         next_marker = self._queue_ctrl._get_counter(queue_name, project)
 
         # Unique transaction ID to facilitate atomic batch inserts
