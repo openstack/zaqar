@@ -489,7 +489,7 @@ class PooledMessageTests(base.MessageControllerTest):
     controller_class = pooling.MessageController
     driver_class = pooling.DataDriver
     control_driver_class = mongodb.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Message
 
 
 @testing.requires_mongodb
@@ -498,7 +498,7 @@ class PooledQueueTests(base.QueueControllerTest):
     controller_class = pooling.QueueController
     driver_class = pooling.DataDriver
     control_driver_class = mongodb.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Queue
 
 
 @testing.requires_mongodb
@@ -507,7 +507,7 @@ class PooledClaimsTests(base.ClaimControllerTest):
     controller_class = pooling.ClaimController
     driver_class = pooling.DataDriver
     control_driver_class = mongodb.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Claim
 
     def test_delete_message_expired_claim(self):
         # NOTE(flaper87): The pool tests uses sqlalchemy
