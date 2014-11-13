@@ -4,13 +4,15 @@
 #
 # Translators:
 # Gabriel Guerreiro <gabriel.eu.br@gmail.com>, 2014
+# Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-10 06:37+0000\n"
-"PO-Revision-Date: 2014-10-02 13:58+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"POT-Creation-Date: 2014-11-13 06:07+0000\n"
+"PO-Revision-Date: 2014-11-07 20:00+0000\n"
+"Last-Translator: Rodrigo Felix de Almeida "
+"<rodrigofelixdealmeida@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -55,7 +57,7 @@ msgstr ""
 
 #: zaqar/common/transport/wsgi/helpers.py:71
 msgid "The header X-PROJECT-ID was missing"
-msgstr ""
+msgstr "Está faltando o cabeçalho X-PROJECT-ID"
 
 #: zaqar/common/transport/wsgi/helpers.py:129
 msgid "Invalid queue identification"
@@ -140,7 +142,7 @@ msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 #: zaqar/queues/storage/mongodb/driver.py:79
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
-msgstr ""
+msgstr "O driver do mongodb requer mongodb>=2.2,  %s encontrado"
 
 #: zaqar/queues/storage/mongodb/driver.py:84
 msgid "Either a replica set or a mongos is required to guarantee message delivery"
@@ -210,11 +212,11 @@ msgstr ""
 
 #: zaqar/queues/storage/redis/driver.py:42
 msgid "Malformed Redis URI"
-msgstr ""
+msgstr "URI do Redis mal-formada"
 
 #: zaqar/queues/storage/redis/driver.py:45
 msgid "Invalid scheme in Redis URI"
-msgstr ""
+msgstr "Esquema inválido na URI do Redis"
 
 #: zaqar/queues/storage/redis/driver.py:88
 #: zaqar/queues/storage/redis/driver.py:118
@@ -234,11 +236,11 @@ msgstr ""
 
 #: zaqar/queues/storage/redis/driver.py:123
 msgid "Missing host name in Redis URI"
-msgstr ""
+msgstr "Faltando nome do host na URI do Redis"
 
 #: zaqar/queues/storage/redis/driver.py:132
 msgid "Missing path in Redis URI"
-msgstr ""
+msgstr "Faltando caminho na URI do Redis"
 
 #: zaqar/queues/storage/redis/driver.py:151
 #, python-format
@@ -353,7 +355,7 @@ msgstr "Tente novamente em alguns segundos."
 
 #: zaqar/queues/transport/wsgi/errors.py:36
 msgid "Invalid API request"
-msgstr ""
+msgstr "Requisição inválida de API"
 
 #: zaqar/queues/transport/wsgi/errors.py:45
 msgid "Invalid request body"
@@ -388,22 +390,22 @@ msgid "The value of the \"{name}\" field must be a {vtype}."
 msgstr "O valor do campo \"{name}\" deve ser do tipo {vtype}."
 
 #: zaqar/queues/transport/wsgi/v1_0/claims.py:77
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:100
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:97
 msgid "Claim could not be created."
 msgstr "Não foi possível criar o pedido."
 
 #: zaqar/queues/transport/wsgi/v1_0/claims.py:122
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:146
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:149
 msgid "Claim could not be queried."
 msgstr "Não foi possível consultar o pedido."
 
 #: zaqar/queues/transport/wsgi/v1_0/claims.py:169
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:193
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:196
 msgid "Claim could not be updated."
 msgstr "Não foi possível atualizar o pedido."
 
 #: zaqar/queues/transport/wsgi/v1_0/claims.py:187
-#: zaqar/queues/transport/wsgi/v1_1/claims.py:211
+#: zaqar/queues/transport/wsgi/v1_1/claims.py:214
 msgid "Claim could not be deleted."
 msgstr "Não foi possível excluir o pedido."
 
@@ -436,7 +438,7 @@ msgstr "Não foi possível excluir as mensagens."
 
 #: zaqar/queues/transport/wsgi/v1_0/messages.py:279
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:343
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:181
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:197
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
@@ -489,13 +491,13 @@ msgstr "Não foi possível listar as filas."
 msgid "Queue stats could not be read."
 msgstr "Não foi possível ler as estatísticas da fila."
 
-#: zaqar/queues/transport/wsgi/v1_1/flavors.py:143
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:159
 msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
 msgstr ""
 
-#: zaqar/queues/transport/wsgi/v1_1/flavors.py:146
+#: zaqar/queues/transport/wsgi/v1_1/flavors.py:162
 msgid "Unable to create"
-msgstr ""
+msgstr "Não foi possível criar"
 
 #: zaqar/queues/transport/wsgi/v1_1/health.py:37
 msgid "Health status could not be read."
@@ -503,13 +505,13 @@ msgstr ""
 
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:166
 msgid "No messages were found in the request body."
-msgstr ""
+msgstr "Nenhuma mensagem foi encontrada no corpo da requisição."
 
 #: zaqar/queues/transport/wsgi/v1_1/messages.py:286
 msgid "Messages could not be popped."
-msgstr ""
+msgstr "Mensagens não puderam ser exibidas."
 
-#: zaqar/queues/transport/wsgi/v1_1/pools.py:182
+#: zaqar/queues/transport/wsgi/v1_1/pools.py:198
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr ""
 
