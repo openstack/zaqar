@@ -22,6 +22,7 @@ from zaqar.tests.functional import helpers
 class TestHealth(base.V1_1FunctionalTestBase):
 
     server_class = base.ZaqarAdminServer
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     def setUp(self):
         super(TestHealth, self).setUp()
@@ -30,6 +31,10 @@ class TestHealth(base.V1_1FunctionalTestBase):
             version="v1.1"
         ))
         self.cfg.zaqar.version = "v1.1"
+
+        self.headers = helpers.create_zaqar_headers(self.cfg)
+        self.client.headers = self.headers
+
         self.client.set_base_url(self.base_url)
 
     @ddt.data(
