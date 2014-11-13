@@ -48,6 +48,7 @@ class FunctionalTestBase(testing.TestBase):
 
     server = None
     server_class = None
+    config_file = None
 
     def setUp(self):
         super(FunctionalTestBase, self).setUp()
@@ -60,7 +61,8 @@ class FunctionalTestBase(testing.TestBase):
         if not self.cfg.run_tests:
             self.skipTest("Functional tests disabled")
 
-        self.mconf = self.load_conf(self.cfg.zaqar.config)
+        self.mconf = self.load_conf(self.config_file or
+                                    self.cfg.zaqar.config)
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
@@ -78,6 +80,7 @@ class FunctionalTestBase(testing.TestBase):
                 if not (self.server and self.server.is_alive()):
                     self.server = self.server_class()
                     self.server.start(self.mconf)
+                    self.addCleanup(self.server.process.terminate)
 
             self.client = http.Client()
         else:
@@ -98,11 +101,6 @@ class FunctionalTestBase(testing.TestBase):
                                                'content-type'])
 
         self.client.set_headers(self.headers)
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.server:
-            cls.server.process.terminate()
 
     def assertIsSubset(self, required_values, actual_values):
         """Checks if a list is subset of another.
@@ -281,7 +279,6 @@ class ZaqarAdminServer(Server):
     def get_target(self, conf):
         conf.admin_mode = True
         server = bootstrap.Bootstrap(conf)
-        conf.admin_mode = False
         return server.run
 
 
