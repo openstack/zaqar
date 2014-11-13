@@ -8,7 +8,7 @@ hacking>=0.9.2,<0.10
 mock>=1.0
 
 # Backends
-redis
+redis>=2.10.0
 pymongo>=2.5
 
 # Unit testing
@@ -18,7 +18,7 @@ discover
 fixtures>=0.3.14
 python-subunit>=0.0.18
 testrepository>=0.0.18
-testtools>=0.9.34
+testtools>=0.9.36
 
 # Functional Tests
 requests>=2.2.0,!=2.4.0
