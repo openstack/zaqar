@@ -20,6 +20,7 @@ import uuid
 import falcon
 import six
 
+from zaqar import context
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.queues.transport import validation
@@ -152,3 +153,23 @@ Endpoint only serves `application/json`; specify client-side
 media type support with the "Accept" header.''',
             href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
             href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
+
+
+def inject_context(req, resp, params):
+    """Inject context value into request environment.
+
+    :param req: request sent
+    :type req: falcon.request.Request
+    :param resp: response object
+    :type resp: falcon.response.Response
+    :param params: additional parameters passed to responders
+    :type params: dict
+    :rtype: None
+
+    """
+    client_id = req.get_header('Client-ID')
+    project_id = params.get('project_id', None)
+
+    ctxt = context.RequestContext(project_id=project_id,
+                                  client_id=client_id)
+    req.env['zaqar.context'] = ctxt
