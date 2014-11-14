@@ -38,10 +38,12 @@ class TestBase(testtools.TestCase):
 
         self.useFixture(fixtures.FakeLogger('zaqar'))
 
-        # NOTE(kgriffs): Don't monkey-patch stdout since it breaks
-        # debugging with pdb.
-        stderr = self.useFixture(fixtures.StringStream('stderr')).stream
-        self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
+        if os.environ.get('OS_STDOUT_CAPTURE') is not None:
+            stdout = self.useFixture(fixtures.StringStream('stdout')).stream
+            self.useFixture(fixtures.MonkeyPatch('sys.stdout', stdout))
+        if os.environ.get('OS_STDERR_CAPTURE') is not None:
+            stderr = self.useFixture(fixtures.StringStream('stderr')).stream
+            self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
         if self.config_file:
             self.conf = self.load_conf(self.config_file)
