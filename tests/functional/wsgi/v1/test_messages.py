@@ -15,6 +15,7 @@
 
 from __future__ import division
 
+import json
 import uuid
 
 import ddt
@@ -51,12 +52,15 @@ class TestMessages(base.V1FunctionalTestBase):
     def _post_large_bulk_insert(self, offset):
         """Insert just under than max allowed messages."""
 
-        doc = '[{{"body": "{0}", "ttl": 300}}, {{"body": "{1}", "ttl": 120}}]'
-        overhead = len(doc.format('', ''))
+        message1 = {"body": '', "ttl": 300}
+        message2 = {"body": '', "ttl": 120}
+
+        doc = [message1, message2]
+        overhead = len(json.dumps(doc))
 
         half_size = (self.limits.max_messages_post_size - overhead) // 2
-        doc = doc.format(helpers.generate_random_string(half_size),
-                         helpers.generate_random_string(half_size + offset))
+        message1['body'] = helpers.generate_random_string(half_size)
+        message2['body'] = helpers.generate_random_string(half_size + offset)
 
         return self.client.post(data=doc)
 
