@@ -63,10 +63,10 @@ class RedisUtilsTest(testing.TestBase):
     def setUp(self):
         super(RedisUtilsTest, self).setUp()
 
-        self.conf.register_opts(options.REDIS_OPTIONS,
-                                group=options.REDIS_GROUP)
+        self.conf.register_opts(options.MESSAGE_REDIS_OPTIONS,
+                                group=options.MESSAGE_REDIS_GROUP)
 
-        self.redis_conf = self.conf[options.REDIS_GROUP]
+        self.redis_conf = self.conf[options.MESSAGE_REDIS_GROUP]
 
         MockDriver = collections.namedtuple('MockDriver', 'redis_conf')
 

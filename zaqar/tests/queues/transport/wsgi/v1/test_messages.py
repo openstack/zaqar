@@ -37,7 +37,7 @@ class MessagesBaseTest(base.V1Base):
 
         if self.conf.pooling:
             for i in range(4):
-                uri = self.conf['drivers:storage:mongodb'].uri
+                uri = self.conf['drivers:management_store:mongodb'].uri
                 doc = {'weight': 100, 'uri': uri}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))

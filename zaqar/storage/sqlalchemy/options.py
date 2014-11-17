@@ -16,13 +16,22 @@
 
 from oslo.config import cfg
 
-SQLALCHEMY_OPTIONS = (
+_deprecated_group = 'drivers:storage:sqlalchemy'
+_COMMON_SQLALCHEMY_OPTIONS = (
     cfg.StrOpt('uri', default='sqlite:///:memory:',
+               deprecated_opts=[cfg.DeprecatedOpt(
+                                'uri',
+                                group=_deprecated_group), ],
                help='An sqlalchemy URL'),
 )
 
-SQLALCHEMY_GROUP = 'drivers:storage:sqlalchemy'
+MANAGEMENT_SQLALCHEMY_OPTIONS = _COMMON_SQLALCHEMY_OPTIONS
+MESSAGE_SQLALCHEMY_OPTIONS = _COMMON_SQLALCHEMY_OPTIONS
+
+MANAGEMENT_SQLALCHEMY_GROUP = 'drivers:management_store:sqlalchemy'
+MESSAGE_SQLALCHEMY_GROUP = 'drivers:message_store:sqlalchemy'
 
 
 def _config_options():
-    return [(SQLALCHEMY_GROUP, SQLALCHEMY_OPTIONS)]
+    return [(MANAGEMENT_SQLALCHEMY_GROUP, MANAGEMENT_SQLALCHEMY_OPTIONS),
+            (MESSAGE_SQLALCHEMY_GROUP, MESSAGE_SQLALCHEMY_OPTIONS)]
