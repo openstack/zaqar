@@ -49,8 +49,7 @@ _GENERAL_OPTIONS = (
                       'If pooling is enabled, the storage driver '
                       'configuration is used to determine where the '
                       'catalogue/control plane data is kept.'),
-                deprecated_opts=[cfg.DeprecatedOpt('pooling')]),
-
+                deprecated_opts=[cfg.DeprecatedOpt('sharding')]),
     cfg.BoolOpt('unreliable', default=None,
                 help=('Disable all reliability constrains.')),
 )
