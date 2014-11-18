@@ -15,9 +15,9 @@
 import uuid
 
 from falcon import testing as ftest
+from oslo.serialization import jsonutils
 
 from zaqar import bootstrap
-from zaqar.openstack.common import jsonutils
 from zaqar import tests as testing
 from zaqar.transport import validation
 from zaqar.transport.wsgi import driver

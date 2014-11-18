@@ -15,12 +15,12 @@
 
 import functools
 
+from oslo.serialization import jsonutils
 from oslo.utils import encodeutils
 import sqlalchemy as sa
 from sqlalchemy import exc
 from sqlalchemy.sql import func as sfunc
 
-from zaqar.openstack.common import jsonutils
 from zaqar.openstack.common import log as logging
 from zaqar.storage import errors
 from zaqar.storage.sqlalchemy import tables

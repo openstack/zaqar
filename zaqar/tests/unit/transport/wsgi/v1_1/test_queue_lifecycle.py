@@ -16,9 +16,9 @@ import uuid
 
 import ddt
 import falcon
+from oslo.serialization import jsonutils
 import six
 
-from zaqar.openstack.common import jsonutils
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
 

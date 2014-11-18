@@ -32,7 +32,6 @@
    zaqar.openstack.common.fileutils.rst
    zaqar.openstack.common.gettextutils.rst
    zaqar.openstack.common.importutils.rst
-   zaqar.openstack.common.jsonutils.rst
    zaqar.openstack.common.local.rst
    zaqar.openstack.common.lockutils.rst
    zaqar.openstack.common.log.rst

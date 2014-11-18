@@ -13,9 +13,9 @@
 # the License.
 
 import falcon
+from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 
-from zaqar.openstack.common import jsonutils
 from zaqar.tests.unit.transport.wsgi import base
 
 
