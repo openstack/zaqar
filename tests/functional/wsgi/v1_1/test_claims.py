@@ -87,7 +87,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
     test_query_claim.tags = ['smoke', 'positive']
 
-    @ddt.data(None, {}, {"grace": 100})
+    @ddt.data({}, {"grace": 100})
     def test_claim_default_ttl(self, doc):
         """Create claim with default TTL and grace values."""
         params = {'limit': 1}
