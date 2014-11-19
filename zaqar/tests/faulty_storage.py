@@ -24,6 +24,10 @@ class DataDriver(storage.DataDriverBase):
     def default_options(self):
         return {}
 
+    @property
+    def capabilities(self):
+        raise NotImplementedError()
+
     def is_alive(self):
         raise NotImplementedError()
 

@@ -32,6 +32,8 @@ LOG = logging.getLogger(__name__)
 
 class DataDriver(storage.DataDriverBase):
 
+    BASE_CAPABILITIES = tuple(storage.Capabilities)
+
     _DRIVER_OPTIONS = options._config_options()
 
     def __init__(self, conf, cache):
@@ -41,6 +43,13 @@ class DataDriver(storage.DataDriverBase):
         LOG.warn(_('sqlalchemy\'s data plane driver will be removed during '
                    'the next release. Please, consider moving your data to '
                    'one of the other supported drivers.'))
+
+        # FIXME(flaper87): Make this dynamic
+        self._capabilities = self.BASE_CAPABILITIES
+
+    @property
+    def capabilities(self):
+        return self._capabilities
 
     def _sqlite_on_connect(self, conn, record):
         # NOTE(flaper87): This is necessary in order

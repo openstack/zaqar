@@ -67,9 +67,21 @@ class DataDriver(storage.DataDriverBase):
         some operations.
     """
 
+    BASE_CAPABILITIES = tuple(storage.Capabilities)
+
     def __init__(self, conf, cache, control):
         super(DataDriver, self).__init__(conf, cache)
         self._pool_catalog = Catalog(conf, cache, control)
+
+    @property
+    def capabilities(self):
+        # NOTE(flaper87): We can't know the capabilities
+        # of this driver because pools are loaded based on
+        # the queue and project of the request. Therefore,
+        # we will just assume all capabilities are supported.
+        # This shouldn't be an issue because the pooling driver
+        # is neither used for pools creation nor flavor creation.
+        return self.BASE_CAPABILITIES
 
     def is_alive(self):
         cursor = self._pool_catalog._pools_ctrl.list(limit=0)

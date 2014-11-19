@@ -17,6 +17,7 @@ from zaqar.storage import base
 from zaqar.storage import errors  # NOQA
 
 # Hoist classes into package namespace
+Capabilities = base.Capabilities
 ControlDriverBase = base.ControlDriverBase
 DataDriverBase = base.DataDriverBase
 CatalogueBase = base.CatalogueBase

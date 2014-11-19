@@ -21,6 +21,7 @@ import functools
 import time
 import uuid
 
+import enum
 from oslo.config import cfg
 import six
 
@@ -33,6 +34,16 @@ DEFAULT_POOLS_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_CLAIM = 10
 
 LOG = logging.getLogger(__name__)
+
+
+@enum.unique
+class Capabilities(enum.IntEnum):
+    """Enum of storage capabilities."""
+    FIFO = 1
+    CLAIMS = 2
+    DURABILITY = 3
+    AOD = 4  # At least once delivery
+    HIGH_THROUGHPUT = 5
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -78,6 +89,8 @@ class DataDriverBase(DriverBase):
     :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
     """
 
+    BASE_CAPABILITIES = []
+
     def __init__(self, conf, cache):
         super(DataDriverBase, self).__init__(conf, cache)
 
@@ -85,6 +98,11 @@ class DataDriverBase(DriverBase):
     def is_alive(self):
         """Check whether the storage is ready."""
         raise NotImplementedError
+
+    @abc.abstractproperty
+    def capabilities(self):
+        """Returns storage's capabilities."""
+        return self.BASE_CAPABILITIES
 
     def health(self):
         """Return the health status of service."""

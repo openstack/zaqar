@@ -140,6 +140,13 @@ class ConnectionURI(object):
 
 class DataDriver(storage.DataDriverBase):
 
+    # NOTE(flaper87): The driver doesn't guarantee
+    # durability for Redis.
+    BASE_CAPABILITIES = (storage.Capabilities.FIFO,
+                         storage.Capabilities.CLAIMS,
+                         storage.Capabilities.AOD,
+                         storage.Capabilities.HIGH_THROUGHPUT)
+
     _DRIVER_OPTIONS = options._config_options()
 
     def __init__(self, conf, cache):
@@ -152,6 +159,13 @@ class DataDriver(storage.DataDriverBase):
                     '%s found') % server_version
 
             raise RuntimeError(msg)
+
+        # FIXME(flaper87): Make this dynamic
+        self._capabilities = self.BASE_CAPABILITIES
+
+    @property
+    def capabilities(self):
+        return self._capabilities
 
     def is_alive(self):
         try:

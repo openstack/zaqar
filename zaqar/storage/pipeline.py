@@ -95,6 +95,10 @@ class DataDriver(base.DataDriverBase):
         super(DataDriver, self).__init__(conf, None)
         self._storage = storage
 
+    @property
+    def capabilities(self):
+        return self._storage.capabilities()
+
     def is_alive(self):
         return self._storage.is_alive()
 

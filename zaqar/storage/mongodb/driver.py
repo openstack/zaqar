@@ -65,6 +65,8 @@ def _connection(conf):
 
 class DataDriver(storage.DataDriverBase):
 
+    BASE_CAPABILITIES = tuple(storage.Capabilities)
+
     _DRIVER_OPTIONS = options._config_options()
 
     def __init__(self, conf, cache):
@@ -101,6 +103,13 @@ class DataDriver(storage.DataDriverBase):
                                      'to True in the config file.'))
 
             conn.write_concern['j'] = False
+
+        # FIXME(flaper87): Make this dynamic
+        self._capabilities = self.BASE_CAPABILITIES
+
+    @property
+    def capabilities(self):
+        return self._capabilities
 
     def is_alive(self):
         try:
