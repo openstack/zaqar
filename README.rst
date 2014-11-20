@@ -7,9 +7,9 @@ To find more information read our `wiki`_.
 Running a local Zaqar server with MongoDB
 -----------------------------------------
 
-**Note:** These instructions are for running a local instance of Zaqar and
-not all of these steps are required. It is assumed you have `MongoDB`_
-installed and running.
+**Note:** These instructions are for running a local instance of Zaqar and not
+all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
+(see "Running tests" section below) installed and running.
 
 1. From your home folder create the ``~/.zaqar`` folder and clone the repo::
 
@@ -17,10 +17,12 @@ installed and running.
     $ mkdir .zaqar
     $ git clone https://github.com/openstack/zaqar.git
 
-2. Copy the Zaqar config files to the directory ``~/.zaqar``::
+2. Generate and copy the Zaqar config files to the directory ``~/.zaqar``::
 
-    $ cp zaqar/etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
-    $ cp zaqar/etc/logging.conf.sample ~/.zaqar/logging.conf
+    $ cd zaqar
+    $ tox -e genconfig
+    $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
+    $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
 
 3. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
    and specify to use mongodb storage::
@@ -43,7 +45,7 @@ installed and running.
 
 5. Change directories back to your local copy of the repo::
 
-    $ cd zaqar
+    $ cd ~/zaqar
 
 6. Run the following so you can see the results of any changes you
    make to the code without having to reinstall the package each time::
