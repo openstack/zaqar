@@ -28,7 +28,7 @@ from zaqar.queues.storage import utils
 LOG = log.getLogger(__name__)
 
 _CATALOG_OPTIONS = (
-    cfg.StrOpt('storage', default='sqlite',
+    cfg.StrOpt('storage', default='sqlalchemy',
                help='Catalog storage driver.'),
 )
 

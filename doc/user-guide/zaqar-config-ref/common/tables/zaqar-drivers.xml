@@ -18,7 +18,7 @@
         <th colspan="2">[drivers]</th>
       </tr>
       <tr>
-        <td>storage = sqlite</td>
+        <td>storage = sqlalchemy</td>
         <td>(StrOpt) Storage driver to use.</td>
       </tr>
       <tr>

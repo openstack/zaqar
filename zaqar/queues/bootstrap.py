@@ -57,7 +57,7 @@ _GENERAL_OPTIONS = (
 _DRIVER_OPTIONS = (
     cfg.StrOpt('transport', default='wsgi',
                help='Transport driver to use.'),
-    cfg.StrOpt('storage', default='sqlite',
+    cfg.StrOpt('storage', default='sqlalchemy',
                help='Storage driver to use.'),
 )
 
