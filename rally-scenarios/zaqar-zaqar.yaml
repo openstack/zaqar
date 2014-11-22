@@ -1,0 +1,11 @@
+---
+  ZaqarBasic.create_queue:
+    -
+      args:
+        name_length: 10
+      runner:
+        type: "rps"
+        times: 1000
+        rps: 50
+      sla:
+        max_failure_percent: 0
