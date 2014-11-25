@@ -19,6 +19,7 @@ import time
 import uuid
 
 import ddt
+import mock
 from oslo.utils import timeutils
 import six
 from testtools import matchers
@@ -880,6 +881,34 @@ class ClaimControllerTest(ControllerBaseTest):
         with testing.expect(errors.DoesNotExist):
             self.controller.update(self.queue_name, claim_id,
                                    meta, project=self.project)
+
+    def test_delete_message_expired_claim(self):
+        meta = {'ttl': 2, 'grace': 2}
+        new_messages = [{'ttl': 60, 'body': {}},
+                        {'ttl': 60, 'body': {}},
+                        {'ttl': 60, 'body': {}}]
+
+        self.message_controller.post(self.queue_name, new_messages,
+                                     client_uuid=str(uuid.uuid1()),
+                                     project=self.project)
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+
+        now = timeutils.utcnow_ts()
+        timeutils_utcnow = 'oslo.utils.timeutils.utcnow_ts'
+
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now + 2
+
+            messages = [msg['id'] for msg in messages]
+            self.message_controller.delete(self.queue_name,
+                                           messages.pop(),
+                                           project=self.project)
+
+            self.message_controller.bulk_delete(self.queue_name,
+                                                messages,
+                                                project=self.project)
 
     def test_illformed_id(self):
         # any ill-formed IDs should be regarded as non-existing ones.
