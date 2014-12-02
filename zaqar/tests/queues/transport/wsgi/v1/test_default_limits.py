@@ -19,7 +19,7 @@ import uuid
 import falcon
 
 from zaqar.openstack.common import jsonutils
-from zaqar.queues import storage
+from zaqar import storage
 from zaqar.tests.queues.transport.wsgi import base
 
 

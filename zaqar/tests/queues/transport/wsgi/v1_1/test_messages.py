@@ -24,9 +24,9 @@ import six
 from testtools import matchers
 
 from zaqar.openstack.common import jsonutils
-from zaqar.queues.transport import validation
 from zaqar import tests as testing
 from zaqar.tests.queues.transport.wsgi import base
+from zaqar.transport import validation
 
 
 @ddt.ddt

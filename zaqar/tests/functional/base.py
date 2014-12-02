@@ -22,19 +22,19 @@ import jsonschema
 from oslo.utils import timeutils
 import six
 
-from zaqar.queues.api.v1 import response as response_v1
-from zaqar.queues.api.v1_1 import response as response_v1_1
-from zaqar.queues import bootstrap
-from zaqar.queues.transport import base as transport_base
-# TODO(flaper87): This is necessary to register,
-# wsgi configs and won't be permanent. It'll be
-# refactored as part of the work for this blueprint
-from zaqar.queues.transport import validation
-from zaqar.queues.transport import wsgi  # noqa
+from zaqar.api.v1 import response as response_v1
+from zaqar.api.v1_1 import response as response_v1_1
+from zaqar import bootstrap
 from zaqar import tests as testing
 from zaqar.tests.functional import config
 from zaqar.tests.functional import helpers
 from zaqar.tests.functional import http
+from zaqar.transport import base as transport_base
+# TODO(flaper87): This is necessary to register,
+# wsgi configs and won't be permanent. It'll be
+# refactored as part of the work for this blueprint
+from zaqar.transport import validation
+from zaqar.transport import wsgi  # noqa
 
 # TODO(kgriffs): Run functional tests to a devstack gate job and
 # set this using an environment variable or something.

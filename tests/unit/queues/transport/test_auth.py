@@ -17,8 +17,8 @@
 
 from oslo.config import cfg
 
-from zaqar.queues.transport import auth
 from zaqar import tests as testing
+from zaqar.transport import auth
 
 
 class TestTransportAuth(testing.TestBase):

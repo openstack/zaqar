@@ -2,7 +2,7 @@
 API reference for storage drivers
 ---------------------------------
 
-.. currentmodule:: zaqar.queues.storage.base
+.. currentmodule:: zaqar.storage.base
 
 .. autoclass:: DataDriverBase
    :noindex:

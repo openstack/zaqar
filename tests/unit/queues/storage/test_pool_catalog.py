@@ -17,10 +17,10 @@ import uuid
 from oslo.config import cfg
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues.storage import errors
-from zaqar.queues.storage import pooling
-from zaqar.queues.storage import sqlalchemy
-from zaqar.queues.storage import utils
+from zaqar.storage import errors
+from zaqar.storage import pooling
+from zaqar.storage import sqlalchemy
+from zaqar.storage import utils
 from zaqar import tests as testing
 
 

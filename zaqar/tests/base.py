@@ -20,7 +20,7 @@ from oslo.config import cfg
 import six
 import testtools
 
-from zaqar.queues import bootstrap
+from zaqar import bootstrap
 
 
 class TestBase(testtools.TestCase):

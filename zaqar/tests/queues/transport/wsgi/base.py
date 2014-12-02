@@ -16,11 +16,11 @@ import uuid
 
 from falcon import testing as ftest
 
+from zaqar import bootstrap
 from zaqar.openstack.common import jsonutils
-from zaqar.queues import bootstrap
-from zaqar.queues.transport import validation
-from zaqar.queues.transport.wsgi import driver
 from zaqar import tests as testing
+from zaqar.transport import validation
+from zaqar.transport.wsgi import driver
 
 
 class TestBase(testing.TestBase):

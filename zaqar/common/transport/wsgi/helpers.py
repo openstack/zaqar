@@ -23,7 +23,7 @@ import six
 from zaqar import context
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
-from zaqar.queues.transport import validation
+from zaqar.transport import validation
 
 
 LOG = logging.getLogger(__name__)
