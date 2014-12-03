@@ -16,7 +16,7 @@ discover
 fixtures>=0.3.14
 python-subunit>=0.0.18
 testrepository>=0.0.18
-testtools>=0.9.34
+testtools>=0.9.34,!=1.4.0
 
 # Functional Tests
 requests>=1.2.1,!=2.4.0
