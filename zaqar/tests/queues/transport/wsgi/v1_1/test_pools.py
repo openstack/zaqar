@@ -327,7 +327,7 @@ class PoolsBaseTest(base.V1_1Base):
 
 class TestPoolsMongoDB(PoolsBaseTest):
 
-    config_file = 'wsgi_mongodb.conf'
+    config_file = 'wsgi_mongodb_pooled.conf'
 
     @testing.requires_mongodb
     def setUp(self):
@@ -336,7 +336,7 @@ class TestPoolsMongoDB(PoolsBaseTest):
 
 class TestPoolsSqlalchemy(PoolsBaseTest):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_sqlalchemy_pooled.conf'
 
     def setUp(self):
         super(TestPoolsSqlalchemy, self).setUp()

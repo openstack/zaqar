@@ -80,14 +80,14 @@ class Driver(transport.DriverBase):
         """Initialize hooks and URI routes to resources."""
 
         catalog = [
-            ('/v1', v1_0.public_endpoints(self)),
-            ('/v1.1', v1_1.public_endpoints(self)),
+            ('/v1', v1_0.public_endpoints(self, self._conf)),
+            ('/v1.1', v1_1.public_endpoints(self, self._conf)),
         ]
 
         if self._conf.admin_mode:
             catalog.extend([
-                ('/v1', v1_0.private_endpoints(self)),
-                ('/v1.1', v1_1.private_endpoints(self)),
+                ('/v1', v1_0.private_endpoints(self, self._conf)),
+                ('/v1.1', v1_1.private_endpoints(self, self._conf)),
             ])
 
         self.app = falcon.API(before=self.before_hooks)

@@ -22,7 +22,7 @@ from zaqar.queues.transport.wsgi.v1_0 import queues
 from zaqar.queues.transport.wsgi.v1_0 import stats
 
 
-def public_endpoints(driver):
+def public_endpoints(driver, conf):
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
@@ -69,7 +69,10 @@ def public_endpoints(driver):
     ]
 
 
-def private_endpoints(driver):
+def private_endpoints(driver, conf):
+    if not conf.pooling:
+        return []
+
     pools_controller = driver._control.pools_controller
 
     return [

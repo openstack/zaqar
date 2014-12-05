@@ -23,7 +23,7 @@ from zaqar.queues.transport.wsgi.v1_1 import queues
 from zaqar.queues.transport.wsgi.v1_1 import stats
 
 
-def public_endpoints(driver):
+def public_endpoints(driver, conf):
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
@@ -76,20 +76,27 @@ def public_endpoints(driver):
     ]
 
 
-def private_endpoints(driver):
-    pools_controller = driver._control.pools_controller
-    flavors_controller = driver._control.flavors_controller
+def private_endpoints(driver, conf):
 
-    return [
-        ('/pools',
-         pools.Listing(pools_controller)),
-        ('/pools/{pool}',
-         pools.Resource(pools_controller)),
+    catalogue = [
         # Health
         ('/health',
          health.Resource(driver._storage)),
-        ('/flavors',
-         flavors.Listing(flavors_controller)),
-        ('/flavors/{flavor}',
-         flavors.Resource(flavors_controller)),
     ]
+
+    if conf.pooling:
+        pools_controller = driver._control.pools_controller
+        flavors_controller = driver._control.flavors_controller
+
+        catalogue.extend([
+            ('/pools',
+             pools.Listing(pools_controller)),
+            ('/pools/{pool}',
+             pools.Resource(pools_controller)),
+            ('/flavors',
+             flavors.Listing(flavors_controller)),
+            ('/flavors/{flavor}',
+             flavors.Resource(flavors_controller)),
+        ])
+
+    return catalogue
