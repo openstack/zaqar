@@ -181,4 +181,4 @@ Once your work is complete, you may wish to contribute it to the project.
 Zaqar uses the Gerrit code review system. For information on how to submit
 your branch to Gerrit, see GerritWorkflow_.
 
-.. _GerritWorkflow: http://wiki.openstack.org/GerritWorkflow
+.. _GerritWorkflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow

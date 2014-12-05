@@ -34,9 +34,9 @@ to get more information on setting up your accounts.
 
 .. _Launchpad: http://launchpad.net/
 .. _Gerrit: http://review.openstack.org/
-.. _`Contributors License Agreement`: https://wiki.openstack.org/wiki/How_To_Contribute#Contributor_License_Agreement
+.. _`Contributors License Agreement`: http://docs.openstack.org/infra/manual/developers.html#account-setup
 .. _`join the OpenStack Foundation`: http://openstack.org/join
-.. _`Gerrit Workflow's account setup`: https://wiki.openstack.org/wiki/Gerrit_Workflow#Account_Setup
+.. _`Gerrit Workflow's account setup`: http://docs.openstack.org/infra/manual/developers.html#account-setup
 
 SSH setup
 #########
@@ -158,7 +158,7 @@ convention when working on bugs is to name the branch bug/BUG-NUMBER
 
 Read more about the commit syntax in the `Gerrit workflow`_ wiki.
 
-.. _`Gerrit workflow`: https://wiki.openstack.org/wiki/Gerrit_Workflow
+.. _`Gerrit workflow`: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Design principles
 #################
