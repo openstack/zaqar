@@ -1,4 +1,5 @@
 # Copyright (c) 2013 Red Hat, Inc.
+# Copyright (c) 2014 Catalyst IT Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -927,6 +928,127 @@ class ClaimControllerTest(ControllerBaseTest):
                                    'illformed',
                                    {'ttl': 40},
                                    project=self.project)
+
+
+class SubscriptionControllerTest(ControllerBaseTest):
+    """Subscriptions Controller base tests.
+
+    """
+    queue_name = 'test_queue'
+    controller_base_class = storage.Subscription
+
+    def setUp(self):
+        super(SubscriptionControllerTest, self).setUp()
+        self.subscription_controller = self.driver.subscription_controller
+
+        # Lets create a queue as the source of subscription
+        self.queue_controller = self.driver.queue_controller
+        self.queue_controller.create(self.queue_name, project=self.project)
+
+        self.source = self.queue_name
+        self.subscriber = 'http://trigger.me'
+        self.ttl = 600
+        self.options = {'uri': 'http://fake.com'}
+
+    def tearDown(self):
+        self.queue_controller.delete(self.queue_name, project=self.project)
+        super(SubscriptionControllerTest, self).tearDown()
+
+    def test_list(self):
+        for s in six.moves.xrange(15):
+            subscriber = 'http://fake_{0}'.format(s)
+            self.subscription_controller.create(self.source,
+                                                subscriber,
+                                                self.ttl,
+                                                self.options,
+                                                project=self.project)
+
+        interaction = self.subscription_controller.list(self.source,
+                                                        project=self.project)
+        subscriptions = list(next(interaction))
+
+        self.assertEqual(all(map(lambda s: 'source' in s and 'subscriber' in s,
+                                 subscriptions)), True)
+        self.assertEqual(len(subscriptions), 10)
+
+        interaction = (self.subscription_controller.list(self.source,
+                                                         project=self.project,
+                       marker=next(interaction)))
+        subscriptions = list(next(interaction))
+
+        self.assertEqual(all(map(lambda s: 'source' in s and 'subscriber' in s,
+                                 subscriptions)), True)
+        self.assertEqual(len(subscriptions), 5)
+
+    def test_get_raises_if_subscription_does_not_exist(self):
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.get,
+                          self.queue_name,
+                          'notexists',
+                          project=self.project)
+
+    def test_lifecycle(self):
+        s_id = self.subscription_controller.create(self.source,
+                                                   self.subscriber,
+                                                   self.ttl,
+                                                   self.options,
+                                                   project=self.project)
+
+        subscription = self.subscription_controller.get(self.queue_name,
+                                                        s_id,
+                                                        self.project)
+
+        self.assertEqual(self.source,
+                         subscription['source'])
+        self.assertEqual(self.subscriber,
+                         subscription['subscriber'])
+
+        exist = self.subscription_controller.exists(self.queue_name,
+                                                    s_id,
+                                                    self.project)
+
+        self.assertTrue(exist)
+
+        self.subscription_controller.update(self.queue_name,
+                                            s_id,
+                                            project=self.project,
+                                            subscriber='http://a.com'
+                                            )
+
+        updated = self.subscription_controller.get(self.queue_name,
+                                                   s_id,
+                                                   self.project)
+
+        self.assertEqual('http://a.com', updated['subscriber'])
+
+        self.subscription_controller.delete(self.queue_name,
+                                            s_id, project=self.project)
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.get,
+                          self.queue_name, s_id)
+
+    def test_create_existed(self):
+        self.subscription_controller.create(self.source,
+                                            self.subscriber,
+                                            self.ttl,
+                                            self.options,
+                                            project=self.project)
+
+        s_id = self.subscription_controller.create(self.source,
+                                                   self.subscriber,
+                                                   self.ttl,
+                                                   self.options,
+                                                   project=self.project)
+        self.assertIsNone(s_id)
+
+    def test_nonexist_source(self):
+        self.assertRaises(errors.QueueDoesNotExist,
+                          self.subscription_controller.create,
+                          'fake_queue_name',
+                          self.subscriber,
+                          self.ttl,
+                          self.options,
+                          self.project)
 
 
 class PoolsControllerTest(ControllerBaseTest):

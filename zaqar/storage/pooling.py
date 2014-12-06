@@ -121,6 +121,10 @@ class DataDriver(storage.DataDriverBase):
     def claim_controller(self):
         return ClaimController(self._pool_catalog)
 
+    @decorators.lazy_property(write=False)
+    def subscription_controller(self):
+        return SubscriptionController(self._pool_catalog)
+
 
 class QueueController(storage.Queue):
     """Routes operations to a queue controller in the appropriate pool.
@@ -345,6 +349,54 @@ class ClaimController(storage.Claim):
         return None
 
 
+class SubscriptionController(storage.Subscription):
+    """Controller to facilitate processing for subscription operations."""
+
+    _resource_name = 'subscription'
+
+    def __init__(self, pool_catalog):
+        super(SubscriptionController, self).__init__(pool_catalog)
+        self._pool_catalog = pool_catalog
+        self._get_controller = self._pool_catalog.get_subscription_controller
+
+    def list(self, queue, project=None, marker=None,
+             limit=storage.DEFAULT_SUBSCRIPTIONS_PER_PAGE):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.list(queue, project=project,
+                                marker=marker, limit=limit)
+
+    def get(self, queue, subscription_id, project=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.get(queue, subscription_id, project=project)
+
+    def create(self, queue, subscriber, ttl, options, project=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.post(queue, subscriber,
+                                ttl, options,
+                                project=project)
+
+    def update(self, queue, subscription_id, project=None, **kwargs):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.update(queue, subscription_id,
+                                  project=project, **kwargs)
+
+    def delete(self, queue, subscription_id, project=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.delete(queue, subscription_id,
+                                  project=project)
+
+    def exists(self, queue, subscription_id, project=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.exists(queue, subscription_id,
+                                  project=project)
+
+
 class Catalog(object):
     """Represents the mapping between queues and pool drivers."""
 
@@ -490,6 +542,21 @@ class Catalog(object):
         """
         target = self.lookup(queue, project)
         return target and target.claim_controller
+
+    def get_subscription_controller(self, queue, project=None):
+        """Lookup the subscription controller for the given queue and project.
+
+        :param queue: Name of the queue for which to find a pool
+        :param project: Project to which the queue belongs, or
+            None to specify the "global" or "generic" project.
+
+        :returns: The subscription controller associated with the data driver
+            for the pool containing (queue, project) or None if this doesn't
+            exist.
+        :rtype: Maybe SubscriptionController
+        """
+        target = self.lookup(queue, project)
+        return target and target.subscription_controller
 
     def lookup(self, queue, project=None):
         """Lookup a pool driver for the given queue and project.

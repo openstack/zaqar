@@ -24,11 +24,13 @@ CatalogueBase = base.CatalogueBase
 Claim = base.Claim
 Message = base.Message
 Queue = base.Queue
+Subscription = base.Subscription
 PoolsBase = base.PoolsBase
 FlavorsBase = base.FlavorsBase
 
 DEFAULT_QUEUES_PER_PAGE = base.DEFAULT_QUEUES_PER_PAGE
 DEFAULT_MESSAGES_PER_PAGE = base.DEFAULT_MESSAGES_PER_PAGE
 DEFAULT_POOLS_PER_PAGE = base.DEFAULT_POOLS_PER_PAGE
+DEFAULT_SUBSCRIPTIONS_PER_PAGE = base.DEFAULT_SUBSCRIPTIONS_PER_PAGE
 
 DEFAULT_MESSAGES_PER_CLAIM = base.DEFAULT_MESSAGES_PER_CLAIM
