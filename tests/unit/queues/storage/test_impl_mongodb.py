@@ -25,15 +25,15 @@ import pymongo.errors
 import six
 from testtools import matchers
 
+from zaqar import bootstrap
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues import bootstrap
-from zaqar.queues import storage
-from zaqar.queues.storage import errors
-from zaqar.queues.storage import mongodb
-from zaqar.queues.storage.mongodb import controllers
-from zaqar.queues.storage.mongodb import options
-from zaqar.queues.storage.mongodb import utils
-from zaqar.queues.storage import pooling
+from zaqar import storage
+from zaqar.storage import errors
+from zaqar.storage import mongodb
+from zaqar.storage.mongodb import controllers
+from zaqar.storage.mongodb import options
+from zaqar.storage.mongodb import utils
+from zaqar.storage import pooling
 from zaqar import tests as testing
 from zaqar.tests.queues.storage import base
 

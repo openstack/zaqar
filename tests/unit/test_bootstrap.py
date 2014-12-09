@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from zaqar import bootstrap
 from zaqar.common import errors
-from zaqar.queues import bootstrap
-from zaqar.queues.storage import pipeline
-from zaqar.queues.storage import pooling
-from zaqar.queues.storage import sqlalchemy
-from zaqar.queues.transport import wsgi
+from zaqar.storage import pipeline
+from zaqar.storage import pooling
+from zaqar.storage import sqlalchemy
 from zaqar.tests import base
+from zaqar.transport import wsgi
 
 
 class TestBootstrap(base.TestBase):

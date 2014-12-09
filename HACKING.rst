@@ -74,11 +74,11 @@ More Import Examples
 
 **INCORRECT** ::
 
-  import zaqar.queues.transport.wsgi as wsgi
+  import zaqar.transport.wsgi as wsgi
 
 **CORRECT** ::
 
-  from zaqar.queues.transport import wsgi
+  from zaqar.transport import wsgi
 
 Docstrings
 ----------

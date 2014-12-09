@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import zaqar.queues.bootstrap
+import zaqar.bootstrap
 import zaqar.version
 
-Bootstrap = zaqar.queues.bootstrap.Bootstrap
+Bootstrap = zaqar.bootstrap.Bootstrap
 
 
 __version__ = zaqar.version.version_info.cached_version_string()

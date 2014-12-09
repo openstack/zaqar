@@ -22,12 +22,12 @@ import redis
 
 from zaqar.common import errors
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues import storage
-from zaqar.queues.storage.redis import controllers
-from zaqar.queues.storage.redis import driver
-from zaqar.queues.storage.redis import messages
-from zaqar.queues.storage.redis import options
-from zaqar.queues.storage.redis import utils
+from zaqar import storage
+from zaqar.storage.redis import controllers
+from zaqar.storage.redis import driver
+from zaqar.storage.redis import messages
+from zaqar.storage.redis import options
+from zaqar.storage.redis import utils
 from zaqar import tests as testing
 from zaqar.tests.queues.storage import base
 

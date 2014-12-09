@@ -2,4 +2,4 @@
 MongoDB Driver
 --------------
 
-.. automodule:: zaqar.queues.storage.mongodb
+.. automodule:: zaqar.storage.mongodb

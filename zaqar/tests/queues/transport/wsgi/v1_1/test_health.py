@@ -19,8 +19,8 @@ import falcon
 import mock
 
 from zaqar.openstack.common import jsonutils
-from zaqar.queues.storage import errors
-import zaqar.queues.storage.mongodb as mongo
+from zaqar.storage import errors
+import zaqar.storage.mongodb as mongo
 from zaqar import tests as testing
 from zaqar.tests.queues.transport.wsgi import base
 

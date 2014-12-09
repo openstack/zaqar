@@ -19,11 +19,11 @@ import six
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
 
-from zaqar.queues.storage import pooling
-from zaqar.queues.storage import sqlalchemy
-from zaqar.queues.storage.sqlalchemy import controllers
-from zaqar.queues.storage.sqlalchemy import tables
-from zaqar.queues.storage.sqlalchemy import utils
+from zaqar.storage import pooling
+from zaqar.storage import sqlalchemy
+from zaqar.storage.sqlalchemy import controllers
+from zaqar.storage.sqlalchemy import tables
+from zaqar.storage.sqlalchemy import utils
 from zaqar import tests as testing
 from zaqar.tests.queues.storage import base
 

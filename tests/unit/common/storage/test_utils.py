@@ -15,8 +15,8 @@
 
 import ddt
 
-from zaqar.queues import bootstrap
-from zaqar.queues.storage import utils
+from zaqar import bootstrap
+from zaqar.storage import utils
 from zaqar import tests as testing
 
 

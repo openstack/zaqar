@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from zaqar.queues import storage
+from zaqar import storage
 
 
 class DataDriver(storage.DataDriverBase):

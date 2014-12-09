@@ -2,7 +2,7 @@
 Transport
 ---------
 
-.. currentmodule:: zaqar.queues.transport.base
+.. currentmodule:: zaqar.transport.base
 
 .. autoclass:: DriverBase
    :noindex:

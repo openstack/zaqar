@@ -19,8 +19,8 @@ from oslo.config import cfg
 import six
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues.storage import pooling
-from zaqar.queues.storage import utils
+from zaqar.storage import pooling
+from zaqar.storage import utils
 from zaqar import tests as testing
 
 

@@ -25,8 +25,8 @@ import six
 from testtools import matchers
 
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.queues import storage
-from zaqar.queues.storage import errors
+from zaqar import storage
+from zaqar.storage import errors
 from zaqar import tests as testing
 from zaqar.tests import helpers
 
