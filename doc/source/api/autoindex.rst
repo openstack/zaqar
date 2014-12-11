@@ -9,15 +9,15 @@
    zaqar.cmd.gc.rst
    zaqar.cmd.server.rst
    zaqar.common.access.rst
-   zaqar.common.api.rst
+   zaqar.common.api.api.rst
+   zaqar.common.api.request.rst
+   zaqar.common.api.response.rst
+   zaqar.common.api.schemas.flavors.rst
+   zaqar.common.api.schemas.pools.rst
    zaqar.common.cli.rst
    zaqar.common.decorators.rst
    zaqar.common.errors.rst
    zaqar.common.pipeline.rst
-   zaqar.common.request.rst
-   zaqar.common.response.rst
-   zaqar.common.schemas.flavors.rst
-   zaqar.common.schemas.pools.rst
    zaqar.common.storage.select.rst
    zaqar.common.transport.wsgi.helpers.rst
    zaqar.common.utils.rst

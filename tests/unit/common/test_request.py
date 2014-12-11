@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from zaqar.common import request
+from zaqar.common.api import request
 from zaqar.tests import base
 
 

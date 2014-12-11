@@ -38,7 +38,7 @@ registered, there is an optional field::
 import falcon
 import jsonschema
 
-from zaqar.common.schemas import pools as schema
+from zaqar.common.api.schemas import pools as schema
 from zaqar.common import utils as common_utils
 from zaqar.openstack.common import log
 from zaqar.storage import errors

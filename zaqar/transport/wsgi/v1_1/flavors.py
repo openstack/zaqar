@@ -16,7 +16,7 @@
 import falcon
 import jsonschema
 
-from zaqar.common.schemas import flavors as schema
+from zaqar.common.api.schemas import flavors as schema
 from zaqar.common import utils as common_utils
 from zaqar.i18n import _
 from zaqar.openstack.common import log

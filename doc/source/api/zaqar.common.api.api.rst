@@ -1,7 +1,7 @@
-The :mod:`zaqar.common.request` module
+The :mod:`zaqar.common.api.api` module
 =======================================
 
-.. automodule:: zaqar.common.request
+.. automodule:: zaqar.common.api.api
   :members:
   :undoc-members:
   :show-inheritance:
