@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from osprofiler import profiler
 import redis
 import redis.sentinel
 from six.moves import urllib
@@ -198,15 +199,31 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return controllers.MessageController(self)
+        controller = controllers.MessageController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("redis_message_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return controllers.ClaimController(self)
+        controller = controllers.ClaimController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("redis_claim_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        return controllers.SubscriptionController(self)
+        controller = controllers.SubscriptionController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("mongodb_subscription_"
+                                      "controller")(controller)
+        else:
+            return controller
 
 
 class ControlDriver(storage.ControlDriverBase):
@@ -229,7 +246,13 @@ class ControlDriver(storage.ControlDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        return controllers.QueueController(self)
+        controller = controllers.QueueController(self)
+        if (self.conf.profiler.enabled and
+                (self.conf.profiler.trace_message_store or
+                    self.conf.profiler.trace_management_store)):
+            return profiler.trace_cls("redis_queue_controller")(controller)
+        else:
+            return controller
 
     @property
     def pools_controller(self):

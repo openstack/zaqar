@@ -16,6 +16,7 @@ import copy
 
 from oslo_config import cfg
 from oslo_log import log
+from osprofiler import profiler
 import six
 from stevedore import driver
 
@@ -139,7 +140,14 @@ def load_storage_driver(conf, cache, storage_type=None,
                                    invoke_on_load=True,
                                    invoke_args=_invoke_args)
 
-        return mgr.driver
+        if conf.profiler.enabled:
+            if ((mode == "control" and conf.profiler.trace_management_store) or
+                    (mode == "data" and conf.profiler.trace_message_store)):
+                trace_name = '{0}_{1}_driver'.format(storage_type, mode)
+                return profiler.trace_cls(trace_name,
+                                          trace_private=True)(mgr.driver)
+        else:
+            return mgr.driver
 
     except Exception as exc:
         LOG.error(_LE('Failed to load "{}" driver for "{}"').format(

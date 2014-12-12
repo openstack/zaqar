@@ -17,6 +17,7 @@
 
 import ssl
 
+from osprofiler import profiler
 import pymongo
 import pymongo.errors
 
@@ -184,15 +185,31 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return controllers.MessageController(self)
+        controller = controllers.MessageController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("mongodb_message_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return controllers.ClaimController(self)
+        controller = controllers.ClaimController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("mongodb_claim_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        return controllers.SubscriptionController(self)
+        controller = controllers.SubscriptionController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("mongodb_subscription_"
+                                      "controller")(controller)
+        else:
+            return controller
 
 
 class FIFODataDriver(DataDriver):
@@ -206,7 +223,12 @@ class FIFODataDriver(DataDriver):
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return controllers.FIFOMessageController(self)
+        controller = controllers.FIFOMessageController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("mongodb_message_controller")(controller)
+        else:
+            return controller
 
 
 class ControlDriver(storage.ControlDriverBase):
@@ -245,16 +267,38 @@ class ControlDriver(storage.ControlDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        return controllers.QueueController(self)
+        controller = controllers.QueueController(self)
+        if (self.conf.profiler.enabled and
+                (self.conf.profiler.trace_message_store or
+                    self.conf.profiler.trace_management_store)):
+            return profiler.trace_cls("mongodb_queues_controller")(controller)
+        else:
+            return controller
 
     @property
     def pools_controller(self):
-        return controllers.PoolsController(self)
+        controller = controllers.PoolsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("mongodb_pools_controller")(controller)
+        else:
+            return controller
 
     @property
     def catalogue_controller(self):
-        return controllers.CatalogueController(self)
+        controller = controllers.CatalogueController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("mongodb_catalogue_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @property
     def flavors_controller(self):
-        return controllers.FlavorsController(self)
+        controller = controllers.FlavorsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("mongodb_flavors_controller")(controller)
+        else:
+            return controller

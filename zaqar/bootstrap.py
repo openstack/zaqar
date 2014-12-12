@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import socket
+
 from oslo_log import log
+from osprofiler import opts as profiler_opts
+from osprofiler import profiler
 from stevedore import driver
 
 from zaqar.api import handler
@@ -22,6 +26,7 @@ from zaqar.common import configs
 from zaqar.common import consts
 from zaqar.common import decorators
 from zaqar.common import errors
+from zaqar import profile
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
@@ -45,6 +50,11 @@ class Bootstrap(object):
 
         for group, opts in configs._config_options():
             self.conf.register_opts(opts, group=group)
+        profiler_opts.set_defaults(self.conf)
+
+        # TODO(wangxiyuan): Now the OSprofiler feature in Zaqar only support
+        # wsgi. Websockt part will be added in the future.
+        profile.setup(self.conf, 'Zaqar-server', socket.gethostname())
 
         self.driver_conf = self.conf[configs._DRIVER_GROUP]
 
@@ -62,6 +72,9 @@ class Bootstrap(object):
             LOG.debug(u'Storage pooling enabled')
             storage_driver = pooling.DataDriver(self.conf, self.cache,
                                                 self.control)
+            if self.conf.profiler.enabled:
+                storage_driver = profiler.trace_cls("pooling_data_"
+                                                    "driver")(storage_driver)
         else:
             storage_driver = storage_utils.load_storage_driver(
                 self.conf, self.cache, control_driver=self.control)

@@ -71,9 +71,22 @@ _NOTIFICATION_OPTIONS = (
 
 _NOTIFICATION_GROUP = 'notification'
 
+_PROFILER_OPTIONS = [
+    cfg.BoolOpt("trace_wsgi_transport", default=False,
+                help="If False doesn't trace any transport requests."
+                     "Please note that it doesn't work for websocket now."),
+    cfg.BoolOpt("trace_message_store", default=False,
+                help="If False doesn't trace any message store requests."),
+    cfg.BoolOpt("trace_management_store", default=False,
+                help="If False doesn't trace any management store requests.")
+]
+
+_PROFILER_GROUP = "profiler"
+
 
 def _config_options():
     return [(None, _GENERAL_OPTIONS),
             (_DRIVER_GROUP, _DRIVER_OPTIONS),
             (_SIGNED_URL_GROUP, _SIGNED_URL_OPTIONS),
-            (_NOTIFICATION_GROUP, _NOTIFICATION_OPTIONS)]
+            (_NOTIFICATION_GROUP, _NOTIFICATION_OPTIONS),
+            (_PROFILER_GROUP, _PROFILER_OPTIONS)]

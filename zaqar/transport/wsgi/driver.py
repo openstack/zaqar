@@ -26,6 +26,7 @@ import socket
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
 from zaqar.i18n import _
+from zaqar import profile
 from zaqar import transport
 from zaqar.transport import acl
 from zaqar.transport import auth
@@ -138,8 +139,12 @@ class Driver(transport.DriverBase):
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""
 
-        auth_app = self.app
+        # NOTE(zhiyan): Install Profiler
+        if (self._conf.profiler.enabled and
+                self._conf.profiler.trace_wsgi_transport):
+            self.app = profile.install_wsgi_tracer(self.app, self._conf)
 
+        auth_app = self.app
         # NOTE(flaper87): Install Auth
         if self._conf.auth_strategy:
             strategy = auth.strategy(self._conf.auth_strategy)

@@ -18,6 +18,7 @@ import os
 import fixtures
 from oslo_config import cfg
 from oslo_log import log
+from osprofiler import opts
 import testtools
 
 from zaqar.common import configs
@@ -62,6 +63,9 @@ class TestBase(testtools.TestCase):
                                 group=configs._NOTIFICATION_GROUP)
         self.conf.register_opts(configs._SIGNED_URL_OPTIONS,
                                 group=configs._SIGNED_URL_GROUP)
+        opts.set_defaults(self.conf)
+        self.conf.register_opts(configs._PROFILER_OPTIONS,
+                                group=configs._PROFILER_GROUP)
 
         self.mongodb_url = os.environ.get('ZAQAR_TEST_MONGODB_URL',
                                           'mongodb://127.0.0.1:27017')

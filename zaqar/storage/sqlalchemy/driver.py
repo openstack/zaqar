@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from osprofiler import profiler
+from osprofiler import sqlalchemy as sa_tracer
 import sqlalchemy as sa
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
@@ -60,6 +62,11 @@ class ControlDriver(storage.ControlDriverBase):
                             self._mysql_on_connect)
 
         tables.metadata.create_all(engine, checkfirst=True)
+
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            sa_tracer.add_tracing(sa, engine, "db")
+
         return engine
 
     # TODO(cpp-cabrera): expose connect/close as a context manager
@@ -81,20 +88,41 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def pools_controller(self):
-        return controllers.PoolsController(self)
+        controller = controllers.PoolsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("sqlalchemy_pools_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @property
     def queue_controller(self):
-        return controllers.QueueController(self)
+        controller = controllers.QueueController(self)
+        if (self.conf.profiler.enabled and
+                (self.conf.profiler.trace_message_store or
+                    self.conf.profiler.trace_management_store)):
+            return profiler.trace_cls("sqlalchemy_queue_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @property
     def catalogue_controller(self):
-        return controllers.CatalogueController(self)
+        controller = controllers.CatalogueController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("sqlalchemy_catalogue_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @property
     def flavors_controller(self):
-        return controllers.FlavorsController(self)
-
-    @property
-    def subscriptions_controller(self):
-        pass
+        controller = controllers.FlavorsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("sqlalchemy_flavors_"
+                                      "controller")(controller)
+        else:
+            return controller

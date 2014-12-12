@@ -18,6 +18,7 @@ import itertools
 
 from oslo_config import cfg
 from oslo_log import log
+from osprofiler import profiler
 
 from zaqar.common import decorators
 from zaqar.common import errors as cerrors
@@ -74,7 +75,11 @@ class DataDriver(storage.DataDriverBase):
 
     def __init__(self, conf, cache, control, control_driver=None):
         super(DataDriver, self).__init__(conf, cache, control_driver)
-        self._pool_catalog = Catalog(conf, cache, control)
+        catalog = Catalog(conf, cache, control)
+        if self.conf.profiler.enabled:
+            catalog = profiler.trace_cls("pooling_catalogue_"
+                                         "controller")(catalog)
+        self._pool_catalog = catalog
 
     @property
     def capabilities(self):
@@ -121,19 +126,36 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        return QueueController(self._pool_catalog)
+        controller = QueueController(self._pool_catalog)
+        if self.conf.profiler.enabled:
+            return profiler.trace_cls("pooling_queue_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return MessageController(self._pool_catalog)
+        controller = MessageController(self._pool_catalog)
+        if self.conf.profiler.enabled:
+            return profiler.trace_cls("pooling_message_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return ClaimController(self._pool_catalog)
+        controller = ClaimController(self._pool_catalog)
+        if self.conf.profiler.enabled:
+            return profiler.trace_cls("pooling_claim_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        return SubscriptionController(self._pool_catalog)
+        controller = SubscriptionController(self._pool_catalog)
+        if self.conf.profiler.enabled:
+            return (profiler.trace_cls("pooling_subscription_controller")
+                    (controller))
+        else:
+            return controller
 
 
 class QueueController(storage.Queue):

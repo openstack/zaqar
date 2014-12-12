@@ -35,11 +35,14 @@ class TestUtils(testing.TestBase):
 
     @testing.requires_redis
     def test_can_connect_succeeds_if_good_uri_redis(self):
-        self.assertTrue(utils.can_connect('redis://localhost'))
-        self.assertTrue(utils.can_connect('redis://localhost:6379'))
+        self.assertTrue(utils.can_connect('redis://localhost',
+                                          conf=self.conf))
+        self.assertTrue(utils.can_connect('redis://localhost:6379',
+                                          conf=self.conf))
 
     def test_can_connect_fails_if_bad_uri_missing_schema(self):
-        self.assertFalse(utils.can_connect('localhost:27017'))
+        self.assertFalse(utils.can_connect('localhost:27017',
+                                           conf=self.conf))
 
     @testing.requires_mongodb
     def test_can_connect_fails_if_bad_uri_mongodb(self):
@@ -53,5 +56,7 @@ class TestUtils(testing.TestBase):
 
     @testing.requires_redis
     def test_can_connect_fails_if_bad_uri_redis(self):
-        self.assertFalse(utils.can_connect('redis://localhost:8080'))
-        self.assertFalse(utils.can_connect('redis://example.com:6379'))
+        self.assertFalse(utils.can_connect('redis://localhost:8080',
+                                           conf=self.conf))
+        self.assertFalse(utils.can_connect('redis://example.com:6379',
+                                           conf=self.conf))

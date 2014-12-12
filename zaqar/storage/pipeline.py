@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from osprofiler import profiler
 from stevedore import driver
 from stevedore import extension
 
@@ -85,7 +86,7 @@ def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
     return pipeline
 
 
-def _get_builtin_entry_points(resource_name, storage, control_driver):
+def _get_builtin_entry_points(resource_name, storage, control_driver, conf):
     # Load builtin stages
     builtin_entry_points = []
 
@@ -104,7 +105,9 @@ def _get_builtin_entry_points(resource_name, storage, control_driver):
 
     for ext in extensions.extensions:
         builtin_entry_points.append(ext.obj)
-
+    if conf.profiler.enabled and conf.profiler.trace_message_store:
+        return (profiler.trace_cls("stages_controller")
+                (builtin_entry_points))
     return builtin_entry_points
 
 
@@ -138,7 +141,7 @@ class DataDriver(base.DataDriverBase):
     @decorators.lazy_property(write=False)
     def queue_controller(self):
         stages = _get_builtin_entry_points('queue', self._storage,
-                                           self.control_driver)
+                                           self.control_driver, self.conf)
         stages.extend(_get_storage_pipeline('queue', self.conf))
         stages.append(self._storage.queue_controller)
         return common.Pipeline(stages)
@@ -146,7 +149,7 @@ class DataDriver(base.DataDriverBase):
     @decorators.lazy_property(write=False)
     def message_controller(self):
         stages = _get_builtin_entry_points('message', self._storage,
-                                           self.control_driver)
+                                           self.control_driver, self.conf)
         kwargs = {'subscription_controller':
                   self._storage.subscription_controller,
                   'max_notifier_workers':
@@ -160,7 +163,7 @@ class DataDriver(base.DataDriverBase):
     @decorators.lazy_property(write=False)
     def claim_controller(self):
         stages = _get_builtin_entry_points('claim', self._storage,
-                                           self.control_driver)
+                                           self.control_driver, self.conf)
         stages.extend(_get_storage_pipeline('claim', self.conf))
         stages.append(self._storage.claim_controller)
         return common.Pipeline(stages)
@@ -168,7 +171,7 @@ class DataDriver(base.DataDriverBase):
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
         stages = _get_builtin_entry_points('subscription', self._storage,
-                                           self.control_driver)
+                                           self.control_driver, self.conf)
         stages.extend(_get_storage_pipeline('subscription', self.conf))
         stages.append(self._storage.subscription_controller)
         return common.Pipeline(stages)
