@@ -86,8 +86,8 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def list(self, project=None, marker=None,
-             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project=None, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
         client = self._client
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
         marker = utils.scope_queue_name(marker, project)
@@ -109,12 +109,12 @@ class QueueController(storage.Queue):
         yield utils.QueueListCursor(self._client, cursor, denormalizer)
         yield marker_next and marker_next['next']
 
-    def get(self, name, project=None):
+    def _get(self, name, project=None):
         """Obtain the metadata from the queue."""
         return self.get_metadata(name, project)
 
     @utils.raises_conn_error
-    def create(self, name, metadata=None, project=None):
+    def _create(self, name, metadata=None, project=None):
         # TODO(prashanthr_): Implement as a lua script.
         queue_key = utils.scope_queue_name(name, project)
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
@@ -144,7 +144,7 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def exists(self, name, project=None):
+    def _exists(self, name, project=None):
         # TODO(prashanthr_): Cache this lookup
         queue_key = utils.scope_queue_name(name, project)
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
@@ -175,7 +175,7 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def delete(self, name, project=None):
+    def _delete(self, name, project=None):
         queue_key = utils.scope_queue_name(name, project)
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
 
@@ -190,7 +190,7 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def stats(self, name, project=None):
+    def _stats(self, name, project=None):
         if not self.exists(name, project=project):
             raise errors.QueueDoesNotExist(name, project)
 

@@ -188,14 +188,14 @@ class QueueController(storage.Queue):
     # Interface
     # ----------------------------------------------------------------------
 
-    def get(self, name, project=None):
+    def _get(self, name, project=None):
         try:
             return self.get_metadata(name, project)
         except errors.QueueDoesNotExist:
             return {}
 
-    def list(self, project=None, marker=None,
-             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project=None, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         query = utils.scoped_query(marker, project)
 
@@ -229,7 +229,7 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     # @utils.retries_on_autoreconnect
-    def create(self, name, metadata=None, project=None):
+    def _create(self, name, metadata=None, project=None):
         # NOTE(flaper87): If the connection fails after it was called
         # and we retry to insert the queue, we could end up returning
         # `False` because of the `DuplicatedKeyError` although the
@@ -259,7 +259,7 @@ class QueueController(storage.Queue):
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
     @decorators.caches(_queue_exists_key, _QUEUE_CACHE_TTL, lambda v: v)
-    def exists(self, name, project=None):
+    def _exists(self, name, project=None):
         query = _get_scoped_query(name, project)
         return self._collection.find_one(query) is not None
 
@@ -276,14 +276,14 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
-    @exists.purges
-    def delete(self, name, project=None):
+    @_exists.purges
+    def _delete(self, name, project=None):
         self.driver.message_controller._purge_queue(name, project)
         self._collection.remove(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
-    def stats(self, name, project=None):
+    def _stats(self, name, project=None):
         if not self.exists(name, project=project):
             raise errors.QueueDoesNotExist(name, project)
 

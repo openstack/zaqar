@@ -69,28 +69,28 @@ class QueueController(storage.Queue):
     def __init__(self, driver):
         pass
 
-    def list(self, project=None):
+    def _list(self, project=None):
         raise NotImplementedError()
 
-    def get(self, name, project=None):
+    def _get(self, name, project=None):
         raise NotImplementedError()
 
     def get_metadata(self, name, project=None):
         raise NotImplementedError()
 
-    def create(self, name, metadata=None, project=None):
+    def _create(self, name, metadata=None, project=None):
         raise NotImplementedError()
 
-    def exists(self, name, project=None):
+    def _exists(self, name, project=None):
         raise NotImplementedError()
 
     def set_metadata(self, name, metadata, project=None):
         raise NotImplementedError()
 
-    def delete(self, name, project=None):
+    def _delete(self, name, project=None):
         raise NotImplementedError()
 
-    def stats(self, name, project=None):
+    def _stats(self, name, project=None):
         raise NotImplementedError()
 
 

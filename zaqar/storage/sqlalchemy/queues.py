@@ -23,8 +23,8 @@ from zaqar.storage.sqlalchemy import utils
 
 class QueueController(storage.Queue):
 
-    def list(self, project, marker=None,
-             limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         if project is None:
             project = ''
@@ -68,13 +68,13 @@ class QueueController(storage.Queue):
         except utils.NoResult:
             raise errors.QueueDoesNotExist(name, project)
 
-    def get(self, name, project=None):
+    def _get(self, name, project=None):
         try:
             return self.get_metadata(name, project)
         except errors.QueueDoesNotExist:
             return {}
 
-    def create(self, name, metadata=None, project=None):
+    def _create(self, name, metadata=None, project=None):
         if project is None:
             project = ''
 
@@ -89,7 +89,7 @@ class QueueController(storage.Queue):
 
         return res.rowcount == 1
 
-    def exists(self, name, project):
+    def _exists(self, name, project):
         if project is None:
             project = ''
 
@@ -120,7 +120,7 @@ class QueueController(storage.Queue):
         finally:
             res.close()
 
-    def delete(self, name, project):
+    def _delete(self, name, project):
         if project is None:
             project = ''
 
@@ -129,7 +129,7 @@ class QueueController(storage.Queue):
             tables.Queues.c.name == name))
         self.driver.run(dlt)
 
-    def stats(self, name, project):
+    def _stats(self, name, project):
         if project is None:
             project = ''
 

@@ -27,6 +27,7 @@ import six
 
 import zaqar.openstack.common.log as logging
 
+
 DEFAULT_QUEUES_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_PAGE = 10
 DEFAULT_POOLS_PER_PAGE = 10
@@ -279,7 +280,6 @@ class Queue(ControllerBase):
     numbers of queues.
     """
 
-    @abc.abstractmethod
     def list(self, project=None, marker=None,
              limit=DEFAULT_QUEUES_PER_PAGE, detailed=False):
         """Base method for listing queues.
@@ -292,9 +292,10 @@ class Queue(ControllerBase):
         :returns: An iterator giving a sequence of queues
             and the marker of the next page.
         """
-        raise NotImplementedError
+        return self._list(project, marker, limit, detailed)
 
-    @abc.abstractmethod
+    _list = abc.abstractmethod(lambda x: None)
+
     def get(self, name, project=None):
         """Base method for queue metadata retrieval.
 
@@ -304,7 +305,9 @@ class Queue(ControllerBase):
         :returns: Dictionary containing queue metadata
         :raises: DoesNotExist
         """
-        raise NotImplementedError
+        return self._get(name, project)
+
+    _get = abc.abstractmethod(lambda x: None)
 
     def get_metadata(self, name, project=None):
         """Base method for queue metadata retrieval.
@@ -314,28 +317,6 @@ class Queue(ControllerBase):
 
         :returns: Dictionary containing queue metadata
         :raises: DoesNotExist
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def create(self, name, metadata=None, project=None):
-        """Base method for queue creation.
-
-        :param name: The queue name
-        :param project: Project id
-        :returns: True if a queue was created and False
-            if it was updated.
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def exists(self, name, project=None):
-        """Base method for testing queue existence.
-
-        :param name: The queue name
-        :param project: Project id
-        :returns: True if a queue exists and False
-            if it does not.
         """
         raise NotImplementedError
 
@@ -349,16 +330,40 @@ class Queue(ControllerBase):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
+    def create(self, name, metadata=None, project=None):
+        """Base method for queue creation.
+
+        :param name: The queue name
+        :param project: Project id
+        :returns: True if a queue was created and False
+            if it was updated.
+        """
+        return self._create(name, metadata, project)
+
+    _create = abc.abstractmethod(lambda x: None)
+
+    def exists(self, name, project=None):
+        """Base method for testing queue existence.
+
+        :param name: The queue name
+        :param project: Project id
+        :returns: True if a queue exists and False
+            if it does not.
+        """
+        return self._exists(name, project)
+
+    _exists = abc.abstractmethod(lambda x: None)
+
     def delete(self, name, project=None):
         """Base method for deleting a queue.
 
         :param name: The queue name
         :param project: Project id
         """
-        raise NotImplementedError
+        return self._delete(name, project)
 
-    @abc.abstractmethod
+    _delete = abc.abstractmethod(lambda x: None)
+
     def stats(self, name, project=None):
         """Base method for queue stats.
 
@@ -367,7 +372,9 @@ class Queue(ControllerBase):
         :returns: Dictionary with the
             queue stats
         """
-        raise NotImplementedError
+        return self._stats(name, project)
+
+    _stats = abc.abstractmethod(lambda x: None)
 
 
 @six.add_metaclass(abc.ABCMeta)
