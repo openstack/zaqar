@@ -72,7 +72,7 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+        self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
 
         conn = self.connection
         server_version = conn.server_info()['version']
@@ -188,10 +188,10 @@ class ControlDriver(storage.ControlDriverBase):
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(options.MONGODB_OPTIONS,
-                                group=options.MONGODB_GROUP)
+        self.conf.register_opts(options.MANAGEMENT_MONGODB_OPTIONS,
+                                group=options.MANAGEMENT_MONGODB_GROUP)
 
-        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+        self.mongodb_conf = self.conf[options.MANAGEMENT_MONGODB_GROUP]
 
     @decorators.lazy_property(write=False)
     def connection(self):

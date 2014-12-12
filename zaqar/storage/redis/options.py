@@ -16,9 +16,13 @@
 
 from oslo.config import cfg
 
-
-REDIS_OPTIONS = (
+_deprecated_group = 'drivers:storage:redis'
+# options common to management and message storage
+_COMMON_REDIS_OPTIONS = (
     cfg.StrOpt('uri', default="redis://127.0.0.1:6379",
+               deprecated_opts=[cfg.DeprecatedOpt(
+                                'uri',
+                                group=_deprecated_group), ],
                help=('Redis connection URI, taking one of three forms. '
                      'For a direct connection to a Redis server, use '
                      'the form "redis://host[:port][?options]", where '
@@ -40,17 +44,28 @@ REDIS_OPTIONS = (
                      '"socket_timeout" defaults to 0.1 seconds.')),
 
     cfg.IntOpt('max_reconnect_attempts', default=10,
+               deprecated_opts=[cfg.DeprecatedOpt(
+                                'max_reconnect_attempts',
+                                group=_deprecated_group), ],
                help=('Maximum number of times to retry an operation that '
                      'failed due to a redis node failover.')),
 
     cfg.FloatOpt('reconnect_sleep', default=1.0,
+                 deprecated_opts=[cfg.DeprecatedOpt(
+                                  'reconnect_sleep',
+                                  group=_deprecated_group), ],
                  help=('Base sleep interval between attempts to reconnect '
                        'after a redis node failover. '))
 
 )
 
-REDIS_GROUP = 'drivers:storage:redis'
+MANAGEMENT_REDIS_OPTIONS = _COMMON_REDIS_OPTIONS
+MESSAGE_REDIS_OPTIONS = _COMMON_REDIS_OPTIONS
+
+MANAGEMENT_REDIS_GROUP = 'drivers:management_store:redis'
+MESSAGE_REDIS_GROUP = 'drivers:message_store:redis'
 
 
 def _config_options():
-    return [(REDIS_GROUP, REDIS_OPTIONS)]
+    return [(MANAGEMENT_REDIS_GROUP, MANAGEMENT_REDIS_OPTIONS),
+            (MESSAGE_REDIS_GROUP, MESSAGE_REDIS_OPTIONS)]

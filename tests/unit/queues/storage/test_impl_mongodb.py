@@ -47,7 +47,9 @@ class MongodbSetupMixin(object):
             self.driver.connection.drop_database(db)
 
     def _prepare_conf(self):
-        self.config(options.MONGODB_GROUP,
+        self.config(options.MESSAGE_MONGODB_GROUP,
+                    database=uuid.uuid4().hex)
+        self.config(options.MANAGEMENT_MONGODB_GROUP,
                     database=uuid.uuid4().hex)
 
 
@@ -58,10 +60,10 @@ class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
     def setUp(self):
         super(MongodbUtilsTest, self).setUp()
 
-        self.conf.register_opts(options.MONGODB_OPTIONS,
-                                group=options.MONGODB_GROUP)
+        self.conf.register_opts(options.MESSAGE_MONGODB_OPTIONS,
+                                group=options.MESSAGE_MONGODB_GROUP)
 
-        self.mongodb_conf = self.conf[options.MONGODB_GROUP]
+        self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
 
         MockDriver = collections.namedtuple('MockDriver', 'mongodb_conf')
 

@@ -151,7 +151,7 @@ class DataDriver(storage.DataDriverBase):
 
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
-        self.redis_conf = self.conf[options.REDIS_GROUP]
+        self.redis_conf = self.conf[options.MESSAGE_REDIS_GROUP]
 
         server_version = self.connection.info()['redis_version']
         if tuple(map(int, server_version.split('.'))) < (2, 6):
@@ -212,10 +212,10 @@ class ControlDriver(storage.ControlDriverBase):
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(options.REDIS_OPTIONS,
-                                group=options.REDIS_GROUP)
+        self.conf.register_opts(options.MANAGEMENT_REDIS_OPTIONS,
+                                group=options.MANAGEMENT_REDIS_GROUP)
 
-        self.redis_conf = self.conf[options.REDIS_GROUP]
+        self.redis_conf = self.conf[options.MANAGEMENT_REDIS_GROUP]
 
     @decorators.lazy_property(write=False)
     def connection(self):

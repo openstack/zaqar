@@ -39,7 +39,7 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
 
-        self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
+        self.sqlalchemy_conf = self.conf[options.MESSAGE_SQLALCHEMY_GROUP]
         LOG.warn(_('sqlalchemy\'s data plane driver will be removed during '
                    'the next release. Please, consider moving your data to '
                    'one of the other supported drivers.'))
@@ -158,9 +158,9 @@ class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
-        self.conf.register_opts(options.SQLALCHEMY_OPTIONS,
-                                group=options.SQLALCHEMY_GROUP)
-        self.sqlalchemy_conf = self.conf[options.SQLALCHEMY_GROUP]
+        self.conf.register_opts(options.MANAGEMENT_SQLALCHEMY_OPTIONS,
+                                group=options.MANAGEMENT_SQLALCHEMY_GROUP)
+        self.sqlalchemy_conf = self.conf[options.MANAGEMENT_SQLALCHEMY_GROUP]
 
     @decorators.lazy_property(write=False)
     def engine(self, *args, **kwargs):
