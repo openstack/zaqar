@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from stevedore import driver
 
+from zaqar.api import handler
 from zaqar.common import decorators
 from zaqar.common import errors
 from zaqar.i18n import _
@@ -24,6 +25,7 @@ from zaqar.openstack.common import log
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
+from zaqar.transport import validation
 
 LOG = log.getLogger(__name__)
 
@@ -93,6 +95,12 @@ class Bootstrap(object):
             self.conf.unreliable = True
 
     @decorators.lazy_property(write=False)
+    def api(self):
+        LOG.debug(u'Loading API handler')
+        validate = validation.Validator(self.conf)
+        return handler.Handler(self.storage, self.control, validate)
+
+    @decorators.lazy_property(write=False)
     def storage(self):
         LOG.debug(u'Loading storage driver')
 
@@ -129,12 +137,16 @@ class Bootstrap(object):
         transport_name = self.driver_conf.transport
         LOG.debug(u'Loading transport driver: %s', transport_name)
 
-        args = [
-            self.conf,
-            self.storage,
-            self.cache,
-            self.control,
-        ]
+        # FIXME(vkmc): Find a better way to init args
+        if transport_name == 'websocket':
+            args = [self.conf, self.api, self.cache]
+        else:
+            args = [
+                self.conf,
+                self.storage,
+                self.cache,
+                self.control,
+            ]
 
         try:
             mgr = driver.DriverManager('zaqar.transport',
