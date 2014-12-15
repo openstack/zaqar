@@ -2,196 +2,99 @@
    :maxdepth: 1
 
    zaqar.api.v1_1.request.rst
-   zaqar.api.v1_1.request.rst
-   zaqar.api.v1_1.response.rst
    zaqar.api.v1_1.response.rst
    zaqar.api.v1.request.rst
-   zaqar.api.v1.request.rst
-   zaqar.api.v1.response.rst
    zaqar.api.v1.response.rst
    zaqar.bootstrap.rst
-   zaqar.bootstrap.rst
-   zaqar.cmd.gc.rst
    zaqar.cmd.gc.rst
    zaqar.cmd.server.rst
-   zaqar.cmd.server.rst
-   zaqar.common.access.rst
    zaqar.common.access.rst
    zaqar.common.api.rst
-   zaqar.common.api.rst
-   zaqar.common.cli.rst
    zaqar.common.cli.rst
    zaqar.common.decorators.rst
-   zaqar.common.decorators.rst
-   zaqar.common.errors.rst
    zaqar.common.errors.rst
    zaqar.common.pipeline.rst
-   zaqar.common.pipeline.rst
-   zaqar.common.request.rst
    zaqar.common.request.rst
    zaqar.common.response.rst
-   zaqar.common.response.rst
-   zaqar.common.schemas.flavors.rst
    zaqar.common.schemas.flavors.rst
    zaqar.common.schemas.pools.rst
-   zaqar.common.schemas.pools.rst
-   zaqar.common.storage.select.rst
    zaqar.common.storage.select.rst
    zaqar.common.transport.wsgi.helpers.rst
-   zaqar.common.transport.wsgi.helpers.rst
-   zaqar.common.utils.rst
    zaqar.common.utils.rst
    zaqar.context.rst
-   zaqar.context.rst
-   zaqar.i18n.rst
    zaqar.i18n.rst
    zaqar.openstack.common.cache._backends.memory.rst
-   zaqar.openstack.common.cache._backends.memory.rst
-   zaqar.openstack.common.cache.backends.rst
    zaqar.openstack.common.cache.backends.rst
    zaqar.openstack.common.cache.cache.rst
-   zaqar.openstack.common.cache.cache.rst
-   zaqar.openstack.common.config.generator.rst
    zaqar.openstack.common.config.generator.rst
    zaqar.openstack.common.context.rst
-   zaqar.openstack.common.context.rst
-   zaqar.openstack.common.excutils.rst
    zaqar.openstack.common.excutils.rst
    zaqar.openstack.common.fileutils.rst
-   zaqar.openstack.common.fileutils.rst
-   zaqar.openstack.common.gettextutils.rst
    zaqar.openstack.common.gettextutils.rst
    zaqar.openstack.common.importutils.rst
-   zaqar.openstack.common.importutils.rst
-   zaqar.openstack.common.jsonutils.rst
    zaqar.openstack.common.jsonutils.rst
    zaqar.openstack.common.local.rst
-   zaqar.openstack.common.local.rst
-   zaqar.openstack.common.lockutils.rst
    zaqar.openstack.common.lockutils.rst
    zaqar.openstack.common.log.rst
-   zaqar.openstack.common.log.rst
-   zaqar.openstack.common.strutils.rst
    zaqar.openstack.common.strutils.rst
    zaqar.openstack.common.timeutils.rst
-   zaqar.openstack.common.timeutils.rst
-   zaqar.storage.base.rst
    zaqar.storage.base.rst
    zaqar.storage.errors.rst
-   zaqar.storage.errors.rst
-   zaqar.storage.mongodb.catalogue.rst
    zaqar.storage.mongodb.catalogue.rst
    zaqar.storage.mongodb.claims.rst
-   zaqar.storage.mongodb.claims.rst
-   zaqar.storage.mongodb.controllers.rst
    zaqar.storage.mongodb.controllers.rst
    zaqar.storage.mongodb.driver.rst
-   zaqar.storage.mongodb.driver.rst
-   zaqar.storage.mongodb.flavors.rst
    zaqar.storage.mongodb.flavors.rst
    zaqar.storage.mongodb.messages.rst
-   zaqar.storage.mongodb.messages.rst
-   zaqar.storage.mongodb.options.rst
    zaqar.storage.mongodb.options.rst
    zaqar.storage.mongodb.pools.rst
-   zaqar.storage.mongodb.pools.rst
-   zaqar.storage.mongodb.queues.rst
    zaqar.storage.mongodb.queues.rst
    zaqar.storage.mongodb.utils.rst
-   zaqar.storage.mongodb.utils.rst
-   zaqar.storage.pipeline.rst
    zaqar.storage.pipeline.rst
    zaqar.storage.pooling.rst
-   zaqar.storage.pooling.rst
-   zaqar.storage.redis.claims.rst
    zaqar.storage.redis.claims.rst
    zaqar.storage.redis.controllers.rst
-   zaqar.storage.redis.controllers.rst
-   zaqar.storage.redis.driver.rst
    zaqar.storage.redis.driver.rst
    zaqar.storage.redis.messages.rst
-   zaqar.storage.redis.messages.rst
-   zaqar.storage.redis.models.rst
    zaqar.storage.redis.models.rst
    zaqar.storage.redis.options.rst
-   zaqar.storage.redis.options.rst
-   zaqar.storage.redis.queues.rst
    zaqar.storage.redis.queues.rst
    zaqar.storage.redis.scripting.rst
-   zaqar.storage.redis.scripting.rst
-   zaqar.storage.redis.utils.rst
    zaqar.storage.redis.utils.rst
    zaqar.storage.sqlalchemy.catalogue.rst
-   zaqar.storage.sqlalchemy.catalogue.rst
-   zaqar.storage.sqlalchemy.claims.rst
    zaqar.storage.sqlalchemy.claims.rst
    zaqar.storage.sqlalchemy.controllers.rst
-   zaqar.storage.sqlalchemy.controllers.rst
-   zaqar.storage.sqlalchemy.driver.rst
    zaqar.storage.sqlalchemy.driver.rst
    zaqar.storage.sqlalchemy.messages.rst
-   zaqar.storage.sqlalchemy.messages.rst
-   zaqar.storage.sqlalchemy.options.rst
    zaqar.storage.sqlalchemy.options.rst
    zaqar.storage.sqlalchemy.pools.rst
-   zaqar.storage.sqlalchemy.pools.rst
-   zaqar.storage.sqlalchemy.queues.rst
    zaqar.storage.sqlalchemy.queues.rst
    zaqar.storage.sqlalchemy.tables.rst
-   zaqar.storage.sqlalchemy.tables.rst
-   zaqar.storage.sqlalchemy.utils.rst
    zaqar.storage.sqlalchemy.utils.rst
    zaqar.storage.utils.rst
-   zaqar.storage.utils.rst
-   zaqar.transport.auth.rst
    zaqar.transport.auth.rst
    zaqar.transport.base.rst
-   zaqar.transport.base.rst
-   zaqar.transport.utils.rst
    zaqar.transport.utils.rst
    zaqar.transport.validation.rst
-   zaqar.transport.validation.rst
-   zaqar.transport.wsgi.app.rst
    zaqar.transport.wsgi.app.rst
    zaqar.transport.wsgi.driver.rst
-   zaqar.transport.wsgi.driver.rst
-   zaqar.transport.wsgi.errors.rst
    zaqar.transport.wsgi.errors.rst
    zaqar.transport.wsgi.utils.rst
-   zaqar.transport.wsgi.utils.rst
-   zaqar.transport.wsgi.v1_0.claims.rst
    zaqar.transport.wsgi.v1_0.claims.rst
    zaqar.transport.wsgi.v1_0.health.rst
-   zaqar.transport.wsgi.v1_0.health.rst
-   zaqar.transport.wsgi.v1_0.homedoc.rst
    zaqar.transport.wsgi.v1_0.homedoc.rst
    zaqar.transport.wsgi.v1_0.messages.rst
-   zaqar.transport.wsgi.v1_0.messages.rst
-   zaqar.transport.wsgi.v1_0.metadata.rst
    zaqar.transport.wsgi.v1_0.metadata.rst
    zaqar.transport.wsgi.v1_0.pools.rst
-   zaqar.transport.wsgi.v1_0.pools.rst
-   zaqar.transport.wsgi.v1_0.queues.rst
    zaqar.transport.wsgi.v1_0.queues.rst
    zaqar.transport.wsgi.v1_0.stats.rst
-   zaqar.transport.wsgi.v1_0.stats.rst
-   zaqar.transport.wsgi.v1_1.claims.rst
    zaqar.transport.wsgi.v1_1.claims.rst
    zaqar.transport.wsgi.v1_1.flavors.rst
-   zaqar.transport.wsgi.v1_1.flavors.rst
-   zaqar.transport.wsgi.v1_1.health.rst
    zaqar.transport.wsgi.v1_1.health.rst
    zaqar.transport.wsgi.v1_1.homedoc.rst
-   zaqar.transport.wsgi.v1_1.homedoc.rst
-   zaqar.transport.wsgi.v1_1.messages.rst
    zaqar.transport.wsgi.v1_1.messages.rst
    zaqar.transport.wsgi.v1_1.ping.rst
-   zaqar.transport.wsgi.v1_1.ping.rst
-   zaqar.transport.wsgi.v1_1.pools.rst
    zaqar.transport.wsgi.v1_1.pools.rst
    zaqar.transport.wsgi.v1_1.queues.rst
-   zaqar.transport.wsgi.v1_1.queues.rst
    zaqar.transport.wsgi.v1_1.stats.rst
-   zaqar.transport.wsgi.v1_1.stats.rst
-   zaqar.version.rst
    zaqar.version.rst
