@@ -246,12 +246,5 @@
             <para>You can enable and configure pooling with the following options:</para>
             <xi:include href="common/tables/zaqar-pooling.xml"/>
         </section>
-        <section xml:id="config-samples">
-            <title>Messaging and Notifications Service configuration files samples</title>
-            <para>This example shows the default zaqar.conf file:</para>
-            <programlisting language="ini">
-                <xi:include parse="text" href="http://git.openstack.org/cgit/openstack/zaqar/plain/etc/zaqar.conf.sample"/>
-            </programlisting>
-        </section>
     </chapter>
 </book>
