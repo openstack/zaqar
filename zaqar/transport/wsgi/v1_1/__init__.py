@@ -33,7 +33,7 @@ def public_endpoints(driver, conf):
     return [
         # Home
         ('/',
-         homedoc.Resource()),
+         homedoc.Resource(conf)),
 
         # Queues Endpoints
         ('/queues',

@@ -188,9 +188,75 @@ JSON_HOME = {
 }
 
 
+ADMIN_RESOURCES = {
+    # -----------------------------------------------------------------
+    # Pools
+    # -----------------------------------------------------------------
+    'rel/pools': {
+        'href-template': '/v1.1/pools{?detailed,limit,marker}',
+        'href-vars': {
+            'detailed': 'param/detailed',
+            'limit': 'param/pool_limit',
+            'marker': 'param/marker',
+        },
+        'hints': {
+            'allow': ['GET'],
+            'formats': {
+                'application/json': {},
+            },
+        },
+    },
+    'rel/pool': {
+        'href-template': '/v1.1/pools/{pool_name}',
+        'href-vars': {
+            'pool_name': 'param/pool_name',
+        },
+        'hints': {
+            'allow': ['GET', 'PUT', 'PATCH', 'DELETE'],
+            'formats': {
+                'application/json': {},
+            },
+        },
+    },
+
+    # -----------------------------------------------------------------
+    # Flavors
+    # -----------------------------------------------------------------
+    'rel/flavors': {
+        'href-template': '/v1.1/flavors{?detailed,limit,marker}',
+        'href-vars': {
+            'detailed': 'param/detailed',
+            'limit': 'param/flavor_limit',
+            'marker': 'param/marker',
+        },
+        'hints': {
+            'allow': ['GET'],
+            'formats': {
+                'application/json': {},
+            },
+        },
+    },
+    'rel/flavor': {
+        'href-template': '/v1.1/flavors/{flavor_name}',
+        'href-vars': {
+            'flavor_name': 'param/flavor_name',
+        },
+        'hints': {
+            'allow': ['GET', 'PUT', 'PATCH', 'DELETE'],
+            'formats': {
+                'application/json': {},
+            },
+        },
+    },
+}
+
+
 class Resource(object):
 
-    def __init__(self):
+    def __init__(self, conf):
+        if conf.admin_mode:
+            JSON_HOME['resources'].update(ADMIN_RESOURCES)
+
         document = json.dumps(JSON_HOME, ensure_ascii=False, indent=4)
         self.document_utf8 = document.encode('utf-8')
 
