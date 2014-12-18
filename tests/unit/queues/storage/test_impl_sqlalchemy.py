@@ -19,6 +19,7 @@ import six
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
 
+from zaqar import storage
 from zaqar.storage import pooling
 from zaqar.storage import sqlalchemy
 from zaqar.storage.sqlalchemy import controllers
@@ -153,7 +154,7 @@ class PooledMessageTests(base.MessageControllerTest):
     controller_class = pooling.MessageController
     driver_class = pooling.DataDriver
     control_driver_class = sqlalchemy.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Message
 
 
 class PooledClaimsTests(base.ClaimControllerTest):
@@ -161,7 +162,7 @@ class PooledClaimsTests(base.ClaimControllerTest):
     controller_class = pooling.ClaimController
     driver_class = pooling.DataDriver
     control_driver_class = sqlalchemy.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Claim
 
     def test_delete_message_expired_claim(self):
         # NOTE(flaper87): Several reasons to do this:
@@ -177,7 +178,7 @@ class PooledQueueTests(base.QueueControllerTest):
     controller_class = pooling.QueueController
     driver_class = pooling.DataDriver
     control_driver_class = sqlalchemy.ControlDriver
-    controller_base_class = pooling.RoutingController
+    controller_base_class = storage.Queue
 
 
 class MsgidTests(testing.TestBase):
