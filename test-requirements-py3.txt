@@ -22,7 +22,8 @@ testtools>=0.9.36,!=1.2.0
 requests>=2.2.0,!=2.4.0
 
 # Documentation
-sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3
-oslosphinx>=2.2.0  # Apache-2.0
+# NOTE(vkmc) sphinx modules are commented out as a workaround for bug #1403510
+# sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3
+# oslosphinx>=2.2.0  # Apache-2.0
 openstack-doc-tools>=0.20
 
