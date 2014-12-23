@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from zaqar.common import api
+from zaqar.common.api import api
 from zaqar.common import errors
 from zaqar.tests import base
 
