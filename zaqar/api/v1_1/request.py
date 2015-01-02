@@ -126,7 +126,7 @@ class RequestSchema(api.Api):
 
         'queue_get': {
             'properties': {
-                'action': {'enum': ['queue_delete']},
+                'action': {'enum': ['queue_get']},
                 'headers': {
                     'type': 'object',
                     'properties': headers,

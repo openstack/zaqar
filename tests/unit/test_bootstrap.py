@@ -19,6 +19,7 @@ from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import sqlalchemy
 from zaqar.tests import base
+from zaqar.transport import websocket
 from zaqar.transport import wsgi
 
 
@@ -52,3 +53,7 @@ class TestBootstrap(base.TestBase):
     def test_transport_wsgi(self):
         bootstrap = self._bootstrap('wsgi_sqlalchemy.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)
+
+    def test_transport_websocket(self):
+        bootstrap = self._bootstrap('websocket_mongodb.conf')
+        self.assertIsInstance(bootstrap.transport, websocket.Driver)
