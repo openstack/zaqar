@@ -17,10 +17,9 @@ import functools
 import json
 
 from falcon import testing as ftest
+from oslo.serialization import jsonutils
 import requests
 import six
-
-from zaqar.openstack.common import jsonutils
 
 
 def _build_url(method):

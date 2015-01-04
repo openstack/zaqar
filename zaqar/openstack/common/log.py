@@ -37,6 +37,7 @@ import sys
 import traceback
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import six
 from six import moves
 
@@ -44,7 +45,6 @@ _PY26 = sys.version_info[0:2] == (2, 6)
 
 from zaqar.openstack.common.gettextutils import _
 from zaqar.openstack.common import importutils
-from zaqar.openstack.common import jsonutils
 from zaqar.openstack.common import local
 # NOTE(flaper87): Pls, remove when graduating this module
 # from the incubator.
