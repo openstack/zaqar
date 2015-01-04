@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-10 06:06+0000\n"
+"POT-Creation-Date: 2015-01-04 06:08+0000\n"
 "PO-Revision-Date: 2014-11-07 20:00+0000\n"
 "Last-Translator: Rodrigo Felix de Almeida "
 "<rodrigofelixdealmeida@gmail.com>\n"
@@ -28,10 +28,6 @@ msgid ""
 " `unreliable` is explicitly set to `True` in your configuration files."
 msgstr ""
 
-#: zaqar/common/api.py:49
-msgid "{0} is not a valid operation"
-msgstr "{0} não é uma operação válida"
-
 #: zaqar/common/cli.py:52
 msgid "Terminating"
 msgstr "Finalizando"
@@ -45,6 +41,10 @@ msgstr "O estágio %(stage)s não implementa o método %(method)s"
 #, python-format
 msgid "Method %s not found in any of the registered stages"
 msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
+
+#: zaqar/common/api/api.py:49
+msgid "{0} is not a valid operation"
+msgstr "{0} não é uma operação válida"
 
 #: zaqar/common/transport/wsgi/helpers.py:45
 msgid "Malformed hexadecimal UUID."
@@ -139,16 +139,16 @@ msgstr ""
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 
-#: zaqar/storage/mongodb/driver.py:79
+#: zaqar/storage/mongodb/driver.py:81
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
 msgstr "O driver do mongodb requer mongodb>=2.2,  %s encontrado"
 
-#: zaqar/storage/mongodb/driver.py:84
+#: zaqar/storage/mongodb/driver.py:86
 msgid "Either a replica set or a mongos is required to guarantee message delivery"
 msgstr ""
 
-#: zaqar/storage/mongodb/driver.py:97
+#: zaqar/storage/mongodb/driver.py:99
 msgid ""
 "Using a write concern other than `majority` or > 2 makes the service "
 "unreliable. Please use a different write concern or set `unreliable` to "
@@ -241,7 +241,7 @@ msgstr "Faltando nome do host na URI do Redis"
 msgid "Missing path in Redis URI"
 msgstr "Faltando caminho na URI do Redis"
 
-#: zaqar/storage/redis/driver.py:151
+#: zaqar/storage/redis/driver.py:158
 #, python-format
 msgid "The Redis driver requires redis-server>=2.6, %s found"
 msgstr ""
@@ -254,7 +254,7 @@ msgstr ""
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
-#: zaqar/storage/sqlalchemy/driver.py:41
+#: zaqar/storage/sqlalchemy/driver.py:43
 msgid ""
 "sqlalchemy's data plane driver will be removed during the next release. "
 "Please, consider moving your data to one of the other supported drivers."
