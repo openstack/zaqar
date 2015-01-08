@@ -1,4 +1,4 @@
-# Copyright (c) 2014 OpenStack Foundation
+# Copyright 2014 IBM Corp.  All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License.  You may obtain a copy
@@ -14,26 +14,17 @@
 
 import falcon
 
-from zaqar.transport import utils
-from zaqar.transport.wsgi import v1_0
-from zaqar.transport.wsgi import v1_1
-from zaqar.transport.wsgi import v2_0
-
-VERSIONS = {
-    'versions': [
-        v1_0.VERSION,
-        v1_1.VERSION,
-        v2_0.VERSION
-    ]
-}
-
 
 class Resource(object):
 
-    def __init__(self):
-        self.versions = utils.to_json(VERSIONS)
+    __slots__ = ('_driver',)
 
-    def on_get(self, req, resp, project_id):
-        resp.data = self.versions
+    def __init__(self, driver):
+        self._driver = driver
 
-        resp.status = falcon.HTTP_300
+    def on_get(self, req, resp, **kwargs):
+        resp.status = (falcon.HTTP_204 if self._driver.is_alive()
+                       else falcon.HTTP_503)
+
+    def on_head(self, req, resp, **kwargs):
+        resp.status = falcon.HTTP_204

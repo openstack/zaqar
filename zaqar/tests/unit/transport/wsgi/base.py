@@ -153,3 +153,17 @@ class V1_1BaseFaulty(TestBaseFaulty):
     Should contain methods specific to V1.1 exception testing
     """
     pass
+
+
+class V2Base(V1_1Base):
+    """Base class for V2 API Tests.
+
+    Should contain methods specific to V2 of the API
+    """
+
+
+class V2BaseFaulty(V1_1BaseFaulty):
+    """Base class for V2 API Faulty Tests.
+
+    Should contain methods specific to V2 exception testing
+    """

@@ -66,7 +66,7 @@ def extract_project_id(req, resp, params):
 X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
 and retry.'''))
 
-    # TODO(flaper87): Make version comparison smarter to support v2.
+    # TODO(flaper87): Make version comparison smarter to support v2_0.
     if not params['project_id'] and 'v1.1' in req.path:
         raise falcon.HTTPBadRequest('Project-Id Missing',
                                     _(u'The header X-PROJECT-ID was missing'))

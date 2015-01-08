@@ -12,29 +12,30 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from zaqar.transport.wsgi.v1_1 import claims
-from zaqar.transport.wsgi.v1_1 import flavors
-from zaqar.transport.wsgi.v1_1 import health
-from zaqar.transport.wsgi.v1_1 import homedoc
-from zaqar.transport.wsgi.v1_1 import messages
-from zaqar.transport.wsgi.v1_1 import ping
-from zaqar.transport.wsgi.v1_1 import pools
-from zaqar.transport.wsgi.v1_1 import queues
-from zaqar.transport.wsgi.v1_1 import stats
+from zaqar.transport.wsgi.v2_0 import claims
+from zaqar.transport.wsgi.v2_0 import flavors
+from zaqar.transport.wsgi.v2_0 import health
+from zaqar.transport.wsgi.v2_0 import homedoc
+from zaqar.transport.wsgi.v2_0 import messages
+from zaqar.transport.wsgi.v2_0 import ping
+from zaqar.transport.wsgi.v2_0 import pools
+from zaqar.transport.wsgi.v2_0 import queues
+from zaqar.transport.wsgi.v2_0 import stats
+
 
 VERSION = {
-    'id': '1.1',
-    'status': 'SUPPORTED',
+    'id': '2',
+    'status': 'CURRENT',
     'updated': '2014-9-24T04:06:47Z',
     'media-types': [
         {
             'base': 'application/json',
-            'type': 'application/vnd.openstack.messaging-v1_1+json'
+            'type': 'application/vnd.openstack.messaging-v2+json'
         }
     ],
     'links': [
         {
-            'href': '/v1.1/',
+            'href': '/v2/',
             'rel': 'self'
         }
     ]

@@ -28,6 +28,7 @@ from zaqar.transport import auth
 from zaqar.transport import validation
 from zaqar.transport.wsgi import v1_0
 from zaqar.transport.wsgi import v1_1
+from zaqar.transport.wsgi import v2_0
 from zaqar.transport.wsgi import version
 
 _WSGI_OPTIONS = (
@@ -83,6 +84,7 @@ class Driver(transport.DriverBase):
         catalog = [
             ('/v1', v1_0.public_endpoints(self, self._conf)),
             ('/v1.1', v1_1.public_endpoints(self, self._conf)),
+            ('/v2', v2_0.public_endpoints(self, self._conf)),
             ('/', [('', version.Resource())])
         ]
 
@@ -90,6 +92,7 @@ class Driver(transport.DriverBase):
             catalog.extend([
                 ('/v1', v1_0.private_endpoints(self, self._conf)),
                 ('/v1.1', v1_1.private_endpoints(self, self._conf)),
+                ('/v2', v2_0.private_endpoints(self, self._conf)),
             ])
 
         self.app = falcon.API(before=self.before_hooks)

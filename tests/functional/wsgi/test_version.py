@@ -38,7 +38,7 @@ EXPECTED_VERSIONS = [
     },
     {
         'id': '1.1',
-        'status': 'CURRENT',
+        'status': 'SUPPORTED',
         'updated': '2014-9-24T04:06:47Z',
         'media-types': [
             {
@@ -49,6 +49,23 @@ EXPECTED_VERSIONS = [
         'links': [
             {
                 'href': '/v1.1/',
+                'rel': 'self'
+            }
+        ]
+    },
+    {
+        'id': '2',
+        'status': 'CURRENT',
+        'updated': '2014-9-24T04:06:47Z',
+        'media-types': [
+            {
+                'base': 'application/json',
+                'type': 'application/vnd.openstack.messaging-v2+json'
+            }
+        ],
+        'links': [
+            {
+                'href': '/v2/',
                 'rel': 'self'
             }
         ]
@@ -65,5 +82,5 @@ class TestVersion(base.TestBase):
         versions = jsonutils.loads(response[0])['versions']
 
         self.assertEqual(self.srmock.status, falcon.HTTP_300)
-        self.assertEqual(len(versions), 2)
+        self.assertEqual(len(versions), 3)
         self.assertEqual(EXPECTED_VERSIONS, versions)
