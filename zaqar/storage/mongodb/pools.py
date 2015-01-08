@@ -54,7 +54,7 @@ class PoolsController(base.PoolsBase):
                                unique=True)
 
     @utils.raises_conn_error
-    def list(self, marker=None, limit=10, detailed=False):
+    def _list(self, marker=None, limit=10, detailed=False):
         query = {}
         if marker is not None:
             query['n'] = {'$gt': marker}
@@ -71,7 +71,7 @@ class PoolsController(base.PoolsBase):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
-    def get(self, name, detailed=False):
+    def _get(self, name, detailed=False):
         res = self._col.find_one({'n': name},
                                  _field_spec(detailed))
         if not res:
@@ -80,13 +80,13 @@ class PoolsController(base.PoolsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def get_group(self, group=None, detailed=False):
+    def _get_group(self, group=None, detailed=False):
         cursor = self._col.find({'g': group}, fields=_field_spec(detailed))
         normalizer = functools.partial(_normalize, detailed=detailed)
         return utils.HookedCursor(cursor, normalizer)
 
     @utils.raises_conn_error
-    def create(self, name, weight, uri, group=None, options=None):
+    def _create(self, name, weight, uri, group=None, options=None):
         options = {} if options is None else options
         self._col.update({'n': name},
                          {'$set': {'n': name,
@@ -97,11 +97,11 @@ class PoolsController(base.PoolsBase):
                          upsert=True)
 
     @utils.raises_conn_error
-    def exists(self, name):
+    def _exists(self, name):
         return self._col.find_one({'n': name}) is not None
 
     @utils.raises_conn_error
-    def update(self, name, **kwargs):
+    def _update(self, name, **kwargs):
         names = ('uri', 'weight', 'group', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None,
@@ -116,7 +116,7 @@ class PoolsController(base.PoolsBase):
             raise errors.PoolDoesNotExist(name)
 
     @utils.raises_conn_error
-    def delete(self, name):
+    def _delete(self, name):
         # NOTE(wpf): Initializing the Flavors controller here instead of
         # doing so in __init__ is required to avoid falling in a maximum
         # recursion error.
@@ -138,7 +138,7 @@ class PoolsController(base.PoolsBase):
             pass
 
     @utils.raises_conn_error
-    def drop_all(self):
+    def _drop_all(self):
         self._col.drop()
         self._col.ensure_index(POOLS_INDEX, unique=True)
 

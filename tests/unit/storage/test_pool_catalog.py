@@ -14,8 +14,6 @@
 
 import uuid
 
-from oslo_config import cfg
-
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.storage import errors
 from zaqar.storage import pooling
@@ -35,8 +33,6 @@ class PoolCatalogTest(testing.TestBase):
     def setUp(self):
         super(PoolCatalogTest, self).setUp()
 
-        self.conf.register_opts([cfg.StrOpt('storage')],
-                                group='drivers')
         cache = oslo_cache.get_cache()
         control = utils.load_storage_driver(self.conf, cache,
                                             control_mode=True)

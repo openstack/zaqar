@@ -15,7 +15,6 @@
 import random
 import uuid
 
-from oslo_config import cfg
 import six
 
 from zaqar.openstack.common.cache import cache as oslo_cache
@@ -31,9 +30,6 @@ class PoolQueuesTest(testing.TestBase):
 
     def setUp(self):
         super(PoolQueuesTest, self).setUp()
-
-        self.conf.register_opts([cfg.StrOpt('storage')],
-                                group='drivers')
 
         cache = oslo_cache.get_cache()
         control = utils.load_storage_driver(self.conf, cache,

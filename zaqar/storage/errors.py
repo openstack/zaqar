@@ -185,3 +185,9 @@ class SubscriptionDoesNotExist(DoesNotExist):
     def __init__(self, subscription_id):
         super(SubscriptionDoesNotExist,
               self).__init__(subscription_id=subscription_id)
+
+
+class PoolCapabilitiesMismatch(ExceptionBase):
+
+    msg_format = (u'The pool being added does not '
+                  u'support the minimum set of capabilities')

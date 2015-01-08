@@ -51,6 +51,8 @@ class TestBase(testtools.TestCase):
             self.conf = cfg.ConfigOpts()
 
         self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+        self.conf.register_opts(bootstrap._DRIVER_OPTIONS,
+                                group=bootstrap._DRIVER_GROUP)
 
     @classmethod
     def conf_path(cls, filename):

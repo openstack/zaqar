@@ -41,7 +41,7 @@ class PoolsController(base.PoolsBase):
         self._conn = self.driver.connection
 
     @utils.raises_conn_error
-    def list(self, marker=None, limit=10, detailed=False):
+    def _list(self, marker=None, limit=10, detailed=False):
         marker = marker or ''
 
         # TODO(cpp-cabrera): optimization - limit the columns returned
@@ -65,7 +65,7 @@ class PoolsController(base.PoolsBase):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
-    def get_group(self, group=None, detailed=False):
+    def _get_group(self, group=None, detailed=False):
         stmt = sa.sql.select([tables.Pools]).where(
             tables.Pools.c.group == group
         )
@@ -75,7 +75,7 @@ class PoolsController(base.PoolsBase):
         return (normalizer(v) for v in cursor)
 
     @utils.raises_conn_error
-    def get(self, name, detailed=False):
+    def _get(self, name, detailed=False):
         stmt = sa.sql.select([tables.Pools]).where(
             tables.Pools.c.name == name
         )
@@ -88,7 +88,7 @@ class PoolsController(base.PoolsBase):
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
-    def create(self, name, weight, uri, group=None, options=None):
+    def _create(self, name, weight, uri, group=None, options=None):
         opts = None if options is None else utils.json_encode(options)
 
         try:
@@ -104,14 +104,14 @@ class PoolsController(base.PoolsBase):
                         group=group, options=options)
 
     @utils.raises_conn_error
-    def exists(self, name):
+    def _exists(self, name):
         stmt = sa.sql.select([tables.Pools.c.name]).where(
             tables.Pools.c.name == name
         ).limit(1)
         return self._conn.execute(stmt).fetchone() is not None
 
     @utils.raises_conn_error
-    def update(self, name, **kwargs):
+    def _update(self, name, **kwargs):
         # NOTE(cpp-cabrera): by pruning None-valued kwargs, we avoid
         # overwriting the existing options field with None, since that
         # one can be null.
@@ -133,14 +133,14 @@ class PoolsController(base.PoolsBase):
             raise errors.PoolDoesNotExist(name)
 
     @utils.raises_conn_error
-    def delete(self, name):
+    def _delete(self, name):
         stmt = sa.sql.expression.delete(tables.Pools).where(
             tables.Pools.c.name == name
         )
         self._conn.execute(stmt)
 
     @utils.raises_conn_error
-    def drop_all(self):
+    def _drop_all(self):
         stmt = sa.sql.expression.delete(tables.Pools)
         self._conn.execute(stmt)
 

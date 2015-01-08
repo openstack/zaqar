@@ -26,6 +26,8 @@ from oslo_config import cfg
 import six
 
 import zaqar.openstack.common.log as logging
+from zaqar.storage import errors
+from zaqar.storage import utils
 
 
 DEFAULT_QUEUES_PER_PAGE = 10
@@ -679,7 +681,27 @@ class Subscription(ControllerBase):
 class PoolsBase(ControllerBase):
     """A controller for managing pools."""
 
-    @abc.abstractmethod
+    def _check_capabilities(self, uri, group=None, name=None):
+        if name:
+            group = list(self._get_group(self._get(name)['group']))
+        else:
+            group = list(self._get_group(group))
+
+        if not len(group) > 0:
+            return True
+
+        default_store = self.driver.conf.drivers.storage
+
+        existing_store = utils.load_storage_impl(group[0]['uri'],
+                                                 default_store=default_store)
+        new_store = utils.load_storage_impl(uri,
+                                            default_store=default_store)
+
+        # NOTE(flaper87): Since all pools in a pool group
+        # are assumed to have the same capabilities, it's
+        # fine to check against just 1
+        return existing_store.BASE_CAPABILITIES == new_store.BASE_CAPABILITIES
+
     def list(self, marker=None, limit=DEFAULT_POOLS_PER_PAGE,
              detailed=False):
         """Lists all registered pools.
@@ -694,9 +716,10 @@ class PoolsBase(ControllerBase):
         :rtype: [{}]
         """
 
-        raise NotImplementedError
+        return self._list(marker, limit, detailed)
 
-    @abc.abstractmethod
+    _list = abc.abstractmethod(lambda x: None)
+
     def create(self, name, weight, uri, group=None, options=None):
         """Registers a pool entry.
 
@@ -712,10 +735,13 @@ class PoolsBase(ControllerBase):
         :param options: Options used to configure this pool
         :type options: dict
         """
+        if not self._check_capabilities(uri, group=group):
+            raise errors.PoolCapabilitiesMismatch()
 
-        raise NotImplementedError
+        return self._create(name, weight, uri, group, options)
 
-    @abc.abstractmethod
+    _create = abc.abstractmethod(lambda x: None)
+
     def get_group(self, group=None, detailed=False):
         """Returns a single pool entry.
 
@@ -728,10 +754,10 @@ class PoolsBase(ControllerBase):
         :rtype: {}
         :raises: PoolDoesNotExist if not found
         """
+        return self._get_group(group, detailed)
 
-        raise NotImplementedError
+    _get_group = abc.abstractmethod(lambda x: None)
 
-    @abc.abstractmethod
     def get(self, name, detailed=False):
         """Returns a single pool entry.
 
@@ -743,10 +769,10 @@ class PoolsBase(ControllerBase):
         :rtype: {}
         :raises: PoolDoesNotExist if not found
         """
+        return self._get(name, detailed)
 
-        raise NotImplementedError
+    _get = abc.abstractmethod(lambda x: None)
 
-    @abc.abstractmethod
     def exists(self, name):
         """Returns a single pool entry.
 
@@ -755,10 +781,10 @@ class PoolsBase(ControllerBase):
         :returns: True if the pool exists
         :rtype: bool
         """
+        return self._exists(name)
 
-        raise NotImplementedError
+    _exists = abc.abstractmethod(lambda x: None)
 
-    @abc.abstractmethod
     def delete(self, name):
         """Removes a pool entry.
 
@@ -766,10 +792,10 @@ class PoolsBase(ControllerBase):
         :type name: six.text_type
         :rtype: None
         """
+        return self._delete(name)
 
-        raise NotImplementedError
+    _delete = abc.abstractmethod(lambda x: None)
 
-    @abc.abstractmethod
     def update(self, name, **kwargs):
         """Updates the weight, uris, and/or options of this pool
 
@@ -779,14 +805,19 @@ class PoolsBase(ControllerBase):
         :type kwargs: dict
         :raises: PoolDoesNotExist
         """
+        uri = kwargs.get('uri')
+        if uri and not self._check_capabilities(uri, name=name):
+            raise errors.PoolCapabilitiesMismatch()
 
-        raise NotImplementedError
+        return self._update(name, **kwargs)
 
-    @abc.abstractmethod
+    _update = abc.abstractmethod(lambda x: None)
+
     def drop_all(self):
         """Deletes all pools from storage."""
+        return self._drop_all()
 
-        raise NotImplementedError
+    _drop_all = abc.abstractmethod(lambda x: None)
 
 
 @six.add_metaclass(abc.ABCMeta)

@@ -65,6 +65,32 @@ def dynamic_conf(uri, options, conf=None):
     return conf
 
 
+def load_storage_impl(uri, control_mode=False, default_store=None):
+    """Loads a storage driver implementation and returns it.
+
+    :param uri: The connection uri to parse and load a driver for.
+    :param control_mode: (Default False). Determines which
+        driver type to load; if False, the data driver is
+        loaded. If True, the control driver is loaded.
+    :param default_store: The default store to load if no scheme
+        is parsed.
+    """
+
+    mode = 'control' if control_mode else 'data'
+    driver_type = 'zaqar.{0}.storage'.format(mode)
+    storage_type = six.moves.urllib_parse.urlparse(uri).scheme or default_store
+
+    try:
+        mgr = driver.DriverManager(driver_type, storage_type,
+                                   invoke_on_load=False)
+
+        return mgr.driver
+
+    except Exception as exc:
+        LOG.exception(exc)
+        raise errors.InvalidDriver(exc)
+
+
 def load_storage_driver(conf, cache, storage_type=None, control_mode=False):
     """Loads a storage driver and returns it.
 

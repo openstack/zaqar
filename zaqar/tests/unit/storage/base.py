@@ -1122,11 +1122,13 @@ class PoolsControllerTest(ControllerBaseTest):
                           self.pool)
 
     def test_update_works(self):
+        # NOTE(flaper87): This may fail for redis. Create
+        # a dummy store for tests.
         self.pools_controller.update(self.pool, weight=101,
-                                     uri='redis://localhost',
+                                     uri='localhost3',
                                      options={'a': 1})
         res = self.pools_controller.get(self.pool, detailed=True)
-        self._pool_expects(res, self.pool, 101, 'redis://localhost')
+        self._pool_expects(res, self.pool, 101, 'localhost3')
         self.assertEqual(res['options'], {'a': 1})
 
     def test_delete_works(self):
@@ -1207,6 +1209,15 @@ class PoolsControllerTest(ControllerBaseTest):
             self._pool_expects(entry, n, w, u)
             self.assertIn('options', entry)
             self.assertEqual(entry['options'], {})
+
+    def test_mismatching_capabilities(self):
+        # NOTE(flaper87): This may fail for redis. Create
+        # a dummy store for tests.
+        with testing.expect(errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'redis://localhost',
+                                         group=self.pool_group,
+                                         options={})
 
 
 class CatalogueControllerTest(ControllerBaseTest):
