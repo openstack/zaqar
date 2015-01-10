@@ -331,14 +331,15 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
                                                        window=10)
         self.assertIsNone(unchanged)
 
-        now = timeutils.utcnow() + datetime.timedelta(seconds=10)
-        timeutils_utcnow = 'oslo.utils.timeutils.utcnow'
-        with mock.patch(timeutils_utcnow) as mock_utcnow:
-            mock_utcnow.return_value = now
-            changed = self.queue_controller._inc_counter(queue_name,
-                                                         project=self.project,
-                                                         window=5)
-            self.assertEqual(changed, reference_value + 1)
+        timeutils.set_time_override()
+        timeutils.advance_time_delta(datetime.timedelta(seconds=10))
+
+        changed = self.queue_controller._inc_counter(queue_name,
+                                                     project=self.project,
+                                                     window=5)
+        self.assertEqual(changed, reference_value + 1)
+
+        timeutils.clear_time_override()
 
     def test_race_condition_on_post(self):
         queue_name = self.queue_name
