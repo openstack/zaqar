@@ -74,12 +74,12 @@ You also need to have MongoDB_ installed and running.
 
 On Ubuntu, follow the instructions in the `MongoDB on Ubuntu Installation Guide`_.
 
-.. _`MongoDB on Ubuntu installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/`
+.. _`MongoDB on Ubuntu installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
 On Fedora-based distributions, follow the instructions in the
 `MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux Installation Guide`_.
 
-.. _`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/`.
+.. _`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/
 
 Getting the code
 ################
