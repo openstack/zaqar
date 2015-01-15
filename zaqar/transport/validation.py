@@ -1,4 +1,5 @@
 # Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2015 Catalyst IT Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +16,8 @@
 
 import re
 
-from oslo_config import cfg
+from oslo.config import cfg
+import six
 
 from zaqar.i18n import _
 
@@ -33,6 +35,11 @@ _TRANSPORT_LIMITS_OPTIONS = (
                deprecated_name='message_paging_uplimit',
                deprecated_group='limits:transport',
                help='Defines the maximum number of messages per page.'),
+
+    cfg.IntOpt('max_subscriptions_per_page', default=20,
+               deprecated_name='subscription_paging_uplimit',
+               deprecated_group='limits:transport',
+               help='Defines the maximum number of subscriptions per page.'),
 
     cfg.IntOpt('max_messages_per_claim_or_pop', default=20,
                deprecated_name='max_messages_per_claim',
@@ -64,6 +71,9 @@ _TRANSPORT_LIMITS_OPTIONS = (
                deprecated_name='claim_grace_max',
                deprecated_group='limits:transport',
                help='Defines the maximum message grace period in seconds.'),
+
+    cfg.ListOpt('subscriber_types', default=['http'],
+                help='Defines supported subscriber types.'),
 )
 
 _TRANSPORT_LIMITS_GROUP = 'transport'
@@ -278,3 +288,63 @@ class Validator(object):
 
             raise ValidationFailed(
                 msg, self._limits_conf.max_message_ttl, MIN_CLAIM_TTL)
+
+    def subscription_posting(self, subscription):
+        """Restrictions on a creation of subscription.
+
+        :param subscription: dict of subscription
+        :raises: ValidationFailed if the subscription is invalid.
+        """
+        for p in ('subscriber', 'ttl', 'options'):
+            if p not in subscription.keys():
+                raise ValidationFailed(_(u'Missing parameter %s in body.') % p)
+
+        self.subscription_patching(subscription)
+
+    def subscription_patching(self, subscription):
+        """Restrictions on an update of subscription.
+
+        :param subscription: dict of subscription
+        :raises: ValidationFailed if the subscription is invalid.
+        """
+
+        if not subscription:
+            raise ValidationFailed(_(u'No subscription to create.'))
+
+        subscriber = subscription.get('subscriber', None)
+        subscriber_type = None
+
+        if subscriber:
+            parsed_uri = six.moves.urllib_parse.urlparse(subscriber)
+            subscriber_type = parsed_uri.scheme
+
+            if subscriber_type not in self._limits_conf.subscriber_types:
+                msg = _(u'The subscriber type of subscription must be '
+                        u'supported in the list {0}.')
+                raise ValidationFailed(msg, self._limits_conf.subscriber_types)
+
+        options = subscription.get('options', None)
+        if options and not isinstance(options, dict):
+            msg = _(u'Options must be a dict.')
+            raise ValidationFailed(msg)
+
+        ttl = subscription.get('ttl', None)
+        if ttl and not isinstance(ttl, int):
+            msg = _(u'TTL must be an integer.')
+            raise ValidationFailed(msg)
+
+    def subscription_listing(self, limit=None, **kwargs):
+        """Restrictions involving a list of subscriptions.
+
+        :param limit: The expected number of subscriptions in the list
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the limit is exceeded
+        """
+
+        uplimit = self._limits_conf.max_subscriptions_per_page
+        if limit is not None and not (0 < limit <= uplimit):
+            msg = _(u'Limit must be at least 1 and may not '
+                    'be greater than {0}.')
+
+            raise ValidationFailed(
+                msg, self._limits_conf.max_subscriptions_per_page)

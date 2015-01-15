@@ -53,7 +53,7 @@ class SubscriptionController(base.Subscription):
     def list(self, queue, project=None, marker=None, limit=10):
         query = {'s': queue, 'p': project}
         if marker is not None:
-            query['_id'] = {'$gt': marker}
+            query['_id'] = {'$gt': utils.to_oid(marker)}
 
         fields = {'s': 1, 'u': 1, 't': 1, 'p': 1, 'o': 1, '_id': 1}
 
@@ -98,7 +98,6 @@ class SubscriptionController(base.Subscription):
                                                                 '_id': 0})
         if target_source is None:
             raise errors.QueueDoesNotExist(target_source, project)
-
         try:
             subscription_id = self._collection.insert({'s': source,
                                                        'u': subscriber,

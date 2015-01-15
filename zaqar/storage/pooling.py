@@ -374,9 +374,9 @@ class SubscriptionController(storage.Subscription):
     def create(self, queue, subscriber, ttl, options, project=None):
         control = self._get_controller(queue, project)
         if control:
-            return control.post(queue, subscriber,
-                                ttl, options,
-                                project=project)
+            return control.create(queue, subscriber,
+                                  ttl, options,
+                                  project=project)
 
     def update(self, queue, subscription_id, project=None, **kwargs):
         control = self._get_controller(queue, project)
