@@ -28,28 +28,28 @@ class Api(object):
     schema = {}
     validators = {}
 
-    def get_schema(self, operation):
-        """Returns the schema for an operation
+    def get_schema(self, action):
+        """Returns the schema for an action
 
-        :param operation: Operation for which params need
+        :param action: Action for which params need
             to be validated.
-        :type operation: `six.text_type`
+        :type action: `six.text_type`
 
-        :returns: Operation's schema
+        :returns: Action's schema
         :rtype: dict
 
-        :raises: `errors.InvalidOperation` if the operation
+        :raises: `errors.InvalidAction` if the action
             does not exist
         """
 
         try:
-            return self.schema[operation]
+            return self.schema[action]
         except KeyError:
             # TODO(flaper87): gettext support
-            msg = _('{0} is not a valid operation').format(operation)
-            raise errors.InvalidOperation(msg)
+            msg = _('{0} is not a valid action').format(action)
+            raise errors.InvalidAction(msg)
 
-    def validate(self, operation, params):
+    def validate(self, action, body):
         """Validates the request data
 
         This method relies on jsonschema and exists
@@ -57,25 +57,25 @@ class Api(object):
         the request. It's not recommended to validate every
         request since they are already validated server side.
 
-        :param operation: Operation's for which params need
+        :param action: Action's for which body need
             to be validated.
-        :type operation: `six.text_type`
-        :param params: Params to validate
-        :type params: dict
+        :type action: `six.text_type`
+        :param body: Params to validate
+        :type body: dict
 
         :returns: True if the schema is valid, False otherwise
-        :raises: `errors.InvalidOperation` if the operation
+        :raises: `errors.InvalidAction` if the action
             does not exist
         """
 
-        if operation not in self.validators:
-            schema = self.get_schema(operation)
-            self.validators[operation] = validators.Draft4Validator(schema)
+        if action not in self.validators:
+            schema = self.get_schema(action)
+            self.validators[action] = validators.Draft4Validator(schema)
 
         try:
-            self.validators[operation].validate(params)
-        except jsonschema.ValidationError:
-            LOG.debug('Operation is invalid.')
+            self.validators[action].validate(body)
+        except jsonschema.ValidationError as ex:
+            LOG.debug('Schema validation failed. %s.' % str(ex))
             return False
 
         return True

@@ -53,5 +53,5 @@ class TestApi(base.TestBase):
         self.assertFalse(self.api.validate('test_operation', {}))
 
     def test_invalid_operation(self):
-        self.assertRaises(errors.InvalidOperation, self.api.validate,
+        self.assertRaises(errors.InvalidAction, self.api.validate,
                           'super_secret_op', {})

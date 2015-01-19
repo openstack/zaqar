@@ -22,8 +22,8 @@ class PatternNotFound(Exception):
     """A string did not match the expected pattern or regex."""
 
 
-class InvalidOperation(Exception):
-    """Raised when attempted a non existent operation."""
+class InvalidAction(Exception):
+    """Raised when attempted a non existent action."""
 
 
 class ConfigurationError(Exception):
