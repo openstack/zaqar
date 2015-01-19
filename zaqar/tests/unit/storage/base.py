@@ -1070,6 +1070,8 @@ class PoolsControllerTest(ControllerBaseTest):
         self.pools_controller.create(self.pool, 100, 'localhost',
                                      group=self.pool_group, options={})
 
+        self.flavors_controller = self.driver.flavors_controller
+
     def tearDown(self):
         self.pools_controller.drop_all()
         super(PoolsControllerTest, self).tearDown()

@@ -35,6 +35,7 @@ CatalogueController = catalogue.CatalogueController
 ClaimController = claims.ClaimController
 FlavorsController = flavors.FlavorsController
 MessageController = messages.MessageController
+FIFOMessageController = messages.FIFOMessageController
 QueueController = queues.QueueController
 PoolsController = pools.PoolsController
 SubscriptionController = subscriptions.SubscriptionController

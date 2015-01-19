@@ -32,6 +32,13 @@ LOG = logging.getLogger(__name__)
 
 
 def _connection(conf):
+    # NOTE(flaper87): remove possible zaqar specific
+    # schemes like: mongodb.fifo
+    uri = conf.uri
+
+    if conf.uri:
+        uri = "mongodb://%s" % (conf.uri.split("://")[-1])
+
     if conf.uri and 'replicaSet' in conf.uri:
         MongoClient = pymongo.MongoReplicaSetClient
     else:
@@ -58,9 +65,9 @@ def _connection(conf):
         if conf.ssl_ca_certs:
             kwargs['ssl_ca_certs'] = conf.ssl_ca_certs
 
-        return MongoClient(conf.uri, **kwargs)
+        return MongoClient(uri, **kwargs)
 
-    return MongoClient(conf.uri)
+    return MongoClient(uri)
 
 
 class DataDriver(storage.DataDriverBase):
@@ -68,6 +75,8 @@ class DataDriver(storage.DataDriverBase):
     BASE_CAPABILITIES = tuple(storage.Capabilities)
 
     _DRIVER_OPTIONS = options._config_options()
+
+    _COL_SUFIX = "_messages_p"
 
     def __init__(self, conf, cache):
         super(DataDriver, self).__init__(conf, cache)
@@ -162,7 +171,7 @@ class DataDriver(storage.DataDriverBase):
         #
         #     self.driver.message_databases[0]
         #
-        return [self.connection[name + '_messages_p' + str(p)]
+        return [self.connection[name + self._COL_SUFIX + str(p)]
                 for p in range(partitions)]
 
     @decorators.lazy_property(write=False)
@@ -191,6 +200,20 @@ class DataDriver(storage.DataDriverBase):
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
         return controllers.SubscriptionController(self)
+
+
+class FIFODataDriver(DataDriver):
+
+    BASE_CAPABILITIES = (storage.Capabilities.DURABILITY,
+                         storage.Capabilities.CLAIMS,
+                         storage.Capabilities.AOD,
+                         storage.Capabilities.HIGH_THROUGHPUT)
+
+    _COL_SUFIX = "_messages_fifo_p"
+
+    @decorators.lazy_property(write=False)
+    def message_controller(self):
+        return controllers.FIFOMessageController(self)
 
 
 class ControlDriver(storage.ControlDriverBase):

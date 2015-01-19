@@ -342,6 +342,17 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
 
         timeutils.clear_time_override()
 
+
+@testing.requires_mongodb
+class MongodbFIFOMessageTests(MongodbSetupMixin, base.MessageControllerTest):
+
+    driver_class = mongodb.DataDriver
+    config_file = 'wsgi_fifo_mongodb.conf'
+    controller_class = controllers.FIFOMessageController
+
+    # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
+    gc_interval = 60
+
     def test_race_condition_on_post(self):
         queue_name = self.queue_name
 
@@ -459,13 +470,12 @@ class MongodbSubscriptionTests(MongodbSetupMixin,
 
 @testing.requires_mongodb
 class MongodbPoolsTests(base.PoolsControllerTest):
+    config_file = 'wsgi_mongodb.conf'
     driver_class = mongodb.ControlDriver
     controller_class = controllers.PoolsController
 
     def setUp(self):
         super(MongodbPoolsTests, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
-        self.flavors_controller = self.driver.flavors_controller
 
     def tearDown(self):
         super(MongodbPoolsTests, self).tearDown()
@@ -477,6 +487,13 @@ class MongodbPoolsTests(base.PoolsControllerTest):
 
         with testing.expect(errors.PoolInUseByFlavor):
             self.pools_controller.delete(self.pool)
+
+    def test_mismatching_capabilities_fifo(self):
+        with testing.expect(errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'mongodb.fifo://localhost',
+                                         group=self.pool_group,
+                                         options={})
 
 
 @testing.requires_mongodb

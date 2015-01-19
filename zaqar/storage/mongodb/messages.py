@@ -183,16 +183,8 @@ class MessageController(storage.Message):
                                 name='counting',
                                 background=True)
 
-        # NOTE(kgriffs): This index must be unique so that
-        # inserting a message with the same marker to the
-        # same queue will fail; this is used to detect a
-        # race condition which can cause an observer client
-        # to miss a message when there is more than one
-        # producer posting messages to the same queue, in
-        # parallel.
         collection.ensure_index(MARKER_INDEX_FIELDS,
                                 name='queue_marker',
-                                unique=True,
                                 background=True)
 
         collection.ensure_index(TRANSACTION_INDEX_FIELDS,
@@ -513,6 +505,171 @@ class MessageController(storage.Message):
         now_dt = datetime.datetime.utcfromtimestamp(now)
         collection = self._collection(queue_name, project)
 
+        messages = list(messages)
+        msgs_n = len(messages)
+        next_marker = self._queue_ctrl._inc_counter(queue_name,
+                                                    project,
+                                                    amount=msgs_n) - msgs_n
+
+        prepared_messages = [
+            {
+                PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
+                't': message['ttl'],
+                'e': now_dt + datetime.timedelta(seconds=message['ttl']),
+                'u': client_uuid,
+                'c': {'id': None, 'e': now},
+                'b': message['body'] if 'body' in message else {},
+                'k': next_marker + index,
+                'tx': None,
+            }
+
+            for index, message in enumerate(messages)
+        ]
+
+        ids = collection.insert(prepared_messages)
+
+        return [str(id_) for id_ in ids]
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def delete(self, queue_name, message_id, project=None, claim=None):
+        # NOTE(cpp-cabrera): return early - this is an invalid message
+        # id so we won't be able to find it any way
+        mid = utils.to_oid(message_id)
+        if mid is None:
+            return
+
+        collection = self._collection(queue_name, project)
+
+        query = {
+            '_id': mid,
+            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
+        }
+
+        cid = utils.to_oid(claim)
+        if cid is None:
+            raise errors.ClaimDoesNotExist(queue_name, project, claim)
+
+        now = timeutils.utcnow_ts()
+        cursor = collection.find(query).hint(ID_INDEX_FIELDS)
+
+        try:
+            message = next(cursor)
+        except StopIteration:
+            return
+
+        if claim is None:
+            if _is_claimed(message, now):
+                raise errors.MessageIsClaimed(message_id)
+
+        else:
+            if message['c']['id'] != cid:
+                # NOTE(kgriffs): Read from primary in case the message
+                # was just barely claimed, and claim hasn't made it to
+                # the secondary.
+                pref = pymongo.read_preferences.ReadPreference.PRIMARY
+                message = collection.find_one(query, read_preference=pref)
+
+                if message['c']['id'] != cid:
+                    if _is_claimed(message, now):
+                        raise errors.MessageNotClaimedBy(message_id, claim)
+
+                    raise errors.MessageNotClaimed(message_id)
+
+        collection.remove(query['_id'], w=0)
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def bulk_delete(self, queue_name, message_ids, project=None):
+        message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
+        query = {
+            '_id': {'$in': message_ids},
+            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
+        }
+
+        collection = self._collection(queue_name, project)
+        collection.remove(query, w=0)
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def pop(self, queue_name, limit, project=None):
+        query = {
+            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
+        }
+
+        # Only include messages that are not part of
+        # any claim, or are part of an expired claim.
+        now = timeutils.utcnow_ts()
+        query['c.e'] = {'$lte': now}
+
+        collection = self._collection(queue_name, project)
+        fields = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
+
+        messages = (collection.find_and_modify(query,
+                                               fields=fields,
+                                               remove=True)
+                    for _ in range(limit))
+
+        final_messages = [_basic_message(message, now)
+                          for message in messages
+                          if message]
+
+        return final_messages
+
+
+class FIFOMessageController(MessageController):
+
+    def _ensure_indexes(self, collection):
+        """Ensures that all indexes are created."""
+
+        collection.ensure_index(TTL_INDEX_FIELDS,
+                                name='ttl',
+                                expireAfterSeconds=0,
+                                background=True)
+
+        collection.ensure_index(ACTIVE_INDEX_FIELDS,
+                                name='active',
+                                background=True)
+
+        collection.ensure_index(CLAIMED_INDEX_FIELDS,
+                                name='claimed',
+                                background=True)
+
+        collection.ensure_index(COUNTING_INDEX_FIELDS,
+                                name='counting',
+                                background=True)
+
+        # NOTE(kgriffs): This index must be unique so that
+        # inserting a message with the same marker to the
+        # same queue will fail; this is used to detect a
+        # race condition which can cause an observer client
+        # to miss a message when there is more than one
+        # producer posting messages to the same queue, in
+        # parallel.
+        collection.ensure_index(MARKER_INDEX_FIELDS,
+                                name='queue_marker',
+                                unique=True,
+                                background=True)
+
+        collection.ensure_index(TRANSACTION_INDEX_FIELDS,
+                                name='transaction',
+                                background=True)
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def post(self, queue_name, messages, client_uuid, project=None):
+        # NOTE(flaper87): This method should be safe to retry on
+        # autoreconnect, since we've a 2-step insert for messages.
+        # The worst-case scenario is that we'll increase the counter
+        # several times and we'd end up with some non-active messages.
+
+        if not self._queue_ctrl.exists(queue_name, project):
+            raise errors.QueueDoesNotExist(queue_name, project)
+
+        now = timeutils.utcnow_ts()
+        now_dt = datetime.datetime.utcfromtimestamp(now)
+        collection = self._collection(queue_name, project)
+
         # Set the next basis marker for the first attempt.
         #
         # Note that we don't increment the counter right away because
@@ -687,92 +844,6 @@ class MessageController(storage.Message):
                          project=project))
 
         raise errors.MessageConflict(queue_name, project)
-
-    @utils.raises_conn_error
-    @utils.retries_on_autoreconnect
-    def delete(self, queue_name, message_id, project=None, claim=None):
-        # NOTE(cpp-cabrera): return early - this is an invalid message
-        # id so we won't be able to find it any way
-        mid = utils.to_oid(message_id)
-        if mid is None:
-            return
-
-        collection = self._collection(queue_name, project)
-
-        query = {
-            '_id': mid,
-            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
-        }
-
-        cid = utils.to_oid(claim)
-        if cid is None:
-            raise errors.ClaimDoesNotExist(queue_name, project, claim)
-
-        now = timeutils.utcnow_ts()
-        cursor = collection.find(query).hint(ID_INDEX_FIELDS)
-
-        try:
-            message = next(cursor)
-        except StopIteration:
-            return
-
-        if claim is None:
-            if _is_claimed(message, now):
-                raise errors.MessageIsClaimed(message_id)
-
-        else:
-            if message['c']['id'] != cid:
-                # NOTE(kgriffs): Read from primary in case the message
-                # was just barely claimed, and claim hasn't made it to
-                # the secondary.
-                pref = pymongo.read_preferences.ReadPreference.PRIMARY
-                message = collection.find_one(query, read_preference=pref)
-
-                if message['c']['id'] != cid:
-                    if _is_claimed(message, now):
-                        raise errors.MessageNotClaimedBy(message_id, claim)
-
-                    raise errors.MessageNotClaimed(message_id)
-
-        collection.remove(query['_id'], w=0)
-
-    @utils.raises_conn_error
-    @utils.retries_on_autoreconnect
-    def bulk_delete(self, queue_name, message_ids, project=None):
-        message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
-        query = {
-            '_id': {'$in': message_ids},
-            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
-        }
-
-        collection = self._collection(queue_name, project)
-        collection.remove(query, w=0)
-
-    @utils.raises_conn_error
-    @utils.retries_on_autoreconnect
-    def pop(self, queue_name, limit, project=None):
-        query = {
-            PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
-        }
-
-        # Only include messages that are not part of
-        # any claim, or are part of an expired claim.
-        now = timeutils.utcnow_ts()
-        query['c.e'] = {'$lte': now}
-
-        collection = self._collection(queue_name, project)
-        fields = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
-
-        messages = (collection.find_and_modify(query,
-                                               fields=fields,
-                                               remove=True)
-                    for _ in range(limit))
-
-        final_messages = [_basic_message(message, now)
-                          for message in messages
-                          if message]
-
-        return final_messages
 
 
 def _is_claimed(msg, now):
