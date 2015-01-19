@@ -176,3 +176,12 @@ class PoolInUseByFlavor(NotPermitted):
     @property
     def flavor(self):
         return self._flavor
+
+
+class SubscriptionDoesNotExist(DoesNotExist):
+
+    msg_format = u'Subscription {subscription_id} does not exist'
+
+    def __init__(self, subscription_id):
+        super(SubscriptionDoesNotExist,
+              self).__init__(subscription_id=subscription_id)

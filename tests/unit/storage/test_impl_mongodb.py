@@ -41,7 +41,8 @@ from zaqar.tests.unit.storage import base
 class MongodbSetupMixin(object):
     def _purge_databases(self):
         databases = (self.driver.message_databases +
-                     [self.driver.queues_database])
+                     [self.driver.queues_database,
+                      self.driver.subscriptions_database])
 
         for db in databases:
             self.driver.connection.drop_database(db)
@@ -442,6 +443,14 @@ class MongodbClaimTests(MongodbSetupMixin, base.ClaimControllerTest):
                           self.controller.update, self.queue_name,
                           claim_id, {'ttl': 1, 'grace': 0},
                           project=self.project)
+
+
+@testing.requires_mongodb
+class MongodbSubscriptionTests(MongodbSetupMixin,
+                               base.SubscriptionControllerTest):
+    driver_class = mongodb.DataDriver
+    config_file = 'wsgi_mongodb.conf'
+    controller_class = controllers.SubscriptionController
 
 
 #

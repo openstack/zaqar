@@ -23,7 +23,7 @@ from zaqar.storage import base
 
 LOG = logging.getLogger(__name__)
 
-_PIPELINE_RESOURCES = ('queue', 'message', 'claim')
+_PIPELINE_RESOURCES = ('queue', 'message', 'claim', 'subscription')
 
 _PIPELINE_CONFIGS = tuple((
     cfg.ListOpt(resource + '_pipeline', default=[],
@@ -121,4 +121,10 @@ class DataDriver(base.DataDriverBase):
     def claim_controller(self):
         stages = _get_storage_pipeline('claim', self.conf)
         stages.append(self._storage.claim_controller)
+        return stages
+
+    @decorators.lazy_property(write=False)
+    def subscription_controller(self):
+        stages = _get_storage_pipeline('subscription', self.conf)
+        stages.append(self._storage.subscription_controller)
         return stages

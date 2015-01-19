@@ -31,6 +31,7 @@ import zaqar.openstack.common.log as logging
 DEFAULT_QUEUES_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_PAGE = 10
 DEFAULT_POOLS_PER_PAGE = 10
+DEFAULT_SUBSCRIPTIONS_PER_PAGE = 10
 
 DEFAULT_MESSAGES_PER_CLAIM = 10
 
@@ -221,6 +222,11 @@ class DataDriverBase(DriverBase):
     @abc.abstractproperty
     def claim_controller(self):
         """Returns the driver's claim controller."""
+        raise NotImplementedError
+
+    @abc.abstractproperty
+    def subscription_controller(self):
+        """Returns the driver's subscription controller."""
         raise NotImplementedError
 
 
@@ -560,6 +566,111 @@ class Claim(ControllerBase):
             claim belongs to.
         :param claim_id: Claim to be deleted
         :param project: Project id
+        """
+        raise NotImplementedError
+
+
+@six.add_metaclass(abc.ABCMeta)
+class Subscription(ControllerBase):
+    """This class is responsible for managing subscriptions of notification.
+
+    """
+
+    @abc.abstractmethod
+    def list(self, queue, project=None, marker=None,
+             limit=DEFAULT_SUBSCRIPTIONS_PER_PAGE):
+        """Base method for listing subscriptions.
+
+        :param queue: Name of the queue to get the subscriptions from.
+        :type queue: six.text_type
+        :param project: Project this subscription belongs to.
+        :type project: six.text_type
+        :param marker: used to determine which subscription to start with
+        :type marker: six.text_type
+        :param limit: (Default 10) Max number of results to return
+        :type limit: int
+        :returns: An iterator giving a sequence of subscriptions
+            and the marker of the next page.
+        :rtype: [{}]
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(self, queue, subscription_id, project=None):
+        """Returns a single subscription entry.
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param subscription_id: ID of this subscription
+        :type subscription_id: six.text_type
+        :param project: Project this subscription belongs to.
+        :type project: six.text_type
+        :returns: Dictionary containing subscription data
+        :rtype: {}
+        :raises: SubscriptionDoesNotExist if not found
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create(self, queue, subscriber, ttl, options, project=None):
+        """Create a new subscription.
+
+        :param queue:The source queue for notifications
+        :type queue: six.text_type
+        :param subscriber: The subscriber URI
+        :type subscriber: six.text_type
+        :param ttl: time to live for this subscription
+        :type ttl: int
+        :param options: Options used to configure this subscription
+        :type options: dict
+        :param project: Project id
+        :type project: six.text_type
+        :returns: True if a subscription was created and False
+        if it is failed.
+        :rtype: boolean
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, queue, subscription_id, project=None, **kwargs):
+        """Updates the weight, uris, and/or options of this subscription
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param name: ID of the subscription
+        :type name: text
+        :param kwargs: one of: `source`, `subscriber`, `ttl`, `options`
+        :type kwargs: dict
+        :raises: SubscriptionDoesNotExist if not found
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def exists(self, queue, subscription_id, project=None):
+        """Base method for testing subscription existence.
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param subscription_id: ID of subscription
+        :type subscription_id: six.text_type
+        :param project: Project id
+        :type project: six.text_type
+        :returns: True if a subscription exists and False
+            if it does not.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, queue, subscription_id, project=None):
+        """Base method for deleting a subscription.
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param subscription_id: ID of the subscription to be deleted.
+        :type subscription_id: six.text_type
+        :param project: Project id
+        :type project: six.text_type
         """
         raise NotImplementedError
 

@@ -46,6 +46,10 @@ class DataDriver(storage.DataDriverBase):
     def claim_controller(self):
         return None
 
+    @property
+    def subscription_controller(self):
+        return None
+
 
 class ControlDriver(storage.ControlDriverBase):
 

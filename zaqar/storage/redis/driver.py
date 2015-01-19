@@ -206,6 +206,10 @@ class DataDriver(storage.DataDriverBase):
     def claim_controller(self):
         return controllers.ClaimController(self)
 
+    @decorators.lazy_property(write=False)
+    def subscription_controller(self):
+        raise NotImplementedError()
+
 
 class ControlDriver(storage.ControlDriverBase):
 
@@ -232,6 +236,10 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def flavors_controller(self):
+        raise NotImplementedError()
+
+    @property
+    def subscriptions_controller(self):
         raise NotImplementedError()
 
 

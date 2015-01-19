@@ -166,6 +166,12 @@ class DataDriver(storage.DataDriverBase):
                 for p in range(partitions)]
 
     @decorators.lazy_property(write=False)
+    def subscriptions_database(self):
+        """Database dedicated to the "subscription" collection."""
+        name = self.mongodb_conf.database + '_subscriptions'
+        return self.connection[name]
+
+    @decorators.lazy_property(write=False)
     def connection(self):
         """MongoDB client connection instance."""
         return _connection(self.mongodb_conf)
@@ -181,6 +187,10 @@ class DataDriver(storage.DataDriverBase):
     @decorators.lazy_property(write=False)
     def claim_controller(self):
         return controllers.ClaimController(self)
+
+    @decorators.lazy_property(write=False)
+    def subscription_controller(self):
+        return controllers.SubscriptionController(self)
 
 
 class ControlDriver(storage.ControlDriverBase):
