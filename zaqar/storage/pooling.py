@@ -166,7 +166,7 @@ class QueueController(storage.Queue):
                 yield queue_cmp.obj
 
         yield it()
-        yield marker_name['next']
+        yield marker_name and marker_name['next']
 
     def _get(self, name, project=None):
         try:
