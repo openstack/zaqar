@@ -27,7 +27,7 @@ import socket
 import sys
 import textwrap
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 import stevedore.named
 
@@ -108,7 +108,7 @@ def generate(argv):
     # and the list of Opt instances for that group.
     if parsed_args.libraries:
         loader = stevedore.named.NamedExtensionManager(
-            'oslo.config.opts',
+            'oslo_config.opts',
             names=list(set(parsed_args.libraries)),
             invoke_on_load=False,
             on_load_failure_callback=raise_extension_exception
@@ -153,7 +153,7 @@ def _is_in_group(opt, group):
     """Check if opt is in group."""
     for value in group._opts.values():
         # NOTE(llu): Temporary workaround for bug #1262148, wait until
-        # newly released oslo.config support '==' operator.
+        # newly released oslo_config support '==' operator.
         if not(value['opt'] != opt):
             return True
     return False

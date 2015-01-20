@@ -17,7 +17,7 @@ import functools
 from wsgiref import simple_server
 
 import falcon
-from oslo.config import cfg
+from oslo_config import cfg
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers

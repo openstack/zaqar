@@ -47,10 +47,10 @@ def memoized_getattr(meth):
 
 
 def caches(keygen, ttl, cond=None):
-    """Flags a getter method as being cached using oslo.cache.
+    """Flags a getter method as being cached using oslo_cache.
 
     It is assumed that the containing class defines an attribute
-    named `_cache` that is an instance of an oslo.cache backend.
+    named `_cache` that is an instance of an oslo_cache backend.
 
     The getter should raise an exception if the value can't be
     loaded, which will skip the caching step. Otherwise, the

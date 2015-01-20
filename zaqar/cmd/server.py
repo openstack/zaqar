@@ -14,7 +14,7 @@
 # limitations under the License.
 import os
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from zaqar import bootstrap
 from zaqar.common import cli

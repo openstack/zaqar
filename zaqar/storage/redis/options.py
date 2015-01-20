@@ -14,7 +14,7 @@
 
 """Redis storage driver configuration options."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 _deprecated_group = 'drivers:storage:redis'
 # options common to management and message storage

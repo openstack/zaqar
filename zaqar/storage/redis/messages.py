@@ -15,8 +15,8 @@
 import functools
 import uuid
 
-from oslo.utils import encodeutils
-from oslo.utils import timeutils
+from oslo_utils import encodeutils
+from oslo_utils import timeutils
 
 from zaqar.common import decorators
 from zaqar import storage

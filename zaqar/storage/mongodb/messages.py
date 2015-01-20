@@ -25,7 +25,7 @@ import datetime
 import time
 
 from bson import objectid
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import pymongo.errors
 import pymongo.read_preferences
 

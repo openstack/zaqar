@@ -14,7 +14,7 @@
 
 """SQLAlchemy storage driver implementation."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 _deprecated_group = 'drivers:storage:sqlalchemy'
 _COMMON_SQLALCHEMY_OPTIONS = (

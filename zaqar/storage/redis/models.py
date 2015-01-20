@@ -16,8 +16,8 @@ import functools
 import uuid
 
 import msgpack
-from oslo.utils import encodeutils
-from oslo.utils import timeutils
+from oslo_utils import encodeutils
+from oslo_utils import timeutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e')
 

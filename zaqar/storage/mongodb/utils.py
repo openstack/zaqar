@@ -24,7 +24,7 @@ import time
 from bson import errors as berrors
 from bson import objectid
 from bson import tz_util
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from pymongo import errors
 
 from zaqar.i18n import _

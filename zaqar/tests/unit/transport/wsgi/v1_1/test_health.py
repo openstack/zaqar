@@ -17,7 +17,7 @@
 import ddt
 import falcon
 import mock
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from zaqar.storage import errors
 import zaqar.storage.mongodb as mongo

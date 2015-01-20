@@ -17,7 +17,7 @@ import functools
 import json
 
 from falcon import testing as ftest
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 import six
 

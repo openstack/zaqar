@@ -36,8 +36,8 @@ import os
 import sys
 import traceback
 
-from oslo.config import cfg
-from oslo.serialization import jsonutils
+from oslo_config import cfg
+from oslo_serialization import jsonutils
 import six
 from six import moves
 
@@ -124,7 +124,7 @@ generic_log_opts = [
 
 DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
-                      'oslo.messaging=INFO', 'iso8601=WARN',
+                      'oslo_messaging=INFO', 'iso8601=WARN',
                       'requests.packages.urllib3.connectionpool=WARN',
                       'urllib3.connectionpool=WARN', 'websocket=WARN']
 
@@ -517,7 +517,7 @@ def _setup_logging_from_conf(project, version):
                 logging.ERROR)
         except ImportError:
             handler = importutils.import_object(
-                "oslo.messaging.notify.log_handler.PublishErrorsHandler",
+                "oslo_messaging.notify.log_handler.PublishErrorsHandler",
                 logging.ERROR)
         log_root.addHandler(handler)
 

@@ -19,8 +19,8 @@ import uuid
 import ddt
 import falcon
 import mock
-from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_serialization import jsonutils
+from oslo_utils import timeutils
 import six
 from testtools import matchers
 

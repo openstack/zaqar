@@ -15,7 +15,7 @@
 
 import abc
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 
@@ -69,7 +69,7 @@ class DriverBase(object):
     """Base class for Transport Drivers to document the expected interface.
 
     :param conf: configuration instance
-    :type conf: oslo.config.cfg.CONF
+    :type conf: oslo_config.cfg.CONF
     :param storage: The storage driver
     :type storage: zaqar.storage.base.DataDriverBase
     :param cache: caching object

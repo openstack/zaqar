@@ -33,7 +33,7 @@ import six
 
 _AVAILABLE_LANGUAGES = {}
 
-# FIXME(dhellmann): Remove this when moving to oslo.i18n.
+# FIXME(dhellmann): Remove this when moving to oslo_i18n.
 USE_LAZY = False
 
 
@@ -81,7 +81,7 @@ class TranslatorFactory(object):
         m = t.gettext if six.PY3 else t.ugettext
 
         def f(msg):
-            """oslo.i18n.gettextutils translation function."""
+            """oslo_i18n.gettextutils translation function."""
             if USE_LAZY:
                 return Message(msg, domain=domain)
             return m(msg)
@@ -117,7 +117,7 @@ class TranslatorFactory(object):
 
 
 # NOTE(dhellmann): When this module moves out of the incubator into
-# oslo.i18n, these global variables can be moved to an integration
+# oslo_i18n, these global variables can be moved to an integration
 # module within each application.
 
 # Create the global translation functions.

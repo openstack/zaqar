@@ -14,7 +14,7 @@
 
 """MongoDB storage driver configuration options."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 _deprecated_group = 'drivers:storage:mongodb'
 
@@ -140,7 +140,7 @@ MESSAGE_MONGODB_GROUP = 'drivers:message_store:mongodb'
 def _config_options():
     """Used by config generators.
 
-    Returns a list of (group-name, oslo.config-options) tuples
+    Returns a list of (group-name, oslo_config-options) tuples
     for management and message storage.
     """
     return [(MANAGEMENT_MONGODB_GROUP, MANAGEMENT_MONGODB_OPTIONS),

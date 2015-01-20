@@ -22,7 +22,7 @@ import time
 import uuid
 
 import enum
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 import zaqar.openstack.common.log as logging
@@ -53,7 +53,7 @@ class DriverBase(object):
     """Base class for both data and control plane drivers
 
     :param conf: Configuration containing options for this driver.
-    :type conf: `oslo.config.ConfigOpts`
+    :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
     :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
@@ -85,7 +85,7 @@ class DataDriverBase(DriverBase):
     loaded from the config file or the pool catalog.
 
     :param conf: Configuration containing options for this driver.
-    :type conf: `oslo.config.ConfigOpts`
+    :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
     :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
@@ -242,7 +242,7 @@ class ControlDriverBase(DriverBase):
     pool controller.
 
     :param conf: Configuration containing options for this driver.
-    :type conf: `oslo.config.ConfigOpts`
+    :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
     :type cache: `zaqar.openstack.common.cache.backends.BaseCache`

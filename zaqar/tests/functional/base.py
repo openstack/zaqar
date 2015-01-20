@@ -19,7 +19,7 @@ import multiprocessing
 import os
 
 import jsonschema
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 
 from zaqar.api.v1 import response as response_v1

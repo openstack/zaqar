@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import falcon
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from zaqar.tests.unit.transport.wsgi import base
 

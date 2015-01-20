@@ -15,7 +15,7 @@
 
 import json
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 
 
 class MalformedJSON(ValueError):

@@ -20,8 +20,8 @@ import uuid
 import ddt
 import falcon
 import mock
-from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_serialization import jsonutils
+from oslo_utils import timeutils
 from testtools import matchers
 
 from zaqar import tests as testing

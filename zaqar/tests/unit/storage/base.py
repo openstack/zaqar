@@ -21,7 +21,7 @@ import uuid
 
 import ddt
 import mock
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 from testtools import matchers
 
@@ -897,7 +897,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         now = timeutils.utcnow_ts()
-        timeutils_utcnow = 'oslo.utils.timeutils.utcnow_ts'
+        timeutils_utcnow = 'oslo_utils.timeutils.utcnow_ts'
 
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now + 2

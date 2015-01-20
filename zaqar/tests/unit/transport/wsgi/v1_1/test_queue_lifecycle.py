@@ -16,7 +16,7 @@ import uuid
 
 import ddt
 import falcon
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import six
 
 from zaqar import tests as testing

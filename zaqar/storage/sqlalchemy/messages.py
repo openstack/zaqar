@@ -15,7 +15,7 @@
 
 import calendar
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy.sql import func as sfunc
 

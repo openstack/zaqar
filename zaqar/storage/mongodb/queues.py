@@ -21,7 +21,7 @@ Field Mappings:
     letter of their long name.
 """
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import pymongo.errors
 
 from zaqar.common import decorators

@@ -19,7 +19,7 @@ import time
 import uuid
 
 import mock
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from pymongo import cursor
 import pymongo.errors
 import six

@@ -14,7 +14,7 @@
 
 import copy
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 from stevedore import driver
 
@@ -33,10 +33,10 @@ def dynamic_conf(uri, options, conf=None):
     :param options: additional pool metadata
     :type options: dict
     :param conf: Optional conf object to copy
-    :type conf: `oslo.config.cfg.ConfigOpts`
+    :type conf: `oslo_config.cfg.ConfigOpts`
     :returns: Configuration object suitable for constructing storage
               drivers
-    :rtype: oslo.config.cfg.ConfigOpts
+    :rtype: oslo_config.cfg.ConfigOpts
     """
     storage_type = six.moves.urllib_parse.urlparse(uri).scheme
 

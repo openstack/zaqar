@@ -24,7 +24,7 @@ Field Mappings:
 import datetime
 
 from bson import objectid
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 import zaqar.openstack.common.log as logging
 from zaqar import storage

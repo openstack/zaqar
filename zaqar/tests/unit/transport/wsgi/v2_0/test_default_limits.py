@@ -17,7 +17,7 @@ import contextlib
 import uuid
 
 import falcon
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from zaqar import storage
 from zaqar.tests.unit.transport.wsgi import base

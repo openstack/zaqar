@@ -26,7 +26,7 @@ no common way to specify / pass configuration files
 to the WSGI app when it is called from other apps.
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from zaqar import bootstrap
 

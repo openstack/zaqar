@@ -15,7 +15,7 @@
 import functools
 
 import msgpack
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from zaqar.common import decorators
 from zaqar.openstack.common import log as logging

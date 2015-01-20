@@ -15,8 +15,8 @@
 
 import functools
 
-from oslo.serialization import jsonutils
-from oslo.utils import encodeutils
+from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import sqlalchemy as sa
 from sqlalchemy import exc
 from sqlalchemy.sql import func as sfunc

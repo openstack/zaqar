@@ -15,7 +15,7 @@
 import uuid
 
 from falcon import testing as ftest
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from zaqar import bootstrap
 from zaqar import tests as testing

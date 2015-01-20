@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import msgpack
-from oslo.config import cfg
+from oslo_config import cfg
 
 from zaqar.common import decorators
 from zaqar.openstack.common.cache import cache as oslo_cache

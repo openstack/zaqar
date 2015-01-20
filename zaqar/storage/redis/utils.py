@@ -17,7 +17,7 @@ import sys
 import time
 import uuid
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 import redis
 import six
 

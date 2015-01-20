@@ -15,7 +15,7 @@
 
 """utils: general-purpose utilities."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 
@@ -52,12 +52,12 @@ _pytype_to_cfgtype = {
 
 
 def dict_to_conf(options):
-    """Converts a python dictionary to a list of oslo.config.cfg.Opt
+    """Converts a python dictionary to a list of oslo_config.cfg.Opt
 
     :param options: The python dictionary to convert
     :type options: dict
-    :returns: a list of options compatible with oslo.config
-    :rtype: [oslo.config.cfg.Opt]
+    :returns: a list of options compatible with oslo_config
+    :rtype: [oslo_config.cfg.Opt]
     """
 
     opts = []

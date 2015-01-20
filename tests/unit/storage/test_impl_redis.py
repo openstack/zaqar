@@ -17,7 +17,7 @@ import time
 import uuid
 
 import mock
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import redis
 
 from zaqar.common import errors
@@ -390,7 +390,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
                                    client_uuid=str(uuid.uuid4()))
 
         now = timeutils.utcnow_ts()
-        timeutils_utcnow = 'oslo.utils.timeutils.utcnow_ts'
+        timeutils_utcnow = 'oslo_utils.timeutils.utcnow_ts'
 
         # Test a single claim
         with mock.patch(timeutils_utcnow) as mock_utcnow:

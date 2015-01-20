@@ -16,7 +16,7 @@
 import heapq
 import itertools
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from zaqar.common import decorators
 from zaqar.common.storage import select
