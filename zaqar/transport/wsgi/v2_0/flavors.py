@@ -34,8 +34,9 @@ class Listing(object):
     :param flavors_controller: means to interact with storage
     """
 
-    def __init__(self, flavors_controller):
+    def __init__(self, flavors_controller, pools_controller):
         self._ctrl = flavors_controller
+        self._pools_ctrl = pools_controller
 
     def on_get(self, request, response, project_id):
         """Returns a flavor listing as objects embedded in an object:
@@ -61,7 +62,7 @@ class Listing(object):
         store = {}
         request.get_param('marker', store=store)
         request.get_param_as_int('limit', store=store)
-        request.get_param_as_bool('detailed', store=store)
+        detailed = request.get_param_as_bool('detailed')
 
         cursor = self._ctrl.list(project=project_id, **store)
         flavors = list(next(cursor))
@@ -73,6 +74,13 @@ class Listing(object):
 
             for entry in flavors:
                 entry['href'] = request.path + '/' + entry.pop('name')
+                if detailed:
+                    caps = self._pools_ctrl.capabilities(group=entry['pool'])
+                    entry['capabilities'] = [str(cap).split('.')[-1]
+                                             for cap in caps]
+
+        if detailed is not None:
+            store['detailed'] = detailed
 
         results['links'] = [
             {
@@ -92,8 +100,10 @@ class Resource(object):
     :param flavors_controller: means to interact with storage
     """
 
-    def __init__(self, flavors_controller):
+    def __init__(self, flavors_controller, pools_controller):
         self._ctrl = flavors_controller
+        self._pools_ctrl = pools_controller
+
         validator_type = jsonschema.Draft4Validator
         self._validators = {
             'create': validator_type(schema.create),
@@ -113,12 +123,12 @@ class Resource(object):
 
         LOG.debug(u'GET flavor - name: %s', flavor)
         data = None
-        detailed = request.get_param_as_bool('detailed') or False
 
         try:
-            data = self._ctrl.get(flavor,
-                                  project=project_id,
-                                  detailed=detailed)
+            data = self._ctrl.get(flavor, project=project_id)
+            capabilities = self._pools_ctrl.capabilities(group=data['pool'])
+            data['capabilities'] = [str(cap).split('.')[-1]
+                                    for cap in capabilities]
 
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
@@ -150,8 +160,7 @@ class Resource(object):
         try:
             self._ctrl.create(flavor,
                               pool=data['pool'],
-                              project=project_id,
-                              capabilities=data['capabilities'])
+                              project=project_id)
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolDoesNotExist as ex:
@@ -187,12 +196,11 @@ class Resource(object):
         LOG.debug(u'PATCH flavor - name: %s', flavor)
         data = wsgi_utils.load(request)
 
-        EXPECT = ('pool', 'capabilities')
+        EXPECT = ('pool', )
         if not any([(field in data) for field in EXPECT]):
             LOG.debug(u'PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                'One of `pool` or `capabilities` needs '
-                'to be specified'
+                'One of `pool` needs to be specified'
             )
 
         for field in EXPECT:

@@ -682,25 +682,42 @@ class PoolsBase(ControllerBase):
     """A controller for managing pools."""
 
     def _check_capabilities(self, uri, group=None, name=None):
-        if name:
-            group = list(self._get_group(self._get(name)['group']))
-        else:
-            group = list(self._get_group(group))
+        default_store = self.driver.conf.drivers.storage
+        pool_caps = self.capabilities(group=group, name=name)
 
-        if not len(group) > 0:
+        if not pool_caps:
             return True
 
-        default_store = self.driver.conf.drivers.storage
-
-        existing_store = utils.load_storage_impl(group[0]['uri'],
-                                                 default_store=default_store)
         new_store = utils.load_storage_impl(uri,
                                             default_store=default_store)
 
         # NOTE(flaper87): Since all pools in a pool group
         # are assumed to have the same capabilities, it's
         # fine to check against just 1
-        return existing_store.BASE_CAPABILITIES == new_store.BASE_CAPABILITIES
+        return pool_caps == new_store.BASE_CAPABILITIES
+
+    def capabilities(self, group=None, name=None):
+        """Gets the set of capabilities for this group/name
+
+        :param group: The pool group to get capabilities for
+        :type group: six.text_type
+        :param name: The pool name to get capabilities for
+        :type name: six.text_type
+        """
+        if name:
+            group = list(self._get_group(self._get(name)['group']))
+        else:
+            group = list(self._get_group(group))
+
+        if not len(group) > 0:
+            return ()
+
+        default_store = self.driver.conf.drivers.storage
+
+        pool_store = utils.load_storage_impl(group[0]['uri'],
+                                             default_store=default_store)
+
+        return pool_store.BASE_CAPABILITIES
 
     def list(self, marker=None, limit=DEFAULT_POOLS_PER_PAGE,
              detailed=False):
@@ -921,7 +938,7 @@ class FlavorsBase(ControllerBase):
     """A controller for managing flavors."""
 
     @abc.abstractmethod
-    def list(self, project=None, marker=None, limit=10, detailed=False):
+    def list(self, project=None, marker=None, limit=10):
         """Lists all registered flavors.
 
         :param project: Project this flavor belongs to.
@@ -930,8 +947,6 @@ class FlavorsBase(ControllerBase):
         :type marker: six.text_type
         :param limit: (Default 10) Max number of results to return
         :type limit: int
-        :param detailed: whether to include capabilities
-        :type detailed: bool
         :returns: A list of flavors - name, project, flavor
         :rtype: [{}]
         """
@@ -955,15 +970,13 @@ class FlavorsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, name, project=None, detailed=False):
+    def get(self, name, project=None):
         """Returns a single flavor entry.
 
         :param name: The name of this flavor
         :type name: six.text_type
         :param project: Project this flavor belongs to.
         :type project: six.text_type
-        :param detailed: Should the options data be included?
-        :type detailed: bool
         :rtype: {}
         :raises: FlavorDoesNotExist if not found
         """

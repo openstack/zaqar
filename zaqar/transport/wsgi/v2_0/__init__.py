@@ -113,9 +113,9 @@ def private_endpoints(driver, conf):
             ('/pools/{pool}',
              pools.Resource(pools_controller)),
             ('/flavors',
-             flavors.Listing(flavors_controller)),
+             flavors.Listing(flavors_controller, pools_controller)),
             ('/flavors/{flavor}',
-             flavors.Resource(flavors_controller)),
+             flavors.Resource(flavors_controller, pools_controller)),
         ])
 
     return catalogue

@@ -24,7 +24,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @contextlib.contextmanager
-def flavor(test, name, pool, capabilities={}):
+def flavor(test, name, pool):
     """A context manager for constructing a flavor for use in testing.
 
     Deletes the flavor after exiting the context.
@@ -33,19 +33,18 @@ def flavor(test, name, pool, capabilities={}):
     :param name: Name for this flavor
     :type name: six.text_type
     :type pool: six.text_type
-    :type capabilities: dict
     :returns: (name, uri, capabilities)
     :rtype: see above
 
     """
 
-    doc = {'pool': pool, 'capabilities': capabilities}
+    doc = {'pool': pool}
     path = test.url_prefix + '/flavors/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
-        yield name, pool, capabilities
+        yield name, pool
 
     finally:
         test.simulate_delete(path)
@@ -66,16 +65,16 @@ def flavors(test, count, pool):
     """
 
     base = test.url_prefix + '/flavors/'
-    args = sorted([(base + str(i), {str(i): i}, str(i)) for i in range(count)],
-                  key=lambda tup: tup[2])
-    for path, capabilities, _ in args:
-        doc = {'pool': pool, 'capabilities': capabilities}
+    args = sorted([(base + str(i), str(i)) for i in range(count)],
+                  key=lambda tup: tup[1])
+    for path, _ in args:
+        doc = {'pool': pool}
         test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
         yield args
     finally:
-        for path, _, _ in args:
+        for path, _ in args:
             test.simulate_delete(path)
 
 
@@ -103,6 +102,7 @@ class FlavorsBaseTest(base.V2Base):
 
     def tearDown(self):
         super(FlavorsBaseTest, self).tearDown()
+        self.simulate_delete(self.pool_path)
         self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
@@ -181,14 +181,9 @@ class FlavorsBaseTest(base.V2Base):
         pool = jsonutils.loads(result[0])
         self._flavor_expect(pool, self.flavor_path, self.doc['pool'])
 
-    def test_detailed_get_works(self):
-        result = self.simulate_get(self.flavor_path,
-                                   query_string='?detailed=True')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor_path, self.doc['pool'])
-        self.assertIn('capabilities', pool)
-        self.assertEqual(pool['capabilities'], {})
+        store_caps = ['FIFO', 'CLAIMS', 'DURABILITY',
+                      'AOD', 'HIGH_THROUGHPUT']
+        self.assertEqual(pool['capabilities'], store_caps)
 
     def test_patch_raises_if_missing_fields(self):
         self.simulate_patch(self.flavor_path,
@@ -200,19 +195,18 @@ class FlavorsBaseTest(base.V2Base):
                             body=jsonutils.dumps(doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-        result = self.simulate_get(self.flavor_path,
-                                   query_string='?detailed=True')
+        result = self.simulate_get(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
         self._flavor_expect(pool, self.flavor_path, doc['pool'])
         self.assertEqual(pool['capabilities'], doc['capabilities'])
 
     def test_patch_works(self):
-        doc = {'pool': 'my-pool', 'capabilities': {'a': 1}}
+        doc = {'pool': 'mypool', 'capabilities': []}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
-        doc = {'pool': 'my-pool', 'capabilities': {'a': 1},
+        doc = {'pool': 'mypool', 'capabilities': [],
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)
 
@@ -285,7 +279,9 @@ class FlavorsBaseTest(base.V2Base):
             self.assertEqual(len(flavors_list), min(limit, count))
             for i, s in enumerate(flavors_list + next_flavors_list):
                 expect = expected[i]
-                path, capabilities = expect[:2]
+                path = expect[0]
+                capabilities = ['FIFO', 'CLAIMS', 'DURABILITY',
+                                'AOD', 'HIGH_THROUGHPUT']
                 self._flavor_expect(s, path, self.doc['pool'])
                 if detailed:
                     self.assertIn('capabilities', s)
