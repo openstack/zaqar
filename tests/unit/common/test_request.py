@@ -22,6 +22,7 @@ from zaqar.tests import base
 class TestRequest(base.TestBase):
 
     def test_request_deserialized(self):
+        action = 'message_post'
         data = '{"data": "tons of GBs"}'
-        req = request.Request(content=data)
+        req = request.Request(action=action, body=data)
         self.assertIsInstance(req.deserialized_content, dict)

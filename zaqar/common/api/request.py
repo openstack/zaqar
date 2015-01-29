@@ -24,33 +24,29 @@ class Request(object):
 
     Transport will generate a request object and send to this the API to be
     processed.
-    :param operation: Operation to identify the API call being processed,
+    :param action: Action to identify the API call being processed,
     i.e: 'get_queues', 'get_messages'
-    :type operation: str
-    :param content: Request's body. Default: None
-    :type content: str
-    :param params: Query string params. Default: None
-    :type params: dict
+    :type action: str
+    :param body: Request's body. Default: None
+    :type body: str
     :param headers: Request headers. Default: None
     :type headers: dict
     :param api: Api entry point. i.e: 'queues.v1'
     :type api: `six.text_type`.
     """
 
-    def __init__(self, operation='',
-                 content=None, params=None,
-                 headers=None, api=None):
+    def __init__(self, action,
+                 body=None, headers=None, api=None):
 
         self._api = None
         self._api_mod = api
 
-        self._operation = operation
-        self._content = content
-        self._params = params or {}
+        self._action = action
+        self._body = body
         self._headers = headers or {}
 
     @decorators.lazy_property()
     def deserialized_content(self):
-        if self._content is not None:
-            return json.loads(self._content)
+        if self._body is not None:
+            return json.loads(self._body)
         return None

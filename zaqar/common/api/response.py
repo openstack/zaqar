@@ -22,16 +22,16 @@ class Response(object):
     an object out of it.
 
     :param request: The request sent to the server.
-    :type: `zaqar.transport.request.Request`
-    :param content: Response's content
-    :type: `six.string_types`
+    :type request: `zaqar.transport.request.Request`
+    :param body: Response's body
+    :type body: `six.string_types`
     :param headers: Optional headers returned in the response.
-    :type: dict
+    :type headers: dict
     """
 
-    __slots__ = ('_request', '_content', '_headers')
+    __slots__ = ('_request', '_body', '_headers')
 
-    def __init__(self, request, content, headers=None):
+    def __init__(self, request, body, headers=None):
         self._request = request
-        self._content = content
+        self._body = body
         self._headers = headers or {}
