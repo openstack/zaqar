@@ -23,3 +23,5 @@ SQLAlchemy>=0.9.7,<=0.9.99
 enum34
 trollius>=1.0
 autobahn>=0.10.1
+requests>=2.2.0,!=2.4.0
+taskflow<0.8.0,>=0.7.1

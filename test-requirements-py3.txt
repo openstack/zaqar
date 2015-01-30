@@ -18,9 +18,6 @@ python-subunit>=0.0.18
 testrepository>=0.0.18
 testtools>=0.9.36,!=1.2.0
 
-# Functional Tests
-requests>=2.2.0,!=2.4.0
-
 # Documentation
 # NOTE(vkmc) sphinx modules are commented out as a workaround for bug #1403510
 # sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3
