@@ -54,9 +54,13 @@ class TestHomeDocument(base.V2Base):
         path_2 = 'https://zaqar.example.com' + self.url_prefix + '/'
 
         # Verify all the href template start with the correct version prefix
+        def get_href_or_template(resource):
+            return resource.get('href-template', '') or resource['href']
+
         for resource in list(resp['resources']):
-            self.assertTrue(resp['resources'][resource]['href-template'].
-                            startswith(self.url_prefix))
+            self.assertTrue(
+                get_href_or_template(resp['resources'][resource]).
+                startswith(self.url_prefix))
 
         url = urlparse.urljoin(path_1, queue_href_template)
         expected = ('https://zaqar.example.com' + self.url_prefix +
