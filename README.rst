@@ -59,7 +59,7 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 
 8. Test out that Zaqar is working by creating a queue::
 
-    $ curl -i -X PUT http://127.0.0.1:8888/v1/queues/samplequeue -H
+    $ curl -i -X PUT http://127.0.0.1:8888/v1.1/queues/samplequeue -H
     "Content-type: application/json"
 
 You should get an **HTTP 201** along with some headers that will look
@@ -69,7 +69,7 @@ similar to this::
     Date: Fri, 25 Oct 2013 15:34:37 GMT
     Server: WSGIServer/0.1 Python/2.7.3
     Content-Length: 0
-    Location: /v1/queues/samplequeue
+    Location: /v1.1/queues/samplequeue
 
 Running tests
 -------------
