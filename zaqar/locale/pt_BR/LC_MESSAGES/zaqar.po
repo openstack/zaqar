@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-03 06:03+0000\n"
-"PO-Revision-Date: 2015-01-29 15:00+0000\n"
+"POT-Creation-Date: 2015-02-20 06:04+0000\n"
+"PO-Revision-Date: 2015-02-18 01:41+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -20,11 +20,46 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: zaqar/bootstrap.py:88
+#: zaqar/bootstrap.py:90
 msgid ""
 "Unreliable's default value will be changed to False in the Kilo release. "
 "Please, make sure your deployments are working in a reliable mode or that"
 " `unreliable` is explicitly set to `True` in your configuration files."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:113
+#, python-format
+msgid "Queue \"%s\" could not be created."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:116
+#, python-format
+msgid "Queue \"%s\" created."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:138
+#, python-format
+msgid "Queue \"%s\" could not be deleted."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:141
+#, python-format
+msgid "Queue \"%s\" removed."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:166
+#, python-format
+msgid "Queue \"%s\" does not exist."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:170
+#, python-format
+msgid "Cannot retrieve queue \"%s\"."
+msgstr ""
+
+#: zaqar/api/v1_1/endpoints.py:207
+#, python-format
+msgid "Cannot retrieve queue \"%s\" stats."
 msgstr ""
 
 #: zaqar/common/cli.py:52
@@ -43,6 +78,10 @@ msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
 
 #: zaqar/common/api/api.py:49
 msgid "{0} is not a valid action"
+msgstr ""
+
+#: zaqar/common/api/utils.py:38
+msgid "Unexpected error."
 msgstr ""
 
 #: zaqar/common/transport/wsgi/helpers.py:45
@@ -138,23 +177,23 @@ msgstr ""
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
 
-#: zaqar/storage/mongodb/driver.py:81
+#: zaqar/storage/mongodb/driver.py:90
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2,  %s found"
 msgstr "O driver do mongodb requer mongodb>=2.2,  %s encontrado"
 
-#: zaqar/storage/mongodb/driver.py:86
+#: zaqar/storage/mongodb/driver.py:95
 msgid "Either a replica set or a mongos is required to guarantee message delivery"
 msgstr ""
 
-#: zaqar/storage/mongodb/driver.py:99
+#: zaqar/storage/mongodb/driver.py:108
 msgid ""
 "Using a write concern other than `majority` or > 2 makes the service "
 "unreliable. Please use a different write concern or set `unreliable` to "
 "True in the config file."
 msgstr ""
 
-#: zaqar/storage/mongodb/messages.py:563
+#: zaqar/storage/mongodb/messages.py:720
 #, python-format
 msgid ""
 "%(attempts)d attempt(s) required to post %(num_messages)d messages to "
@@ -163,7 +202,7 @@ msgstr ""
 "%(attempts)d tentativa(s) necessária(s) para enviar %(num_messages)d "
 "mensagens para a fila \"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/storage/mongodb/messages.py:607
+#: zaqar/storage/mongodb/messages.py:764
 #, python-format
 msgid ""
 "First attempt failed while adding messages to queue \"%(queue)s\" under "
@@ -172,7 +211,7 @@ msgstr ""
 "Primeira tentativa falhou durante a adição de mensagens à fila "
 "\"%(queue)s\" do projeto %(project)s"
 
-#: zaqar/storage/mongodb/messages.py:621
+#: zaqar/storage/mongodb/messages.py:778
 #, python-format
 msgid ""
 "Exceeded maximum retry duration for queue \"%(queue)s\" under project "
@@ -181,7 +220,7 @@ msgstr ""
 "Excedido o tempo máximo de tentativas para a fila \"%(queue)s\" do "
 "projeto %(project)s"
 
-#: zaqar/storage/mongodb/messages.py:681
+#: zaqar/storage/mongodb/messages.py:838
 #, python-format
 msgid ""
 "Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
@@ -509,12 +548,12 @@ msgid "Queue stats could not be read."
 msgstr "Não foi possível ler as estatísticas da fila."
 
 #: zaqar/transport/wsgi/v1_1/flavors.py:159
-#: zaqar/transport/wsgi/v2_0/flavors.py:159
+#: zaqar/transport/wsgi/v2_0/flavors.py:168
 msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
 msgstr ""
 
 #: zaqar/transport/wsgi/v1_1/flavors.py:162
-#: zaqar/transport/wsgi/v2_0/flavors.py:162
+#: zaqar/transport/wsgi/v2_0/flavors.py:171
 msgid "Unable to create"
 msgstr "Não foi possível criar"
 
