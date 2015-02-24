@@ -78,8 +78,8 @@ class DataDriver(storage.DataDriverBase):
 
     _COL_SUFIX = "_messages_p"
 
-    def __init__(self, conf, cache):
-        super(DataDriver, self).__init__(conf, cache)
+    def __init__(self, conf, cache, control_driver):
+        super(DataDriver, self).__init__(conf, cache, control_driver)
 
         self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
 
@@ -147,17 +147,6 @@ class DataDriver(storage.DataDriverBase):
         return KPI
 
     @decorators.lazy_property(write=False)
-    def queues_database(self):
-        """Database dedicated to the "queues" collection.
-
-        The queues collection is separated out into its own database
-        to avoid writer lock contention with the messages collections.
-        """
-
-        name = self.mongodb_conf.database + '_queues'
-        return self.connection[name]
-
-    @decorators.lazy_property(write=False)
     def message_databases(self):
         """List of message databases, ordered by partition number."""
 
@@ -184,10 +173,6 @@ class DataDriver(storage.DataDriverBase):
     def connection(self):
         """MongoDB client connection instance."""
         return _connection(self.mongodb_conf)
-
-    @decorators.lazy_property(write=False)
-    def queue_controller(self):
-        return controllers.QueueController(self)
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
@@ -235,6 +220,21 @@ class ControlDriver(storage.ControlDriverBase):
     def database(self):
         name = self.mongodb_conf.database
         return self.connection[name]
+
+    @decorators.lazy_property(write=False)
+    def queues_database(self):
+        """Database dedicated to the "queues" collection.
+
+        The queues collection is separated out into its own database
+        to avoid writer lock contention with the messages collections.
+        """
+
+        name = self.mongodb_conf.database + '_queues'
+        return self.connection[name]
+
+    @decorators.lazy_property(write=False)
+    def queue_controller(self):
+        return controllers.QueueController(self)
 
     @property
     def pools_controller(self):

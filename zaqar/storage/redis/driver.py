@@ -149,8 +149,8 @@ class DataDriver(storage.DataDriverBase):
 
     _DRIVER_OPTIONS = options._config_options()
 
-    def __init__(self, conf, cache):
-        super(DataDriver, self).__init__(conf, cache)
+    def __init__(self, conf, cache, control_driver):
+        super(DataDriver, self).__init__(conf, cache, control_driver)
         self.redis_conf = self.conf[options.MESSAGE_REDIS_GROUP]
 
         server_version = self.connection.info()['redis_version']
@@ -195,10 +195,6 @@ class DataDriver(storage.DataDriverBase):
         return _get_redis_client(self)
 
     @decorators.lazy_property(write=False)
-    def queue_controller(self):
-        return controllers.QueueController(self)
-
-    @decorators.lazy_property(write=False)
     def message_controller(self):
         return controllers.MessageController(self)
 
@@ -225,6 +221,10 @@ class ControlDriver(storage.ControlDriverBase):
     def connection(self):
         """Redis client connection instance."""
         return _get_redis_client(self)
+
+    @decorators.lazy_property(write=False)
+    def queue_controller(self):
+        return controllers.QueueController(self)
 
     @property
     def pools_controller(self):

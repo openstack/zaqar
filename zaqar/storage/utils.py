@@ -95,7 +95,8 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
         raise errors.InvalidDriver(exc)
 
 
-def load_storage_driver(conf, cache, storage_type=None, control_mode=False):
+def load_storage_driver(conf, cache, storage_type=None,
+                        control_mode=False, control_driver=None):
     """Loads a storage driver and returns it.
 
     The driver's initializer will be passed conf and cache as
@@ -110,17 +111,24 @@ def load_storage_driver(conf, cache, storage_type=None, control_mode=False):
     :param control_mode: (Default False). Determines which
         driver type to load; if False, the data driver is
         loaded. If True, the control driver is loaded.
+    :param control_driver: (Default None). The control driver
+        instance to pass to the storage driver. Needed to access
+        the queue controller, mainly.
     """
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'zaqar.{0}.storage'.format(mode)
     storage_type = storage_type or conf['drivers'].storage
 
+    _invoke_args = [conf, cache]
+    if control_driver is not None:
+        _invoke_args.append(control_driver)
+
     try:
         mgr = driver.DriverManager(driver_type,
                                    storage_type,
                                    invoke_on_load=True,
-                                   invoke_args=[conf, cache])
+                                   invoke_args=_invoke_args)
 
         return mgr.driver
 
@@ -178,7 +186,11 @@ def can_connect(uri, conf=None):
         # the URI field. This should be sufficient to initialize a
         # storage driver.
         driver = load_storage_driver(conf, None,
-                                     storage_type=storage_type)
+                                     storage_type=storage_type,
+                                     control_driver=load_storage_driver
+                                     (conf, None,
+                                      storage_type=storage_type,
+                                      control_mode=True))
         return driver.is_alive()
     except Exception as exc:
         LOG.debug('Can\'t connect to: %s \n%s' % (uri, exc))

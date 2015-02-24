@@ -278,39 +278,12 @@ class QueueController(storage.Queue):
     @utils.retries_on_autoreconnect
     @_exists.purges
     def _delete(self, name, project=None):
-        self.driver.message_controller._purge_queue(name, project)
         self._collection.remove(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
     def _stats(self, name, project=None):
-        if not self.exists(name, project=project):
-            raise errors.QueueDoesNotExist(name, project)
-
-        controller = self.driver.message_controller
-
-        active = controller._count(name, project=project,
-                                   include_claimed=False)
-        total = controller._count(name, project=project,
-                                  include_claimed=True)
-
-        message_stats = {
-            'claimed': total - active,
-            'free': active,
-            'total': total,
-        }
-
-        try:
-            oldest = controller.first(name, project=project, sort=1)
-            newest = controller.first(name, project=project, sort=-1)
-        except errors.QueueIsEmpty:
-            pass
-        else:
-            now = timeutils.utcnow_ts()
-            message_stats['oldest'] = utils.stat_message(oldest, now)
-            message_stats['newest'] = utils.stat_message(newest, now)
-
-        return {'messages': message_stats}
+        pass
 
 
 def _get_scoped_query(name, project):

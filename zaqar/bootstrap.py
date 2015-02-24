@@ -103,17 +103,17 @@ class Bootstrap(object):
     @decorators.lazy_property(write=False)
     def storage(self):
         LOG.debug(u'Loading storage driver')
-
         if self.conf.pooling:
             LOG.debug(u'Storage pooling enabled')
             storage_driver = pooling.DataDriver(self.conf, self.cache,
                                                 self.control)
         else:
             storage_driver = storage_utils.load_storage_driver(
-                self.conf, self.cache)
+                self.conf, self.cache, control_driver=self.control)
 
         LOG.debug(u'Loading storage pipeline')
-        return pipeline.DataDriver(self.conf, storage_driver)
+        return pipeline.DataDriver(self.conf, storage_driver,
+                                   self.control)
 
     @decorators.lazy_property(write=False)
     def control(self):

@@ -862,3 +862,64 @@ def _basic_message(msg, now):
         'body': msg['b'],
         'claim_id': str(msg['c']['id']) if msg['c']['id'] else None
     }
+
+
+# NOTE(kgriffs): E.g.: 'queuecontroller:exists:5083853/my-queue'
+_QUEUE_CACHE_PREFIX = 'queuecontroller:'
+
+_QUEUE_CACHE_TTL = 5
+
+
+def _queue_exists_key(queue, project=None):
+    # NOTE(kgriffs): Use string concatenation for performance,
+    # also put project first since it is guaranteed to be
+    # unique, which should reduce lookup time.
+    return _QUEUE_CACHE_PREFIX + 'exists:' + str(project) + '/' + queue
+
+
+class MessageQueueHandler(object):
+
+    def __init__(self, driver, control_driver):
+        self.driver = driver
+        self._cache = self.driver.cache
+        self.queue_controller = self.driver.queue_controller
+        self.message_controller = self.driver.message_controller
+
+    def delete(self, queue_name, project=None):
+        self.message_controller._purge_queue(queue_name, project)
+
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def stats(self, name, project=None):
+        if not self.queue_controller.exists(name, project=project):
+            raise errors.QueueDoesNotExist(name, project)
+
+        controller = self.message_controller
+
+        active = controller._count(name, project=project,
+                                   include_claimed=False)
+
+        total = controller._count(name, project=project,
+                                  include_claimed=True)
+
+        message_stats = {
+            'claimed': total - active,
+            'free': active,
+            'total': total,
+        }
+
+        try:
+            oldest = controller.first(name, project=project, sort=1)
+            newest = controller.first(name, project=project, sort=-1)
+        except errors.QueueIsEmpty:
+            pass
+        else:
+            now = timeutils.utcnow_ts()
+            message_stats['oldest'] = utils.stat_message(oldest, now)
+            message_stats['newest'] = utils.stat_message(newest, now)
+
+        return {'messages': message_stats}
+
+
+def _get_scoped_query(name, project):
+    return {'p_q': utils.scope_queue_name(name, project)}

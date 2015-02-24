@@ -28,6 +28,7 @@ from testtools import matchers
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar import storage
 from zaqar.storage import errors
+from zaqar.storage import pipeline
 from zaqar import tests as testing
 from zaqar.tests import helpers
 
@@ -58,18 +59,21 @@ class ControllerBaseTest(testing.TestBase):
             self.skipTest("Pooling is enabled, "
                           "but control driver class is not specified")
 
+        self.control = self.control_driver_class(self.conf, cache)
         if not pooling:
-            self.driver = self.driver_class(self.conf, cache)
+            args = [self.conf, cache]
+            if issubclass(self.driver_class, storage.DataDriverBase):
+                args.append(self.control)
+            self.driver = self.driver_class(*args)
         else:
-            control = self.control_driver_class(self.conf, cache)
             uri = "mongodb://localhost:27017"
             for i in range(4):
                 options = {'database': "zaqar_test_pools_" + str(i)}
-                control.pools_controller.create(six.text_type(i),
-                                                100, uri, options=options)
-            self.driver = self.driver_class(self.conf, cache, control)
-            self.addCleanup(control.pools_controller.drop_all)
-            self.addCleanup(control.catalogue_controller.drop_all)
+                self.control.pools_controller.create(six.text_type(i),
+                                                     100, uri, options=options)
+            self.driver = self.driver_class(self.conf, cache, self.control)
+            self.addCleanup(self.control.pools_controller.drop_all)
+            self.addCleanup(self.control.catalogue_controller.drop_all)
 
         self._prepare_conf()
 
@@ -79,6 +83,10 @@ class ControllerBaseTest(testing.TestBase):
             self.controller = self.controller_class(self.driver)
         else:
             self.controller = self.controller_class(self.driver._pool_catalog)
+
+        self.pipeline = pipeline.DataDriver(self.conf,
+                                            self.driver,
+                                            self.control)
 
     def _prepare_conf(self):
         """Prepare the conf before running tests
@@ -98,9 +106,7 @@ class QueueControllerTest(ControllerBaseTest):
 
     def setUp(self):
         super(QueueControllerTest, self).setUp()
-        self.queue_controller = self.driver.queue_controller
-        self.message_controller = self.driver.message_controller
-        self.claim_controller = self.driver.claim_controller
+        self.queue_controller = self.pipeline.queue_controller
 
     @ddt.data(None, ControllerBaseTest.project)
     def test_list(self, project):
@@ -164,10 +170,144 @@ class QueueControllerTest(ControllerBaseTest):
         metadata = self.controller.get('test', project=self.project)
         self.assertEqual(metadata['meta'], 'test_meta')
 
+        # Test queue deletion
+        self.controller.delete('test', project=self.project)
+
+        # Test queue existence
+        self.assertFalse(self.controller.exists('test', project=self.project))
+
+
+class MessageControllerTest(ControllerBaseTest):
+    """Message Controller base tests.
+
+    NOTE(flaper87): Implementations of this class should
+    override the tearDown method in order
+    to clean up storage's state.
+    """
+    queue_name = 'test_queue'
+    controller_base_class = storage.Message
+
+    # Specifies how often expired messages are purged, in sec.
+    gc_interval = 0
+
+    def setUp(self):
+        super(MessageControllerTest, self).setUp()
+
+        # Lets create a queue
+        self.queue_controller = self.pipeline.queue_controller
+        self.claim_controller = self.pipeline.claim_controller
+        self.queue_controller.create(self.queue_name, project=self.project)
+
+    def tearDown(self):
+        self.queue_controller.delete(self.queue_name, project=self.project)
+        super(MessageControllerTest, self).tearDown()
+
+    def test_stats_for_empty_queue(self):
+        self.addCleanup(self.queue_controller.delete, 'test',
+                        project=self.project)
+        created = self.queue_controller.create('test', project=self.project)
+        self.assertTrue(created)
+
+        stats = self.queue_controller.stats('test', project=self.project)
+        message_stats = stats['messages']
+
+        self.assertEqual(message_stats['free'], 0)
+        self.assertEqual(message_stats['claimed'], 0)
+        self.assertEqual(message_stats['total'], 0)
+
+        self.assertNotIn('newest', message_stats)
+        self.assertNotIn('oldest', message_stats)
+
+    def test_queue_count_on_bulk_delete(self):
+        self.addCleanup(self.queue_controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
         client_uuid = uuid.uuid4()
 
+        created = self.queue_controller.create(queue_name,
+                                               project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 5 messages
+        self.controller.bulk_delete(queue_name, msg_keys[0:5],
+                                    self.project)
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 5)
+
+    def test_queue_count_on_bulk_delete_with_invalid_id(self):
+        self.addCleanup(self.queue_controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.queue_controller.create(queue_name,
+                                               project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 5 messages
+        self.controller.bulk_delete(queue_name,
+                                    msg_keys[0:5] + ['invalid'],
+                                    self.project)
+
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 5)
+
+    def test_queue_count_on_delete(self):
+        self.addCleanup(self.queue_controller.delete, 'test-queue',
+                        project=self.project)
+        queue_name = 'test-queue'
+        client_uuid = uuid.uuid4()
+
+        created = self.queue_controller.create(queue_name,
+                                               project=self.project)
+        self.assertTrue(created)
+
+        # Create 10 messages.
+        msg_keys = _insert_fixtures(self.controller, queue_name,
+                                    project=self.project,
+                                    client_uuid=client_uuid, num=10)
+
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 10)
+
+        # Delete 1 message
+        self.controller.delete(queue_name, msg_keys[0], self.project)
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
+        self.assertEqual(stats['total'], 9)
+
+    def test_queue_stats(self):
+        # Test queue creation
+        self.addCleanup(self.queue_controller.delete, 'test',
+                        project=self.project)
+        created = self.queue_controller.create('test',
+                                               metadata=dict(meta='test_meta'),
+                                               project=self.project)
+
+        client_uuid = uuid.uuid4()
         # Test queue statistic
-        _insert_fixtures(self.message_controller, 'test',
+        _insert_fixtures(self.controller, 'test',
                          project=self.project, client_uuid=client_uuid,
                          num=6)
 
@@ -176,11 +316,11 @@ class QueueControllerTest(ControllerBaseTest):
         # message timestamps (and may not be monkey-patchable).
         time.sleep(1.2)
 
-        _insert_fixtures(self.message_controller, 'test',
+        _insert_fixtures(self.controller, 'test',
                          project=self.project, client_uuid=client_uuid,
                          num=6)
 
-        stats = self.controller.stats('test', project=self.project)
+        stats = self.queue_controller.stats('test', project=self.project)
         message_stats = stats['messages']
 
         self.assertEqual(message_stats['free'], 12)
@@ -210,121 +350,23 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertThat(oldest['created'],
                         matchers.LessThan(newest['created']))
 
-        # Test queue deletion
-        self.controller.delete('test', project=self.project)
-
-        # Test queue existence
-        self.assertFalse(self.controller.exists('test', project=self.project))
-
-    def test_stats_for_empty_queue(self):
-        self.addCleanup(self.controller.delete, 'test', project=self.project)
-        created = self.controller.create('test', project=self.project)
-        self.assertTrue(created)
-
-        stats = self.controller.stats('test', project=self.project)
-        message_stats = stats['messages']
-
-        self.assertEqual(message_stats['free'], 0)
-        self.assertEqual(message_stats['claimed'], 0)
-        self.assertEqual(message_stats['total'], 0)
-
-        self.assertNotIn('newest', message_stats)
-        self.assertNotIn('oldest', message_stats)
-
-    def test_queue_count_on_bulk_delete(self):
-        self.addCleanup(self.controller.delete, 'test-queue',
-                        project=self.project)
-        queue_name = 'test-queue'
-        client_uuid = uuid.uuid4()
-
-        created = self.controller.create(queue_name, project=self.project)
-        self.assertTrue(created)
-
-        # Create 10 messages.
-        msg_keys = _insert_fixtures(self.message_controller, queue_name,
-                                    project=self.project,
-                                    client_uuid=client_uuid, num=10)
-
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 10)
-
-        # Delete 5 messages
-        self.message_controller.bulk_delete(queue_name, msg_keys[0:5],
-                                            self.project)
-
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 5)
-
-    def test_queue_count_on_bulk_delete_with_invalid_id(self):
-        self.addCleanup(self.controller.delete, 'test-queue',
-                        project=self.project)
-        queue_name = 'test-queue'
-        client_uuid = uuid.uuid4()
-
-        created = self.controller.create(queue_name, project=self.project)
-        self.assertTrue(created)
-
-        # Create 10 messages.
-        msg_keys = _insert_fixtures(self.message_controller, queue_name,
-                                    project=self.project,
-                                    client_uuid=client_uuid, num=10)
-
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 10)
-
-        # Delete 5 messages
-        self.message_controller.bulk_delete(queue_name,
-                                            msg_keys[0:5] + ['invalid'],
-                                            self.project)
-
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 5)
-
-    def test_queue_count_on_delete(self):
-        self.addCleanup(self.controller.delete, 'test-queue',
-                        project=self.project)
-        queue_name = 'test-queue'
-        client_uuid = uuid.uuid4()
-
-        created = self.controller.create(queue_name, project=self.project)
-        self.assertTrue(created)
-
-        # Create 10 messages.
-        msg_keys = _insert_fixtures(self.message_controller, queue_name,
-                                    project=self.project,
-                                    client_uuid=client_uuid, num=10)
-
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 10)
-
-        # Delete 1 message
-        self.message_controller.delete(queue_name, msg_keys[0],
-                                       self.project)
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
-        self.assertEqual(stats['total'], 9)
-
     def test_queue_count_on_claim_delete(self):
-        self.addCleanup(self.controller.delete, 'test-queue',
+        self.addCleanup(self.queue_controller.delete, 'test-queue',
                         project=self.project)
         queue_name = 'test-queue'
         client_uuid = uuid.uuid4()
 
-        created = self.controller.create(queue_name, project=self.project)
+        created = self.queue_controller.create(queue_name,
+                                               project=self.project)
         self.assertTrue(created)
 
         # Create 15 messages.
-        msg_keys = _insert_fixtures(self.message_controller, queue_name,
+        msg_keys = _insert_fixtures(self.controller, queue_name,
                                     project=self.project,
                                     client_uuid=client_uuid, num=15)
 
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
         self.assertEqual(stats['total'], 15)
 
         metadata = {'ttl': 120, 'grace': 60}
@@ -332,25 +374,25 @@ class QueueControllerTest(ControllerBaseTest):
         claim_id, _ = self.claim_controller.create(queue_name, metadata,
                                                    self.project)
 
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
         self.assertEqual(stats['claimed'], 10)
 
         # Delete one message and ensure stats are updated even
         # thought the claim itself has not been deleted.
-        self.message_controller.delete(queue_name, msg_keys[0],
-                                       self.project, claim_id)
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
+        self.controller.delete(queue_name, msg_keys[0],
+                               self.project, claim_id)
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
         self.assertEqual(stats['total'], 14)
         self.assertEqual(stats['claimed'], 9)
         self.assertEqual(stats['free'], 5)
 
         # Same thing but use bulk_delete interface
-        self.message_controller.bulk_delete(queue_name, msg_keys[1:3],
-                                            self.project)
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
+        self.controller.bulk_delete(queue_name, msg_keys[1:3],
+                                    self.project)
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
         self.assertEqual(stats['total'], 12)
         self.assertEqual(stats['claimed'], 7)
         self.assertEqual(stats['free'], 5)
@@ -358,36 +400,10 @@ class QueueControllerTest(ControllerBaseTest):
         # Delete the claim
         self.claim_controller.delete(queue_name, claim_id,
                                      self.project)
-        stats = self.controller.stats(queue_name,
-                                      self.project)['messages']
+        stats = self.queue_controller.stats(queue_name,
+                                            self.project)['messages']
 
         self.assertEqual(stats['claimed'], 0)
-
-
-class MessageControllerTest(ControllerBaseTest):
-    """Message Controller base tests.
-
-    NOTE(flaper87): Implementations of this class should
-    override the tearDown method in order
-    to clean up storage's state.
-    """
-    queue_name = 'test_queue'
-    controller_base_class = storage.Message
-
-    # Specifies how often expired messages are purged, in sec.
-    gc_interval = 0
-
-    def setUp(self):
-        super(MessageControllerTest, self).setUp()
-
-        # Lets create a queue
-        self.queue_controller = self.driver.queue_controller
-        self.claim_controller = self.driver.claim_controller
-        self.queue_controller.create(self.queue_name, project=self.project)
-
-    def tearDown(self):
-        self.queue_controller.delete(self.queue_name, project=self.project)
-        super(MessageControllerTest, self).tearDown()
 
     def test_message_lifecycle(self):
         queue_name = self.queue_name
@@ -729,8 +745,8 @@ class ClaimControllerTest(ControllerBaseTest):
         super(ClaimControllerTest, self).setUp()
 
         # Lets create a queue
-        self.queue_controller = self.driver.queue_controller
-        self.message_controller = self.driver.message_controller
+        self.queue_controller = self.pipeline.queue_controller
+        self.message_controller = self.pipeline.message_controller
         self.queue_controller.create(self.queue_name, project=self.project)
 
     def tearDown(self):

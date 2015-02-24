@@ -17,8 +17,8 @@ from zaqar import storage
 
 
 class DataDriver(storage.DataDriverBase):
-    def __init__(self, conf, cache):
-        super(DataDriver, self).__init__(conf, cache)
+    def __init__(self, conf, cache, control_driver):
+        super(DataDriver, self).__init__(conf, cache, control_driver)
 
     @property
     def default_options(self):
@@ -36,7 +36,7 @@ class DataDriver(storage.DataDriverBase):
 
     @property
     def queue_controller(self):
-        return QueueController(self)
+        return self.control_driver.queue_controller
 
     @property
     def message_controller(self):
@@ -55,6 +55,10 @@ class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
+
+    @property
+    def queue_controller(self):
+        return QueueController(self)
 
     @property
     def catalogue_controller(self):

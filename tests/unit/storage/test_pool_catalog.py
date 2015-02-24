@@ -65,7 +65,7 @@ class PoolCatalogTest(testing.TestBase):
 
     def test_lookup_loads_correct_driver(self):
         storage = self.catalog.lookup(self.queue, self.project)
-        self.assertIsInstance(storage, mongodb.DataDriver)
+        self.assertIsInstance(storage._storage, mongodb.DataDriver)
 
     def test_lookup_returns_none_if_queue_not_mapped(self):
         self.assertIsNone(self.catalog.lookup('not', 'mapped'))
@@ -77,14 +77,14 @@ class PoolCatalogTest(testing.TestBase):
     def test_register_leads_to_successful_lookup(self):
         self.catalog.register('not_yet', 'mapped')
         storage = self.catalog.lookup('not_yet', 'mapped')
-        self.assertIsInstance(storage, mongodb.DataDriver)
+        self.assertIsInstance(storage._storage, mongodb.DataDriver)
 
     def test_register_with_flavor(self):
         queue = 'test'
         self.catalog.register(queue, project=self.project,
                               flavor=self.flavor)
         storage = self.catalog.lookup(queue, self.project)
-        self.assertIsInstance(storage, mongodb.DataDriver)
+        self.assertIsInstance(storage._storage, mongodb.DataDriver)
 
     def test_register_with_fake_flavor(self):
         self.assertRaises(errors.FlavorDoesNotExist,

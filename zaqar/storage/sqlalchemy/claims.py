@@ -88,7 +88,7 @@ class ClaimController(storage.Claim):
 
         with self.driver.trans() as trans:
             try:
-                qid = utils.get_qid(self.driver, queue, project)
+                qid = utils.get_qid(self.driver.control_driver, queue, project)
             except errors.QueueDoesNotExist:
                 return None, iter([])
 
@@ -136,7 +136,7 @@ class ClaimController(storage.Claim):
 
         age = utils.get_age(tables.Claims.c.created)
         with self.driver.trans() as trans:
-            qid = utils.get_qid(self.driver, queue, project)
+            qid = utils.get_qid(self.driver.control_driver, queue, project)
 
             update = tables.Claims.update().where(sa.and_(
                 tables.Claims.c.ttl > age,
@@ -168,7 +168,7 @@ class ClaimController(storage.Claim):
             try:
                 # NOTE(flaper87): This could probably use some
                 # joins and be just 1 query.
-                qid = utils.get_qid(self.driver, queue, project)
+                qid = utils.get_qid(self.driver.control_driver, queue, project)
             except errors.QueueDoesNotExist:
                 return
 

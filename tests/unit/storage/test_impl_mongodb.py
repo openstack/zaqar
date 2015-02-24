@@ -40,18 +40,24 @@ from zaqar.tests.unit.storage import base
 
 class MongodbSetupMixin(object):
     def _purge_databases(self):
-        databases = (self.driver.message_databases +
-                     [self.driver.queues_database,
-                      self.driver.subscriptions_database])
+        if isinstance(self.driver, mongodb.DataDriver):
+            databases = (self.driver.message_databases +
+                         [self.control.queues_database,
+                          self.driver.subscriptions_database])
+        else:
+            databases = [self.driver.queues_database]
 
         for db in databases:
             self.driver.connection.drop_database(db)
 
     def _prepare_conf(self):
-        self.config(options.MESSAGE_MONGODB_GROUP,
-                    database=uuid.uuid4().hex)
-        self.config(options.MANAGEMENT_MONGODB_GROUP,
-                    database=uuid.uuid4().hex)
+        if options.MESSAGE_MONGODB_GROUP in self.conf:
+            self.config(options.MESSAGE_MONGODB_GROUP,
+                        database=uuid.uuid4().hex)
+
+        if options.MANAGEMENT_MONGODB_GROUP in self.conf:
+            self.config(options.MANAGEMENT_MONGODB_GROUP,
+                        database=uuid.uuid4().hex)
 
 
 class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
@@ -69,6 +75,7 @@ class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
         MockDriver = collections.namedtuple('MockDriver', 'mongodb_conf')
 
         self.driver = MockDriver(self.mongodb_conf)
+        self.control_driver = MockDriver(self.mongodb_conf)
 
     def test_scope_queue_name(self):
         self.assertEqual(utils.scope_queue_name('my-q'), '/my-q')
@@ -153,14 +160,12 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
     def test_db_instance(self):
         self.config(unreliable=True)
         cache = oslo_cache.get_cache()
-        driver = mongodb.DataDriver(self.conf, cache)
+        control = mongodb.ControlDriver(self.conf, cache)
+        data = mongodb.DataDriver(self.conf, cache, control)
 
-        databases = (driver.message_databases +
-                     [driver.queues_database])
-
-        for db in databases:
+        for db in data.message_databases:
             self.assertThat(db.name, matchers.StartsWith(
-                driver.mongodb_conf.database))
+                data.mongodb_conf.database))
 
     def test_version_match(self):
         self.config(unreliable=True)
@@ -169,12 +174,14 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
         with mock.patch('pymongo.MongoClient.server_info') as info:
             info.return_value = {'version': '2.1'}
             self.assertRaises(RuntimeError, mongodb.DataDriver,
-                              self.conf, cache)
+                              self.conf, cache,
+                              mongodb.ControlDriver(self.conf, cache))
 
             info.return_value = {'version': '2.11'}
 
             try:
-                mongodb.DataDriver(self.conf, cache)
+                mongodb.DataDriver(self.conf, cache,
+                                   mongodb.ControlDriver(self.conf, cache))
             except RuntimeError:
                 self.fail('version match failed')
 
@@ -186,21 +193,24 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
             with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
                 is_mongos.__get__ = mock.Mock(return_value=False)
                 self.assertRaises(RuntimeError, mongodb.DataDriver,
-                                  self.conf, cache)
+                                  self.conf, cache,
+                                  mongodb.ControlDriver(self.conf, cache))
 
     def test_using_replset(self):
         cache = oslo_cache.get_cache()
 
         with mock.patch('pymongo.MongoClient.nodes') as nodes:
             nodes.__get__ = mock.Mock(return_value=['node1', 'node2'])
-            mongodb.DataDriver(self.conf, cache)
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
 
     def test_using_mongos(self):
         cache = oslo_cache.get_cache()
 
         with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
             is_mongos.__get__ = mock.Mock(return_value=True)
-            mongodb.DataDriver(self.conf, cache)
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
 
     def test_write_concern_check_works(self):
         cache = oslo_cache.get_cache()
@@ -211,17 +221,21 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
             with mock.patch('pymongo.MongoClient.write_concern') as wc:
                 wc.__get__ = mock.Mock(return_value={'w': 1})
                 self.assertRaises(RuntimeError, mongodb.DataDriver,
-                                  self.conf, cache)
+                                  self.conf, cache,
+                                  mongodb.ControlDriver(self.conf, cache))
 
                 wc.__get__ = mock.Mock(return_value={'w': 2})
-                mongodb.DataDriver(self.conf, cache)
+                mongodb.DataDriver(self.conf, cache,
+                                   mongodb.ControlDriver(self.conf, cache))
 
     def test_write_concern_is_set(self):
         cache = oslo_cache.get_cache()
 
         with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
             is_mongos.__get__ = mock.Mock(return_value=True)
-            driver = mongodb.DataDriver(self.conf, cache)
+            driver = mongodb.DataDriver(self.conf, cache,
+                                        mongodb.ControlDriver
+                                        (self.conf, cache))
             wc = driver.connection.write_concern
             self.assertEqual(wc['w'], 'majority')
             self.assertEqual(wc['j'], False)
@@ -230,24 +244,15 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
 @testing.requires_mongodb
 class MongodbQueueTests(MongodbSetupMixin, base.QueueControllerTest):
 
-    driver_class = mongodb.DataDriver
+    driver_class = mongodb.ControlDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.QueueController
+    control_driver_class = mongodb.ControlDriver
 
     def test_indexes(self):
         collection = self.controller._collection
         indexes = collection.index_information()
         self.assertIn('p_q_1', indexes)
-
-    def test_messages_purged(self):
-        queue_name = 'test'
-        self.controller.create(queue_name)
-        self.message_controller.post(queue_name,
-                                     [{'ttl': 60}],
-                                     1234)
-        self.controller.delete(queue_name)
-        for collection in self.message_controller._collections:
-            self.assertEqual(collection.find({'q': queue_name}).count(), 0)
 
     def test_raises_connection_error(self):
 
@@ -268,6 +273,7 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.MessageController
+    control_driver_class = mongodb.ControlDriver
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
@@ -349,6 +355,7 @@ class MongodbFIFOMessageTests(MongodbSetupMixin, base.MessageControllerTest):
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_fifo_mongodb.conf'
     controller_class = controllers.FIFOMessageController
+    control_driver_class = mongodb.ControlDriver
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
@@ -427,6 +434,7 @@ class MongodbClaimTests(MongodbSetupMixin, base.ClaimControllerTest):
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.ClaimController
+    control_driver_class = mongodb.ControlDriver
 
     def test_claim_doesnt_exist(self):
         """Verifies that operations fail on expired/missing claims.
@@ -462,6 +470,7 @@ class MongodbSubscriptionTests(MongodbSetupMixin,
     driver_class = mongodb.DataDriver
     config_file = 'wsgi_mongodb.conf'
     controller_class = controllers.SubscriptionController
+    control_driver_class = mongodb.ControlDriver
 
 
 #
@@ -473,6 +482,7 @@ class MongodbPoolsTests(base.PoolsControllerTest):
     config_file = 'wsgi_mongodb.conf'
     driver_class = mongodb.ControlDriver
     controller_class = controllers.PoolsController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(MongodbPoolsTests, self).setUp()
@@ -500,6 +510,7 @@ class MongodbPoolsTests(base.PoolsControllerTest):
 class MongodbCatalogueTests(base.CatalogueControllerTest):
     driver_class = mongodb.ControlDriver
     controller_class = controllers.CatalogueController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(MongodbCatalogueTests, self).setUp()
@@ -520,15 +531,6 @@ class PooledMessageTests(base.MessageControllerTest):
 
     # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
     gc_interval = 60
-
-
-@testing.requires_mongodb
-class PooledQueueTests(base.QueueControllerTest):
-    config_file = 'wsgi_mongodb_pooled.conf'
-    controller_class = pooling.QueueController
-    driver_class = pooling.DataDriver
-    control_driver_class = mongodb.ControlDriver
-    controller_base_class = storage.Queue
 
 
 @testing.requires_mongodb
@@ -554,6 +556,7 @@ class PooledClaimsTests(base.ClaimControllerTest):
 class MongodbFlavorsTest(base.FlavorsControllerTest):
     driver_class = mongodb.ControlDriver
     controller_class = controllers.FlavorsController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(MongodbFlavorsTest, self).setUp()
