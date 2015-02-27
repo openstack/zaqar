@@ -21,7 +21,7 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 
     $ cd zaqar
     $ tox -e genconfig
-    $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
+    $ cp etc/oslo-config-generator/zaqar.conf ~/.zaqar/zaqar.conf
     $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
 
 3. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
