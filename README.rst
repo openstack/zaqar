@@ -8,7 +8,7 @@ Running a local Zaqar server with MongoDB
 -----------------------------------------
 
 **Note:** These instructions are for running a local instance of Zaqar and not
-all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
+all of these steps are required. It is assumed you have `MongoDB`_, `python-dev` and `tox`
 (see "Running tests" section below) installed and running.
 
 1. From your home folder create the ``~/.zaqar`` folder and clone the repo::
