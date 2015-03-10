@@ -236,9 +236,8 @@ def _sanitize_default(name, value):
         return value.replace(BASEDIR, '')
     elif value == _get_my_ip():
         return '10.0.0.1'
-    elif value in (hostname, fqdn):
-        if 'host' in name:
-            return 'zaqar'
+    elif value in (hostname, fqdn) and 'host' in name:
+        return 'zaqar'
     elif value.endswith(hostname):
         return value.replace(hostname, 'zaqar')
     elif value.endswith(fqdn):

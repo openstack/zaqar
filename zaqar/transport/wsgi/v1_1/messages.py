@@ -297,7 +297,7 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = ('_message_controller')
+    __slots__ = '_message_controller'
 
     def __init__(self, message_controller):
         self._message_controller = message_controller

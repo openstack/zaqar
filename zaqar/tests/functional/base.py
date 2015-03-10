@@ -97,8 +97,7 @@ class FunctionalTestBase(testing.TestBase):
             auth_token = helpers.get_keystone_token(self.cfg, self.client)
             self.headers["X-Auth-Token"] = auth_token
 
-        self.headers_response_with_body = set(['location',
-                                               'content-type'])
+        self.headers_response_with_body = {'location', 'content-type'}
 
         self.client.set_headers(self.headers)
 

@@ -52,7 +52,7 @@ class MemoryBackend(backends.BaseCache):
         try:
             timeout, value = self._cache[key]
         except KeyError:
-            return (0, default)
+            return 0, default
 
         if timeout and now >= timeout:
 
@@ -72,9 +72,9 @@ class MemoryBackend(backends.BaseCache):
             except (KeyError, ValueError):
                 pass
 
-            return (0, default)
+            return 0, default
 
-        return (timeout, value)
+        return timeout, value
 
     def _get(self, key, default=None):
         with lockutils.lock(key):

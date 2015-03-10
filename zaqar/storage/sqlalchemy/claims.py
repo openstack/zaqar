@@ -124,7 +124,7 @@ class ClaimController(storage.Claim):
                           tables.Messages.c.cid == cid)))
             trans.execute(update)
 
-            return (utils.cid_encode(int(cid)), list(self.__get(cid, trans)))
+            return utils.cid_encode(int(cid)), list(self.__get(cid, trans))
 
     def update(self, queue, claim_id, metadata, project=None):
         if project is None:

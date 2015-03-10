@@ -59,7 +59,7 @@ def cached_gen(iterable):
             cached_items.append(item)
             yield item
 
-    return (generator(iterable), cached_items)
+    return generator(iterable), cached_items
 
 
 def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
