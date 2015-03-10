@@ -26,10 +26,13 @@ MIN_CLAIM_GRACE = 60
 _TRANSPORT_LIMITS_OPTIONS = (
     cfg.IntOpt('max_queues_per_page', default=20,
                deprecated_name='queue_paging_uplimit',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Defines the maximum number of queues per page.'),
+
     cfg.IntOpt('max_messages_per_page', default=20,
                deprecated_name='message_paging_uplimit',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Defines the maximum number of messages per page.'),
 
     cfg.IntOpt('max_messages_per_claim_or_pop', default=20,
                deprecated_name='max_messages_per_claim',
@@ -38,21 +41,29 @@ _TRANSPORT_LIMITS_OPTIONS = (
 
     cfg.IntOpt('max_queue_metadata', default=64 * 1024,
                deprecated_name='metadata_size_uplimit',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Defines the maximum amount of metadata in a queue.'),
+
     cfg.IntOpt('max_messages_post_size', default=256 * 1024,
                deprecated_name='message_size_uplimit',
                deprecated_group='limits:transport',
-               deprecated_opts=[cfg.DeprecatedOpt('max_message_size')]),
+               deprecated_opts=[cfg.DeprecatedOpt('max_message_size')],
+               help='Defines the maximum size of message posts.'),
 
     cfg.IntOpt('max_message_ttl', default=1209600,
                deprecated_name='message_ttl_max',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Maximum amount of time a message will be available.'),
+
     cfg.IntOpt('max_claim_ttl', default=43200,
                deprecated_name='claim_ttl_max',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Maximum length of a message in claimed state.'),
+
     cfg.IntOpt('max_claim_grace', default=43200,
                deprecated_name='claim_grace_max',
-               deprecated_group='limits:transport'),
+               deprecated_group='limits:transport',
+               help='Defines the maximum message grace period in seconds.'),
 )
 
 _TRANSPORT_LIMITS_GROUP = 'transport'
