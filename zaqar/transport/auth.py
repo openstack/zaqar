@@ -38,7 +38,7 @@ class KeystoneAuth(object):
         options = []
         keystone_opts = opts.list_auth_token_opts()
         for n in keystone_opts:
-            if (n[0] == cls.OPT_GROUP_NAME):
+            if n[0] == cls.OPT_GROUP_NAME:
                 options = n[1]
                 break
 
