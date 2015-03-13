@@ -37,16 +37,17 @@ class Request(object):
 
     def __init__(self, action,
                  body=None, headers=None, api=None):
-
-        self._api = None
-        self._api_mod = api
-
         self._action = action
         self._body = body
         self._headers = headers or {}
+        self._api = api
 
     @decorators.lazy_property()
     def deserialized_content(self):
         if self._body is not None:
             return json.loads(self._body)
         return None
+
+    def __repr__(self):
+        return "{'api': %s, 'action': %s, 'headers': %s, 'body': %s}" % (
+            self._api, self._action, self._headers, self._body)
