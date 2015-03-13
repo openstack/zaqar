@@ -122,7 +122,7 @@ def crunch(stats):
         total_succeeded += entry['total_succeeded']
         total_elapsed += entry['total_elapsed']
 
-    return (total_requests, total_succeeded, total_elapsed)
+    return total_requests, total_succeeded, total_elapsed
 
 
 def run(upstream_queue):

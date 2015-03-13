@@ -96,7 +96,7 @@ def descope_message_ids_set(msgset_key):
 
     tokens = msgset_key.split('.')
 
-    return (tokens[1] or None, tokens[0] or None)
+    return tokens[1] or None, tokens[0] or None
 
 # NOTE(prashanthr_): Aliasing the scope_message_ids_set function
 # to be used in the pools and claims controller as similar

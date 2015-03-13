@@ -53,7 +53,7 @@ _GENERAL_OPTIONS = (
                       'catalogue/control plane data is kept.'),
                 deprecated_opts=[cfg.DeprecatedOpt('sharding')]),
     cfg.BoolOpt('unreliable', default=None,
-                help=('Disable all reliability constrains.')),
+                help='Disable all reliability constrains.'),
 )
 
 _DRIVER_OPTIONS = (

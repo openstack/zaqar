@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 class Resource(object):
 
-    __slots__ = ('_queue_ctrl')
+    __slots__ = '_queue_ctrl'
 
     def __init__(self, queue_controller):
         self._queue_ctrl = queue_controller

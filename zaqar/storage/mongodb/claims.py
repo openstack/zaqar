@@ -96,7 +96,7 @@ class ClaimController(storage.Claim):
         except StopIteration:
             raise errors.ClaimDoesNotExist(cid, queue, project)
 
-        return (claim_meta, msgs)
+        return claim_meta, msgs
 
     # NOTE(kgriffs): If we get an autoreconnect or any other connection error,
     # the worst that can happen is you get an orphaned claim, but it will
@@ -154,7 +154,7 @@ class ClaimController(storage.Claim):
         ids = [msg['_id'] for msg in msgs]
 
         if len(ids) == 0:
-            return (None, messages)
+            return None, messages
 
         now = timeutils.utcnow_ts()
 
@@ -196,7 +196,7 @@ class ClaimController(storage.Claim):
             # with the claim ID successfully.
             claim, messages = self.get(queue, oid, project=project)
 
-        return (str(oid), messages)
+        return str(oid), messages
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect

@@ -63,7 +63,7 @@ def read_cached_file(filename, force_reload=False):
             cache_info['data'] = fap.read()
         cache_info['mtime'] = mtime
         reloaded = True
-    return (reloaded, cache_info['data'])
+    return reloaded, cache_info['data']
 
 
 def delete_cached_file(filename):

@@ -80,7 +80,7 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
                                          "v1.1")
 
         self.header = helpers.create_zaqar_headers(self.cfg)
-        self.headers_response_empty = set(['location'])
+        self.headers_response_empty = {'location'}
         self.client.set_base_url(self.base_url)
         self.client.headers = self.header
 
@@ -331,7 +331,7 @@ class TestQueueNonExisting(base.V1_1FunctionalTestBase):
         self.client.set_base_url(self.queue_url)
 
         self.header = helpers.create_zaqar_headers(self.cfg)
-        self.headers_response_empty = set(['location'])
+        self.headers_response_empty = {'location'}
         self.header = helpers.create_zaqar_headers(self.cfg)
 
     def test_get_stats(self):
