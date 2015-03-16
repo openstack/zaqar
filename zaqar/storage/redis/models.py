@@ -1,4 +1,6 @@
 # Copyright (c) 2014 Prashanth Raghu.
+# Copyright (c) 2015 Catalyst IT Ltd.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,6 +22,7 @@ from oslo_utils import encodeutils
 from oslo_utils import timeutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e')
+SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p')
 
 
 # TODO(kgriffs): Make similar classes for claims and queues
@@ -97,6 +100,62 @@ class MessageEnvelope(object):
 
         pipe.hmset(self.id, hmap)
         pipe.expire(self.id, self.ttl)
+
+
+class SubscriptionEnvelope(object):
+    """Encapsulates the subscription envelope."""
+
+    __slots__ = [
+        'id',
+        'source',
+        'subscriber',
+        'ttl',
+        'expires',
+        'options',
+        'project',
+    ]
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.get('id', str(uuid.uuid4()))
+        self.source = kwargs['source']
+        self.subscriber = kwargs['subscriber']
+        self.ttl = kwargs['ttl']
+        self.expires = kwargs.get('expires', float('inf'))
+        self.options = kwargs['options']
+
+    @staticmethod
+    def from_hmap(hmap):
+        kwargs = _hmap_kv_to_subenv(hmap)
+        return SubscriptionEnvelope(**kwargs)
+
+    @staticmethod
+    def from_redis(sid, client):
+        values = client.hmget(sid, SUBENV_FIELD_KEYS)
+
+        # NOTE(kgriffs): If the key does not exist, redis-py returns
+        # an array of None values.
+        if values[0] is None:
+            return None
+
+        return _hmap_kv_to_subenv(SUBENV_FIELD_KEYS, values)
+
+    def to_redis(self, pipe):
+        hmap = _subenv_to_hmap(self)
+
+        pipe.hmset(self.id, hmap)
+        pipe.expire(self.id, self.ttl)
+
+    def to_basic(self, now):
+        basic_msg = {
+            'id': self.id,
+            'source': self.source,
+            'subscriber': self.subscriber,
+            'ttl': self.ttl,
+            'expires': self.expires,
+            'options': self.options,
+        }
+
+        return basic_msg
 
 
 # NOTE(kgriffs): This could have implemented MessageEnvelope functionality
@@ -219,4 +278,34 @@ def _msgenv_to_hmap(msg):
         'u': msg.client_uuid,
         'c': msg.claim_id or '',
         'c.e': msg.claim_expires,
+    }
+
+
+def _hmap_kv_to_subenv(keys, values):
+    hmap = dict(zip(keys, values))
+    kwargs = _hmap_to_subenv_kwargs(hmap)
+    return SubscriptionEnvelope(**kwargs)
+
+
+def _hmap_to_subenv_kwargs(hmap):
+    # NOTE(kgriffs): Under Py3K, redis-py converts all strings
+    # into binary. Woohoo!
+    return {
+        'id': encodeutils.safe_decode(hmap[b'id']),
+        'source': hmap[b's'],
+        'subscriber': hmap[b'u'],
+        'ttl': int(hmap[b't']),
+        'expires': int(hmap[b'e']),
+        'options': hmap[b'o']
+    }
+
+
+def _subenv_to_hmap(msg):
+    return {
+        'id': msg.id,
+        's': msg.source,
+        'u': msg.subscriber,
+        't': msg.ttl,
+        'e': msg.expires,
+        'o': msg.options
     }

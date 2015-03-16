@@ -1,4 +1,6 @@
 # Copyright (c) 2014 Prashanth Raghu.
+# Copyright (c) 2015 Catalyst IT Ltd.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -27,6 +29,7 @@ from zaqar.storage import errors
 
 LOG = logging.getLogger(__name__)
 MESSAGE_IDS_SUFFIX = 'messages'
+SUBSCRIPTION_IDS_SUFFIX = 'subscriptions'
 
 
 def descope_queue_name(scoped_name):
@@ -98,6 +101,31 @@ def descope_message_ids_set(msgset_key):
 
     return (tokens[1] or None, tokens[0] or None)
 
+
+def scope_subscription_ids_set(queue=None, project=None,
+                               subscription_suffix=''):
+    """Scope subscriptions set with '.'
+
+    Returns a scoped name for the list of subscriptions in the form
+    project-id_queue-name_suffix
+    """
+
+    return (normalize_none_str(project) + '.' +
+            normalize_none_str(queue) + '.' +
+            subscription_suffix)
+
+
+def descope_subscription_ids_set(subset_key):
+    """Descope subscriptions set with '.'
+
+    :returns: (queue, project)
+    """
+
+    tokens = subset_key.split('.')
+
+    return (tokens[1] or None, tokens[0] or None)
+
+
 # NOTE(prashanthr_): Aliasing the scope_message_ids_set function
 # to be used in the pools and claims controller as similar
 # functionality is required to scope redis id's.
@@ -107,6 +135,10 @@ scope_queue_index = scope_message_ids_set
 
 def msgset_key(queue, project=None):
     return scope_message_ids_set(queue, project, MESSAGE_IDS_SUFFIX)
+
+
+def subset_key(queue, project=None):
+    return scope_subscription_ids_set(queue, project, SUBSCRIPTION_IDS_SUFFIX)
 
 
 def raises_conn_error(func):
@@ -205,6 +237,12 @@ def msg_expired_filter(message, now):
     return message.expires <= now
 
 
+def subscription_expired_filter(subscription, now):
+    """Return True if the subscription has expired."""
+
+    return subscription.expires <= now
+
+
 class QueueListCursor(object):
 
     def __init__(self, client, queues, denormalizer):
@@ -220,6 +258,26 @@ class QueueListCursor(object):
         curr = next(self.queue_iter)
         queue = self.client.hmget(curr, ['c', 'm'])
         return self.denormalizer(queue, encodeutils.safe_decode(curr))
+
+    def __next__(self):
+        return self.next()
+
+
+class SubscriptionListCursor(object):
+
+    def __init__(self, client, subscriptions, denormalizer):
+        self.subscription_iter = subscriptions
+        self.denormalizer = denormalizer
+        self.client = client
+
+    def __iter__(self):
+        return self
+
+    @raises_conn_error
+    def next(self):
+        curr = next(self.subscription_iter)
+        subscription = self.client.hmget(curr, ['s', 'u', 't', 'o'])
+        return self.denormalizer(subscription, encodeutils.safe_decode(curr))
 
     def __next__(self):
         return self.next()
