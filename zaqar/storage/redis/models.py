@@ -50,14 +50,16 @@ class MessageEnvelope(object):
     ]
 
     def __init__(self, **kwargs):
-        self.id = kwargs.get('id', str(uuid.uuid4()))
+        self.id = _validate_uuid4(kwargs.get('id', str(uuid.uuid4())))
         self.ttl = kwargs['ttl']
         self.created = kwargs['created']
         self.expires = kwargs.get('expires', self.created + self.ttl)
 
-        self.client_uuid = str(kwargs['client_uuid'])
+        self.client_uuid = _validate_uuid4(str(kwargs['client_uuid']))
 
         self.claim_id = kwargs.get('claim_id')
+        if self.claim_id:
+            _validate_uuid4(self.claim_id)
         self.claim_expires = kwargs['claim_expires']
 
     @staticmethod
@@ -309,3 +311,8 @@ def _subenv_to_hmap(msg):
         'e': msg.expires,
         'o': msg.options
     }
+
+
+def _validate_uuid4(_uuid):
+    uuid.UUID(str(_uuid), version=4)
+    return _uuid
