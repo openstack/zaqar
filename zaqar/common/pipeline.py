@@ -45,9 +45,6 @@ class Pipeline(object):
     def __init__(self, pipeline=None):
         self._pipeline = pipeline and list(pipeline) or []
 
-    def append(self, stage):
-        self._pipeline.append(stage)
-
     @decorators.memoized_getattr
     def __getattr__(self, name):
         with self.consumer_for(name) as consumer:

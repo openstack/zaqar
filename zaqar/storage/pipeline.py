@@ -78,7 +78,7 @@ def _get_storage_pipeline(resource_name, conf):
                         {'stage': ns, 'ex': str(exc)})
             continue
 
-    return common.Pipeline(pipeline)
+    return pipeline
 
 
 class DataDriver(base.DataDriverBase):
@@ -109,22 +109,22 @@ class DataDriver(base.DataDriverBase):
     def queue_controller(self):
         stages = _get_storage_pipeline('queue', self.conf)
         stages.append(self._storage.queue_controller)
-        return stages
+        return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
         stages = _get_storage_pipeline('message', self.conf)
         stages.append(self._storage.message_controller)
-        return stages
+        return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
         stages = _get_storage_pipeline('claim', self.conf)
         stages.append(self._storage.claim_controller)
-        return stages
+        return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
         stages = _get_storage_pipeline('subscription', self.conf)
         stages.append(self._storage.subscription_controller)
-        return stages
+        return common.Pipeline(stages)
