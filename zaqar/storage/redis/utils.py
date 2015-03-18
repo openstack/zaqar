@@ -15,7 +15,6 @@
 import functools
 import sys
 import time
-import uuid
 
 from oslo_utils import encodeutils
 import redis
@@ -48,10 +47,6 @@ def normalize_none_str(string_or_none):
 
     # TODO(prashanthr_) : Try to reuse this utility. Violates DRY
     return '' if string_or_none is None else string_or_none
-
-
-def generate_uuid():
-    return str(uuid.uuid4())
 
 
 def scope_queue_name(queue=None, project=None):

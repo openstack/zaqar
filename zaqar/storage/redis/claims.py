@@ -16,6 +16,7 @@ import functools
 
 import msgpack
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 
 from zaqar.common import decorators
 from zaqar.openstack.common import log as logging
@@ -257,7 +258,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
         claim_expires = now + claim_ttl
         msg_expires = claim_expires + grace
 
-        claim_id = utils.generate_uuid()
+        claim_id = uuidutils.generate_uuid()
         claimed_msgs = []
 
         # NOTE(kgriffs): Claim some messages
