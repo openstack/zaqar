@@ -67,19 +67,22 @@ class Endpoints(object):
                 project=project_id, **kwargs)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            return api_utils.error_response(req, ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
         except storage_errors.BaseException as ex:
             LOG.exception(ex)
             error = 'Queues could not be listed.'
-            return api_utils.error_response(req, ex, error)
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, error, headers)
 
         # Buffer list of queues
         queues = list(next(results))
 
         # Got some. Prepare the response.
         body = utils.to_json({'queues': queues})
+        headers = {'status': 200}
 
-        resp = response.Response(req, body)
+        resp = response.Response(req, body, headers)
 
         return resp
 
@@ -103,18 +106,22 @@ class Endpoints(object):
         try:
             self._validate.queue_identification(queue_name, project_id)
             self._validate.queue_metadata_length(len(metadata))
-            self._queue_controller.create(queue_name, metadata=metadata,
-                                          project=project_id)
+            created = self._queue_controller.create(queue_name,
+                                                    metadata=metadata,
+                                                    project=project_id)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            return api_utils.error_response(req, ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
         except storage_errors.BaseException as ex:
             LOG.exception(ex)
             error = _('Queue "%s" could not be created.') % queue_name
-            return api_utils.error_response(req, ex, error)
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers, error)
         else:
             body = _('Queue "%s" created.') % queue_name
-            resp = response.Response(req, body)
+            headers = {'status': 201} if created else {'status': 204}
+            resp = response.Response(req, body, headers)
             return resp
 
     @api_utils.raises_conn_error
@@ -136,10 +143,12 @@ class Endpoints(object):
         except storage_errors.BaseException as ex:
             LOG.exception(ex)
             error = _('Queue "%s" could not be deleted.') % queue_name
-            return api_utils.error_response(req, ex, error)
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers, error)
         else:
             body = _('Queue "%s" removed.') % queue_name
-            resp = response.Response(req, body)
+            headers = {'status': 204}
+            resp = response.Response(req, body, headers)
             return resp
 
     @api_utils.raises_conn_error
@@ -164,14 +173,17 @@ class Endpoints(object):
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
             error = _('Queue "%s" does not exist.') % queue_name
-            return api_utils.error_response(req, ex, error)
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers, error)
         except storage_errors.BaseException as ex:
             LOG.exception(ex)
+            headers = {'status': 503}
             error = _('Cannot retrieve queue "%s".') % queue_name
-            return api_utils.error_response(req, ex, error)
+            return api_utils.error_response(req, ex, headers, error)
         else:
             body = utils.to_json(resp_dict)
-            resp = response.Response(req, body)
+            headers = {'status': 200}
+            resp = response.Response(req, body, headers)
             return resp
 
     @api_utils.raises_conn_error
@@ -200,12 +212,15 @@ class Endpoints(object):
                 }
             }
             body = utils.to_json(resp_dict)
-            resp = response.Response(req, body)
+            headers = {'status': 404}
+            resp = response.Response(req, body, headers)
             return resp
         except storage_errors.BaseException as ex:
             LOG.exception(ex)
             error = _('Cannot retrieve queue "%s" stats.') % queue_name
-            return api_utils.error_response(req, ex, error)
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers, error)
         else:
-            resp = response.Response(req, body)
+            headers = {'status': 200}
+            resp = response.Response(req, body, headers)
             return resp

@@ -42,8 +42,8 @@ def raises_conn_error(func):
     return wrapper
 
 
-def error_response(req, exception, error=None):
+def error_response(req, exception, headers=None, error=None):
     body = utils.to_json({'exception': exception,
                           'error': error})
-    resp = response.Response(req, body)
+    resp = response.Response(req, body, headers)
     return resp
