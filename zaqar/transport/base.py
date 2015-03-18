@@ -28,9 +28,12 @@ _GENERAL_TRANSPORT_OPTIONS = (
 )
 
 _RESOURCE_DEFAULTS = (
-    cfg.IntOpt('default_message_ttl', default=3600),
-    cfg.IntOpt('default_claim_ttl', default=300),
-    cfg.IntOpt('default_claim_grace', default=60),
+    cfg.IntOpt('default_message_ttl', default=3600,
+               help=('Defines how long a message will be accessible.')),
+    cfg.IntOpt('default_claim_ttl', default=300,
+               help=('Defines how long a message will be in claimed state.')),
+    cfg.IntOpt('default_claim_grace', default=60,
+               help=('Defines the message grace period in seconds.'))
 )
 
 _TRANSPORT_GROUP = 'transport'
