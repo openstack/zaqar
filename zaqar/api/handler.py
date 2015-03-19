@@ -21,8 +21,9 @@ class Handler(object):
     The handler validates and process the requests
     """
 
-    def __init__(self, storage, control, validate):
-        self.v1_1_endpoints = endpoints.Endpoints(storage, control, validate)
+    def __init__(self, storage, control, validate, defaults):
+        self.v1_1_endpoints = endpoints.Endpoints(storage, control,
+                                                  validate, defaults)
 
     def process_request(self, req):
         # FIXME(vkmc): Control API version

@@ -14,6 +14,7 @@
 
 from oslo_log import log as logging
 
+from zaqar.common.api import errors as api_errors
 from zaqar.common.api import response
 from zaqar.common.api import utils as api_utils
 from zaqar.i18n import _
@@ -26,7 +27,7 @@ LOG = logging.getLogger(__name__)
 class Endpoints(object):
     """v1.1 API Endpoints."""
 
-    def __init__(self, storage, control, validate):
+    def __init__(self, storage, control, validate, defaults):
         self._queue_controller = storage.queue_controller
         self._message_controller = storage.message_controller
         self._claim_controller = storage.claim_controller
@@ -36,6 +37,9 @@ class Endpoints(object):
 
         self._validate = validate
 
+        self._defaults = defaults
+
+    # Queues
     @api_utils.raises_conn_error
     def queue_list(self, req):
         """Gets a list of queues
@@ -50,22 +54,13 @@ class Endpoints(object):
         LOG.debug(u'Queue list - project: %(project)s',
                   {'project': project_id})
 
-        kwargs = {}
-
-        if req._body.get('marker') is not None:
-            kwargs['marker'] = req._body.get('marker')
-
-        if req._body.get('limit') is not None:
-            kwargs['limit'] = req._body.get('limit')
-
-        if req._body.get('detailed') is not None:
-            kwargs['detailed'] = req._body.get('detailed')
-
         try:
+            kwargs = api_utils.get_headers(req)
+
             self._validate.queue_listing(**kwargs)
             results = self._queue_controller.list(
                 project=project_id, **kwargs)
-        except validation.ValidationFailed as ex:
+        except (ValueError, validation.ValidationFailed) as ex:
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
@@ -82,9 +77,7 @@ class Endpoints(object):
         body = {'queues': queues}
         headers = {'status': 200}
 
-        resp = response.Response(req, body, headers)
-
-        return resp
+        return response.Response(req, body, headers)
 
     @api_utils.raises_conn_error
     def queue_create(self, req):
@@ -121,8 +114,7 @@ class Endpoints(object):
         else:
             body = _('Queue %s created.') % queue_name
             headers = {'status': 201} if created else {'status': 204}
-            resp = response.Response(req, body, headers)
-            return resp
+            return response.Response(req, body, headers)
 
     @api_utils.raises_conn_error
     def queue_delete(self, req):
@@ -148,8 +140,7 @@ class Endpoints(object):
         else:
             body = _('Queue %s removed.') % queue_name
             headers = {'status': 204}
-            resp = response.Response(req, body, headers)
-            return resp
+            return response.Response(req, body, headers)
 
     @api_utils.raises_conn_error
     def queue_get(self, req):
@@ -183,8 +174,7 @@ class Endpoints(object):
         else:
             body = resp_dict
             headers = {'status': 200}
-            resp = response.Response(req, body, headers)
-            return resp
+            return response.Response(req, body, headers)
 
     @api_utils.raises_conn_error
     def queue_get_stats(self, req):
@@ -198,7 +188,7 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Queue get queue stats - queue: %(queue)s, '
+        LOG.debug(u'Get queue stats - queue: %(queue)s, '
                   u'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
@@ -217,8 +207,7 @@ class Endpoints(object):
             }
             body = resp_dict
             headers = {'status': 404}
-            resp = response.Response(req, body, headers)
-            return resp
+            return response.Response(req, body, headers)
         except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
             error = _('Cannot retrieve queue %s stats.') % queue_name
@@ -226,5 +215,321 @@ class Endpoints(object):
             return api_utils.error_response(req, ex, headers, error)
         else:
             headers = {'status': 200}
-            resp = response.Response(req, body, headers)
-            return resp
+            return response.Response(req, body, headers)
+
+    # Messages
+    @api_utils.raises_conn_error
+    def message_list(self, req):
+        """Gets a list of messages on a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+
+        LOG.debug(u'Message list - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        try:
+            kwargs = api_utils.get_headers(req)
+
+            client_uuid = api_utils.get_client_uuid(req)
+
+            self._validate.message_listing(**kwargs)
+            results = self._message_controller.list(
+                queue_name,
+                project=project_id,
+                client_uuid=client_uuid,
+                **kwargs)
+
+            # Buffer messages
+            cursor = next(results)
+            messages = list(cursor)
+        except (ValueError, api_errors.BadRequest,
+                validation.ValidationFailed) as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers)
+
+        if messages:
+            # Found some messages, so prepare the response
+            kwargs['marker'] = next(results)
+            messages = [api_utils.format_message(message)
+                        for message in messages]
+
+        headers = {'status': 200}
+        body = {'messages': messages}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def message_get(self, req):
+        """Gets a message from a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        message_id = req._body.get('message_id')
+
+        LOG.debug(u'Message get - message: %(message)s, '
+                  u'queue: %(queue)s, project: %(project)s',
+                  {'message': message_id,
+                   'queue': queue_name,
+                   'project': project_id})
+        try:
+            message = self._message_controller.get(
+                queue_name,
+                message_id,
+                project=project_id)
+
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers)
+
+        # Prepare response
+        message = api_utils.format_message(message)
+
+        headers = {'status': 200}
+        body = {'messages': message}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def message_get_many(self, req):
+        """Gets a set of messages from a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        message_ids = list(req._body.get('message_ids'))
+
+        LOG.debug(u'Message get - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        try:
+            self._validate.message_listing(limit=len(message_ids))
+            messages = self._message_controller.bulk_get(
+                queue_name,
+                message_ids=message_ids,
+                project=project_id)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+
+        # Prepare response
+        messages = list(messages)
+        messages = [api_utils.format_message(message)
+                    for message in messages]
+
+        headers = {'status': 200}
+        body = {'messages': messages}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def message_post(self, req):
+        """Post a set of messages to a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+
+        LOG.debug(u'Messages post - queue:  %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        messages = req._body.get('messages')
+
+        if messages is None:
+            ex = _(u'Invalid request.')
+            error = _(u'No messages were found in the request body.')
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers, error)
+
+        try:
+            # Place JSON size restriction before parsing
+            self._validate.message_length(len(str(messages)))
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+
+        _message_post_spec = (
+            ('ttl', int, self._defaults.message_ttl),
+            ('body', '*', None),
+        )
+
+        messages = api_utils.sanitize(messages,
+                                      _message_post_spec,
+                                      doctype=list)
+
+        try:
+            client_uuid = api_utils.get_client_uuid(req)
+
+            self._validate.message_posting(messages)
+
+            if not self._queue_controller.exists(queue_name, project_id):
+                self._validate.queue_identification(queue_name, project_id)
+                self._queue_controller.create(queue_name, project=project_id)
+
+            message_ids = self._message_controller.post(
+                queue_name,
+                messages=messages,
+                project=project_id,
+                client_uuid=client_uuid)
+        except (api_errors.BadRequest, validation.ValidationFailed) as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.MessageConflict as ex:
+            LOG.exception(ex)
+            error = _(u'No messages could be enqueued.')
+            headers = {'status': 500}
+            return api_utils.error_response(req, ex, headers, error)
+
+        # Prepare the response
+        headers = {'status': 201}
+        body = {'message_ids': message_ids}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def message_delete(self, req):
+        """Delete a message from a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        message_id = req._body.get('message_id')
+
+        LOG.debug(u'Messages item DELETE - message: %(message)s, '
+                  u'queue: %(queue)s, project: %(project)s',
+                  {'message': message_id,
+                   'queue': queue_name,
+                   'project': project_id})
+
+        claim_id = req._body.get('claim_id')
+
+        try:
+            self._message_controller.delete(
+                queue_name,
+                message_id=message_id,
+                project=project_id,
+                claim=claim_id)
+        except storage_errors.MessageNotClaimed as ex:
+            LOG.debug(ex)
+            error = _(u'A claim was specified, but the message '
+                      u'is not currently claimed.')
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers, error)
+        except storage_errors.ClaimDoesNotExist as ex:
+            LOG.debug(ex)
+            error = _(u'The specified claim does not exist or '
+                      u'has expired.')
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers, error)
+        except storage_errors.NotPermitted as ex:
+            LOG.debug(ex)
+            error = _(u'This message is claimed; it cannot be '
+                      u'deleted without a valid claim ID.')
+            headers = {'status': 403}
+            return api_utils.error_response(req, ex, headers, error)
+
+        headers = {'status': 204}
+        body = {}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def message_delete_many(self, req):
+        """Deletes a set of messages from a queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        message_ids = req._body.get('message_ids')
+        pop_limit = req._body.get('pop_limit')
+
+        LOG.debug(u'Messages collection DELETE - queue: %(queue)s,'
+                  u'project: %(project)s, messages: %(message_ids)s',
+                  {'queue': queue_name, 'project': project_id,
+                   'message_ids': message_ids})
+
+        try:
+            self._validate.message_deletion(message_ids, pop_limit)
+
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+
+        if message_ids:
+            return self._delete_messages_by_id(req, queue_name, message_ids,
+                                               project_id)
+        elif pop_limit:
+            return self._pop_messages(req, queue_name, project_id, pop_limit)
+
+    @api_utils.raises_conn_error
+    def _delete_messages_by_id(self, req, queue_name, ids, project_id):
+        self._message_controller.bulk_delete(queue_name, message_ids=ids,
+                                             project=project_id)
+
+        headers = {'status': 204}
+        body = {}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def _pop_messages(self, req, queue_name, project_id, pop_limit):
+
+        LOG.debug(u'Pop messages - queue: %(queue)s, project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        messages = self._message_controller.pop(
+            queue_name,
+            project=project_id,
+            limit=pop_limit)
+
+        # Prepare response
+        if not messages:
+            messages = []
+
+        headers = {'status': 200}
+        body = {'messages': messages}
+
+        return response.Response(req, body, headers)

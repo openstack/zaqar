@@ -25,6 +25,7 @@ from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
+from zaqar.transport import base
 from zaqar.transport import validation
 
 LOG = log.getLogger(__name__)
@@ -102,7 +103,8 @@ class Bootstrap(object):
     def api(self):
         LOG.debug(u'Loading API handler')
         validate = validation.Validator(self.conf)
-        return handler.Handler(self.storage, self.control, validate)
+        defaults = base.ResourceDefaults(self.conf)
+        return handler.Handler(self.storage, self.control, validate, defaults)
 
     @decorators.lazy_property(write=False)
     def storage(self):
