@@ -66,7 +66,7 @@ You can install it with the following command::
 
 Git-review checks if you can authenticate to Gerrit with your SSH key.
 It will ask your for your username. You can configure your Gerrit username so you don't have to
-keep re-entering it everytime you want to use git-review::
+keep re-entering it every time you want to use git-review::
 
    $ git config --global gitreview.username yourgerritusername
 
