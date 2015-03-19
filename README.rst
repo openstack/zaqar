@@ -11,20 +11,29 @@ Running a local Zaqar server with MongoDB
 all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 (see "Running tests" section below) installed and running.
 
-1. From your home folder create the ``~/.zaqar`` folder and clone the repo::
+1. Install prerequisites:
+
+# Ubuntu/Debian:
+sudo apt-get install gcc python-pip libxml2 libxml2-dev libxslt libxslt-dev
+
+# Fedora/RHEL:
+sudo yum install gcc python-pip libxml2 libxml2-devel libxslt libxslt-devel
+
+2. From your home folder create the ``~/.zaqar`` folder and clone the repo::
 
     $ cd
     $ mkdir .zaqar
     $ git clone https://github.com/openstack/zaqar.git
 
-2. Generate and copy the Zaqar config files to the directory ``~/.zaqar``::
+3. Generate and copy the Zaqar config files to the directory ``~/.zaqar``::
 
+    $ pip install tox
     $ cd zaqar
     $ tox -e genconfig
     $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
     $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
 
-3. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
+4. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
    and specify to use mongodb storage::
 
     storage = mongodb
@@ -38,26 +47,26 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 
     uri = mongodb://127.0.0.1:27017
 
-4. For logging, find the ``[DEFAULT]`` section in
+5. For logging, find the ``[DEFAULT]`` section in
    ``~/.zaqar/zaqar.conf`` and modify as desired::
 
     log_file = server.log
 
-5. Change directories back to your local copy of the repo::
+6. Change directories back to your local copy of the repo::
 
     $ cd ~/zaqar
 
-6. Run the following so you can see the results of any changes you
+7. Run the following so you can see the results of any changes you
    make to the code without having to reinstall the package each time::
 
     $ pip install -e .
 
-7. Start the Zaqar server with logging level set to INFO so you can see
+8. Start the Zaqar server with logging level set to INFO so you can see
    the port on which the server is listening::
 
     $ zaqar-server -v
 
-8. Test out that Zaqar is working by creating a queue::
+9. Test out that Zaqar is working by creating a queue::
 
     $ curl -i -X PUT http://127.0.0.1:8888/v1.1/queues/samplequeue -H
     "Content-type: application/json"
@@ -74,11 +83,7 @@ similar to this::
 Running tests
 -------------
 
-First install additional requirements::
-
-    $ pip install tox
-
-And then run tests::
+Run tests using the following command::
 
     $ tox -e py27
 
