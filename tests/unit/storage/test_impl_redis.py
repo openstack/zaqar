@@ -18,6 +18,7 @@ import uuid
 
 import mock
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import redis
 
 from zaqar.common import errors
@@ -131,7 +132,7 @@ class RedisUtilsTest(testing.TestBase):
         msg = _create_sample_message()
         self.assertTrue(utils.msg_echo_filter(msg, msg.client_uuid))
 
-        alt_uuid = utils.generate_uuid()
+        alt_uuid = uuidutils.generate_uuid()
         self.assertFalse(utils.msg_echo_filter(msg, alt_uuid))
 
     def test_basic_message(self):
