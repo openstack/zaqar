@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from stevedore import driver
+from stevedore import extension
 
 from zaqar import common
 from zaqar.common import decorators
@@ -81,6 +82,28 @@ def _get_storage_pipeline(resource_name, conf):
     return pipeline
 
 
+def _get_builtin_entry_points(resource_name, storage):
+    # Load builtin stages
+    builtin_entry_points = []
+
+    # NOTE(flaper87): The namespace will look like:
+    # `zaqar.storage.$STORAGE.driver.stages`. For now,
+    # the builtin stages are bound to a single store and
+    # are not applied to every store.
+    namespace = '%s.%s.stages' % (storage.__module__, resource_name)
+    extensions = extension.ExtensionManager(namespace,
+                                            invoke_on_load=True,
+                                            invoke_args=[storage])
+
+    if len(extensions.extensions) == 0:
+        return []
+
+    for ext in extensions.extensions:
+        builtin_entry_points.append(ext.obj)
+
+    return builtin_entry_points
+
+
 class DataDriver(base.DataDriverBase):
     """Meta-driver for injecting pipelines in front of controllers.
 
@@ -107,24 +130,28 @@ class DataDriver(base.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        stages = _get_storage_pipeline('queue', self.conf)
+        stages = _get_builtin_entry_points('queue', self._storage)
+        stages.extend(_get_storage_pipeline('queue', self.conf))
         stages.append(self._storage.queue_controller)
         return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        stages = _get_storage_pipeline('message', self.conf)
+        stages = _get_builtin_entry_points('message', self._storage)
+        stages.extend(_get_storage_pipeline('message', self.conf))
         stages.append(self._storage.message_controller)
         return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        stages = _get_storage_pipeline('claim', self.conf)
+        stages = _get_builtin_entry_points('claim', self._storage)
+        stages.extend(_get_storage_pipeline('claim', self.conf))
         stages.append(self._storage.claim_controller)
         return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        stages = _get_storage_pipeline('subscription', self.conf)
+        stages = _get_builtin_entry_points('subscription', self._storage)
+        stages.extend(_get_storage_pipeline('subscription', self.conf))
         stages.append(self._storage.subscription_controller)
         return common.Pipeline(stages)
