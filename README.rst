@@ -29,8 +29,11 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 
     storage = mongodb
 
-   Then find the ``[drivers:storage:mongodb]`` section
-   and modify the URI to point to your local mongod instance::
+   Then find the ``[drivers:message_store:mongodb]`` and
+   ``[drivers:management_store:mongodb]`` sections and
+   specify the URI to point to your local
+   mongod instance by adding this line to both the
+   sections::
 
     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT
 
