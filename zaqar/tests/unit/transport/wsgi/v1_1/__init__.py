@@ -27,7 +27,6 @@ from zaqar.tests.unit.transport.wsgi.v1_1 import test_validation
 TestAuth = test_auth.TestAuth
 TestClaimsFaultyDriver = test_claims.TestClaimsFaultyDriver
 TestClaimsMongoDB = test_claims.TestClaimsMongoDB
-TestClaimsSqlalchemy = test_claims.TestClaimsSqlalchemy
 TestDefaultLimits = test_default_limits.TestDefaultLimits
 TestHealthMongoDB = test_health.TestHealthMongoDB
 TestHealthFaultyDriver = test_health.TestHealthFaultyDriver
@@ -36,7 +35,6 @@ TestMediaType = test_media_type.TestMediaType
 TestMessagesFaultyDriver = test_messages.TestMessagesFaultyDriver
 TestMessagesMongoDB = test_messages.TestMessagesMongoDB
 TestMessagesMongoDBPooled = test_messages.TestMessagesMongoDBPooled
-TestMessagesSqlalchemy = test_messages.TestMessagesSqlalchemy
 TestQueueFaultyDriver = l.TestQueueLifecycleFaultyDriver
 TestQueueLifecycleMongoDB = l.TestQueueLifecycleMongoDB
 TestQueueLifecycleSqlalchemy = l.TestQueueLifecycleSqlalchemy

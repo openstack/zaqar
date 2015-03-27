@@ -24,7 +24,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 class TestMediaType(base.V1Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_json_only_endpoints(self):
         endpoints = (

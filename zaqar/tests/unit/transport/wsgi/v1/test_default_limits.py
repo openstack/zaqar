@@ -25,13 +25,13 @@ from zaqar.tests.unit.transport.wsgi import base
 
 class TestDefaultLimits(base.V1Base):
 
-    config_file = 'wsgi_sqlalchemy_default_limits.conf'
+    config_file = 'wsgi_mongodb_default_limits.conf'
 
     def setUp(self):
         super(TestDefaultLimits, self).setUp()
 
         self.queue_path = self.url_prefix + '/queues'
-        self.q1_queue_path = self.queue_path + '/q1'
+        self.q1_queue_path = self.queue_path + '/' + str(uuid.uuid4())
         self.messages_path = self.q1_queue_path + '/messages'
         self.claims_path = self.q1_queue_path + '/claims'
 

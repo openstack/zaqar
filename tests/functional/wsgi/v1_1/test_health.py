@@ -41,7 +41,7 @@ class TestHealth(base.V1_1FunctionalTestBase):
         {
             'name': "pool_1",
             'weight': 10,
-            'uri': "sqlite:///:memory:"
+            'uri': "mongodb://localhost:27017"
         }
     )
     def test_health_with_pool(self, params):
@@ -49,7 +49,7 @@ class TestHealth(base.V1_1FunctionalTestBase):
         # as pool node and the mongodb is working on gate successfully.
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "sqlite:///:memory:")
+            uri=params.get('uri', "mongodb://localhost:27017")
         )
 
         pool_name = params.get('name', "pool_1")

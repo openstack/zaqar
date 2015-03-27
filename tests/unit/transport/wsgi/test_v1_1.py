@@ -39,10 +39,6 @@ class TestClaimsMongoDB(v1_1.TestClaimsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsSqlalchemy(v1_1.TestClaimsSqlalchemy):
-    url_prefix = URL_PREFIX
-
-
 class TestDefaultLimits(v1_1.TestDefaultLimits):
     url_prefix = URL_PREFIX
 
@@ -67,10 +63,6 @@ class TestMessagesMongoDBPooled(v1_1.TestMessagesMongoDBPooled):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesSqlalchemy(v1_1.TestMessagesSqlalchemy):
-    url_prefix = URL_PREFIX
-
-
 class TestQueueFaultyDriver(v1_1.TestQueueFaultyDriver):
     url_prefix = URL_PREFIX
 
@@ -80,17 +72,17 @@ class TestQueueFaultyDriver(v1_1.TestQueueFaultyDriver):
 class TestQueueLifecycleMongoDB(v1_1.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
 
-
-class TestQueueLifecycleSqlalchemy(v1_1.TestQueueLifecycleSqlalchemy):
-    url_prefix = URL_PREFIX
+# NOTE(flaper87): We'll need this once we split data/control plane
+# class TestQueueLifecycleSqlalchemy(v1_1.TestQueueLifecycleSqlalchemy):
+#    url_prefix = URL_PREFIX
 
 
 class TestPoolsMongoDB(v1_1.TestPoolsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestPoolsSqlalchemy(v1_1.TestPoolsSqlalchemy):
-    url_prefix = URL_PREFIX
+# class TestPoolsSqlalchemy(v1_1.TestPoolsSqlalchemy):
+#    url_prefix = URL_PREFIX
 
 
 class TestValidation(v1_1.TestValidation):
@@ -107,7 +99,7 @@ class TestFlavorsMongoDB(v1_1.TestFlavorsMongoDB):
 
 class TestPing(base.V1_1Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_get(self):
         # TODO(kgriffs): Make use of setUp for setting the URL prefix
@@ -136,7 +128,7 @@ class TestHealthFaultyDriver(v1_1.TestHealthFaultyDriver):
 @ddt.ddt
 class TestMessages(base.V1_1Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(TestMessages, self).setUp()

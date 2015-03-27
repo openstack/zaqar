@@ -86,7 +86,7 @@ class PoolsBaseTest(base.V2Base):
         super(PoolsBaseTest, self).setUp()
         self.doc = {'weight': 100,
                     'group': 'mygroup',
-                    'uri': 'sqlite://:memory:'}
+                    'uri': 'mongodb://127.0.0.1:27017'}
         self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -109,7 +109,7 @@ class PoolsBaseTest(base.V2Base):
 
         self.simulate_put(path,
                           body=jsonutils.dumps(
-                              {'uri': 'sqlite://:memory:'}))
+                              {'uri': 'mongodb://127.0.0.1:27017'}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, 'big')
@@ -202,12 +202,17 @@ class PoolsBaseTest(base.V2Base):
         self.assertEqual(pool['options'], doc['options'])
 
     def test_patch_works(self):
-        doc = {'weight': 101, 'uri': 'sqlite://:memory:', 'options': {'a': 1}}
+        doc = {'weight': 101,
+               'uri': 'mongodb://localhost:27017',
+               'options': {'a': 1}}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
-        doc = {'weight': 101, 'uri': 'sqlite://:memory:', 'options': {'a': 1},
-               'location': 100, 'partition': 'taco'}
+        doc = {'weight': 101,
+               'uri': 'mongodb://localhost:27017',
+               'options': {'a': 1},
+               'location': 100,
+               'partition': 'taco'}
         self._patch_test(doc)
 
     @ddt.data(-1, 2**32+1, 'big')

@@ -17,4 +17,3 @@ from zaqar.storage.sqlalchemy import driver
 
 # Hoist classes into package namespace
 ControlDriver = driver.ControlDriver
-DataDriver = driver.DataDriver
