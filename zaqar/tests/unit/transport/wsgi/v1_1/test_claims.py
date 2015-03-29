@@ -296,11 +296,6 @@ class TestClaimsMongoDB(ClaimsBaseTest):
         super(TestClaimsMongoDB, self).tearDown()
 
 
-class TestClaimsSqlalchemy(ClaimsBaseTest):
-
-    config_file = 'wsgi_sqlalchemy.conf'
-
-
 class TestClaimsFaultyDriver(base.V1_1BaseFaulty):
 
     config_file = 'wsgi_faulty.conf'

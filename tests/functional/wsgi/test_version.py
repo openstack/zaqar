@@ -75,7 +75,7 @@ EXPECTED_VERSIONS = [
 
 class TestVersion(base.TestBase):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_get(self):
         response = self.simulate_get('/')

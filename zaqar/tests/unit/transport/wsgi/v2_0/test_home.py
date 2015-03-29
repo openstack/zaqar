@@ -23,7 +23,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 class TestHomeDocument(base.V2Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_json_response(self):
         self.headers = {

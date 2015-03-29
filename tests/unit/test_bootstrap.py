@@ -15,9 +15,7 @@
 
 from zaqar import bootstrap
 from zaqar.common import errors
-from zaqar.storage import pipeline
 from zaqar.storage import pooling
-from zaqar.storage import sqlalchemy
 from zaqar.tests import base
 from zaqar.transport import wsgi
 
@@ -33,15 +31,9 @@ class TestBootstrap(base.TestBase):
         self.assertRaises(errors.InvalidDriver,
                           lambda: bootstrap.storage)
 
-    def test_storage_sqlalchemy(self):
-        bootstrap = self._bootstrap('wsgi_sqlalchemy.conf')
-        self.assertIsInstance(bootstrap.storage, pipeline.DataDriver)
-        self.assertIsInstance(bootstrap.storage._storage,
-                              sqlalchemy.DataDriver)
-
-    def test_storage_sqlalchemy_pooled(self):
+    def test_storage_mongodb_pooled(self):
         """Makes sure we can load the pool driver."""
-        bootstrap = self._bootstrap('wsgi_sqlalchemy_pooled.conf')
+        bootstrap = self._bootstrap('wsgi_mongodb_pooled.conf')
         self.assertIsInstance(bootstrap.storage._storage, pooling.DataDriver)
 
     def test_transport_invalid(self):
@@ -50,5 +42,5 @@ class TestBootstrap(base.TestBase):
                           lambda: bootstrap.transport)
 
     def test_transport_wsgi(self):
-        bootstrap = self._bootstrap('wsgi_sqlalchemy.conf')
+        bootstrap = self._bootstrap('wsgi_mongodb.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)

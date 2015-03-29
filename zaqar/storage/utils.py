@@ -42,7 +42,8 @@ def dynamic_conf(uri, options, conf=None):
 
     # NOTE(cpp-cabrera): parse storage-specific opts:
     # 'drivers:storage:{type}'
-    storage_opts = utils.dict_to_conf({'uri': uri, 'options': options})
+    options['uri'] = uri
+    storage_opts = utils.dict_to_conf(options)
     storage_group = u'drivers:message_store:%s' % storage_type
 
     # NOTE(cpp-cabrera): register those options!
@@ -61,7 +62,10 @@ def dynamic_conf(uri, options, conf=None):
         conf.register_opts(driver_opts, group=u'drivers')
 
     conf.set_override('storage', storage_type, 'drivers')
-    conf.set_override('uri', uri, group=storage_group)
+
+    for opt in options:
+        if opt in conf[storage_group]:
+            conf.set_override(opt, options[opt], group=storage_group)
     return conf
 
 

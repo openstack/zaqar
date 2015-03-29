@@ -39,9 +39,11 @@ class PoolQueuesTest(testing.TestBase):
         self.controller = self.driver.queue_controller
 
         # fake two pools
-        for _ in six.moves.xrange(2):
+        for i in six.moves.xrange(2):
+            options = {'database': "zaqar_test_pools_" + str(i)}
             self.pools_ctrl.create(str(uuid.uuid1()), 100,
-                                   'sqlite://:memory:')
+                                   'mongodb://localhost:27017',
+                                   options=options)
 
     def tearDown(self):
         self.pools_ctrl.drop_all()

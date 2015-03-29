@@ -38,8 +38,8 @@ class TestUtils(testing.TestBase):
         self.assertTrue(utils.can_connect('redis://localhost'))
         self.assertTrue(utils.can_connect('redis://localhost:6379'))
 
-    def test_can_connect_suceeds_if_good_uri_sqlite(self):
-        self.assertTrue(utils.can_connect('sqlite://:memory:'))
+    # def test_can_connect_suceeds_if_good_uri_sqlite(self):
+    #    self.assertTrue(utils.can_connect('sqlite://:memory:'))
 
     def test_can_connect_fails_if_bad_uri_missing_schema(self):
         self.assertFalse(utils.can_connect('localhost:27017'))

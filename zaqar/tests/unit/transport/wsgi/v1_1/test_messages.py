@@ -514,10 +514,6 @@ class MessagesBaseTest(base.V1_1Base):
         return headers['location'].rsplit('=', 1)[-1].split(',')
 
 
-class TestMessagesSqlalchemy(MessagesBaseTest):
-    config_file = 'wsgi_sqlalchemy.conf'
-
-
 class TestMessagesMongoDB(MessagesBaseTest):
     config_file = 'wsgi_mongodb.conf'
 

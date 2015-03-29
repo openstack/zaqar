@@ -13,43 +13,27 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import contextlib
 import logging
 
 import sqlalchemy as sa
 
 from zaqar.common import decorators
-from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage.sqlalchemy import controllers
 from zaqar.storage.sqlalchemy import options
 from zaqar.storage.sqlalchemy import tables
-from zaqar.storage.sqlalchemy import utils
 
 
 LOG = logging.getLogger(__name__)
 
 
-class DataDriver(storage.DataDriverBase):
-
-    BASE_CAPABILITIES = tuple(storage.Capabilities)
-
-    _DRIVER_OPTIONS = options._config_options()
+class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
-        super(DataDriver, self).__init__(conf, cache)
-
-        self.sqlalchemy_conf = self.conf[options.MESSAGE_SQLALCHEMY_GROUP]
-        LOG.warn(_('sqlalchemy\'s data plane driver will be removed during '
-                   'the next release. Please, consider moving your data to '
-                   'one of the other supported drivers.'))
-
-        # FIXME(flaper87): Make this dynamic
-        self._capabilities = self.BASE_CAPABILITIES
-
-    @property
-    def capabilities(self):
-        return self._capabilities
+        super(ControlDriver, self).__init__(conf, cache)
+        self.conf.register_opts(options.MANAGEMENT_SQLALCHEMY_OPTIONS,
+                                group=options.MANAGEMENT_SQLALCHEMY_GROUP)
+        self.sqlalchemy_conf = self.conf[options.MANAGEMENT_SQLALCHEMY_GROUP]
 
     def _sqlite_on_connect(self, conn, record):
         # NOTE(flaper87): This is necessary in order
@@ -77,98 +61,6 @@ class DataDriver(storage.DataDriverBase):
             sa.event.listen(engine, 'connect',
                             self._mysql_on_connect)
 
-        tables.metadata.create_all(engine, checkfirst=True)
-        return engine
-
-    # TODO(cpp-cabrera): expose connect/close as a context manager
-    # that acquires the connection to the DB for the desired scope and
-    # closes it once the operations are completed
-    @decorators.lazy_property(write=False)
-    def connection(self):
-        return self.engine.connect()
-
-    def close_connection(self):
-        self.connection.close()
-
-    @contextlib.contextmanager
-    def trans(self):
-        with self.engine.begin() as connection:
-            yield connection
-
-    def run(self, statement):
-        """Performs a SQL query.
-
-        :param sql: a query string with the '?' placeholders
-        :param args: the arguments to substitute the placeholders
-        """
-        return self.connection.execute(statement)
-
-    def get(self, statement):
-        """Runs sql and returns the first entry in the results.
-
-        :raises: utils.NoResult if the result set is empty
-        """
-        res = self.run(statement)
-        r = res.fetchone()
-        if r is None:
-            raise utils.NoResult()
-        else:
-            res.close()
-            return r
-
-    @decorators.lazy_property(write=False)
-    def queue_controller(self):
-        return controllers.QueueController(self)
-
-    @decorators.lazy_property(write=False)
-    def message_controller(self):
-        return controllers.MessageController(self)
-
-    @decorators.lazy_property(write=False)
-    def claim_controller(self):
-        return controllers.ClaimController(self)
-
-    @decorators.lazy_property(write=False)
-    def subscription_controller(self):
-        pass
-
-    def is_alive(self):
-        return True
-
-    def _health(self):
-        KPI = {}
-        # Leverage the is_alive to indicate if the backend storage is
-        # reachable or not
-        KPI['storage_reachable'] = self.is_alive()
-        KPI['operation_status'] = self._get_operation_status()
-        message_volume = {'free': 0, 'claimed': 0, 'total': 0}
-
-        # NOTE(flwang): Using SQL directly to get better performance than
-        # sqlalchemy.
-        msg_count_claimed = self.get('SELECT COUNT(*) FROM MESSAGES'
-                                     ' WHERE CID IS NOT NULL')
-        message_volume['claimed'] = int(msg_count_claimed[0])
-
-        msg_count_total = self.get('SELECT COUNT(*) FROM MESSAGES')
-        message_volume['total'] = int(msg_count_total[0])
-
-        message_volume['free'] = (message_volume['total'] -
-                                  message_volume['claimed'])
-        KPI['message_volume'] = message_volume
-        return KPI
-
-
-class ControlDriver(storage.ControlDriverBase):
-
-    def __init__(self, conf, cache):
-        super(ControlDriver, self).__init__(conf, cache)
-        self.conf.register_opts(options.MANAGEMENT_SQLALCHEMY_OPTIONS,
-                                group=options.MANAGEMENT_SQLALCHEMY_GROUP)
-        self.sqlalchemy_conf = self.conf[options.MANAGEMENT_SQLALCHEMY_GROUP]
-
-    @decorators.lazy_property(write=False)
-    def engine(self, *args, **kwargs):
-        engine = sa.create_engine(self.sqlalchemy_conf.uri, **kwargs)
         tables.metadata.create_all(engine, checkfirst=True)
         return engine
 

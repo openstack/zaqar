@@ -37,10 +37,6 @@ class TestClaimsMongoDB(v1.TestClaimsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestClaimsSqlalchemy(v1.TestClaimsSqlalchemy):
-    url_prefix = URL_PREFIX
-
-
 class TestDefaultLimits(v1.TestDefaultLimits):
     url_prefix = URL_PREFIX
 
@@ -65,10 +61,6 @@ class TestMessagesMongoDBPooled(v1.TestMessagesMongoDBPooled):
     url_prefix = URL_PREFIX
 
 
-class TestMessagesSqlalchemy(v1.TestMessagesSqlalchemy):
-    url_prefix = URL_PREFIX
-
-
 class TestQueueFaultyDriver(v1.TestQueueFaultyDriver):
     url_prefix = URL_PREFIX
 
@@ -77,16 +69,17 @@ class TestQueueLifecycleMongoDB(v1.TestQueueLifecycleMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestQueueLifecycleSqlalchemy(v1.TestQueueLifecycleSqlalchemy):
-    url_prefix = URL_PREFIX
+# NOTE(flaper87): We'll need this later on
+# class TestQueueLifecycleSqlalchemy(v1.TestQueueLifecycleSqlalchemy):
+#    url_prefix = URL_PREFIX
 
 
 class TestPoolsMongoDB(v1.TestPoolsMongoDB):
     url_prefix = URL_PREFIX
 
 
-class TestPoolsSqlalchemy(v1.TestPoolsSqlalchemy):
-    url_prefix = URL_PREFIX
+# class TestPoolsSqlalchemy(v1.TestPoolsSqlalchemy):
+#    url_prefix = URL_PREFIX
 
 
 class TestValidation(v1.TestValidation):
@@ -99,7 +92,7 @@ class TestValidation(v1.TestValidation):
 
 class TestHealth(base.V1Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_get(self):
         response = self.simulate_get('/v1/health')

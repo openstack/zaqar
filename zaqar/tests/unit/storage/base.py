@@ -62,10 +62,14 @@ class ControllerBaseTest(testing.TestBase):
             self.driver = self.driver_class(self.conf, cache)
         else:
             control = self.control_driver_class(self.conf, cache)
-            uri = "sqlite:///:memory:"
+            uri = "mongodb://localhost:27017"
             for i in range(4):
-                control.pools_controller.create(six.text_type(i), 100, uri)
+                options = {'database': "zaqar_test_pools_" + str(i)}
+                control.pools_controller.create(six.text_type(i),
+                                                100, uri, options=options)
             self.driver = self.driver_class(self.conf, cache, control)
+            self.addCleanup(control.pools_controller.drop_all)
+            self.addCleanup(control.catalogue_controller.drop_all)
 
         self._prepare_conf()
 
@@ -131,6 +135,7 @@ class QueueControllerTest(ControllerBaseTest):
         self.assertEqual(all(map(lambda queue:
                                  'name' in queue and
                                  'metadata' not in queue, queues)), True)
+
         self.assertEqual(len(queues), 5)
 
     def test_queue_lifecycle(self):

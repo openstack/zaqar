@@ -518,6 +518,9 @@ class PooledMessageTests(base.MessageControllerTest):
     control_driver_class = mongodb.ControlDriver
     controller_base_class = storage.Message
 
+    # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
+    gc_interval = 60
+
 
 @testing.requires_mongodb
 class PooledQueueTests(base.QueueControllerTest):

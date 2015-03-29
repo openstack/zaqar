@@ -21,7 +21,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 class TestHomeDocument(base.V1Base):
 
-    config_file = 'wsgi_sqlalchemy.conf'
+    config_file = 'wsgi_mongodb.conf'
 
     def test_json_response(self):
         body = self.simulate_get(self.url_prefix)

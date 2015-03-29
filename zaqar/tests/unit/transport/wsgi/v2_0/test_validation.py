@@ -23,7 +23,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 class TestValidation(base.V2Base):
 
-    config_file = 'wsgi_sqlalchemy_validation.conf'
+    config_file = 'wsgi_mongodb_validation.conf'
 
     def setUp(self):
         super(TestValidation, self).setUp()
