@@ -82,6 +82,7 @@ class Pipeline(object):
             # one of the stages, otherwise AttributeError
             # will be raised.
             target = None
+            result = None
 
             for stage in self._pipeline:
                 try:
@@ -93,7 +94,11 @@ class Pipeline(object):
                     LOG.warning(msgtmpl, {'stage': sstage, 'method': method})
                     continue
 
-                result = target(*args, **kwargs)
+                tmp = target(*args, **kwargs)
+
+                # NOTE(flaper87): preserve the last, not None, result
+                if tmp is not None:
+                    result = tmp
 
                 # NOTE(flaper87): Will keep going forward
                 # through the stageline unless the call returns
