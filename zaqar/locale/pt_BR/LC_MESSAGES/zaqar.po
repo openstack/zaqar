@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-20 06:04+0000\n"
-"PO-Revision-Date: 2015-02-18 01:41+0000\n"
+"POT-Creation-Date: 2015-03-30 06:03+0000\n"
+"PO-Revision-Date: 2015-03-29 23:44+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -27,37 +27,37 @@ msgid ""
 " `unreliable` is explicitly set to `True` in your configuration files."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:113
+#: zaqar/api/v1_1/endpoints.py:118
 #, python-format
 msgid "Queue \"%s\" could not be created."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:116
+#: zaqar/api/v1_1/endpoints.py:122
 #, python-format
 msgid "Queue \"%s\" created."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:138
+#: zaqar/api/v1_1/endpoints.py:145
 #, python-format
 msgid "Queue \"%s\" could not be deleted."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:141
+#: zaqar/api/v1_1/endpoints.py:149
 #, python-format
 msgid "Queue \"%s\" removed."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:166
+#: zaqar/api/v1_1/endpoints.py:175
 #, python-format
 msgid "Queue \"%s\" does not exist."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:170
+#: zaqar/api/v1_1/endpoints.py:181
 #, python-format
 msgid "Cannot retrieve queue \"%s\"."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:207
+#: zaqar/api/v1_1/endpoints.py:220
 #, python-format
 msgid "Cannot retrieve queue \"%s\" stats."
 msgstr ""
@@ -66,12 +66,12 @@ msgstr ""
 msgid "Terminating"
 msgstr "Finalizando"
 
-#: zaqar/common/pipeline.py:94
+#: zaqar/common/pipeline.py:91
 #, python-format
 msgid "Stage %(stage)s does not implement %(method)s"
 msgstr "O estágio %(stage)s não implementa o método %(method)s"
 
-#: zaqar/common/pipeline.py:108
+#: zaqar/common/pipeline.py:105
 #, python-format
 msgid "Method %s not found in any of the registered stages"
 msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
@@ -284,29 +284,23 @@ msgstr "Faltando caminho na URI do Redis"
 msgid "The Redis driver requires redis-server>=2.6, %s found"
 msgstr ""
 
-#: zaqar/storage/redis/utils.py:178
+#: zaqar/storage/redis/utils.py:173
 msgid "Caught ConnectionError, retrying the call to {0}"
 msgstr ""
 
-#: zaqar/storage/redis/utils.py:183
+#: zaqar/storage/redis/utils.py:178
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
-#: zaqar/storage/sqlalchemy/driver.py:43
-msgid ""
-"sqlalchemy's data plane driver will be removed during the next release. "
-"Please, consider moving your data to one of the other supported drivers."
-msgstr ""
-
-#: zaqar/transport/validation.py:98
+#: zaqar/transport/validation.py:109
 msgid "Project ids may not be more than {0} characters long."
 msgstr "Identificadores de projeto não devem ter mais de {0} carácteres."
 
-#: zaqar/transport/validation.py:102
+#: zaqar/transport/validation.py:113
 msgid "Queue names may not be more than {0} characters long."
 msgstr "Nomes de filas não devem ter mais de {0} carácteres."
 
-#: zaqar/transport/validation.py:107
+#: zaqar/transport/validation.py:118
 msgid ""
 "Queue names may only contain ASCII letters, digits, underscores, and "
 "dashes."
@@ -314,23 +308,23 @@ msgstr ""
 "O nome de uma fila deve conter apenas letras ASCII, números, subtraços e "
 "traços."
 
-#: zaqar/transport/validation.py:120
+#: zaqar/transport/validation.py:131
 msgid "Limit must be at least 1 and no greater than {0}."
 msgstr "O limite deve ser no mínimo 1 e não deve ser superior a {0}."
 
-#: zaqar/transport/validation.py:132
+#: zaqar/transport/validation.py:143
 msgid "Queue metadata is too large. Max size: {0}"
 msgstr "Os métadados da fila são muito grandes. Tamanho máximo: {0}"
 
-#: zaqar/transport/validation.py:144
+#: zaqar/transport/validation.py:155
 msgid "No messages to enqueu."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/transport/validation.py:159
+#: zaqar/transport/validation.py:170
 msgid "Message collection size is too large. Max size {0}"
 msgstr "O tamanho da coleção de mensagens é muito grande. O tamnho máximo é {0}"
 
-#: zaqar/transport/validation.py:168
+#: zaqar/transport/validation.py:179
 msgid ""
 "The TTL for a message may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -338,29 +332,29 @@ msgstr ""
 "O tempo de vida de uma mensagem não pode exceder {0} segundos e não deve "
 "ser menor que {1} segundos."
 
-#: zaqar/transport/validation.py:184 zaqar/transport/validation.py:240
+#: zaqar/transport/validation.py:195 zaqar/transport/validation.py:251
 msgid "Limit must be at least 1 and may not be greater than {0}."
 msgstr "O limite deve ser de no mínimo 1 e não deve exceder {0}."
 
-#: zaqar/transport/validation.py:202
+#: zaqar/transport/validation.py:213
 msgid "pop and id params cannot be present together in the delete request."
 msgstr ""
 
-#: zaqar/transport/validation.py:208
+#: zaqar/transport/validation.py:219
 msgid ""
 "The request should have either \"ids\" or \"pop\" parameter in the "
 "request, to be able to delete."
 msgstr ""
 
-#: zaqar/transport/validation.py:215
+#: zaqar/transport/validation.py:226
 msgid "Pop value must be at least 1 and may not be greater than {0}."
 msgstr ""
 
-#: zaqar/transport/validation.py:222
+#: zaqar/transport/validation.py:233
 msgid "ids parameter should have at least 1 and not greater than {0} values."
 msgstr ""
 
-#: zaqar/transport/validation.py:249
+#: zaqar/transport/validation.py:260
 msgid ""
 "The grace for a claim may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -368,7 +362,7 @@ msgstr ""
 "O prazo de carência para um pedido não deve exceder {0} segundos e não "
 "deve ser menor que {1} segundo."
 
-#: zaqar/transport/validation.py:265
+#: zaqar/transport/validation.py:276
 msgid ""
 "The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
 "seconds long."
@@ -376,7 +370,7 @@ msgstr ""
 "O tempo de vida de um pedido não pode exceder {0} segundos e não deve ser"
 " menor que {1} segundos."
 
-#: zaqar/transport/wsgi/driver.py:115
+#: zaqar/transport/websocket/driver.py:60 zaqar/transport/wsgi/driver.py:115
 #, python-format
 msgid "Serving on host %(bind)s:%(port)s"
 msgstr "Servindo em %(bind)s:%(port)s"
