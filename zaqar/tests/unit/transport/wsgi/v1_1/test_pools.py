@@ -38,11 +38,13 @@ def pool(test, name, weight, uri, group=None, options={}):
     :returns: (name, weight, uri, options)
     :rtype: see above
     """
+    uri = "%s/%s" % (uri, str(uuid.uuid4()))
     doc = {'weight': weight, 'uri': uri,
            'group': group, 'options': options}
     path = test.url_prefix + '/pools/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
+    test.addCleanup(test.simulate_delete, path)
 
     try:
         yield name, weight, uri, group, options
@@ -68,6 +70,7 @@ def pools(test, count, uri, group):
              {str(i): i})
             for i in range(count)]
     for path, weight, option in args:
+        uri = "%s/%s" % (uri, str(uuid.uuid4()))
         doc = {'weight': weight, 'uri': uri,
                'group': group, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
@@ -164,7 +167,10 @@ class PoolsBaseTest(base.V1_1Base):
         self.assertIn('weight', pool)
         self.assertEqual(pool['weight'], xweight)
         self.assertIn('uri', pool)
-        self.assertEqual(pool['uri'], xuri)
+
+        # NOTE(dynarro): we are using startwith because we are adding to
+        # pools UUIDs, to avoid dupplications
+        self.assertTrue(pool['uri'].startswith(xuri))
 
     def test_get_works(self):
         result = self.simulate_get(self.pool)

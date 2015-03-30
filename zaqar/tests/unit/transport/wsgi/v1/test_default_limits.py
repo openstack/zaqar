@@ -43,6 +43,7 @@ class TestDefaultLimits(base.V1Base):
 
     def test_queue_listing(self):
         # 2 queues to list
+        self.addCleanup(self.simulate_delete, self.queue_path + '/q2')
         self.simulate_put(self.queue_path + '/q2')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 

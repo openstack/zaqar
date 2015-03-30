@@ -38,9 +38,13 @@ class MessagesBaseTest(base.V2Base):
         self.default_message_ttl = self.boot.transport._defaults.message_ttl
 
         if self.conf.pooling:
+            uri = "mongodb://localhost:27017"
             for i in range(4):
-                uri = self.conf['drivers:management_store:mongodb'].uri
-                doc = {'weight': 100, 'uri': uri}
+                db_name = "zaqar_test_pools_" + str(i)
+                # NOTE(dynarro): we need to create a unique uri.
+                uri = "%s/%s" % (uri, db_name)
+                options = {'database': db_name}
+                doc = {'weight': 100, 'uri': uri, 'options': options}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))
                 self.assertEqual(self.srmock.status, falcon.HTTP_201)
