@@ -15,8 +15,10 @@
 from zaqar.storage.redis import claims
 from zaqar.storage.redis import messages
 from zaqar.storage.redis import queues
+from zaqar.storage.redis import subscriptions
 
 
 QueueController = queues.QueueController
 MessageController = messages.MessageController
 ClaimController = claims.ClaimController
+SubscriptionController = subscriptions.SubscriptionController

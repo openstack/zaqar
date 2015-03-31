@@ -78,6 +78,10 @@ class QueueController(storage.Queue):
     def _claim_ctrl(self):
         return self.driver.claim_controller
 
+    @decorators.lazy_property(write=False)
+    def _subscription_ctrl(self):
+        return self.driver.subscription_controller
+
     def _get_queue_info(self, queue_key, fields, transform=str):
         """Get one or more fields from Queue Info."""
 

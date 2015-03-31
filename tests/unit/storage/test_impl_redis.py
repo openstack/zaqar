@@ -415,3 +415,10 @@ class RedisClaimsTest(base.ClaimControllerTest):
 
         num_removed = self.controller._gc(self.queue_name, None)
         self.assertEqual(num_removed, 5)
+
+
+@testing.requires_redis
+class RedisSubscriptionTests(base.SubscriptionControllerTest):
+    driver_class = driver.DataDriver
+    config_file = 'wsgi_redis.conf'
+    controller_class = controllers.SubscriptionController
