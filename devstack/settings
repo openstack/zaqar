@@ -1,0 +1,4 @@
+# Devstack settings
+
+# we have to add zaqar-server to enabled services for screen_it to work
+enable_service zaqar-server
