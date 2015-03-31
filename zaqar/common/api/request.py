@@ -48,6 +48,8 @@ class Request(object):
             return json.loads(self._body)
         return None
 
-    def __repr__(self):
-        return "{'api': %s, 'action': %s, 'headers': %s, 'body': %s}" % (
-            self._api, self._action, self._headers, self._body)
+    def get_request(self):
+        return {'action': self._action,
+                'body': self._body,
+                'headers': self._headers,
+                'api': self._api}

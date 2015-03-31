@@ -17,6 +17,7 @@ from zaqar import bootstrap
 from zaqar.common import errors
 from zaqar.storage import pooling
 from zaqar.tests import base
+from zaqar.transport import websocket
 from zaqar.transport import wsgi
 
 
@@ -44,3 +45,7 @@ class TestBootstrap(base.TestBase):
     def test_transport_wsgi(self):
         bootstrap = self._bootstrap('wsgi_mongodb.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)
+
+    def test_transport_websocket(self):
+        bootstrap = self._bootstrap('websocket_mongodb.conf')
+        self.assertIsInstance(bootstrap.transport, websocket.Driver)

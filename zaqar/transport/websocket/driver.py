@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autobahn.asyncio import websocket
 from oslo.config import cfg
 
 try:
@@ -21,9 +20,11 @@ try:
 except ImportError:
     import trollius as asyncio
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
-from zaqar.transport.websocket import protocol
+from zaqar.transport.websocket import factory
+
 
 _WS_OPTIONS = (
     cfg.StrOpt('bind', default='127.0.0.1',
@@ -54,6 +55,12 @@ class Driver(object):
         self._conf.register_opts(_WS_OPTIONS, group=_WS_GROUP)
         self._ws_conf = self._conf[_WS_GROUP]
 
+    @decorators.lazy_property(write=False)
+    def factory(self):
+        uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
+        return factory.ProtocolFactory(uri, debug=self._ws_conf.debug,
+                                       handler=self._api)
+
     def listen(self):
         """Self-host using 'bind' and 'port' from the WS config group."""
 
@@ -61,13 +68,9 @@ class Driver(object):
         LOG.info(msgtmpl,
                  {'bind': self._ws_conf.bind, 'port': self._ws_conf.port})
 
-        uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
-        factory = websocket.WebSocketServerFactory(uri,
-                                                   debug=self._ws_conf.debug)
-        factory.protocol = protocol.MessagingProtocol
-
         loop = asyncio.get_event_loop()
-        coro = loop.create_server(factory, self._ws_conf.bind,
+        coro = loop.create_server(self.factory,
+                                  self._ws_conf.bind,
                                   self._ws_conf.port)
         server = loop.run_until_complete(coro)
 

@@ -36,6 +36,7 @@ class Response(object):
         self._body = body
         self._headers = headers or {}
 
-    def __repr__(self):
-        return "{'req': %s, 'headers': %s, 'body': %s}" % (
-            self._request, self._headers, self._body)
+    def get_response(self):
+        return {'request': self._request.get_request(),
+                'body': self._body,
+                'headers': self._headers}

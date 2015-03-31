@@ -17,7 +17,6 @@ import functools
 import zaqar.common.api.response as response
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
-from zaqar.transport import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -43,7 +42,6 @@ def raises_conn_error(func):
 
 
 def error_response(req, exception, headers=None, error=None):
-    body = utils.to_json({'exception': exception,
-                          'error': error})
+    body = {'exception': str(exception), 'error': error}
     resp = response.Response(req, body, headers)
     return resp

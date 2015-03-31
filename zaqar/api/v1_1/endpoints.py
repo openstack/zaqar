@@ -17,7 +17,6 @@ from zaqar.common.api import utils as api_utils
 from zaqar.i18n import _
 import zaqar.openstack.common.log as logging
 from zaqar.storage import errors as storage_errors
-from zaqar.transport import utils
 from zaqar.transport import validation
 
 LOG = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ class Endpoints(object):
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
-        except storage_errors.BaseException as ex:
+        except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
             error = 'Queues could not be listed.'
             headers = {'status': 503}
@@ -79,7 +78,7 @@ class Endpoints(object):
         queues = list(next(results))
 
         # Got some. Prepare the response.
-        body = utils.to_json({'queues': queues})
+        body = {'queues': queues}
         headers = {'status': 200}
 
         resp = response.Response(req, body, headers)
@@ -97,7 +96,7 @@ class Endpoints(object):
         """
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
-        metadata = req._body.get('metadata')
+        metadata = req._body.get('metadata', {})
 
         LOG.debug(u'Queue create - queue: %(queue)s, project: %(project)s',
                   {'queue': queue_name,
@@ -105,7 +104,7 @@ class Endpoints(object):
 
         try:
             self._validate.queue_identification(queue_name, project_id)
-            self._validate.queue_metadata_length(len(metadata))
+            self._validate.queue_metadata_length(len(str(metadata)))
             created = self._queue_controller.create(queue_name,
                                                     metadata=metadata,
                                                     project=project_id)
@@ -113,13 +112,13 @@ class Endpoints(object):
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
-        except storage_errors.BaseException as ex:
+        except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
-            error = _('Queue "%s" could not be created.') % queue_name
+            error = _('Queue %s could not be created.') % queue_name
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers, error)
         else:
-            body = _('Queue "%s" created.') % queue_name
+            body = _('Queue %s created.') % queue_name
             headers = {'status': 201} if created else {'status': 204}
             resp = response.Response(req, body, headers)
             return resp
@@ -140,13 +139,13 @@ class Endpoints(object):
                   {'queue': queue_name, 'project': project_id})
         try:
             self._queue_controller.delete(queue_name, project=project_id)
-        except storage_errors.BaseException as ex:
+        except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
-            error = _('Queue "%s" could not be deleted.') % queue_name
+            error = _('Queue %s could not be deleted.') % queue_name
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers, error)
         else:
-            body = _('Queue "%s" removed.') % queue_name
+            body = _('Queue %s removed.') % queue_name
             headers = {'status': 204}
             resp = response.Response(req, body, headers)
             return resp
@@ -172,16 +171,16 @@ class Endpoints(object):
                                                    project=project_id)
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            error = _('Queue "%s" does not exist.') % queue_name
+            error = _('Queue %s does not exist.') % queue_name
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers, error)
-        except storage_errors.BaseException as ex:
+        except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
             headers = {'status': 503}
-            error = _('Cannot retrieve queue "%s".') % queue_name
+            error = _('Cannot retrieve queue %s.') % queue_name
             return api_utils.error_response(req, ex, headers, error)
         else:
-            body = utils.to_json(resp_dict)
+            body = resp_dict
             headers = {'status': 200}
             resp = response.Response(req, body, headers)
             return resp
@@ -198,10 +197,14 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
+        LOG.debug(u'Queue get queue stats - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
         try:
             resp_dict = self._queue_controller.stats(queue_name,
                                                      project=project_id)
-            body = utils.to_json(resp_dict)
+            body = resp_dict
         except storage_errors.QueueDoesNotExist as ex:
             LOG.exception(ex)
             resp_dict = {
@@ -211,13 +214,13 @@ class Endpoints(object):
                     'total': 0
                 }
             }
-            body = utils.to_json(resp_dict)
+            body = resp_dict
             headers = {'status': 404}
             resp = response.Response(req, body, headers)
             return resp
-        except storage_errors.BaseException as ex:
+        except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
-            error = _('Cannot retrieve queue "%s" stats.') % queue_name
+            error = _('Cannot retrieve queue %s stats.') % queue_name
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers, error)
         else:
