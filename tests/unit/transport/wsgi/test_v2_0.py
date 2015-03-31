@@ -93,6 +93,10 @@ class TestValidation(v2_0.TestValidation):
 class TestFlavorsMongoDB(v2_0.TestFlavorsMongoDB):
     url_prefix = URL_PREFIX
 
+
+class TestSubscriptionsMongoDB(v2_0.TestSubscriptionsMongoDB):
+    url_prefix = URL_PREFIX
+
 # --------------------------------------------------------------------------
 # v1.1 & v2 only
 # --------------------------------------------------------------------------

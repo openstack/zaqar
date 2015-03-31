@@ -22,6 +22,7 @@ from zaqar.tests.unit.transport.wsgi.v2_0 import test_media_type
 from zaqar.tests.unit.transport.wsgi.v2_0 import test_messages
 from zaqar.tests.unit.transport.wsgi.v2_0 import test_pools
 from zaqar.tests.unit.transport.wsgi.v2_0 import test_queue_lifecycle as l
+from zaqar.tests.unit.transport.wsgi.v2_0 import test_subscriptions
 from zaqar.tests.unit.transport.wsgi.v2_0 import test_validation
 
 TestAuth = test_auth.TestAuth
@@ -42,3 +43,4 @@ TestPoolsMongoDB = test_pools.TestPoolsMongoDB
 TestPoolsSqlalchemy = test_pools.TestPoolsSqlalchemy
 TestValidation = test_validation.TestValidation
 TestFlavorsMongoDB = test_flavors.TestFlavorsMongoDB
+TestSubscriptionsMongoDB = test_subscriptions.TestSubscriptionsMongoDB

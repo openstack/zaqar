@@ -21,6 +21,7 @@ from zaqar.transport.wsgi.v2_0 import ping
 from zaqar.transport.wsgi.v2_0 import pools
 from zaqar.transport.wsgi.v2_0 import queues
 from zaqar.transport.wsgi.v2_0 import stats
+from zaqar.transport.wsgi.v2_0 import subscriptions
 
 
 VERSION = {
@@ -46,6 +47,7 @@ def public_endpoints(driver, conf):
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
+    subscription_controller = driver._storage.subscription_controller
 
     defaults = driver._defaults
 
@@ -91,7 +93,16 @@ def public_endpoints(driver, conf):
 
         # Ping
         ('/ping',
-         ping.Resource(driver._storage))
+         ping.Resource(driver._storage)),
+
+        # Subscription Endpoints
+        ('/queues/{queue_name}/subscriptions',
+         subscriptions.CollectionResource(driver._validate,
+                                          subscription_controller)),
+
+        ('/queues/{queue_name}/subscriptions/{subscription_id}',
+         subscriptions.ItemResource(driver._validate,
+                                    subscription_controller)),
     ]
 
 
