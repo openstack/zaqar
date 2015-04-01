@@ -16,6 +16,7 @@ from oslo_utils import timeutils
 import pymongo.errors
 
 from zaqar.common import utils as common_utils
+from zaqar import storage
 from zaqar.storage import base
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
@@ -50,7 +51,8 @@ class SubscriptionController(base.Subscription):
         self._collection.ensure_index(SUBSCRIPTIONS_INDEX, unique=True)
 
     @utils.raises_conn_error
-    def list(self, queue, project=None, marker=None, limit=10):
+    def list(self, queue, project=None, marker=None,
+             limit=storage.DEFAULT_SUBSCRIPTIONS_PER_PAGE):
         query = {'s': queue, 'p': project}
         if marker is not None:
             query['_id'] = {'$gt': utils.to_oid(marker)}

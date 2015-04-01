@@ -42,7 +42,7 @@ def _config_options():
     return [(_PIPELINE_GROUP, _PIPELINE_CONFIGS)]
 
 
-def _get_storage_pipeline(resource_name, conf):
+def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
     """Constructs and returns a storage resource pipeline.
 
     This is a helper function for any service supporting
@@ -72,10 +72,13 @@ def _get_storage_pipeline(resource_name, conf):
     for ns in storage_conf[resource_name + '_pipeline']:
         try:
             mgr = driver.DriverManager('zaqar.storage.stages',
-                                       ns, invoke_on_load=True)
+                                       ns,
+                                       invoke_args=args,
+                                       invoke_kwds=kwargs,
+                                       invoke_on_load=True)
             pipeline.append(mgr.driver)
         except RuntimeError as exc:
-            LOG.warning(_(u'Stage %(stage)d could not be imported: %(ex)s'),
+            LOG.warning(_(u'Stage %(stage)s could not be imported: %(ex)s'),
                         {'stage': ns, 'ex': str(exc)})
             continue
 
@@ -138,7 +141,9 @@ class DataDriver(base.DataDriverBase):
     @decorators.lazy_property(write=False)
     def message_controller(self):
         stages = _get_builtin_entry_points('message', self._storage)
-        stages.extend(_get_storage_pipeline('message', self.conf))
+        kwargs = {'subscription_controller':
+                  self._storage.subscription_controller}
+        stages.extend(_get_storage_pipeline('message', self.conf, **kwargs))
         stages.append(self._storage.message_controller)
         return common.Pipeline(stages)
 
