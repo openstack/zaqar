@@ -567,10 +567,13 @@ class QueueLifecycleBaseTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
 
 
-@testing.requires_mongodb
 class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
 
     config_file = 'websocket_mongodb.conf'
+
+    @testing.requires_mongodb
+    def setUp(self):
+        super(TestQueueLifecycleMongoDB, self).setUp()
 
     def tearDown(self):
         storage = self.boot.storage._storage

@@ -12,6 +12,14 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from zaqar.tests.unit.transport.websocket.v1_1 import test_queue_lifecycle as l
+from zaqar.tests.unit.transport.websocket import v1_1
 
-TestQueueLifecycleMongoDB = l.TestQueueLifecycleMongoDB
+# --------------------------------------------------------------------------
+# Identical or just minor variations across versions
+# --------------------------------------------------------------------------
+
+
+# TODO(kgriffs): Having to list a separate test for each backend is
+# sort of a pain; is there a better way?
+class TestQueueLifecycleMongoDB(v1_1.TestQueueLifecycleMongoDB):
+    pass
