@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-30 06:03+0000\n"
-"PO-Revision-Date: 2015-03-29 23:44+0000\n"
+"POT-Creation-Date: 2015-04-01 06:03+0000\n"
+"PO-Revision-Date: 2015-03-31 19:31+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -27,51 +27,51 @@ msgid ""
 " `unreliable` is explicitly set to `True` in your configuration files."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:118
+#: zaqar/api/v1_1/endpoints.py:117
 #, python-format
-msgid "Queue \"%s\" could not be created."
+msgid "Queue %s could not be created."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:122
+#: zaqar/api/v1_1/endpoints.py:121
 #, python-format
-msgid "Queue \"%s\" created."
+msgid "Queue %s created."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:145
+#: zaqar/api/v1_1/endpoints.py:144
 #, python-format
-msgid "Queue \"%s\" could not be deleted."
+msgid "Queue %s could not be deleted."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:149
+#: zaqar/api/v1_1/endpoints.py:148
 #, python-format
-msgid "Queue \"%s\" removed."
+msgid "Queue %s removed."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:175
+#: zaqar/api/v1_1/endpoints.py:174
 #, python-format
-msgid "Queue \"%s\" does not exist."
+msgid "Queue %s does not exist."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:181
+#: zaqar/api/v1_1/endpoints.py:180
 #, python-format
-msgid "Cannot retrieve queue \"%s\"."
+msgid "Cannot retrieve queue %s."
 msgstr ""
 
-#: zaqar/api/v1_1/endpoints.py:220
+#: zaqar/api/v1_1/endpoints.py:223
 #, python-format
-msgid "Cannot retrieve queue \"%s\" stats."
+msgid "Cannot retrieve queue %s stats."
 msgstr ""
 
 #: zaqar/common/cli.py:52
 msgid "Terminating"
 msgstr "Finalizando"
 
-#: zaqar/common/pipeline.py:91
+#: zaqar/common/pipeline.py:92
 #, python-format
 msgid "Stage %(stage)s does not implement %(method)s"
 msgstr "O estágio %(stage)s não implementa o método %(method)s"
 
-#: zaqar/common/pipeline.py:105
+#: zaqar/common/pipeline.py:110
 #, python-format
 msgid "Method %s not found in any of the registered stages"
 msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
@@ -80,7 +80,7 @@ msgstr "O método %s não foi encontrado em nenhum dos estágios registrados"
 msgid "{0} is not a valid action"
 msgstr ""
 
-#: zaqar/common/api/utils.py:38
+#: zaqar/common/api/utils.py:37
 msgid "Unexpected error."
 msgstr ""
 
@@ -166,13 +166,13 @@ msgstr "Unidade inválida do sistema: \"%s\""
 msgid "Invalid string format: %s"
 msgstr "Formato de string inválido: %s"
 
-#: zaqar/storage/pipeline.py:30
+#: zaqar/storage/pipeline.py:31
 msgid ""
 "Pipeline to use for processing {0} operations. This pipeline will be "
 "consumed before calling the storage driver's controller methods."
 msgstr ""
 
-#: zaqar/storage/pipeline.py:77
+#: zaqar/storage/pipeline.py:78
 #, python-format
 msgid "Stage %(stage)d could not be imported: %(ex)s"
 msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
@@ -284,23 +284,23 @@ msgstr "Faltando caminho na URI do Redis"
 msgid "The Redis driver requires redis-server>=2.6, %s found"
 msgstr ""
 
-#: zaqar/storage/redis/utils.py:173
+#: zaqar/storage/redis/utils.py:205
 msgid "Caught ConnectionError, retrying the call to {0}"
 msgstr ""
 
-#: zaqar/storage/redis/utils.py:178
+#: zaqar/storage/redis/utils.py:210
 msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
 msgstr ""
 
-#: zaqar/transport/validation.py:109
+#: zaqar/transport/validation.py:119
 msgid "Project ids may not be more than {0} characters long."
 msgstr "Identificadores de projeto não devem ter mais de {0} carácteres."
 
-#: zaqar/transport/validation.py:113
+#: zaqar/transport/validation.py:123
 msgid "Queue names may not be more than {0} characters long."
 msgstr "Nomes de filas não devem ter mais de {0} carácteres."
 
-#: zaqar/transport/validation.py:118
+#: zaqar/transport/validation.py:128
 msgid ""
 "Queue names may only contain ASCII letters, digits, underscores, and "
 "dashes."
@@ -308,23 +308,23 @@ msgstr ""
 "O nome de uma fila deve conter apenas letras ASCII, números, subtraços e "
 "traços."
 
-#: zaqar/transport/validation.py:131
+#: zaqar/transport/validation.py:141
 msgid "Limit must be at least 1 and no greater than {0}."
 msgstr "O limite deve ser no mínimo 1 e não deve ser superior a {0}."
 
-#: zaqar/transport/validation.py:143
+#: zaqar/transport/validation.py:153
 msgid "Queue metadata is too large. Max size: {0}"
 msgstr "Os métadados da fila são muito grandes. Tamanho máximo: {0}"
 
-#: zaqar/transport/validation.py:155
+#: zaqar/transport/validation.py:165
 msgid "No messages to enqueu."
 msgstr "Não foi possível adicionar mensagens à fila."
 
-#: zaqar/transport/validation.py:170
+#: zaqar/transport/validation.py:180
 msgid "Message collection size is too large. Max size {0}"
 msgstr "O tamanho da coleção de mensagens é muito grande. O tamnho máximo é {0}"
 
-#: zaqar/transport/validation.py:179
+#: zaqar/transport/validation.py:189
 msgid ""
 "The TTL for a message may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -332,29 +332,30 @@ msgstr ""
 "O tempo de vida de uma mensagem não pode exceder {0} segundos e não deve "
 "ser menor que {1} segundos."
 
-#: zaqar/transport/validation.py:195 zaqar/transport/validation.py:251
+#: zaqar/transport/validation.py:205 zaqar/transport/validation.py:261
+#: zaqar/transport/validation.py:346
 msgid "Limit must be at least 1 and may not be greater than {0}."
 msgstr "O limite deve ser de no mínimo 1 e não deve exceder {0}."
 
-#: zaqar/transport/validation.py:213
+#: zaqar/transport/validation.py:223
 msgid "pop and id params cannot be present together in the delete request."
 msgstr ""
 
-#: zaqar/transport/validation.py:219
+#: zaqar/transport/validation.py:229
 msgid ""
 "The request should have either \"ids\" or \"pop\" parameter in the "
 "request, to be able to delete."
 msgstr ""
 
-#: zaqar/transport/validation.py:226
+#: zaqar/transport/validation.py:236
 msgid "Pop value must be at least 1 and may not be greater than {0}."
 msgstr ""
 
-#: zaqar/transport/validation.py:233
+#: zaqar/transport/validation.py:243
 msgid "ids parameter should have at least 1 and not greater than {0} values."
 msgstr ""
 
-#: zaqar/transport/validation.py:260
+#: zaqar/transport/validation.py:270
 msgid ""
 "The grace for a claim may not exceed {0} seconds, and must be at least "
 "{1} seconds long."
@@ -362,7 +363,7 @@ msgstr ""
 "O prazo de carência para um pedido não deve exceder {0} segundos e não "
 "deve ser menor que {1} segundo."
 
-#: zaqar/transport/validation.py:276
+#: zaqar/transport/validation.py:286
 msgid ""
 "The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
 "seconds long."
@@ -370,7 +371,28 @@ msgstr ""
 "O tempo de vida de um pedido não pode exceder {0} segundos e não deve ser"
 " menor que {1} segundos."
 
-#: zaqar/transport/websocket/driver.py:60 zaqar/transport/wsgi/driver.py:115
+#: zaqar/transport/validation.py:300
+#, python-format
+msgid "Missing parameter %s in body."
+msgstr ""
+
+#: zaqar/transport/validation.py:312
+msgid "No subscription to create."
+msgstr ""
+
+#: zaqar/transport/validation.py:322
+msgid "The subscriber type of subscription must be supported in the list {0}."
+msgstr ""
+
+#: zaqar/transport/validation.py:328
+msgid "Options must be a dict."
+msgstr ""
+
+#: zaqar/transport/validation.py:333
+msgid "TTL must be an integer."
+msgstr ""
+
+#: zaqar/transport/websocket/driver.py:67 zaqar/transport/wsgi/driver.py:115
 #, python-format
 msgid "Serving on host %(bind)s:%(port)s"
 msgstr "Servindo em %(bind)s:%(port)s"
@@ -569,5 +591,29 @@ msgstr "Mensagens não puderam ser exibidas."
 #: zaqar/transport/wsgi/v1_1/pools.py:198
 #: zaqar/transport/wsgi/v2_0/pools.py:198
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:55
+msgid "Subscription could not be retrieved."
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:74
+msgid "Subscription could not be deleted."
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:103
+msgid "Subscription {subscription_id} could not be updated."
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:106
+msgid "Unable to update subscription"
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:141
+msgid "Subscriptions could not be listed."
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:190
+msgid "Subscription could not be created."
 msgstr ""
 
