@@ -71,8 +71,11 @@ sudo yum install gcc python-pip libxml2 libxml2-devel libxslt libxslt-devel
 
 9. Test out that Zaqar is working by creating a queue::
 
-    $ curl -i -X PUT http://127.0.0.1:8888/v1.1/queues/samplequeue -H
-    "Content-type: application/json"
+    $ ZQ_CLIENT_ID=`uuidgen`
+    $ curl -i -X PUT http://127.0.0.1:8888/v1.1/queues/samplequeue \
+      -H "Content-type: application/json" \
+      -H "Client-ID: $ZQ_CLIENT_ID" \
+      -H "X-PROJECT-ID: default"
 
 You should get an **HTTP 201** along with some headers that will look
 similar to this::
