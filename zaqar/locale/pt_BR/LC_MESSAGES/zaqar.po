@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-01 06:03+0000\n"
-"PO-Revision-Date: 2015-03-31 19:31+0000\n"
+"POT-Creation-Date: 2015-04-02 06:03+0000\n"
+"PO-Revision-Date: 2015-04-01 07:19+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) "
 "(http://www.transifex.com/projects/p/zaqar/language/pt_BR/)\n"
@@ -172,10 +172,10 @@ msgid ""
 "consumed before calling the storage driver's controller methods."
 msgstr ""
 
-#: zaqar/storage/pipeline.py:78
+#: zaqar/storage/pipeline.py:81
 #, python-format
-msgid "Stage %(stage)d could not be imported: %(ex)s"
-msgstr "O estágio %(stage)d não pode ser importado: %(ex)s"
+msgid "Stage %(stage)s could not be imported: %(ex)s"
+msgstr ""
 
 #: zaqar/storage/mongodb/driver.py:90
 #, python-format
