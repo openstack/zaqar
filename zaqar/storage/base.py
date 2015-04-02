@@ -25,6 +25,7 @@ import enum
 from oslo_config import cfg
 import six
 
+from zaqar.common import decorators
 import zaqar.openstack.common.log as logging
 from zaqar.storage import errors
 from zaqar.storage import utils
@@ -95,8 +96,11 @@ class DataDriverBase(DriverBase):
 
     BASE_CAPABILITIES = []
 
-    def __init__(self, conf, cache):
+    def __init__(self, conf, cache, control_driver):
         super(DataDriverBase, self).__init__(conf, cache)
+        # creating ControlDriver instance for accessing QueueController's
+        # data from DataDriver
+        self.control_driver = control_driver
 
     @abc.abstractmethod
     def is_alive(self):
@@ -195,6 +199,9 @@ class DataDriverBase(DriverBase):
                     _handle_status('delete_claim', func)
 
             # delete queue
+            func = functools.partial(self.message_controller.bulk_delete,
+                                     queue, msg_ids, project=project)
+            _handle_status('bulk_delete_messages', func)
             func = functools.partial(self.queue_controller.delete,
                                      queue, project=project)
             _handle_status('delete_queue', func)
@@ -211,10 +218,9 @@ class DataDriverBase(DriverBase):
         """
         pass
 
-    @abc.abstractproperty
+    @decorators.lazy_property(write=False)
     def queue_controller(self):
-        """Returns the driver's queue controller."""
-        raise NotImplementedError
+        return self.control_driver.queue_controller
 
     @abc.abstractproperty
     def message_controller(self):
@@ -263,6 +269,11 @@ class ControlDriverBase(DriverBase):
     @abc.abstractproperty
     def flavors_controller(self):
         """Returns storage's flavor management controller."""
+        raise NotImplementedError
+
+    @abc.abstractproperty
+    def queue_controller(self):
+        """Returns the driver's queue controller."""
         raise NotImplementedError
 
 

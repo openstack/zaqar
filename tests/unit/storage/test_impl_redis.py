@@ -24,6 +24,7 @@ import redis
 from zaqar.common import errors
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar import storage
+from zaqar.storage import mongodb
 from zaqar.storage.redis import controllers
 from zaqar.storage.redis import driver
 from zaqar.storage.redis import messages
@@ -173,7 +174,9 @@ class RedisDriverTest(testing.TestBase):
 
     def test_db_instance(self):
         cache = oslo_cache.get_cache()
-        redis_driver = driver.DataDriver(self.conf, cache)
+        redis_driver = driver.DataDriver(self.conf, cache,
+                                         driver.ControlDriver
+                                         (self.conf, cache))
 
         self.assertTrue(isinstance(redis_driver.connection, redis.StrictRedis))
 
@@ -183,12 +186,14 @@ class RedisDriverTest(testing.TestBase):
         with mock.patch('redis.StrictRedis.info') as info:
             info.return_value = {'redis_version': '2.4.6'}
             self.assertRaises(RuntimeError, driver.DataDriver,
-                              self.conf, cache)
+                              self.conf, cache,
+                              driver.ControlDriver(self.conf, cache))
 
             info.return_value = {'redis_version': '2.11'}
 
             try:
-                driver.DataDriver(self.conf, cache)
+                driver.DataDriver(self.conf, cache,
+                                  driver.ControlDriver(self.conf, cache))
             except RuntimeError:
                 self.fail('version match failed')
 
@@ -281,6 +286,7 @@ class RedisQueuesTest(base.QueueControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.QueueController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(RedisQueuesTest, self).setUp()
@@ -297,11 +303,11 @@ class RedisMessagesTest(base.MessageControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.MessageController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(RedisMessagesTest, self).setUp()
         self.connection = self.driver.connection
-        self.queue_ctrl = self.driver.queue_controller
 
     def tearDown(self):
         super(RedisMessagesTest, self).tearDown()
@@ -309,7 +315,7 @@ class RedisMessagesTest(base.MessageControllerTest):
 
     def test_count(self):
         queue_name = 'get-count'
-        self.queue_ctrl.create(queue_name)
+        self.queue_controller.create(queue_name)
 
         msgs = [{
             'ttl': 300,
@@ -325,13 +331,13 @@ class RedisMessagesTest(base.MessageControllerTest):
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'
-        self.queue_ctrl.create(queue_name)
+        self.queue_controller.create(queue_name)
 
         self.assertRaises(storage.errors.QueueIsEmpty,
                           self.controller.first, queue_name)
 
     def test_gc(self):
-        self.queue_ctrl.create(self.queue_name)
+        self.queue_controller.create(self.queue_name)
         self.controller.post(self.queue_name,
                              [{'ttl': 0, 'body': {}}],
                              client_uuid=str(uuid.uuid4()))
@@ -353,12 +359,11 @@ class RedisClaimsTest(base.ClaimControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.ClaimController
+    control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
         super(RedisClaimsTest, self).setUp()
         self.connection = self.driver.connection
-        self.queue_ctrl = self.driver.queue_controller
-        self.message_ctrl = self.driver.message_controller
 
     def tearDown(self):
         super(RedisClaimsTest, self).tearDown()
@@ -367,7 +372,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
     def test_claim_doesnt_exist(self):
         queue_name = 'no-such-claim'
         epoch = '000000000000000000000000'
-        self.queue_ctrl.create(queue_name)
+        self.queue_controller.create(queue_name)
         self.assertRaises(storage.errors.ClaimDoesNotExist,
                           self.controller.get, queue_name,
                           epoch, project=None)
@@ -383,12 +388,12 @@ class RedisClaimsTest(base.ClaimControllerTest):
                           claim_id, {}, project=None)
 
     def test_gc(self):
-        self.queue_ctrl.create(self.queue_name)
+        self.queue_controller.create(self.queue_name)
 
         for _ in range(100):
-            self.message_ctrl.post(self.queue_name,
-                                   [{'ttl': 300, 'body': 'yo gabba'}],
-                                   client_uuid=str(uuid.uuid4()))
+            self.message_controller.post(self.queue_name,
+                                         [{'ttl': 300, 'body': 'yo gabba'}],
+                                         client_uuid=str(uuid.uuid4()))
 
         now = timeutils.utcnow_ts()
         timeutils_utcnow = 'oslo_utils.timeutils.utcnow_ts'

@@ -233,9 +233,10 @@ class TestClaimsMongoDB(ClaimsBaseTest):
 
     def tearDown(self):
         storage = self.boot.storage._storage
+        control = self.boot.control
         connection = storage.connection
 
-        connection.drop_database(storage.queues_database)
+        connection.drop_database(control.queues_database)
 
         for db in storage.message_databases:
             connection.drop_database(db)

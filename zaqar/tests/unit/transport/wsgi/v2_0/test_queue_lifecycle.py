@@ -326,10 +326,11 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
         super(TestQueueLifecycleMongoDB, self).setUp()
 
     def tearDown(self):
+        control = self.boot.control
         storage = self.boot.storage._storage
         connection = storage.connection
 
-        connection.drop_database(storage.queues_database)
+        connection.drop_database(control.queues_database)
 
         for db in storage.message_databases:
             connection.drop_database(db)

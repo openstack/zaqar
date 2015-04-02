@@ -71,10 +71,6 @@ class QueueController(storage.Queue):
         self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
 
     @decorators.lazy_property(write=False)
-    def _message_ctrl(self):
-        return self.driver.message_controller
-
-    @decorators.lazy_property(write=False)
     def _claim_ctrl(self):
         return self.driver.claim_controller
 
@@ -124,7 +120,7 @@ class QueueController(storage.Queue):
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
 
         # Check if the queue already exists.
-        if self.exists(name, project):
+        if self._exists(name, project):
             return False
 
         queue = {
@@ -137,7 +133,6 @@ class QueueController(storage.Queue):
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
             pipe.zadd(qset_key, 1, queue_key).hmset(queue_key, queue)
-            self._message_ctrl._create_msgset(name, project, pipe)
 
             try:
                 pipe.execute()
@@ -187,38 +182,9 @@ class QueueController(storage.Queue):
         with self._client.pipeline() as pipe:
             pipe.zrem(qset_key, queue_key)
             pipe.delete(queue_key)
-            self._message_ctrl._delete_msgset(name, project, pipe)
-            self._message_ctrl._delete_queue_messages(name, project, pipe)
-
             pipe.execute()
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def _stats(self, name, project=None):
-        if not self.exists(name, project=project):
-            raise errors.QueueDoesNotExist(name, project)
-
-        total = self._message_ctrl._count(name, project)
-
-        if total:
-            claimed = self._claim_ctrl._count_messages(name, project)
-        else:
-            claimed = 0
-
-        message_stats = {
-            'claimed': claimed,
-            'free': total - claimed,
-            'total': total,
-        }
-
-        if total:
-            try:
-                newest = self._message_ctrl.first(name, project, -1)
-                oldest = self._message_ctrl.first(name, project, 1)
-            except errors.QueueIsEmpty:
-                pass
-            else:
-                message_stats['newest'] = newest
-                message_stats['oldest'] = oldest
-
-        return {'messages': message_stats}
+        pass

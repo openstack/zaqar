@@ -47,7 +47,8 @@ class SubscriptionController(base.Subscription):
     def __init__(self, *args, **kwargs):
         super(SubscriptionController, self).__init__(*args, **kwargs)
         self._collection = self.driver.subscriptions_database.subscriptions
-        self._queue_collection = self.driver.queues_database.queues
+        queue_col = self.driver.control_driver.queues_database.queues
+        self._queue_collection = queue_col
         self._collection.ensure_index(SUBSCRIPTIONS_INDEX, unique=True)
 
     @utils.raises_conn_error

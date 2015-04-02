@@ -13,7 +13,6 @@
 # the License.
 
 import sqlalchemy as sa
-from sqlalchemy.sql import func as sfunc
 
 from zaqar import storage
 from zaqar.storage import errors
@@ -130,43 +129,4 @@ class QueueController(storage.Queue):
         self.driver.run(dlt)
 
     def _stats(self, name, project):
-        if project is None:
-            project = ''
-
-        qid = utils.get_qid(self.driver, name, project)
-        sel = sa.sql.select([
-            sa.sql.select([sa.func.count(tables.Messages.c.id)],
-                          sa.and_(
-                              tables.Messages.c.qid == qid,
-                              tables.Messages.c.cid != (None),
-                              tables.Messages.c.ttl >
-                              sfunc.now() - tables.Messages.c.created)),
-            sa.sql.select([sa.func.count(tables.Messages.c.id)],
-                          sa.and_(
-                              tables.Messages.c.qid == qid,
-                              tables.Messages.c.cid == (None),
-                              tables.Messages.c.ttl >
-                              sfunc.now() - tables.Messages.c.created))
-        ])
-
-        claimed, free = self.driver.get(sel)
-
-        total = free + claimed
-
-        message_stats = {
-            'claimed': claimed,
-            'free': free,
-            'total': total,
-        }
-
-        try:
-            message_controller = self.driver.message_controller
-            oldest = message_controller.first(name, project, sort=1)
-            newest = message_controller.first(name, project, sort=-1)
-        except errors.QueueIsEmpty:
-            pass
-        else:
-            message_stats['oldest'] = utils.stat_message(oldest)
-            message_stats['newest'] = utils.stat_message(newest)
-
-        return {'messages': message_stats}
+        pass

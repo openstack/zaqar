@@ -12,13 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import ddt
 
 from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
 
 
-@ddt.ddt
 class TestHealth(base.V1_1FunctionalTestBase):
 
     server_class = base.ZaqarAdminServer
@@ -37,22 +35,16 @@ class TestHealth(base.V1_1FunctionalTestBase):
 
         self.client.set_base_url(self.base_url)
 
-    @ddt.data(
-        {
-            'name': "pool_1",
-            'weight': 10,
-            'uri': "mongodb://localhost:27017"
-        }
-    )
-    def test_health_with_pool(self, params):
+    def test_health_with_pool(self):
         # FIXME(flwang): Please use mongodb after the sqlalchemy is disabled
         # as pool node and the mongodb is working on gate successfully.
         doc = helpers.create_pool_body(
-            weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://localhost:27017")
+            weight=10,
+            uri="mongodb://localhost:27017",
+            options=dict(database='zaqar_test_pooled_1')
         )
 
-        pool_name = params.get('name', "pool_1")
+        pool_name = "pool_1"
         self.addCleanup(self.client.delete, url='/pools/' + pool_name)
 
         result = self.client.put('/pools/' + pool_name, data=doc)
@@ -86,7 +78,7 @@ class TestHealth(base.V1_1FunctionalTestBase):
         self.assertEqual(health[pool_name]['storage_reachable'], True)
         op_status = health[pool_name]['operation_status']
         for op in op_status.keys():
-                self.assertTrue(op_status[op]['succeeded'])
+            self.assertTrue(op_status[op]['succeeded'])
 
         message_volume = health[pool_name]['message_volume']
         self.assertEqual(message_volume['claimed'], 2)

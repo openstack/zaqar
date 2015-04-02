@@ -85,7 +85,7 @@ def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
     return pipeline
 
 
-def _get_builtin_entry_points(resource_name, storage):
+def _get_builtin_entry_points(resource_name, storage, control_driver):
     # Load builtin stages
     builtin_entry_points = []
 
@@ -96,7 +96,8 @@ def _get_builtin_entry_points(resource_name, storage):
     namespace = '%s.%s.stages' % (storage.__module__, resource_name)
     extensions = extension.ExtensionManager(namespace,
                                             invoke_on_load=True,
-                                            invoke_args=[storage])
+                                            invoke_args=[storage,
+                                                         control_driver])
 
     if len(extensions.extensions) == 0:
         return []
@@ -115,10 +116,10 @@ class DataDriver(base.DataDriverBase):
         last step in the pipeline
     """
 
-    def __init__(self, conf, storage):
+    def __init__(self, conf, storage, control_driver):
         # NOTE(kgriffs): Pass None for cache since it won't ever
         # be referenced.
-        super(DataDriver, self).__init__(conf, None)
+        super(DataDriver, self).__init__(conf, None, control_driver)
         self._storage = storage
 
     @property
@@ -133,14 +134,16 @@ class DataDriver(base.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):
-        stages = _get_builtin_entry_points('queue', self._storage)
+        stages = _get_builtin_entry_points('queue', self._storage,
+                                           self.control_driver)
         stages.extend(_get_storage_pipeline('queue', self.conf))
         stages.append(self._storage.queue_controller)
         return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        stages = _get_builtin_entry_points('message', self._storage)
+        stages = _get_builtin_entry_points('message', self._storage,
+                                           self.control_driver)
         kwargs = {'subscription_controller':
                   self._storage.subscription_controller}
         stages.extend(_get_storage_pipeline('message', self.conf, **kwargs))
@@ -149,14 +152,16 @@ class DataDriver(base.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        stages = _get_builtin_entry_points('claim', self._storage)
+        stages = _get_builtin_entry_points('claim', self._storage,
+                                           self.control_driver)
         stages.extend(_get_storage_pipeline('claim', self.conf))
         stages.append(self._storage.claim_controller)
         return common.Pipeline(stages)
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        stages = _get_builtin_entry_points('subscription', self._storage)
+        stages = _get_builtin_entry_points('subscription', self._storage,
+                                           self.control_driver)
         stages.extend(_get_storage_pipeline('subscription', self.conf))
         stages.append(self._storage.subscription_controller)
         return common.Pipeline(stages)

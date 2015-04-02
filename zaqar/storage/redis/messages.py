@@ -17,6 +17,7 @@ import uuid
 
 from oslo_utils import encodeutils
 from oslo_utils import timeutils
+import redis
 
 from zaqar.common import decorators
 from zaqar import storage
@@ -558,3 +559,63 @@ def _filter_messages(messages, filters, to_basic, marker):
                 yield msg.to_basic(now)
             else:
                 yield msg
+
+QUEUES_SET_STORE_NAME = 'queues_set'
+
+
+class MessageQueueHandler(object):
+    def __init__(self, driver, control_driver):
+        self.driver = driver
+        self._client = self.driver.connection
+        self._queue_ctrl = self.driver.queue_controller
+        self._message_ctrl = self.driver.message_controller
+        self._claim_ctrl = self.driver.claim_controller
+
+    @utils.raises_conn_error
+    def create(self, name, metadata=None, project=None):
+        with self._client.pipeline() as pipe:
+            self._message_ctrl._create_msgset(name, project, pipe)
+
+            try:
+                pipe.execute()
+            except redis.exceptions.ResponseError:
+                return False
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def delete(self, name, project=None):
+        with self._client.pipeline() as pipe:
+            self._message_ctrl._delete_msgset(name, project, pipe)
+            self._message_ctrl._delete_queue_messages(name, project, pipe)
+            pipe.execute()
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def stats(self, name, project=None):
+        if not self._queue_ctrl.exists(name, project=project):
+            raise errors.QueueDoesNotExist(name, project)
+
+        total = self._message_ctrl._count(name, project)
+
+        if total:
+            claimed = self._claim_ctrl._count_messages(name, project)
+        else:
+            claimed = 0
+
+        message_stats = {
+            'claimed': claimed,
+            'free': total - claimed,
+            'total': total,
+        }
+
+        if total:
+            try:
+                newest = self._message_ctrl.first(name, project, -1)
+                oldest = self._message_ctrl.first(name, project, 1)
+            except errors.QueueIsEmpty:
+                pass
+            else:
+                message_stats['newest'] = newest
+                message_stats['oldest'] = oldest
+
+        return {'messages': message_stats}

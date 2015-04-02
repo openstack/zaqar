@@ -23,6 +23,7 @@ from zaqar.common.storage import select
 from zaqar.openstack.common import log
 from zaqar import storage
 from zaqar.storage import errors
+from zaqar.storage import pipeline
 from zaqar.storage import utils
 
 LOG = log.getLogger(__name__)
@@ -69,8 +70,8 @@ class DataDriver(storage.DataDriverBase):
 
     BASE_CAPABILITIES = tuple(storage.Capabilities)
 
-    def __init__(self, conf, cache, control):
-        super(DataDriver, self).__init__(conf, cache)
+    def __init__(self, conf, cache, control, control_driver=None):
+        super(DataDriver, self).__init__(conf, cache, control_driver)
         self._pool_catalog = Catalog(conf, cache, control)
 
     @property
@@ -404,6 +405,7 @@ class Catalog(object):
         self._drivers = {}
         self._conf = conf
         self._cache = cache
+        self.control = control
 
         self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
         self._catalog_conf = self._conf[_CATALOG_GROUP]
@@ -424,7 +426,10 @@ class Catalog(object):
         pool = self._pools_ctrl.get(pool_id, detailed=True)
         conf = utils.dynamic_conf(pool['uri'], pool['options'],
                                   conf=self._conf)
-        return utils.load_storage_driver(conf, self._cache)
+        storage = utils.load_storage_driver(conf,
+                                            self._cache,
+                                            control_driver=self.control)
+        return pipeline.DataDriver(conf, storage, self.control)
 
     @decorators.caches(_pool_cache_key, _POOL_CACHE_TTL)
     def _pool_id(self, queue, project=None):

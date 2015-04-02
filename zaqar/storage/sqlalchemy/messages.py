@@ -133,7 +133,8 @@ class MessageController(storage.Message):
         if project is None:
             project = ''
 
-        qid = utils.get_qid(self.driver, queue, project)
+        qid = utils.get_qid(self.driver.control_driver,
+                            queue, project)
 
         sel = sa.sql.select([tables.Messages.c.id,
                              tables.Messages.c.body,
@@ -230,7 +231,8 @@ class MessageController(storage.Message):
             project = ''
 
         with self.driver.trans() as trans:
-            qid = utils.get_qid(self.driver, queue, project)
+            qid = utils.get_qid(self.driver.control_driver,
+                                queue, project)
 
             # Delete the expired messages
             and_stmt = sa.and_(tables.Messages.c.ttl <=
@@ -310,7 +312,8 @@ class MessageController(storage.Message):
 
         with self.driver.trans() as trans:
             try:
-                qid = utils.get_qid(self.driver, queue, project)
+                qid = utils.get_qid(self.driver.control_driver,
+                                    queue, project)
             except errors.QueueDoesNotExist:
                 return
 
@@ -359,7 +362,8 @@ class MessageController(storage.Message):
 
             statement = tables.Messages.delete()
 
-            qid = utils.get_qid(self.driver, queue_name, project)
+            qid = utils.get_qid(self.driver.control_driver,
+                                queue_name, project)
 
             and_stmt = [tables.Messages.c.id.in_(message_ids),
                         tables.Messages.c.qid == qid]
@@ -367,3 +371,50 @@ class MessageController(storage.Message):
             trans.execute(statement.where(sa.and_(*and_stmt)))
 
             return messages
+
+
+class MessageQueueHandler(object):
+    def __init__(self, driver, control_driver):
+        self.driver = driver
+
+    def stats(self, name, project):
+        if project is None:
+            project = ''
+
+        qid = utils.get_qid(self.driver.control_driver, name, project)
+        sel = sa.sql.select([
+            sa.sql.select([sa.func.count(tables.Messages.c.id)],
+                          sa.and_(
+                              tables.Messages.c.qid == qid,
+                              tables.Messages.c.cid != (None),
+                              tables.Messages.c.ttl >
+                              sfunc.now() - tables.Messages.c.created)),
+            sa.sql.select([sa.func.count(tables.Messages.c.id)],
+                          sa.and_(
+                              tables.Messages.c.qid == qid,
+                              tables.Messages.c.cid == (None),
+                              tables.Messages.c.ttl >
+                              sfunc.now() - tables.Messages.c.created))
+        ])
+
+        claimed, free = self.driver.get(sel)
+
+        total = free + claimed
+
+        message_stats = {
+            'claimed': claimed,
+            'free': free,
+            'total': total,
+        }
+
+        try:
+            message_controller = self.driver.message_controller
+            oldest = message_controller.first(name, project, sort=1)
+            newest = message_controller.first(name, project, sort=-1)
+        except errors.QueueIsEmpty:
+            pass
+        else:
+            message_stats['oldest'] = utils.stat_message(oldest)
+            message_stats['newest'] = utils.stat_message(newest)
+
+        return {'messages': message_stats}

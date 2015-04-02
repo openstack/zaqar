@@ -579,7 +579,7 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
         storage = self.boot.storage._storage
         connection = storage.connection
 
-        connection.drop_database(storage.queues_database)
+        connection.drop_database(self.boot.control.queues_database)
 
         for db in storage.message_databases:
             connection.drop_database(db)
