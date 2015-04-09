@@ -9,7 +9,7 @@ mock>=1.0
 
 # Backends
 redis>=2.10.0
-pymongo>=2.6.3
+pymongo>=2.6.3,<3.0
 
 # Unit testing
 coverage>=3.6
