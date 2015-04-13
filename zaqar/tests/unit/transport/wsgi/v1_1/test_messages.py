@@ -69,6 +69,25 @@ class MessagesBaseTest(base.V1_1Base):
 
         super(MessagesBaseTest, self).tearDown()
 
+    def test_name_restrictions(self):
+        sample_messages = [
+            {'body': {'key': 'value'}, 'ttl': 200},
+        ]
+        messages_path = self.url_prefix + '/queues/%s/messages'
+        sample_doc = jsonutils.dumps({'messages': sample_messages})
+
+        self.simulate_post(messages_path % 'Nice-Boat_2',
+                           body=sample_doc, headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+        self.simulate_post(messages_path % 'Nice-Bo@t',
+                           body=sample_doc, headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+        self.simulate_post(messages_path % ('_niceboat' * 8),
+                           body=sample_doc, headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
     def _test_post(self, sample_messages):
         sample_doc = jsonutils.dumps({'messages': sample_messages})
 
