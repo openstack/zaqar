@@ -33,6 +33,10 @@ POOLS_INDEX = [
     ('n', 1)
 ]
 
+URI_INDEX = [
+    ('u', 1)
+]
+
 # NOTE(cpp-cabrera): used for get/list operations. There's no need to
 # show the marker or the _id - they're implementation details.
 OMIT_FIELDS = (('_id', False),)
@@ -51,6 +55,11 @@ class PoolsController(base.PoolsBase):
         self._col.ensure_index(POOLS_INDEX,
                                background=True,
                                name='pools_name',
+                               unique=True)
+
+        self._col.ensure_index(URI_INDEX,
+                               background=True,
+                               name='pools_uri',
                                unique=True)
 
     @utils.raises_conn_error

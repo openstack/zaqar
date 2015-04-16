@@ -51,7 +51,7 @@ class PoolCatalogTest(testing.TestBase):
 
         self.pools_ctrl.create(self.pool, 100, 'mongodb://localhost:27017')
         self.pools_ctrl.create(self.pool2, 100,
-                               'mongodb://localhost:27017',
+                               'mongodb://127.0.0.1:27017',
                                group=self.pool_group)
         self.catalogue_ctrl.insert(self.project, self.queue, self.pool)
         self.catalog = pooling.Catalog(self.conf, cache, control)
