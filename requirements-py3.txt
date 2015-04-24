@@ -8,7 +8,7 @@ netaddr>=0.7.12
 falcon>=0.1.6,<0.2.0
 jsonschema>=2.0.0,<3.0.0
 iso8601>=0.1.9
-keystonemiddleware>=1.5.0
+keystonemiddleware>=1.5.0,<1.6.0
 msgpack-python>=0.4.0
 posix_ipc
 pymongo>=2.6.3,<3.0
