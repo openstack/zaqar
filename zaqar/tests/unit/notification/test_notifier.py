@@ -52,13 +52,13 @@ class NotifierTest(testing.TestBase):
                              self.client_uuid, self.project)
             mock_post.assert_called_with(self.subscription[0]['subscriber'],
                                          self.messages[0])
-            mock_post.assert_called_with(self.subscription[0]['subscriber'],
-                                         self.messages[0])
             mock_post.assert_called_with(self.subscription[1]['subscriber'],
                                          self.messages[0])
-            mock_post.assert_called_with(self.subscription[1]['subscriber'],
-                                         self.messages[1])
             mock_post.assert_called_with(self.subscription[2]['subscriber'],
+                                         self.messages[0])
+            mock_post.assert_called_with(self.subscription[0]['subscriber'],
+                                         self.messages[1])
+            mock_post.assert_called_with(self.subscription[1]['subscriber'],
                                          self.messages[1])
             mock_post.assert_called_with(self.subscription[2]['subscriber'],
                                          self.messages[1])
