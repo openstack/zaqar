@@ -71,7 +71,7 @@ TEMPEST_SERVICES+=,zaqar
 # Test if any Zaqar services are enabled
 # is_zaqar_enabled
 function is_zaqar_enabled {
-    [[ ,${ENABLED_SERVICES} =~ ,"zaqar-" ]] && return 0
+    [[ ,${ENABLED_SERVICES} =~ ,"zaqar" ]] && return 0
     return 1
 }
 
