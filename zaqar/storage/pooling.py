@@ -415,7 +415,7 @@ class Catalog(object):
         self._catalogue_ctrl = control.catalogue_controller
 
     # FIXME(cpp-cabrera): https://bugs.launchpad.net/zaqar/+bug/1252791
-    def _init_driver(self, pool_id):
+    def _init_driver(self, pool_id, pool_conf=None):
         """Given a pool name, returns a storage driver.
 
         :param pool_id: The name of a pool.
@@ -423,7 +423,10 @@ class Catalog(object):
         :returns: a storage driver
         :rtype: zaqar.storage.base.DataDriverBase
         """
-        pool = self._pools_ctrl.get(pool_id, detailed=True)
+        if pool_id is not None:
+            pool = self._pools_ctrl.get(pool_id, detailed=True)
+        else:
+            pool = pool_conf
         conf = utils.dynamic_conf(pool['uri'], pool['options'],
                                   conf=self._conf)
         storage = utils.load_storage_driver(conf,
@@ -581,15 +584,30 @@ class Catalog(object):
         except errors.QueueNotMapped as ex:
             LOG.debug(ex)
 
-            # NOTE(kgriffs): Return `None`, rather than letting the
-            # exception bubble up, so that the higher layer doesn't
-            # have to duplicate the try..except..log code all over
-            # the place.
-            return None
+            conf_section = ('drivers:message_store:%s' %
+                            self._conf.drivers.storage)
+
+            if conf_section not in self._conf:
+                # NOTE(kgriffs): Return `None`, rather than letting the
+                # exception bubble up, so that the higher layer doesn't
+                # have to duplicate the try..except..log code all over
+                # the place.
+                return None
+
+            # NOTE(flaper87): This assumes the storage driver type is the
+            # same as the management.
+            pool_conf = {'uri': self._conf[conf_section].uri,
+                         'options': {}}
+
+            # NOTE(flaper87): This will be using the config
+            # storage configuration as the default one if no
+            # default storage has been registered in the pool
+            # store.
+            return self.get_driver(None, pool_conf)
 
         return self.get_driver(pool_id)
 
-    def get_driver(self, pool_id):
+    def get_driver(self, pool_id, pool_conf=None):
         """Get storage driver, preferably cached, from a pool name.
 
         :param pool_id: The name of a pool.
@@ -602,6 +620,6 @@ class Catalog(object):
             return self._drivers[pool_id]
         except KeyError:
             # NOTE(cpp-cabrera): cache storage driver connection
-            self._drivers[pool_id] = self._init_driver(pool_id)
+            self._drivers[pool_id] = self._init_driver(pool_id, pool_conf)
 
             return self._drivers[pool_id]

@@ -118,14 +118,20 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF DEFAULT use_syslog $SYSLOG
+
+    # Enable pooling by default for now
+    iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF 'drivers:transport:wsgi' bind $ZAQAR_SERVICE_HOST
 
     configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
 
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
+        iniset $ZAQAR_CONF DEFAULT pooling True
         iniset $ZAQAR_CONF  drivers storage mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' database zaqar
+        iniset $ZAQAR_CONF 'drivers:management_store:mongodb' uri mongodb://localhost:27017/zaqar_mgmt
+        iniset $ZAQAR_CONF 'drivers:management_store:mongodb' database zaqar_mgmt
         configure_mongodb
     elif [ "$ZAQAR_BACKEND" = 'redis' ] ; then
         iniset $ZAQAR_CONF  drivers storage redis
