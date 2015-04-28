@@ -121,10 +121,7 @@ function configure_zaqar {
 
     configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
 
-    if [ "$ZAQAR_BACKEND" = 'mysql' ] || [ "$ZAQAR_BACKEND" = 'postgresql' ] ; then
-        iniset $ZAQAR_CONF drivers storage sqlalchemy
-        iniset $ZAQAR_CONF 'drivers:storage:sqlalchemy' uri `database_connection_url zaqar`
-    elif [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
+    if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         iniset $ZAQAR_CONF  drivers storage mongodb
         iniset $ZAQAR_CONF 'drivers:storage:mongodb' uri mongodb://localhost:27017/zaqar
         configure_mongodb
