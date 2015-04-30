@@ -159,12 +159,15 @@ function configure_mongodb {
     # Set nssize to 2GB. This increases the number of namespaces supported
     # # per database.
     if is_ubuntu; then
+        install_package mongodb-server
         sudo sed -i -e "
             s|[^ \t]*#[ \t]*\(nssize[ \t]*=.*\$\)|\1|
             s|^\(nssize[ \t]*=[ \t]*\).*\$|\1 2047|
         " /etc/mongodb.conf
         restart_service mongodb
     elif is_fedora; then
+        install_package mongodb
+        install_package mongodb-server
         sudo sed -i '/--nssize/!s/OPTIONS=\"/OPTIONS=\"--nssize 2047 /' /etc/sysconfig/mongod
         restart_service mongod
     fi
