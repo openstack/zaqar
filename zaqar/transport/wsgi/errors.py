@@ -55,3 +55,13 @@ class HTTPDocumentTypeNotSupported(HTTPBadRequestBody):
 
     def __init__(self):
         super(HTTPDocumentTypeNotSupported, self).__init__(self.DESCRIPTION)
+
+
+class HTTPForbidden(falcon.HTTPForbidden):
+    """Wraps falcon.HTTPForbidden with a contextual title."""
+
+    TITLE = _(u'Not authorized')
+    DESCRIPTION = _(u'You are not authorized to complete this action.')
+
+    def __init__(self):
+        super(HTTPForbidden, self).__init__(self.TITLE, self.DESCRIPTION)

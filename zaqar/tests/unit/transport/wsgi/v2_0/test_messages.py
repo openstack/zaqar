@@ -52,10 +52,10 @@ class TestMessagesMongoDB(base.V2Base):
                 self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
         self.project_id = '7e55e1a7e'
-        self.headers = {
+        self.headers.update({
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': self.project_id
-        }
+        })
 
         # TODO(kgriffs): Add support in self.simulate_* for a "base path"
         # so that we don't have to concatenate against self.url_prefix

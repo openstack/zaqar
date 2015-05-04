@@ -45,6 +45,7 @@ from zaqar.common import utils as common_utils
 from zaqar.i18n import _
 from zaqar.storage import errors
 from zaqar.storage import utils as storage_utils
+from zaqar.transport import acl
 from zaqar.transport import utils as transport_utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
@@ -61,6 +62,7 @@ class Listing(object):
     def __init__(self, pools_controller):
         self._ctrl = pools_controller
 
+    @acl.enforce("pools:get_all")
     def on_get(self, request, response, project_id):
         """Returns a pool listing as objects embedded in an object:
 
@@ -128,6 +130,7 @@ class Resource(object):
             'create': validator_type(schema.create)
         }
 
+    @acl.enforce("pools:get")
     def on_get(self, request, response, project_id, pool):
         """Returns a JSON object for a single pool entry:
 
@@ -153,6 +156,7 @@ class Resource(object):
 
         response.body = transport_utils.to_json(data)
 
+    @acl.enforce("pools:create")
     def on_put(self, request, response, project_id, pool):
         """Registers a new pool. Expects the following input:
 
@@ -181,6 +185,7 @@ class Resource(object):
         response.status = falcon.HTTP_201
         response.location = request.path
 
+    @acl.enforce("pools:delete")
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.
 
@@ -201,6 +206,7 @@ class Resource(object):
 
         response.status = falcon.HTTP_204
 
+    @acl.enforce("pools:update")
     def on_patch(self, request, response, project_id, pool):
         """Allows one to update a pool's weight, uri, and/or options.
 

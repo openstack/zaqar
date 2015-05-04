@@ -26,7 +26,7 @@ class RequestContext(context.RequestContext):
                  auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 instance_uuid=None, **kwargs):
+                 instance_uuid=None, roles=None, **kwargs):
         super(RequestContext, self).__init__(auth_token=auth_token,
                                              user=user,
                                              tenant=tenant,
@@ -39,6 +39,7 @@ class RequestContext(context.RequestContext):
                                              request_id=request_id)
         self.project_id = project_id
         self.client_id = client_id
+        self.roles = roles
         if overwrite or not hasattr(context._request_store, 'context'):
             self.update_store()
 
@@ -49,6 +50,8 @@ class RequestContext(context.RequestContext):
         ctx = super(RequestContext, self).to_dict()
         ctx.update({
             'project_id': self.project_id,
-            'client_id': self.client_id
+            'client_id': self.client_id,
+            'tenant': self.tenant,
+            'roles': self.roles
         })
         return ctx

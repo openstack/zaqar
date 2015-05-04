@@ -16,6 +16,7 @@
 from oslo_log import log as logging
 
 from zaqar.i18n import _
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 
@@ -29,6 +30,7 @@ class Resource(object):
     def __init__(self, driver):
         self._driver = driver
 
+    @acl.enforce("health:get")
     def on_get(self, req, resp, **kwargs):
         try:
             resp_dict = self._driver.health()

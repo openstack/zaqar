@@ -19,6 +19,7 @@ import six
 
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
@@ -36,6 +37,7 @@ class ItemResource(object):
         self._validate = validate
         self._subscription_controller = subscription_controller
 
+    @acl.enforce("subscription:get")
     def on_get(self, req, resp, project_id, queue_name, subscription_id):
         LOG.debug(u'Subscription GET - subscription id: %(subscription_id)s,'
                   u' project: %(project)s, queue: %(queue)s',
@@ -58,6 +60,7 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
+    @acl.enforce("subscription:delete")
     def on_delete(self, req, resp, project_id, queue_name, subscription_id):
         LOG.debug(u'Subscription DELETE - '
                   u'subscription id: %(subscription_id)s,'
@@ -76,6 +79,7 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_204
 
+    @acl.enforce("subscription:update")
     def on_patch(self, req, resp, project_id, queue_name, subscription_id):
         LOG.debug(u'Subscription PATCH - subscription id: %(subscription_id)s,'
                   u' project: %(project)s, queue: %(queue)s',
@@ -117,6 +121,7 @@ class CollectionResource(object):
         self._subscription_controller = subscription_controller
         self._validate = validate
 
+    @acl.enforce("subscription:get_all")
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(u'Subscription collection GET - project: %(project)s, '
                   u'queue: %(queue)s',
@@ -162,6 +167,7 @@ class CollectionResource(object):
         resp.body = utils.to_json(response_body)
         # status defaults to 200
 
+    @acl.enforce("subscription:create")
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Subscription item POST - project: %(project)s, '
                   u'queue: %(queue)s',

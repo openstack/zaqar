@@ -1,0 +1,45 @@
+{
+    "context_is_admin": "role:admin",
+    "admin_or_owner": "is_admin:True or project_id:%(project_id)s",
+    "default": "rule:admin_or_owner",
+
+    "queues:get_all": "",
+    "queues:create": "",
+    "queues:get": "",
+    "queues:delete": "",
+    "queues:update": "",
+    "queues:stats": "",
+
+    "messages:get_all": "",
+    "messages:create": "",
+    "messages:get": "",
+    "messages:delete": "",
+    "messages:delete_all": "",
+
+    "claims:get_all": "",
+    "claims:create": "",
+    "claims:get": "",
+    "claims:delete": "",
+    "claims:update": "",
+
+    "subscription:get_all": "",
+    "subscription:create": "",
+    "subscription:get": "",
+    "subscription:delete": "",
+    "subscription:update": "",
+
+    "pools:get_all": "rule:context_is_admin",
+    "pools:create": "rule:context_is_admin",
+    "pools:get": "rule:context_is_admin",
+    "pools:delete": "rule:context_is_admin",
+    "pools:update": "rule:context_is_admin",
+
+    "flavors:get_all": "",
+    "flavors:create": "rule:context_is_admin",
+    "flavors:get": "",
+    "flavors:delete": "rule:context_is_admin",
+    "flavors:update": "rule:context_is_admin",
+
+    "ping:get": "",
+    "health:get": "rule:context_is_admin"
+}
