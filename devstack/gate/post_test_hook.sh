@@ -14,7 +14,7 @@
 
 # This script is executed inside post_test_hook function in devstack gate.
 
-source $BASE/new/devstack/openrc admin admin
+# source $BASE/new/devstack/openrc admin admin
 
 function generate_test_results {
     if [ -f .testrepository/0 ]; then
@@ -26,8 +26,6 @@ function generate_test_results {
         sudo chown jenkins:jenkins $BASE/logs/testrepository.subunit.gz $BASE/logs/testr_results.html.gz
         sudo chmod a+r $BASE/logs/testrepository.subunit.gz $BASE/logs/testr_results.html.gz
     fi
-
-    gzip -9 -c /var/log/zaqar/queues.log > $WORKSPACE/logs/queues.log.txt.gz
 }
 
 set -x
