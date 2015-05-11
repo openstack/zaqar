@@ -16,7 +16,7 @@
 
 import re
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 from zaqar.i18n import _
