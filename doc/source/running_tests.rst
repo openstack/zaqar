@@ -63,4 +63,4 @@ the ``tests/unit/queues/storage/test_impl_mongodb.py`` file::
 
 .. rubric:: Footnotes
 
-.. [#f1] See http://ci.openstack.org/jenkins.html
+.. [#f1] See http://docs.openstack.org/infra/system-config/jenkins.html
