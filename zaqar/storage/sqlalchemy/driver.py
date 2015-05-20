@@ -57,7 +57,8 @@ class ControlDriver(storage.ControlDriverBase):
             sa.event.listen(engine, 'connect',
                             self._sqlite_on_connect)
 
-        if uri.startswith('mysql://'):
+        if (uri.startswith('mysql+pymysql://')
+                or uri.startswith('mysql://')):
             sa.event.listen(engine, 'connect',
                             self._mysql_on_connect)
 
