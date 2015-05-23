@@ -140,7 +140,7 @@ def raises_conn_error(func):
     """Handles the Redis ConnectionFailure error.
 
     This decorator catches Redis's ConnectionError
-    and raises Marconi's ConnectionError instead.
+    and raises Zaqar's ConnectionError instead.
     """
 
     # Note(prashanthr_) : Try to reuse this utility. Violates DRY
