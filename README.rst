@@ -168,8 +168,6 @@ the ``--verbose`` flag. Verbose output looks similar to the following::
 
 .. _`OpenStack` : http://openstack.org/
 .. _`MongoDB` : http://docs.mongodb.org/manual/installation/
-.. _`pyenv` : https://github.com/yyuu/pyenv/
-.. _`virtualenv` : https://pypi.python.org/pypi/virtualenv/
 .. _`wiki` : https://wiki.openstack.org/wiki/Zaqar
 .. _`TESTS_README` : https://github.com/openstack/zaqar/blob/master/tests/functional/README.rst
 
