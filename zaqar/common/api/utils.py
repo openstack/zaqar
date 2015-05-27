@@ -14,9 +14,10 @@
 
 import functools
 
+from oslo_log import log as logging
+
 import zaqar.common.api.response as response
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

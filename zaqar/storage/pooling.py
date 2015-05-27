@@ -17,10 +17,10 @@ import heapq
 import itertools
 
 from oslo_config import cfg
+from oslo_log import log
 
 from zaqar.common import decorators
 from zaqar.common.storage import select
-from zaqar.openstack.common import log
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage import pipeline

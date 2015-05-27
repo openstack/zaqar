@@ -16,9 +16,12 @@ from __future__ import print_function
 import functools
 import sys
 
-from zaqar.i18n import _
-from zaqar.openstack.common import log as logging
+from oslo_config import cfg
+from oslo_log import log as logging
 
+from zaqar.i18n import _
+
+CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
@@ -46,7 +49,8 @@ def runnable(func):
     @functools.wraps(func)
     def _wrapper():
         try:
-            logging.setup('zaqar')
+            logging.register_options(CONF)
+            logging.setup(CONF, 'zaqar')
             func()
         except KeyboardInterrupt:
             LOG.info(_(u'Terminating'))

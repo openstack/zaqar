@@ -25,7 +25,8 @@ Serves to construct an association between a project + queue -> pool.
     }
 """
 
-import zaqar.openstack.common.log as logging
+from oslo_log import log as logging
+
 from zaqar.storage import base
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils

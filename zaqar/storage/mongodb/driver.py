@@ -17,12 +17,12 @@
 
 import ssl
 
+from oslo_log import log as logging
 import pymongo
 import pymongo.errors
 
 from zaqar.common import decorators
 from zaqar.i18n import _
-from zaqar.openstack.common import log as logging
 from zaqar import storage
 from zaqar.storage.mongodb import controllers
 from zaqar.storage.mongodb import options

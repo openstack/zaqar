@@ -17,6 +17,7 @@ import os
 
 import fixtures
 from oslo_config import cfg
+from oslo_log import log
 import six
 import testtools
 
@@ -77,6 +78,7 @@ class TestBase(testtools.TestCase):
         :returns: Project's config object.
         """
         conf = cfg.ConfigOpts()
+        log.register_options(conf)
         conf(args=[], default_config_files=[cls.conf_path(filename)])
         return conf
 

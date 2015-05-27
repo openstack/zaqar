@@ -38,11 +38,11 @@ registered, there is an optional field:
 
 import falcon
 import jsonschema
+from oslo_log import log
 
 from zaqar.common.api.schemas import pools as schema
 from zaqar.common import utils as common_utils
 from zaqar.i18n import _
-from zaqar.openstack.common import log
 from zaqar.storage import errors
 from zaqar.storage import utils as storage_utils
 from zaqar.transport import utils as transport_utils

@@ -34,7 +34,6 @@
    zaqar.openstack.common.importutils.rst
    zaqar.openstack.common.local.rst
    zaqar.openstack.common.lockutils.rst
-   zaqar.openstack.common.log.rst
    zaqar.openstack.common.strutils.rst
    zaqar.openstack.common.timeutils.rst
    zaqar.storage.base.rst

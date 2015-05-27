@@ -18,8 +18,7 @@
 from keystoneclient import auth
 from keystonemiddleware import auth_token
 from keystonemiddleware import opts
-
-from zaqar.openstack.common import log
+from oslo_log import log
 
 
 STRATEGIES = {}

@@ -15,11 +15,11 @@
 
 import falcon
 import jsonschema
+from oslo_log import log
 
 from zaqar.common.api.schemas import flavors as schema
 from zaqar.common import utils as common_utils
 from zaqar.i18n import _
-from zaqar.openstack.common import log
 from zaqar.storage import errors
 from zaqar.transport import utils as transport_utils
 from zaqar.transport.wsgi import errors as wsgi_errors

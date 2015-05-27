@@ -16,6 +16,7 @@
 import os
 
 from oslo_config import cfg
+from oslo_log import log
 
 
 _DEFAULT = (
@@ -49,6 +50,9 @@ def load_config():
     conf.register_opts(_AUTH_OPTIONS, group="auth")
     conf.register_opts(_ZAQAR_OPTIONS, group="zaqar")
     conf.register_opts(_HEADERS_OPTIONS, group="headers")
+
+    log.register_options(conf)
+
     conf_path = os.path.join(os.environ["ZAQAR_TESTS_CONFIGS_DIR"],
                              "functional-tests.conf")
     conf(args=[], default_config_files=[conf_path])

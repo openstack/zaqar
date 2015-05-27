@@ -18,11 +18,11 @@ from wsgiref import simple_server
 
 import falcon
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar import transport
 from zaqar.transport import auth
 from zaqar.transport import validation

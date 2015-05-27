@@ -18,11 +18,11 @@
 import uuid
 
 import falcon
+from oslo_log import log as logging
 import six
 
 from zaqar import context
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar.transport import validation
 
 

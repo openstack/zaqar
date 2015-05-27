@@ -14,9 +14,9 @@
 
 import falcon
 import jsonschema
+from oslo_log import log as logging
 
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors
 

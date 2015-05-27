@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import falcon
+from oslo_log import log as logging
 import six
 
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import utils
 from zaqar.transport import validation
