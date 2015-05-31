@@ -33,6 +33,7 @@ def _test_variable_set(variable):
 SKIP_SLOW_TESTS = _test_variable_set('ZAQAR_TEST_SLOW')
 SKIP_MONGODB_TESTS = _test_variable_set('ZAQAR_TEST_MONGODB')
 SKIP_REDIS_TESTS = _test_variable_set('ZAQAR_TEST_REDIS')
+SKIP_SWIFT_TESTS = _test_variable_set('ZAQAR_TEST_SWIFT')
 
 
 @contextlib.contextmanager
@@ -230,6 +231,21 @@ def requires_redis(test_case):
               'that are specific to this storage backend. ')
 
     return testtools.skipIf(SKIP_REDIS_TESTS, reason)(test_case)
+
+
+def requires_swift(test_case):
+    """Decorator to flag a test case as being dependent on Swift.
+
+    Redis-specific tests will be skipped unless the ZAQAR_TEST_SWIFT
+    environment variable is set. If the variable is set, the tests will
+    assume that Swift is accessible and configured properly.
+    """
+
+    reason = ('Skipping tests that require Swift. Ensure Swift is running '
+              'and then set ZAQAR_TEST_SWIFT in order to enable tests '
+              'that are specific to this storage backend. ')
+
+    return testtools.skipIf(SKIP_SWIFT_TESTS, reason)(test_case)
 
 
 def is_slow(condition=lambda self: True):

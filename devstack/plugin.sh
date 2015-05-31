@@ -133,6 +133,15 @@ function configure_zaqar {
         iniset $ZAQAR_CONF 'drivers:message_store:redis' uri redis://localhost:6379
         iniset $ZAQAR_CONF 'drivers:message_store:redis' database zaqar
         configure_redis
+    elif [ "$ZAQAR_BACKEND" = 'swift' ] ; then
+        recreate_database zaqar
+        iniset $ZAQAR_CONF  drivers management_store sqlalchemy
+        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri `database_connection_url zaqar`
+        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' database zaqar_mgmt
+
+        iniset $ZAQAR_CONF  drivers message_store swift
+        iniset $ZAQAR_CONF 'drivers:message_store:swift' auth_url $KEYSTONE_AUTH_URI_V3
+        iniset $ZAQAR_CONF 'drivers:message_store:swift' uri swift://zaqar:$SERVICE_PASSWORD@/service
     fi
 
     if is_service_enabled qpid || [ -n "$RABBIT_HOST" ] && [ -n "$RABBIT_PASSWORD" ]; then
@@ -265,6 +274,9 @@ function create_zaqar_accounts {
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT"
     fi
 
+    if [ "$ZAQAR_BACKEND" = 'swift' ] ; then
+        get_or_add_user_project_role ResellerAdmin zaqar service
+    fi
 }
 
 if is_service_enabled zaqar-websocket || is_service_enabled zaqar-wsgi; then
