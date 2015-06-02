@@ -236,7 +236,7 @@ class MessageController(storage.Message, scripting.Mixin):
         client = self._client
 
         if not marker and not include_claimed:
-            # NOTE(kgriffs): Skip unclaimed messages at the head
+            # NOTE(kgriffs): Skip claimed messages at the head
             # of the queue; otherwise we would just filter them all
             # out and likely end up with an empty list to return.
             marker = self._find_first_unclaimed(queue, project, limit)
