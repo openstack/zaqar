@@ -16,8 +16,7 @@
 import functools
 
 import msgpack
-
-import zaqar.openstack.common.log as logging
+from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 

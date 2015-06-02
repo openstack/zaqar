@@ -15,15 +15,15 @@
 
 import uuid
 
-from zaqar.notification.task import webhook
-from zaqar.openstack.common import log as logging
-
+from oslo_log import log as logging
 import six
 from taskflow import engines
 from taskflow.patterns import unordered_flow as uf
 from taskflow import task
 from taskflow.types import futures
 from taskflow.utils import eventlet_utils
+
+from zaqar.notification.task import webhook
 
 LOG = logging.getLogger(__name__)
 

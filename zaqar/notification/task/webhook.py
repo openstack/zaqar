@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_log import log as logging
 import requests
-
-from zaqar.openstack.common import log as logging
-
 from taskflow import task
 
 LOG = logging.getLogger(__name__)

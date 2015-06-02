@@ -31,11 +31,11 @@ them do, an AttributeError exception will be raised.
 
 import contextlib
 
+from oslo_log import log as logging
 import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

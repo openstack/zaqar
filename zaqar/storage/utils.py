@@ -15,12 +15,12 @@
 import copy
 
 from oslo_config import cfg
+from oslo_log import log
 import six
 from stevedore import driver
 
 from zaqar.common import errors
 from zaqar.common import utils
-from zaqar.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

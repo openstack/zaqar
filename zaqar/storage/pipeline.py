@@ -13,13 +13,13 @@
 # the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from stevedore import driver
 from stevedore import extension
 
 from zaqar import common
 from zaqar.common import decorators
 from zaqar.i18n import _
-from zaqar.openstack.common import log as logging
 from zaqar.storage import base
 
 LOG = logging.getLogger(__name__)

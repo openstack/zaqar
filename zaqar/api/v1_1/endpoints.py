@@ -12,10 +12,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from oslo_log import log as logging
+
 from zaqar.common.api import response
 from zaqar.common.api import utils as api_utils
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import validation
 

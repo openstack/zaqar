@@ -21,12 +21,12 @@ Field Mappings:
     letter of their long name.
 """
 
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import pymongo.errors
 
 from zaqar.common import decorators
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils

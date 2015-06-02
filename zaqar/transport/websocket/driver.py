@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 try:
     import asyncio
@@ -22,7 +23,6 @@ except ImportError:
 
 from zaqar.common import decorators
 from zaqar.i18n import _
-import zaqar.openstack.common.log as logging
 from zaqar.transport.websocket import factory
 
 

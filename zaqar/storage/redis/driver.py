@@ -11,6 +11,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from oslo_log import log as logging
 import redis
 import redis.sentinel
 from six.moves import urllib
@@ -18,7 +20,6 @@ from six.moves import urllib
 from zaqar.common import decorators
 from zaqar.common import errors
 from zaqar.i18n import _
-from zaqar.openstack.common import log as logging
 from zaqar import storage
 from zaqar.storage.redis import controllers
 from zaqar.storage.redis import options

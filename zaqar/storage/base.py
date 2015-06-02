@@ -23,10 +23,10 @@ import uuid
 
 import enum
 from oslo_config import cfg
+from oslo_log import log as logging
 import six
 
 from zaqar.common import decorators
-import zaqar.openstack.common.log as logging
 from zaqar.storage import errors
 from zaqar.storage import utils
 

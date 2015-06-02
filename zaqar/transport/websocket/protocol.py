@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from autobahn.asyncio import websocket
+from oslo_log import log as logging
 
 import json
 
@@ -21,7 +22,6 @@ from zaqar.api.v1_1 import request as schema_validator
 from zaqar.common.api import request
 from zaqar.common.api import response
 from zaqar.common import errors
-import zaqar.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

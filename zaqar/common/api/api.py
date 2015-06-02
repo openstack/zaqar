@@ -15,10 +15,10 @@
 
 import jsonschema
 from jsonschema import validators
+from oslo_log import log
 
 from zaqar.common import errors
 from zaqar.i18n import _
-from zaqar.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

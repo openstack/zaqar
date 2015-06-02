@@ -13,8 +13,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from oslo_log import log as logging
+
 from zaqar.i18n import _
-from zaqar.openstack.common import log as logging
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 

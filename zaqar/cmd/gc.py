@@ -12,10 +12,10 @@
 # limitations under the License.
 
 from oslo_config import cfg
+from oslo_log import log
 
 from zaqar import bootstrap
 from zaqar.common import cli
-from zaqar.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

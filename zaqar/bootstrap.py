@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from oslo_config import cfg
+from oslo_log import log
 from stevedore import driver
 
 from zaqar.api import handler
@@ -21,7 +22,6 @@ from zaqar.common import decorators
 from zaqar.common import errors
 from zaqar.i18n import _
 from zaqar.openstack.common.cache import cache as oslo_cache
-from zaqar.openstack.common import log
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
@@ -43,6 +43,7 @@ _CLI_OPTIONS = (
 # zaqar-server
 CONF = cfg.CONF
 CONF.register_cli_opts(_CLI_OPTIONS)
+log.register_options(CONF)
 
 _GENERAL_OPTIONS = (
     ADMIN_MODE_OPT,
@@ -84,7 +85,7 @@ class Bootstrap(object):
         self.conf.register_opts(_DRIVER_OPTIONS, group=_DRIVER_GROUP)
         self.driver_conf = self.conf[_DRIVER_GROUP]
 
-        log.setup('zaqar')
+        log.setup(conf, 'zaqar')
 
         if self.conf.unreliable is None:
             msg = _(u'Unreliable\'s default value will be changed to False '
