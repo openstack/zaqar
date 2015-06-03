@@ -160,6 +160,7 @@ class V2Base(V1_1Base):
 
     Should contain methods specific to V2 of the API
     """
+    url_prefix = '/v2'
 
 
 class V2BaseFaulty(V1_1BaseFaulty):
@@ -167,3 +168,4 @@ class V2BaseFaulty(V1_1BaseFaulty):
 
     Should contain methods specific to V2 exception testing
     """
+    url_prefix = '/v2'

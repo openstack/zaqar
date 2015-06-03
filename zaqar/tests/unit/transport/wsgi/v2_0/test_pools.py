@@ -82,10 +82,13 @@ def pools(test, count, uri, group):
 
 
 @ddt.ddt
-class PoolsBaseTest(base.V2Base):
+class TestPoolsMongoDB(base.V2Base):
 
+    config_file = 'wsgi_mongodb_pooled.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(PoolsBaseTest, self).setUp()
+        super(TestPoolsMongoDB, self).setUp()
         self.doc = {'weight': 100,
                     'group': 'mygroup',
                     'uri': 'mongodb://127.0.0.1:27017'}
@@ -94,7 +97,7 @@ class PoolsBaseTest(base.V2Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
-        super(PoolsBaseTest, self).tearDown()
+        super(TestPoolsMongoDB, self).tearDown()
         self.simulate_delete(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
@@ -333,20 +336,3 @@ class PoolsBaseTest(base.V2Base):
             self.assertEqual(len(pool_list), 6)
             path, weight = expected[4][:2]
             self._pool_expect(pool_list[0], path, weight, self.doc['uri'])
-
-
-class TestPoolsMongoDB(PoolsBaseTest):
-
-    config_file = 'wsgi_mongodb_pooled.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestPoolsMongoDB, self).setUp()
-
-
-class TestPoolsSqlalchemy(PoolsBaseTest):
-
-    config_file = 'wsgi_sqlalchemy_pooled.conf'
-
-    def setUp(self):
-        super(TestPoolsSqlalchemy, self).setUp()

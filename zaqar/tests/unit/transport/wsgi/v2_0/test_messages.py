@@ -30,10 +30,12 @@ from zaqar.transport import validation
 
 
 @ddt.ddt
-class MessagesBaseTest(base.V2Base):
+class TestMessagesMongoDB(base.V2Base):
+    config_file = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(MessagesBaseTest, self).setUp()
+        super(TestMessagesMongoDB, self).setUp()
 
         self.default_message_ttl = self.boot.transport._defaults.message_ttl
 
@@ -71,7 +73,7 @@ class MessagesBaseTest(base.V2Base):
                 self.simulate_delete(self.url_prefix + '/pools/' + str(i),
                                      headers=self.headers)
 
-        super(MessagesBaseTest, self).tearDown()
+        super(TestMessagesMongoDB, self).tearDown()
 
     def test_name_restrictions(self):
         sample_messages = [
@@ -542,27 +544,73 @@ class MessagesBaseTest(base.V2Base):
     def _get_msg_ids(self, headers):
         return headers['location'].rsplit('=', 1)[-1].split(',')
 
+    @ddt.data(1, 2, 10)
+    def test_pop(self, message_count):
 
-class TestMessagesMongoDB(MessagesBaseTest):
-    config_file = 'wsgi_mongodb.conf'
+        self._post_messages(self.messages_path, repeat=message_count)
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+        target = self.messages_path + '/' + msg_id
 
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestMessagesMongoDB, self).setUp()
+        self.simulate_get(target, self.project_id)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
-    def tearDown(self):
-        super(TestMessagesMongoDB, self).tearDown()
+        query_string = 'pop=' + str(message_count)
+        result = self.simulate_delete(self.messages_path, self.project_id,
+                                      query_string=query_string)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        result_doc = jsonutils.loads(result[0])
+
+        self.assertEqual(len(result_doc['messages']), message_count)
+
+        self.simulate_get(target, self.project_id)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+    @ddt.data('', 'pop=1000000', 'pop=10&ids=1', 'pop=-1')
+    def test_pop_invalid(self, query_string):
+
+        self.simulate_delete(self.messages_path, self.project_id,
+                             query_string=query_string)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    def test_pop_empty_queue(self):
+
+        query_string = 'pop=1'
+        result = self.simulate_delete(self.messages_path, self.project_id,
+                                      query_string=query_string)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(result_doc['messages'], [])
+
+    def test_pop_single_message(self):
+
+        self._post_messages(self.messages_path, repeat=5)
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+        target = self.messages_path + '/' + msg_id
+
+        self.simulate_get(target, self.project_id)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        # Pop Single message from the queue
+        query_string = 'pop=1'
+        result = self.simulate_delete(self.messages_path, self.project_id,
+                                      query_string=query_string)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+        # Get messages from the queue & verify message count
+        query_string = 'echo=True'
+        result = self.simulate_get(self.messages_path, self.project_id,
+                                   query_string=query_string,
+                                   headers=self.headers)
+        result_doc = jsonutils.loads(result[0])
+        actual_msg_count = len(result_doc['messages'])
+        expected_msg_count = 4
+        self.assertEqual(actual_msg_count, expected_msg_count)
 
 
-class TestMessagesMongoDBPooled(MessagesBaseTest):
+class TestMessagesMongoDBPooled(TestMessagesMongoDB):
     config_file = 'wsgi_mongodb_pooled.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestMessagesMongoDBPooled, self).setUp()
-
-    def tearDown(self):
-        super(TestMessagesMongoDBPooled, self).tearDown()
 
     # TODO(cpp-cabrera): remove this skipTest once pooled queue
     # listing is implemented
