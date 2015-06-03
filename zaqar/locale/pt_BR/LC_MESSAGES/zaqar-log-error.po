@@ -1,5 +1,5 @@
 # Translations template for zaqar.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the zaqar project.
 #
 # Translators:
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-17 06:07+0000\n"
+"POT-Creation-Date: 2015-06-03 06:07+0000\n"
 "PO-Revision-Date: 2014-07-05 23:52+0000\n"
 "Last-Translator: Gabriel Guerreiro <gabriel.eu.br@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
@@ -20,17 +20,14 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: zaqar/openstack/common/excutils.py:76
+#, python-format
+msgid "Could not release the acquired lock `%s`"
+msgstr "Não foi possível liberar o bloqueio `%s`"
+
 #, python-format
 msgid "Original exception being dropped: %s"
 msgstr "Exceção original sendo cancelada: %s"
 
-#: zaqar/openstack/common/excutils.py:105
 #, python-format
 msgid "Unexpected exception occurred %d time(s)... retrying."
 msgstr "Exceção não esperada ocorreu %d vez(es)... tentando novamente."
-
-#: zaqar/openstack/common/lockutils.py:120
-#, python-format
-msgid "Could not release the acquired lock `%s`"
-msgstr "Não foi possível liberar o bloqueio `%s`"
