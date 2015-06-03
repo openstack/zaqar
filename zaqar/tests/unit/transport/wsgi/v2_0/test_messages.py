@@ -246,6 +246,9 @@ class MessagesBaseTest(base.V2Base):
         queues_path = self.url_prefix + '/queues/'
 
         game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
+        self.addCleanup(
+            self.simulate_delete, queues_path + game_title,
+            headers=self.headers)
         self._post_messages(queues_path + game_title + '/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
@@ -254,6 +257,9 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     def test_post_to_missing_queue(self):
+        self.addCleanup(
+            self.simulate_delete, self.url_prefix + '/queues/nonexistent',
+            headers=self.headers)
         self._post_messages(self.url_prefix + '/queues/nonexistent/messages')
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
