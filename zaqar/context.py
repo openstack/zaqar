@@ -17,8 +17,7 @@
 
 """RequestContext: context for requests that persist through all of zaqar."""
 
-from zaqar.openstack.common import context
-from zaqar.openstack.common import local
+from oslo_context import context
 
 
 class RequestContext(context.RequestContext):
@@ -37,15 +36,14 @@ class RequestContext(context.RequestContext):
                                              is_admin=is_admin,
                                              read_only=read_only,
                                              show_deleted=False,
-                                             request_id=request_id,
-                                             instance_uuid=instance_uuid)
+                                             request_id=request_id)
         self.project_id = project_id
         self.client_id = client_id
-        if overwrite or not hasattr(local.store, 'context'):
+        if overwrite or not hasattr(context._request_store, 'context'):
             self.update_store()
 
     def update_store(self):
-        local.store.context = self
+        context._request_store.context = self
 
     def to_dict(self):
         ctx = super(RequestContext, self).to_dict()

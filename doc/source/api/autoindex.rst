@@ -27,7 +27,6 @@
    zaqar.openstack.common.cache.backends.rst
    zaqar.openstack.common.cache.cache.rst
    zaqar.openstack.common.config.generator.rst
-   zaqar.openstack.common.context.rst
    zaqar.openstack.common.excutils.rst
    zaqar.openstack.common.fileutils.rst
    zaqar.openstack.common.gettextutils.rst
