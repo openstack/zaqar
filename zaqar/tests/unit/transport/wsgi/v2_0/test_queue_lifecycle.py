@@ -24,12 +24,13 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @ddt.ddt
-class QueueLifecycleBaseTest(base.V2Base):
+class TestQueueLifecycleMongoDB(base.V2Base):
 
-    config_file = None
+    config_file = 'wsgi_mongodb.conf'
 
+    @testing.requires_mongodb
     def setUp(self):
-        super(QueueLifecycleBaseTest, self).setUp()
+        super(TestQueueLifecycleMongoDB, self).setUp()
 
         self.queue_path = self.url_prefix + '/queues'
         self.gumshoe_queue_path = self.queue_path + '/gumshoe'
@@ -39,6 +40,18 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': '3387309841abc_'
         }
+
+    def tearDown(self):
+        control = self.boot.control
+        storage = self.boot.storage._storage
+        connection = storage.connection
+
+        connection.drop_database(control.queues_database)
+
+        for db in storage.message_databases:
+            connection.drop_database(db)
+
+        super(TestQueueLifecycleMongoDB, self).tearDown()
 
     def test_empty_project_id(self):
         headers = {
@@ -315,32 +328,6 @@ class QueueLifecycleBaseTest(base.V2Base):
         # List manually-constructed tail
         self.simulate_get(target, headers=header, query_string='marker=zzz')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
-
-
-class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
-
-    config_file = 'wsgi_mongodb.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestQueueLifecycleMongoDB, self).setUp()
-
-    def tearDown(self):
-        control = self.boot.control
-        storage = self.boot.storage._storage
-        connection = storage.connection
-
-        connection.drop_database(control.queues_database)
-
-        for db in storage.message_databases:
-            connection.drop_database(db)
-
-        super(TestQueueLifecycleMongoDB, self).tearDown()
-
-
-class TestQueueLifecycleSqlalchemy(QueueLifecycleBaseTest):
-
-    config_file = 'wsgi_sqlalchemy.conf'
 
 
 class TestQueueLifecycleFaultyDriver(base.V2BaseFaulty):

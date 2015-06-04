@@ -23,10 +23,13 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @ddt.ddt
-class SubscriptionsBaseTest(base.V2Base):
+class TestSubscriptionsMongoDB(base.V2Base):
 
+    config_file = 'wsgi_mongodb_pooled.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(SubscriptionsBaseTest, self).setUp()
+        super(TestSubscriptionsMongoDB, self).setUp()
 
         if self.conf.pooling:
             for i in range(1):
@@ -53,9 +56,6 @@ class SubscriptionsBaseTest(base.V2Base):
                                   '/subscriptions')
 
         self.addCleanup(self._delete_subscription)
-
-    def tearDown(self):
-        super(SubscriptionsBaseTest, self).tearDown()
 
     def _delete_subscription(self, sid=None):
         if sid:
@@ -257,12 +257,3 @@ class SubscriptionsBaseTest(base.V2Base):
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
-
-
-class TestSubscriptionsMongoDB(SubscriptionsBaseTest):
-
-    config_file = 'wsgi_mongodb_pooled.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestSubscriptionsMongoDB, self).setUp()
