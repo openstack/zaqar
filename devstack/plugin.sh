@@ -207,7 +207,7 @@ function start_zaqar {
     fi
 
     echo "Waiting for Zaqar to start..."
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v1/health; do sleep 1; done"; then
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
 }
