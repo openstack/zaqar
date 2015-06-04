@@ -26,10 +26,13 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @ddt.ddt
-class TestHealth(base.TestBase):
+class TestHealthMongoDB(base.V1_1Base):
 
+    config_file = 'wsgi_mongodb.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(TestHealth, self).setUp()
+        super(TestHealthMongoDB, self).setUp()
 
     def test_basic(self):
         path = self.url_prefix + '/health'
@@ -76,19 +79,7 @@ class TestHealth(base.TestBase):
                 self.assertTrue(op_status[op]['succeeded'])
 
 
-class TestHealthMongoDB(TestHealth):
-
-    config_file = 'wsgi_mongodb.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestHealthMongoDB, self).setUp()
-
-    def tearDown(self):
-        super(TestHealthMongoDB, self).tearDown()
-
-
-class TestHealthFaultyDriver(base.TestBaseFaulty):
+class TestHealthFaultyDriver(base.V1_1BaseFaulty):
 
     config_file = 'wsgi_faulty.conf'
 

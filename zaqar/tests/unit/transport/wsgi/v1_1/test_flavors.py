@@ -80,10 +80,13 @@ def flavors(test, count, pool):
 
 
 @ddt.ddt
-class FlavorsBaseTest(base.V1_1Base):
+class TestFlavorsMongoDB(base.V1_1Base):
 
+    config_file = 'wsgi_mongodb_pooled.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(FlavorsBaseTest, self).setUp()
+        super(TestFlavorsMongoDB, self).setUp()
         self.queue = 'test-queue'
         self.queue_path = self.url_prefix + '/queues/' + self.queue
 
@@ -102,7 +105,7 @@ class FlavorsBaseTest(base.V1_1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
-        super(FlavorsBaseTest, self).tearDown()
+        super(TestFlavorsMongoDB, self).tearDown()
         self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
@@ -328,12 +331,3 @@ class FlavorsBaseTest(base.V1_1Base):
 
         self.simulate_put(self.queue_path, body=jsonutils.dumps(metadata))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
-
-
-class TestFlavorsMongoDB(FlavorsBaseTest):
-
-    config_file = 'wsgi_mongodb_pooled.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestFlavorsMongoDB, self).setUp()

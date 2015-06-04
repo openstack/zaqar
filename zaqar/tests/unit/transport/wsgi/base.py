@@ -142,6 +142,7 @@ class V1_1Base(TestBase):
 
     Should contain methods specific to V1.1 of the API
     """
+    url_prefix = '/v1.1'
 
     def _empty_message_list(self, body):
         self.assertEqual(jsonutils.loads(body[0])['messages'], [])
@@ -152,7 +153,7 @@ class V1_1BaseFaulty(TestBaseFaulty):
 
     Should contain methods specific to V1.1 exception testing
     """
-    pass
+    url_prefix = '/v1.1'
 
 
 class V2Base(V1_1Base):
