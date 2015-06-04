@@ -585,7 +585,7 @@ class Catalog(object):
             LOG.debug(ex)
 
             conf_section = ('drivers:message_store:%s' %
-                            self._conf.drivers.storage)
+                            self._conf.drivers.message_store)
 
             if conf_section not in self._conf:
                 # NOTE(kgriffs): Return `None`, rather than letting the

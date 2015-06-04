@@ -60,8 +60,11 @@ _GENERAL_OPTIONS = (
 _DRIVER_OPTIONS = (
     cfg.StrOpt('transport', default='wsgi',
                help='Transport driver to use.'),
-    cfg.StrOpt('storage', default='mongodb',
-               help='Storage driver to use.'),
+    cfg.StrOpt('message_store', default='mongodb',
+               deprecated_opts=[cfg.DeprecatedOpt('storage')],
+               help='Storage driver to use as the messaging store.'),
+    cfg.StrOpt('management_store', default='mongodb',
+               help='Storage driver to use as the management store.'),
 )
 
 _DRIVER_GROUP = 'drivers'

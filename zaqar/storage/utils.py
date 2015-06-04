@@ -58,10 +58,10 @@ def dynamic_conf(uri, options, conf=None):
 
     if 'drivers' not in conf:
         # NOTE(cpp-cabrera): parse general opts: 'drivers'
-        driver_opts = utils.dict_to_conf({'storage': storage_type})
+        driver_opts = utils.dict_to_conf({'message_store': storage_type})
         conf.register_opts(driver_opts, group=u'drivers')
 
-    conf.set_override('storage', storage_type, 'drivers')
+    conf.set_override('message_store', storage_type, 'drivers')
 
     for opt in options:
         if opt in conf[storage_group]:
@@ -116,9 +116,14 @@ def load_storage_driver(conf, cache, storage_type=None,
         the queue controller, mainly.
     """
 
-    mode = 'control' if control_mode else 'data'
+    if control_mode:
+        mode = 'control'
+        storage_type = storage_type or conf['drivers'].management_store
+    else:
+        mode = 'data'
+        storage_type = storage_type or conf['drivers'].message_store
+
     driver_type = 'zaqar.{0}.storage'.format(mode)
-    storage_type = storage_type or conf['drivers'].storage
 
     _invoke_args = [conf, cache]
     if control_driver is not None:

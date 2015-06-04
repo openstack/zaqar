@@ -118,7 +118,7 @@ _COMMON_OPTIONS = (
 
 MANAGEMENT_MONGODB_OPTIONS = _COMMON_OPTIONS
 MESSAGE_MONGODB_OPTIONS = _COMMON_OPTIONS + (
-    # options used only by message_storage
+    # options used only by message_store
     cfg.IntOpt('partitions', default=2,
                deprecated_opts=[cfg.DeprecatedOpt(
                                 'partitions',
