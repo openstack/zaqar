@@ -583,15 +583,20 @@ class MessageControllerTest(ControllerBaseTest):
                                                       client_uuid=client_uuid)
 
         # NOTE(kgriffs): Allow for automatic GC of claims, messages
-        time.sleep(self.gc_interval)
+        for i in range(self.gc_interval):
+            time.sleep(1)
 
-        # NOTE(kgriffs): Some drivers require a manual GC to be
-        # triggered to clean up claims and messages.
-        self.driver.gc()
+            # NOTE(kgriffs): Some drivers require a manual GC to be
+            # triggered to clean up claims and messages.
+            self.driver.gc()
 
-        with testing.expect(errors.DoesNotExist):
-            self.controller.get(self.queue_name, msgid_expired,
-                                project=self.project)
+            try:
+                self.controller.get(self.queue_name, msgid_expired,
+                                    project=self.project)
+            except errors.DoesNotExist:
+                break
+        else:
+            self.fail("Didn't remove the queue")
 
         stats = self.queue_controller.stats(self.queue_name,
                                             project=self.project)
