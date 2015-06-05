@@ -28,10 +28,13 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @ddt.ddt
-class ClaimsBaseTest(base.V1Base):
+class TestClaimsMongoDB(base.V1Base):
 
+    config_file = 'wsgi_mongodb.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(ClaimsBaseTest, self).setUp()
+        super(TestClaimsMongoDB, self).setUp()
 
         self.project_id = '480924'
         self.queue_path = self.url_prefix + '/queues/fizbit'
@@ -49,9 +52,17 @@ class ClaimsBaseTest(base.V1Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
+        storage = self.boot.storage._storage
+        control = self.boot.control
+        connection = storage.connection
+
+        connection.drop_database(control.queues_database)
+
+        for db in storage.message_databases:
+            connection.drop_database(db)
         self.simulate_delete(self.queue_path, self.project_id)
 
-        super(ClaimsBaseTest, self).tearDown()
+        super(TestClaimsMongoDB, self).tearDown()
 
     @ddt.data(None, '[', '[]', '{}', '.', '"fail"')
     def test_bad_claim(self, doc):
@@ -221,27 +232,6 @@ class ClaimsBaseTest(base.V1Base):
         patch_data = jsonutils.dumps({'ttl': 100})
         self.simulate_patch(self.claims_path + '/a', body=patch_data)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
-
-
-class TestClaimsMongoDB(ClaimsBaseTest):
-
-    config_file = 'wsgi_mongodb.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestClaimsMongoDB, self).setUp()
-
-    def tearDown(self):
-        storage = self.boot.storage._storage
-        control = self.boot.control
-        connection = storage.connection
-
-        connection.drop_database(control.queues_database)
-
-        for db in storage.message_databases:
-            connection.drop_database(db)
-
-        super(TestClaimsMongoDB, self).tearDown()
 
 
 class TestClaimsFaultyDriver(base.V1BaseFaulty):

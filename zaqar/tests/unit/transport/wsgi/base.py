@@ -126,7 +126,7 @@ class V1Base(TestBase):
 
     Should contain methods specific to V1 of the API
     """
-    pass
+    url_prefix = '/v1'
 
 
 class V1BaseFaulty(TestBaseFaulty):
@@ -134,7 +134,7 @@ class V1BaseFaulty(TestBaseFaulty):
 
     Should contain methods specific to V1 exception testing
     """
-    pass
+    url_prefix = '/v1'
 
 
 class V1_1Base(TestBase):
