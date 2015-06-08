@@ -67,8 +67,13 @@ class PoolCatalogTest(testing.TestBase):
         storage = self.catalog.lookup(self.queue, self.project)
         self.assertIsInstance(storage._storage, mongodb.DataDriver)
 
-    def test_lookup_returns_none_if_queue_not_mapped(self):
+    def test_lookup_returns_default_or_none_if_queue_not_mapped(self):
+        # Return default
         self.assertIsNone(self.catalog.lookup('not', 'mapped'))
+
+        self.config(message_store='faulty', group='drivers')
+        self.config(enable_virtual_pool=True, group='pooling:catalog')
+        self.assertIsNotNone(self.catalog.lookup('not', 'mapped'))
 
     def test_lookup_returns_none_if_entry_deregistered(self):
         self.catalog.deregister(self.queue, self.project)
