@@ -21,7 +21,7 @@ from zaqar.tests.unit.transport.wsgi import base
 EXPECTED_VERSIONS = [
     {
         'id': '1',
-        'status': 'SUPPORTED',
+        'status': 'DEPRECATED',
         'updated': '2014-9-11T17:47:05Z',
         'media-types': [
             {
