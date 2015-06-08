@@ -19,34 +19,6 @@ metadata = sa.MetaData()
 
 now = timeutils.utcnow
 
-
-Messages = sa.Table('Messages', metadata,
-                    sa.Column('id', sa.INTEGER, primary_key=True),
-                    sa.Column('qid', sa.INTEGER,
-                              sa.ForeignKey("Queues.id", ondelete="CASCADE"),
-                              nullable=False),
-                    sa.Column('ttl', sa.INTEGER),
-                    sa.Column('body', sa.LargeBinary),
-                    sa.Column('client', sa.TEXT),
-                    sa.Column('created', sa.TIMESTAMP,
-                              default=now, onupdate=now),
-                    sa.Column('cid', sa.INTEGER,
-                              sa.ForeignKey("Claims.id", ondelete='SET NULL')),
-                    )
-
-
-Claims = sa.Table('Claims', metadata,
-                  sa.Column('id', sa.INTEGER, primary_key=True,
-                            autoincrement=True),
-                  sa.Column('qid', sa.INTEGER,
-                            sa.ForeignKey("Queues.id", ondelete="CASCADE"),
-                            nullable=False),
-                  sa.Column('ttl', sa.INTEGER),
-                  sa.Column('created', sa.TIMESTAMP,
-                            default=now, onupdate=now),
-                  )
-
-
 Queues = sa.Table('Queues', metadata,
                   sa.Column('id', sa.INTEGER, primary_key=True),
                   sa.Column('project', sa.String(64)),
