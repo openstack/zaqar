@@ -30,8 +30,6 @@ from zaqar.storage import utils
 LOG = log.getLogger(__name__)
 
 _CATALOG_OPTIONS = (
-    cfg.StrOpt('storage', default='sqlalchemy',
-               help='Catalog storage driver.'),
     cfg.BoolOpt('enable_virtual_pool', default=False,
                 help=('If enabled, the message_store will be used '
                       'as the storage for the virtual pool.')),
