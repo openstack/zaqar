@@ -30,10 +30,13 @@ from zaqar.transport import validation
 
 
 @ddt.ddt
-class MessagesBaseTest(base.V1Base):
+class TestMessagesMongoDB(base.V1Base):
 
+    config_file = 'wsgi_mongodb.conf'
+
+    @testing.requires_mongodb
     def setUp(self):
-        super(MessagesBaseTest, self).setUp()
+        super(TestMessagesMongoDB, self).setUp()
         if self.conf.pooling:
             for i in range(4):
                 uri = "%s/%s" % ('mongodb://localhost:27017', str(i))
@@ -70,7 +73,7 @@ class MessagesBaseTest(base.V1Base):
             for i in range(4):
                 self.simulate_delete(self.url_prefix + '/pools/' + str(i))
 
-        super(MessagesBaseTest, self).tearDown()
+        super(TestMessagesMongoDB, self).tearDown()
 
     def _test_post(self, sample_messages):
         sample_doc = jsonutils.dumps(sample_messages)
@@ -468,28 +471,9 @@ class MessagesBaseTest(base.V1Base):
         return headers['location'].rsplit('=', 1)[-1].split(',')
 
 
-class TestMessagesMongoDB(MessagesBaseTest):
-
-    config_file = 'wsgi_mongodb.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestMessagesMongoDB, self).setUp()
-
-    def tearDown(self):
-        super(TestMessagesMongoDB, self).tearDown()
-
-
-class TestMessagesMongoDBPooled(MessagesBaseTest):
+class TestMessagesMongoDBPooled(TestMessagesMongoDB):
 
     config_file = 'wsgi_mongodb_pooled.conf'
-
-    @testing.requires_mongodb
-    def setUp(self):
-        super(TestMessagesMongoDBPooled, self).setUp()
-
-    def tearDown(self):
-        super(TestMessagesMongoDBPooled, self).tearDown()
 
     # TODO(cpp-cabrera): remove this skipTest once pooled queue
     # listing is implemented
