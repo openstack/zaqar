@@ -219,6 +219,9 @@ class ResponseSchema(api.Api):
                                     'type': 'number',
                                     'minimum': -1
                                 },
+                                'name': {
+                                    'type': 'string'
+                                },
                                 'uri': {
                                     'type': 'string'
                                 },
@@ -271,6 +274,9 @@ class ResponseSchema(api.Api):
             'pool_detail': {
                 'type': 'object',
                 'properties': {
+                    'name': {
+                        'type': 'string'
+                    },
                     'uri': {
                         'type': 'string'
                     },

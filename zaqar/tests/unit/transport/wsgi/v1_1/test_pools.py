@@ -166,6 +166,7 @@ class TestPoolsMongoDB(base.V1_1Base):
 
     def _pool_expect(self, pool, xhref, xweight, xuri):
         self.assertIn('href', pool)
+        self.assertIn('name', pool)
         self.assertEqual(pool['href'], xhref)
         self.assertIn('weight', pool)
         self.assertEqual(pool['weight'], xweight)
