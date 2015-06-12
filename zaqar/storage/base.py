@@ -693,7 +693,7 @@ class PoolsBase(ControllerBase):
     """A controller for managing pools."""
 
     def _check_capabilities(self, uri, group=None, name=None):
-        default_store = self.driver.conf.drivers.storage
+        default_store = self.driver.conf.drivers.message_store
         pool_caps = self.capabilities(group=group, name=name)
 
         if not pool_caps:
@@ -723,7 +723,7 @@ class PoolsBase(ControllerBase):
         if not len(group) > 0:
             return ()
 
-        default_store = self.driver.conf.drivers.storage
+        default_store = self.driver.conf.drivers.message_store
 
         pool_store = utils.load_storage_impl(group[0]['uri'],
                                              default_store=default_store)

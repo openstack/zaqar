@@ -127,14 +127,16 @@ function configure_zaqar {
 
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         iniset $ZAQAR_CONF DEFAULT pooling True
-        iniset $ZAQAR_CONF  drivers storage mongodb
+        iniset $ZAQAR_CONF  drivers message_store mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' database zaqar
+
+        iniset $ZAQAR_CONF  drivers management_store mongodb
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' uri mongodb://localhost:27017/zaqar_mgmt
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' database zaqar_mgmt
         configure_mongodb
     elif [ "$ZAQAR_BACKEND" = 'redis' ] ; then
-        iniset $ZAQAR_CONF  drivers storage redis
+        iniset $ZAQAR_CONF  drivers message_store redis
         iniset $ZAQAR_CONF 'drivers:message_store:redis' uri redis://localhost:6379
         iniset $ZAQAR_CONF 'drivers:message_store:redis' database zaqar
         configure_redis
