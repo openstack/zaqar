@@ -13,10 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_config import cfg
+
 from zaqar import storage
+
+_CONFIG_GROUP = 'drivers:message_store:faulty'
 
 
 class DataDriver(storage.DataDriverBase):
+
+    _DRIVER_OPTIONS = [(_CONFIG_GROUP,
+                        [cfg.StrOpt('uri', default='faulty://')])]
+
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
 

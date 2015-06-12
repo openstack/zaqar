@@ -127,6 +127,7 @@ function configure_zaqar {
 
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         iniset $ZAQAR_CONF DEFAULT pooling True
+        iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
         iniset $ZAQAR_CONF  drivers message_store mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' database zaqar

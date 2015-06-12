@@ -20,6 +20,7 @@ from oslo_config import cfg
 from oslo_log import log
 
 from zaqar.common import decorators
+from zaqar.common import errors as cerrors
 from zaqar.common.storage import select
 from zaqar import storage
 from zaqar.storage import errors
@@ -31,6 +32,9 @@ LOG = log.getLogger(__name__)
 _CATALOG_OPTIONS = (
     cfg.StrOpt('storage', default='sqlalchemy',
                help='Catalog storage driver.'),
+    cfg.BoolOpt('enable_virtual_pool', default=False,
+                help=('If enabled, the message_store will be used '
+                      'as the storage for the virtual pool.')),
 )
 
 _CATALOG_GROUP = 'pooling:catalog'
@@ -489,7 +493,13 @@ class Catalog(object):
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
 
-                if not pool:
+                if not pool and self.lookup(queue, project) is None:
+                    # NOTE(flaper87): We used to raise NoPoolFound in this
+                    # case but we've decided to support automatic pool
+                    # creation. Note that we're now returning and the queue
+                    # is not being registered in the catalogue. This is done
+                    # on purpose since no pool exists and the "dummy" pool
+                    # doesn't exist in the storage
                     raise errors.NoPoolFound()
 
             self._catalogue_ctrl.insert(project, queue, pool)
@@ -584,14 +594,29 @@ class Catalog(object):
         except errors.QueueNotMapped as ex:
             LOG.debug(ex)
 
+            if not self._catalog_conf.enable_virtual_pool:
+                return None
+
             conf_section = ('drivers:message_store:%s' %
                             self._conf.drivers.message_store)
 
-            if conf_section not in self._conf:
+            try:
+                # NOTE(flaper87): Try to load the driver to check
+                # whether it can be used as the default store for
+                # the default pool.
+                utils.load_storage_driver(self._conf, self._cache,
+                                          control_driver=self.control)
+            except cerrors.InvalidDriver:
                 # NOTE(kgriffs): Return `None`, rather than letting the
                 # exception bubble up, so that the higher layer doesn't
                 # have to duplicate the try..except..log code all over
                 # the place.
+                return None
+
+            if conf_section not in self._conf:
+                # NOTE(flaper87): If there's no config section for this storage
+                # skip the pool registration entirely since we won't know how
+                # to connect to it.
                 return None
 
             # NOTE(flaper87): This assumes the storage driver type is the
