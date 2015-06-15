@@ -4,14 +4,15 @@
 #
 # Translators:
 # Gabriel Guerreiro <gabriel.eu.br@gmail.com>, 2014
+# Natan Teixeira Boanafina Sayão <natantb@hotmail.com>, 2015
 # Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-03 06:07+0000\n"
-"PO-Revision-Date: 2015-06-02 22:37+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"POT-Creation-Date: 2015-06-15 06:08+0000\n"
+"PO-Revision-Date: 2015-06-12 23:13+0000\n"
+"Last-Translator: Natan Teixeira Boanafina Sayão <natantb@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "zaqar/language/pt_BR/)\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -289,7 +290,13 @@ msgstr "Não foi possível criar"
 msgid "Unable to delete"
 msgstr "Impossível excluir"
 
+msgid "Unexpected error."
+msgstr "Erro inesperado."
+
 #, python-format
 msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
 msgstr ""
 "Valor não reconhecido '%(val)s', os valores aceitáveis são: %(acceptable)s"
+
+msgid "{0} is not a valid action"
+msgstr "{0} não é uma ação válida"
