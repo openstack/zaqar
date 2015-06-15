@@ -63,7 +63,7 @@ class FlavorsController(base.FlavorsBase):
     @utils.raises_conn_error
     def _list_by_pool(self, pool, limit=10, detailed=False):
         query = {'s': pool}
-        cursor = self._col.find(query, fields=_field_spec(detailed),
+        cursor = self._col.find(query, projection=_field_spec(detailed),
                                 limit=limit).sort('n', 1)
 
         normalizer = functools.partial(_normalize, detailed=detailed)
@@ -75,7 +75,7 @@ class FlavorsController(base.FlavorsBase):
         if marker is not None:
             query['n'] = {'$gt': marker}
 
-        cursor = self._col.find(query, fields=_field_spec(detailed),
+        cursor = self._col.find(query, projection=_field_spec(detailed),
                                 limit=limit).sort('n', 1)
         marker_name = {}
 

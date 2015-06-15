@@ -68,7 +68,7 @@ class CatalogueController(base.CatalogueBase):
         fields = {'_id': 0}
         key = utils.scope_queue_name(queue, project)
         entry = self._col.find_one({PRIMARY_KEY: key},
-                                   fields=fields)
+                                   projection=fields)
 
         if entry is None:
             raise errors.QueueNotMapped(queue, project)

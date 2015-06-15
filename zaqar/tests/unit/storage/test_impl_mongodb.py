@@ -201,16 +201,24 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
 
         with mock.patch('pymongo.MongoClient.nodes') as nodes:
             nodes.__get__ = mock.Mock(return_value=['node1', 'node2'])
-            mongodb.DataDriver(self.conf, cache,
-                               mongodb.ControlDriver(self.conf, cache))
+
+            with mock.patch('pymongo.MongoClient.write_concern') as wc:
+                write_concern = pymongo.WriteConcern(w=2)
+                wc.__get__ = mock.Mock(return_value=write_concern)
+                mongodb.DataDriver(self.conf, cache,
+                                   mongodb.ControlDriver(self.conf, cache))
 
     def test_using_mongos(self):
         cache = oslo_cache.get_cache()
 
         with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
             is_mongos.__get__ = mock.Mock(return_value=True)
-            mongodb.DataDriver(self.conf, cache,
-                               mongodb.ControlDriver(self.conf, cache))
+
+            with mock.patch('pymongo.MongoClient.write_concern') as wc:
+                write_concern = pymongo.WriteConcern(w=2)
+                wc.__get__ = mock.Mock(return_value=write_concern)
+                mongodb.DataDriver(self.conf, cache,
+                                   mongodb.ControlDriver(self.conf, cache))
 
     def test_write_concern_check_works(self):
         cache = oslo_cache.get_cache()
@@ -219,12 +227,14 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
             is_mongos.__get__ = mock.Mock(return_value=True)
 
             with mock.patch('pymongo.MongoClient.write_concern') as wc:
-                wc.__get__ = mock.Mock(return_value={'w': 1})
+                write_concern = pymongo.WriteConcern(w=1)
+                wc.__get__ = mock.Mock(return_value=write_concern)
                 self.assertRaises(RuntimeError, mongodb.DataDriver,
                                   self.conf, cache,
                                   mongodb.ControlDriver(self.conf, cache))
 
-                wc.__get__ = mock.Mock(return_value={'w': 2})
+                write_concern = pymongo.WriteConcern(w=2)
+                wc.__get__ = mock.Mock(return_value=write_concern)
                 mongodb.DataDriver(self.conf, cache,
                                    mongodb.ControlDriver(self.conf, cache))
 
@@ -233,12 +243,18 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
 
         with mock.patch('pymongo.MongoClient.is_mongos') as is_mongos:
             is_mongos.__get__ = mock.Mock(return_value=True)
+            self.config(unreliable=True)
             driver = mongodb.DataDriver(self.conf, cache,
                                         mongodb.ControlDriver
                                         (self.conf, cache))
-            wc = driver.connection.write_concern
-            self.assertEqual(wc['w'], 'majority')
-            self.assertEqual(wc['j'], False)
+
+            driver.server_version = (2, 6)
+
+            for db in driver.message_databases:
+                wc = db.write_concern
+
+                self.assertEqual(wc.document['w'], 'majority')
+                self.assertEqual(wc.document['j'], False)
 
 
 @testing.requires_mongodb
@@ -352,7 +368,7 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
 @testing.requires_mongodb
 class MongodbFIFOMessageTests(MongodbSetupMixin, base.MessageControllerTest):
 
-    driver_class = mongodb.DataDriver
+    driver_class = mongodb.FIFODataDriver
     config_file = 'wsgi_fifo_mongodb.conf'
     controller_class = controllers.FIFOMessageController
     control_driver_class = mongodb.ControlDriver

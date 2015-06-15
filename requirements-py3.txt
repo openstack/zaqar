@@ -11,7 +11,7 @@ iso8601>=0.1.9
 keystonemiddleware>=1.5.0
 msgpack-python>=0.4.0
 posix_ipc
-pymongo>=2.6.3,<3.0
+pymongo>=3.0.2
 # python-memcached has no Py3k support for now
 # python-memcached>=1.48
 WebOb>=1.2.3

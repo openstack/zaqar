@@ -68,7 +68,7 @@ class PoolsController(base.PoolsBase):
         if marker is not None:
             query['n'] = {'$gt': marker}
 
-        cursor = self._col.find(query, fields=_field_spec(detailed),
+        cursor = self._col.find(query, projection=_field_spec(detailed),
                                 limit=limit).sort('n')
         marker_name = {}
 
@@ -90,7 +90,7 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def _get_group(self, group=None, detailed=False):
-        cursor = self._col.find({'g': group}, fields=_field_spec(detailed))
+        cursor = self._col.find({'g': group}, projection=_field_spec(detailed))
         normalizer = functools.partial(_normalize, detailed=detailed)
         return utils.HookedCursor(cursor, normalizer)
 
