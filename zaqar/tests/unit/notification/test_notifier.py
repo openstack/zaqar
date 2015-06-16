@@ -30,7 +30,7 @@ class NotifierTest(testing.TestBase):
                              {'subscriber': 'http://call.me'},
                              {'subscriber': 'http://ping.me'}
                              ]
-        self.cliend_id = uuid.uuid4()
+        self.client_id = uuid.uuid4()
         self.project = uuid.uuid4()
         self.messages = [{"ttl": 300,
                           "body": {"event": "BackupStarted",
@@ -43,27 +43,30 @@ class NotifierTest(testing.TestBase):
                          ]
 
         ctlr = mock.MagicMock()
-        ctlr.list = mock.Mock(return_value=iter(self.subscription))
+        ctlr.list = mock.Mock(return_value=iter([self.subscription]))
         self.driver = notifier.NotifierDriver(subscription_controller=ctlr)
 
     def test_post(self):
         with mock.patch('requests.post') as mock_post:
             self.driver.post('fake_queue', self.messages,
-                             self.client_uuid, self.project)
-            mock_post.assert_called_with(self.subscription[0]['subscriber'],
-                                         self.messages[0])
-            mock_post.assert_called_with(self.subscription[1]['subscriber'],
-                                         self.messages[0])
-            mock_post.assert_called_with(self.subscription[2]['subscriber'],
-                                         self.messages[0])
-            mock_post.assert_called_with(self.subscription[0]['subscriber'],
-                                         self.messages[1])
-            mock_post.assert_called_with(self.subscription[1]['subscriber'],
-                                         self.messages[1])
-            mock_post.assert_called_with(self.subscription[2]['subscriber'],
-                                         self.messages[1])
+                             self.client_id, self.project)
+            mock_post.assert_has_calls([
+                mock.call(self.subscription[0]['subscriber'],
+                          data=self.messages[0]),
+                mock.call(self.subscription[1]['subscriber'],
+                          data=self.messages[0]),
+                mock.call(self.subscription[2]['subscriber'],
+                          data=self.messages[0]),
+                mock.call(self.subscription[0]['subscriber'],
+                          data=self.messages[1]),
+                mock.call(self.subscription[1]['subscriber'],
+                          data=self.messages[1]),
+                mock.call(self.subscription[2]['subscriber'],
+                          data=self.messages[1]),
+                ], any_order=True)
+            self.assertEqual(6, len(mock_post.mock_calls))
 
-    def test_genrate_task(self):
-        subscriber = self.subscription_list[0]['subscriber']
+    def test_generate_task(self):
+        subscriber = self.subscription[0]['subscriber']
         new_task = self.driver._generate_task(subscriber, self.messages)
         self.assertIsInstance(new_task, task.webhook.WebhookTask)
