@@ -50,8 +50,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             return resp
         else:
             try:
-                print("Text message received: {0}".
-                      format(payload.decode('utf8')))
+                print("Text message received: {0}".format(payload))
                 pl = json.loads(payload)
                 req = self._create_request(pl)
                 resp = (self._validate_request(pl, req) or
