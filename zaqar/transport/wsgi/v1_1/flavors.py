@@ -72,7 +72,7 @@ class Listing(object):
             store['marker'] = next(cursor)
 
             for entry in flavors:
-                entry['href'] = request.path + '/' + entry.pop('name')
+                entry['href'] = request.path + '/' + entry['name']
 
         results['links'] = [
             {
@@ -126,8 +126,6 @@ class Resource(object):
 
         data['href'] = request.path
 
-        # remove the name entry - it isn't needed on GET
-        del data['name']
         response.body = transport_utils.to_json(data)
 
     def on_put(self, request, response, project_id, flavor):

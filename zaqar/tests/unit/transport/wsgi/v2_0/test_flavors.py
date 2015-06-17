@@ -174,6 +174,7 @@ class TestFlavorsMongoDB(base.V2Base):
 
     def _flavor_expect(self, flavor, xhref, xpool):
         self.assertIn('href', flavor)
+        self.assertIn('name', flavor)
         self.assertEqual(flavor['href'], xhref)
         self.assertIn('pool', flavor)
         self.assertEqual(flavor['pool'], xpool)

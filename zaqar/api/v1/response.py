@@ -178,6 +178,9 @@ class ResponseSchema(api.Api):
                                     'type': 'number',
                                     'minimum': -1
                                 },
+                                'name': {
+                                    'type': 'string'
+                                },
                                 'uri': {
                                     'type': 'string'
                                 },
