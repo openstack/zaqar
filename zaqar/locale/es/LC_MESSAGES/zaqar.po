@@ -1,0 +1,464 @@
+# Spanish translations for zaqar.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the zaqar project.
+#
+# Translators:
+# Adriana Chisco Landazábal <achisco94@gmail.com>, 2015
+# Milton Mazzarri <inactive+milmazz@transifex.com>, 2014
+# Victoria Martínez de la Cruz <vickymsee@gmail.com>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version:  Zaqar\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-06-19 06:11+0000\n"
+"PO-Revision-Date: 2015-06-18 20:27+0000\n"
+"Last-Translator: Adriana Chisco Landazábal <achisco94@gmail.com>\n"
+"Language-Team: Spanish (http://www.transifex.com/projects/p/zaqar/language/"
+"es/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+msgid ""
+"\n"
+"X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-"
+"ID\n"
+"and retry."
+msgstr ""
+"\n"
+"X-PROJECT-ID no puede ser una cadena vacía. Especifique el encabezado X-"
+"PROJECT-ID\n"
+"correcto y vuelva a intentar."
+
+#, python-format
+msgid ""
+"%(attempts)d attempt(s) required to post %(num_messages)d messages to queue "
+"\"%(queue)s\" under project %(project)s"
+msgstr ""
+"%(attempts)d intento(s) requerido para publicar %(num_messages)d mensajes a "
+"la cola \"%(queue)s\" del proyecto %(project)s"
+
+msgid "A claim was specified, but the message is not currently claimed."
+msgstr "Se pudo especificar una solicitud pero no se ha solicitado mensaje."
+
+#, python-format
+msgid "Cannot retrieve queue %s stats."
+msgstr "No se puede recuperar estadísticas de cola %s."
+
+#, python-format
+msgid "Cannot retrieve queue %s."
+msgstr "No se puede recuperar cola %s."
+
+msgid "Caught AutoReconnect, maximum attempts to {0} exceeded."
+msgstr "Detectada AutoReconnect, máximo de intentos para {0} excedido."
+
+msgid "Caught AutoReconnect, retrying the call to {0}"
+msgstr "Detectada AutoReconnect, reintentando llamar a {0}"
+
+msgid "Caught ConnectionError, maximum attempts to {0} exceeded."
+msgstr ""
+"Se ha detectado ConnectionError, se ha superado el número máximo de intentos "
+"para {0} "
+
+msgid "Caught ConnectionError, retrying the call to {0}"
+msgstr "Se ha detectado ConnectionError, intentando llamada a {0} de nuevo"
+
+msgid "Claim could not be created."
+msgstr "No se pudo crear solicitud."
+
+msgid "Claim could not be deleted."
+msgstr "No se pudo eliminar solicitud."
+
+msgid "Claim could not be queried."
+msgstr "No se pudo realizar la solicitud."
+
+msgid "Claim could not be updated."
+msgstr "No se pudo actualizar solicitud."
+
+msgid "Document type not supported."
+msgstr "Tipo de documento no soportado."
+
+msgid ""
+"Either a replica set or a mongos is required to guarantee message delivery"
+msgstr ""
+"Se requiere un conjunto de réplica o mongos para garantizar que el mensaje "
+"sea enviado"
+
+#, python-format
+msgid ""
+"Exceeded maximum retry duration for queue \"%(queue)s\" under project "
+"%(project)s"
+msgstr ""
+"Se excedió la duración máxima de intentos para la cola \"%(queue)s\" del "
+"proyecto %(project)s"
+
+#, python-format
+msgid ""
+"Failed to increment the message counter for queue %(name)s and project "
+"%(project)s"
+msgstr ""
+"Fallo al incrementar el contador de mensajes para la cola %(name)s y "
+"proyecto %(project)s"
+
+#, python-format
+msgid ""
+"First attempt failed while adding messages to queue \"%(queue)s\" under "
+"project %(project)s"
+msgstr ""
+"Fallo el primer intento mientras agregaba mensajes a la cola \"%(queue)s\" "
+"del proyecto %(project)s"
+
+msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
+msgstr "No se pudo crear tipo {flavor}. No existe pool {pool}"
+
+msgid "Health status could not be read."
+msgstr "No se pudo leer el estado de salud."
+
+#, python-format
+msgid ""
+"Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
+"project %(project)s"
+msgstr ""
+"Alcanzado el número máximo (%(max)s) de intentos para la cola \"%(queue)s\" "
+"del proyecto %(project)s"
+
+msgid "Invalid API request"
+msgstr "Solicitud API no válida"
+
+msgid "Invalid queue identification"
+msgstr "Identificador de cola inválido"
+
+msgid "Invalid request body"
+msgstr "Cuerpo de solicitud es inválido"
+
+msgid "Invalid scheme in Redis URI"
+msgstr "Esquema en Redis URI no válido"
+
+#, python-format
+msgid "Invalid string format: %s"
+msgstr "Formato de cadena inválido: %s"
+
+#, python-format
+msgid "Invalid unit system: \"%s\""
+msgstr "Unidad del sistema inválida: \"%s\""
+
+msgid "JSON contains integer that is too large."
+msgstr "JSON contiene entero muy largo."
+
+msgid "Limit must be at least 1 and may not be greater than {0}."
+msgstr "Límite debe ser al menos 1 y no mayor que {0}."
+
+msgid "Limit must be at least 1 and no greater than {0}."
+msgstr "Límite debe ser al menos 1 y no mayor que {0}."
+
+msgid "Malformed Redis URI"
+msgstr "URI de Redis incorrecta"
+
+msgid "Malformed hexadecimal UUID."
+msgstr "Valor hexadecimal UUID mal formado."
+
+msgid "Message collection size is too large. Max size {0}"
+msgstr "El tamaño de la colección de mensajes es muy largo. Tamaño máximo: {0}"
+
+msgid "Message could not be deleted."
+msgstr "No se pudo eliminar mensaje."
+
+msgid "Message could not be retrieved."
+msgstr "No se pudo recuperar mensaje."
+
+msgid "Message objects do not support addition."
+msgstr "Objectos de tipo mensaje no soportan adición."
+
+msgid ""
+"Message objects do not support str() because they may contain non-ascii "
+"characters. Please use unicode() or translate() instead."
+msgstr ""
+"Los objetos Mensaje no soportan str() porque pueden contener caracteres no-"
+"ASCII. Por favor utilice unicode() o translate()."
+
+msgid "Messages could not be deleted."
+msgstr "No se pudo eliminar mensajes."
+
+msgid "Messages could not be enqueued."
+msgstr "Np se pudo poner mensajes en cola."
+
+msgid "Messages could not be listed."
+msgstr "No se pudo listar mensajes."
+
+msgid "Messages could not be popped."
+msgstr "Los mensajes no se pudieron dirigir."
+
+msgid "Metadata could not be updated."
+msgstr "No se pudo actualizar metadatos."
+
+#, python-format
+msgid "Method %s not found in any of the registered stages"
+msgstr "El metodo %s no se ha encontrado en ninguna de las etapas registradas"
+
+msgid "Missing \"{name}\" field."
+msgstr "Campo \"{name}\" no presente."
+
+msgid "Missing host name in Redis URI"
+msgstr "Hace falta el nombre de host en Redis URI"
+
+#, python-format
+msgid "Missing parameter %s in body."
+msgstr "Falta parámetro %s en el cuerpo."
+
+msgid "Missing path in Redis URI"
+msgstr "Hace falta la ruta en Redis URI"
+
+msgid "No messages could be enqueued."
+msgstr "No hay mensajes para poner en cola."
+
+msgid "No messages to enqueu."
+msgstr "No hay mensajes para colocar en la cola."
+
+msgid "No messages were found in the request body."
+msgstr "No se encontraron mensajes en el cuerpo de solicitud."
+
+msgid "No subscription to create."
+msgstr "No hay suscripción para crear."
+
+msgid "Options must be a dict."
+msgstr "Las opciones deben ser un dict."
+
+msgid ""
+"Pipeline to use for processing {0} operations. This pipeline will be "
+"consumed before calling the storage driver's controller methods."
+msgstr ""
+"La segmentación a usar para las operaciones de procesamiento {0}. Esta "
+"segmentación se empleará antes de llamar los métodos de almacenamiento del "
+"controlador."
+
+msgid "Please try again in a few seconds."
+msgstr "Por favor intente de nuevo en unos segundos."
+
+msgid "Pop value must be at least 1 and may not be greater than {0}."
+msgstr "El valor pop debe ser al menos 1 y no debe ser mayor que {0}."
+
+msgid "Project ids may not be more than {0} characters long."
+msgstr "Los ids de proyecto no deben ocupar más de {0} caracteres. "
+
+#, python-format
+msgid "Queue %s could not be created."
+msgstr "No se pudo crear cola %s."
+
+#, python-format
+msgid "Queue %s could not be deleted."
+msgstr "No se pudo eliminar cola %s."
+
+#, python-format
+msgid "Queue %s created."
+msgstr "Se ha creado cola %s."
+
+#, python-format
+msgid "Queue %s does not exist."
+msgstr "No existe cola %s."
+
+#, python-format
+msgid "Queue %s removed."
+msgstr "Se ha eliminado cola %s."
+
+msgid "Queue could not be created."
+msgstr "No se pudo crear cola."
+
+msgid "Queue could not be deleted."
+msgstr "No se pudo eliminar cola."
+
+msgid "Queue metadata could not be retrieved."
+msgstr "No se pudo recuperar metadatos en cola."
+
+msgid "Queue metadata is too large. Max size: {0}"
+msgstr "Los metadatos de la cola son muy largos. Tamaño máximo: {0}"
+
+msgid "Queue names may not be more than {0} characters long."
+msgstr "Los nombres de colas no deben ocupar más de {0} caracteres."
+
+msgid ""
+"Queue names may only contain ASCII letters, digits, underscores, and dashes."
+msgstr ""
+"Los nombres de colas solo pueden contener caracteres ASCII, números, guiones "
+"bajos y guiones."
+
+msgid "Queue stats could not be read."
+msgstr "No se pueden leer las estadísticas de cola."
+
+msgid "Queues could not be listed."
+msgstr "No se pudo listar colas."
+
+msgid "Request body can not be empty"
+msgstr "Cuerpo de la solicitud no puede estar vacío"
+
+msgid "Request body could not be parsed."
+msgstr "Cuerpo de la solicitud no pudo ser analizado."
+
+msgid "Request body could not be read."
+msgstr "El cuerpo de la petición no pudo ser leído."
+
+msgid "Service temporarily unavailable"
+msgstr "Servicio no disponible temporalmente"
+
+#, python-format
+msgid "Serving on host %(bind)s:%(port)s"
+msgstr "Sirviendo en la máquina %(bind)s:%(port)s"
+
+#, python-format
+msgid "Stage %(stage)s could not be imported: %(ex)s"
+msgstr "No se puede importar: %(ex)s la etapa %(stage)s"
+
+#, python-format
+msgid "Stage %(stage)s does not implement %(method)s"
+msgstr "La etapa %(stage)s no implementa %(method)s"
+
+msgid "Subscription could not be created."
+msgstr "No se pudo crear suscripción."
+
+msgid "Subscription could not be deleted."
+msgstr "No se puede eliminar suscripción."
+
+msgid "Subscription could not be retrieved."
+msgstr "No se puede recuperar suscripción."
+
+msgid "Subscription {subscription_id} could not be updated."
+msgstr "No se puede actualizar suscripción {subscription_id}."
+
+msgid "Subscriptions could not be listed."
+msgstr "No se pueden listar suscripciones."
+
+msgid "TTL must be an integer."
+msgstr "TTL debe ser un entero."
+
+msgid "Terminating"
+msgstr "Terminando"
+
+msgid ""
+"The Redis URI specifies multiple sentinel hosts, but is missing the \"master"
+"\" query string parameter. Please set \"master\" to the name of the Redis "
+"master server as specified in the sentinel configuration file."
+msgstr ""
+"El Redis URI especifica múltiples hosts de sentinel, pero hace falta el "
+"parámetro de secuencia de consulta \"master\". Por favor configure \"master"
+"\" en el nombre del servidor maestro Redis como se especifica en el fichero "
+"de configuración sentinel."
+
+msgid "The Redis configuration URI contains an invalid port"
+msgstr "La configuración URI de Redis contiene un puerto no válido"
+
+msgid "The Redis configuration URI does not define any sentinel hosts"
+msgstr "La configuración URI de Redis no define hosts de sentinel alguno"
+
+#, python-format
+msgid "The Redis driver requires redis-server>=2.6, %s found"
+msgstr "El controlador de Redis requiere edis-server>=2.6, %s encontrado"
+
+msgid ""
+"The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"El TTL para una solicitud no debe exceder {0} segundos y debe durar al menos "
+"{1} segundos."
+
+msgid ""
+"The TTL for a message may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"El TTL para un mensaje no debe exceder {0} segundos, y debe ser al menos de "
+"{1} segundos de largo."
+
+msgid "The format of the submitted queue name or project id is not valid."
+msgstr ""
+"El formato del nombre de la cola propuesto o el id del proyecto no es válido."
+
+msgid ""
+"The grace for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"El periodo de gracia para una solicitud no debe exceder {0} segundos y debe "
+"durar al menos {1} segundos."
+
+msgid "The header X-PROJECT-ID was missing"
+msgstr "Faltaba la cabecera X-PROJECT-ID"
+
+#, python-format
+msgid "The mongodb driver requires mongodb>=2.2,  %s found"
+msgstr "El controlador de mongodb requiere mongodb>=2.2, %s encontrado"
+
+msgid ""
+"The request should have either \"ids\" or \"pop\" parameter in the request, "
+"to be able to delete."
+msgstr ""
+"La solicitud debe contener parámetro \"ids\" o \"pop\" para que sea posible "
+"la eliminación."
+
+msgid "The specified claim does not exist or has expired."
+msgstr "La solicitud especificada no existe o ha expirado."
+
+msgid "The subscriber type of subscription must be supported in the list {0}."
+msgstr ""
+"El tipo de suscriptor en la suscripción debe ser soportado en la lista {0}."
+
+msgid "The value of the \"{name}\" field must be a {vtype}."
+msgstr "El valor del campo \"{name}\" debe ser {vtype}."
+
+msgid "This message is claimed; it cannot be deleted without a valid claim ID."
+msgstr ""
+"El mensaje está solicitado; no se puede borrar sin un identificador de "
+"solicitud válido."
+
+msgid "This pool is used by flavors {flavor}; It cannot be deleted."
+msgstr "Los tipos {flavor} usan este pool; no puede eliminarse."
+
+#, python-format
+msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
+msgstr "No se puede obtener bloqueo en `%(filename)s` a causa de %(exception)s"
+
+msgid "Unable to create"
+msgstr "No se puede crear"
+
+msgid "Unable to delete"
+msgstr "No se puede eliminar"
+
+msgid "Unable to update subscription"
+msgstr "No se puede actualizar suscripción"
+
+msgid "Unexpected error."
+msgstr "Error inesperado."
+
+#, python-format
+msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
+msgstr ""
+"Valor no reconocido '%(val)s', los valores aceptados son: %(acceptable)s"
+
+msgid ""
+"Unreliable's default value will be changed to False in the Kilo release. "
+"Please, make sure your deployments are working in a reliable mode or that "
+"`unreliable` is explicitly set to `True` in your configuration files."
+msgstr ""
+"El valor por defecto que no sea confiable será reemplazado con False en la "
+"versión de Kilo. Por favor asegúrese de que sus implementaciones están "
+"funcionando de manera confiable o que `unreliable` se configura "
+"explícitamente como `True` en sus ficheros de configuración."
+
+msgid ""
+"Using a write concern other than `majority` or > 2 makes the service "
+"unreliable. Please use a different write concern or set `unreliable` to True "
+"in the config file."
+msgstr ""
+"Emplear un asunto escrito diferente a  `majority` o > 2 hace que el servicio "
+"sea desconfiable. Por favor emplee un asunto diferente o configure "
+"`unreliable` como True en el fichero de configuración."
+
+msgid "ids parameter should have at least 1 and not greater than {0} values."
+msgstr ""
+"el parámetro de identificador debe tener al menos entre 1 y  {0} valores. "
+
+msgid "pop and id params cannot be present together in the delete request."
+msgstr ""
+"Los parámetros pop e identificador no pueden estar presentes en la solicitud "
+"de eliminación."
+
+msgid "{0} is not a valid action"
+msgstr "{0} no es una acción valida"
