@@ -12,16 +12,13 @@ Running functional tests (With Tox)
 #. Setup a Zaqar server. Refer to the Zaqar `README`_ on
    how to run Zaqar locally, or simply use an existing server.
 
-#. Change `$ZAQAR_TESTS_CONFIGS_DIR/functional-tests.conf` and
-   set `run_tests` to True.
-
 #. Run tests. ::
 
    $ tox
 
 #. Filter tests. ::
 
-   $ tox -- --tests tests.functional.wsgi.v1.test_messages
+   $ tox -- zaqar.tests.functional.wsgi.v1.test_messages
 
 #. Run tests for specific environments. ::
 
