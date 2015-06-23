@@ -123,7 +123,7 @@ class QueueController(storage.Queue):
         """
 
         doc = self._collection.find_one(_get_scoped_query(name, project),
-                                        fields={'c.v': 1, '_id': 0})
+                                        projection={'c.v': 1, '_id': 0})
 
         if doc is None:
             raise errors.QueueDoesNotExist(name, project)
@@ -157,7 +157,7 @@ class QueueController(storage.Queue):
         while True:
             try:
                 doc = self._collection.find_and_modify(
-                    query, update, new=True, fields={'c.v': 1, '_id': 0})
+                    query, update, new=True, projection={'c.v': 1, '_id': 0})
 
                 break
             except pymongo.errors.AutoReconnect as ex:
@@ -199,11 +199,11 @@ class QueueController(storage.Queue):
 
         query = utils.scoped_query(marker, project)
 
-        fields = {'p_q': 1, '_id': 0}
+        projection = {'p_q': 1, '_id': 0}
         if detailed:
-            fields['m'] = 1
+            projection['m'] = 1
 
-        cursor = self._collection.find(query, fields=fields)
+        cursor = self._collection.find(query, projection=projection)
         cursor = cursor.limit(limit).sort('p_q')
         marker_name = {}
 
@@ -221,7 +221,7 @@ class QueueController(storage.Queue):
     @utils.retries_on_autoreconnect
     def get_metadata(self, name, project=None):
         queue = self._collection.find_one(_get_scoped_query(name, project),
-                                          fields={'m': 1, '_id': 0})
+                                          projection={'m': 1, '_id': 0})
         if queue is None:
             raise errors.QueueDoesNotExist(name, project)
 

@@ -229,7 +229,7 @@ class MessageController(storage.Message):
         collection.remove({PROJ_QUEUE: scope}, w=0)
 
     def _list(self, queue_name, project=None, marker=None,
-              echo=False, client_uuid=None, fields=None,
+              echo=False, client_uuid=None, projection=None,
               include_claimed=False, sort=1, limit=None):
         """Message document listing helper.
 
@@ -290,7 +290,9 @@ class MessageController(storage.Message):
             query['c.e'] = {'$lte': now}
 
         # Construct the request
-        cursor = collection.find(query, fields=fields, sort=[('k', sort)])
+        cursor = collection.find(query,
+                                 projection=projection,
+                                 sort=[('k', sort)])
 
         if limit is not None:
             cursor.limit(limit)
@@ -331,15 +333,15 @@ class MessageController(storage.Message):
             query['c.e'] = {'$lte': timeutils.utcnow_ts()}
 
         collection = self._collection(queue_name, project)
-        return collection.find(query).hint(COUNTING_INDEX_FIELDS).count()
+        return collection.count(filter=query, hint=COUNTING_INDEX_FIELDS)
 
     def _active(self, queue_name, marker=None, echo=False,
-                client_uuid=None, fields=None, project=None,
+                client_uuid=None, projection=None, project=None,
                 limit=None):
 
         return self._list(queue_name, project=project, marker=marker,
                           echo=echo, client_uuid=client_uuid,
-                          fields=fields, include_claimed=False,
+                          projection=projection, include_claimed=False,
                           limit=limit)
 
     def _claimed(self, queue_name, claim_id,
@@ -354,14 +356,17 @@ class MessageController(storage.Message):
             'c.e': {'$gt': expires or timeutils.utcnow_ts()},
         }
 
+        kwargs = {}
+        collection = self._collection(queue_name, project)
+
         # NOTE(kgriffs): Claimed messages bust be queried from
         # the primary to avoid a race condition caused by the
         # multi-phased "create claim" algorithm.
-        preference = pymongo.read_preferences.ReadPreference.PRIMARY
-        collection = self._collection(queue_name, project)
-        msgs = collection.find(query, sort=[('k', 1)],
-                               read_preference=preference).hint(
-                                   CLAIMED_INDEX_FIELDS)
+        # NOTE(flaper87): In pymongo 3.0 PRIMARY is the default and
+        # `read_preference` is read only. We'd need to set it when the
+        # client is created.
+        msgs = collection.find(query, sort=[('k', 1)], **kwargs).hint(
+            CLAIMED_INDEX_FIELDS)
 
         if limit is not None:
             msgs = msgs.limit(limit)
@@ -564,11 +569,14 @@ class MessageController(storage.Message):
 
         else:
             if message['c']['id'] != cid:
+                kwargs = {}
+                # NOTE(flaper87): In pymongo 3.0 PRIMARY is the default and
+                # `read_preference` is read only. We'd need to set it when the
+                # client is created.
                 # NOTE(kgriffs): Read from primary in case the message
                 # was just barely claimed, and claim hasn't made it to
                 # the secondary.
-                pref = pymongo.read_preferences.ReadPreference.PRIMARY
-                message = collection.find_one(query, read_preference=pref)
+                message = collection.find_one(query, **kwargs)
 
                 if message['c']['id'] != cid:
                     if _is_claimed(message, now):
@@ -603,10 +611,10 @@ class MessageController(storage.Message):
         query['c.e'] = {'$lte': now}
 
         collection = self._collection(queue_name, project)
-        fields = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
+        projection = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
 
         messages = (collection.find_and_modify(query,
-                                               fields=fields,
+                                               projection=projection,
                                                remove=True)
                     for _ in range(limit))
 

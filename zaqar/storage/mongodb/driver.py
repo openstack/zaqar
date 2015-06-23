@@ -84,34 +84,29 @@ class DataDriver(storage.DataDriverBase):
         self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
 
         conn = self.connection
-        server_version = conn.server_info()['version']
+        server_info = conn.server_info()['version']
+        self.server_version = tuple(map(int, server_info.split('.')))
 
-        if tuple(map(int, server_version.split('.'))) < (2, 2):
-            raise RuntimeError(_('The mongodb driver requires mongodb>=2.2,  '
-                                 '%s found') % server_version)
+        if self.server_version < (2, 2):
+            raise RuntimeError(_('The mongodb driver requires mongodb>=2.2, '
+                                 '%s found') % server_info)
 
         if not len(conn.nodes) > 1 and not conn.is_mongos:
             if not self.conf.unreliable:
                 raise RuntimeError(_('Either a replica set or a mongos is '
                                      'required to guarantee message delivery'))
         else:
-            wc = conn.write_concern.get('w')
-            majority = (wc == 'majority' or
-                        wc >= 2)
 
-            if not wc:
-                # NOTE(flaper87): No write concern specified, use majority
-                # and don't count journal as a replica. Use `update` to avoid
-                # overwriting `wtimeout`
-                conn.write_concern.update({'w': 'majority'})
-            elif not self.conf.unreliable and not majority:
+            _mongo_wc = conn.write_concern.document.get('w')
+            durable = (_mongo_wc == 'majority' or
+                       _mongo_wc >= 2)
+
+            if not self.conf.unreliable and not durable:
                 raise RuntimeError(_('Using a write concern other than '
                                      '`majority` or > 2 makes the service '
                                      'unreliable. Please use a different '
                                      'write concern or set `unreliable` '
                                      'to True in the config file.'))
-
-            conn.write_concern['j'] = False
 
         # FIXME(flaper87): Make this dynamic
         self._capabilities = self.BASE_CAPABILITIES
@@ -150,18 +145,24 @@ class DataDriver(storage.DataDriverBase):
     def message_databases(self):
         """List of message databases, ordered by partition number."""
 
+        kwargs = {}
+        if not self.server_version < (2, 6):
+            # NOTE(flaper87): Skip mongodb versions below 2.6 when
+            # setting the write concern on the database. pymongo 3.0
+            # fails with norepl when creating indexes.
+            doc = self.connection.write_concern.document.copy()
+            doc.setdefault('w', 'majority')
+            doc.setdefault('j', False)
+            kwargs['write_concern'] = pymongo.WriteConcern(**doc)
+
         name = self.mongodb_conf.database
         partitions = self.mongodb_conf.partitions
 
-        # NOTE(kgriffs): Partition names are zero-based, and
-        # the list is ordered by partition, which means that a
-        # caller can, e.g., get zaqar_mp0 by simply indexing
-        # the first element in the list of databases:
-        #
-        #     self.driver.message_databases[0]
-        #
-        return [self.connection[name + self._COL_SUFIX + str(p)]
-                for p in range(partitions)]
+        databases = []
+        for p in range(partitions):
+            db_name = name + self._COL_SUFIX + str(p)
+            databases.append(self.connection.get_database(db_name, **kwargs))
+        return databases
 
     @decorators.lazy_property(write=False)
     def subscriptions_database(self):
