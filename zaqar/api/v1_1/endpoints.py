@@ -538,3 +538,190 @@ class Endpoints(object):
         body = {'messages': messages}
 
         return response.Response(req, body, headers)
+
+    # Claims
+    @api_utils.raises_conn_error
+    def claim_create(self, req):
+        """Creates a claim
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+
+        LOG.debug(u'Claims create - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        self._claim_post_spec = (
+            ('ttl', int, self._defaults.claim_ttl),
+            ('grace', int, self._defaults.claim_grace),
+        )
+
+        # Claim some messages
+
+        # NOTE(vkmc): We build a dict with the ttl and grace
+        # This is the metadata the storage is waiting for
+        kwargs = api_utils.get_headers(req)
+        # Read claim metadata (e.g., ttl) and raise appropriate
+        # errors as needed.
+        metadata = api_utils.sanitize(kwargs, self._claim_post_spec)
+
+        limit = (None if kwargs.get('limit') is None
+                 else kwargs.get('limit'))
+
+        claim_options = {} if limit is None else {'limit': limit}
+
+        try:
+            self._validate.claim_creation(metadata, limit=limit)
+        except (ValueError, validation.ValidationFailed) as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+
+        cid, msgs = self._claim_controller.create(
+            queue_name,
+            metadata=metadata,
+            project=project_id,
+            **claim_options)
+
+        # Buffer claimed messages
+        # TODO(vkmc): optimize, along with serialization (below)
+        resp_msgs = list(msgs)
+
+        # Serialize claimed messages, if any. This logic assumes
+        # the storage driver returned well-formed messages.
+        if len(resp_msgs) != 0:
+            resp_msgs = [api_utils.format_message(msg, cid)
+                         for msg in resp_msgs]
+
+            headers = {'status': 201}
+            body = {'claim_id': cid, 'messages': resp_msgs}
+        else:
+            headers = {'status': 204}
+            body = {'claim_id': cid}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def claim_get(self, req):
+        """Gets a claim
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        claim_id = req._body.get('claim_id')
+
+        LOG.debug(u'Claim get - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project: %(project_id)s',
+                  {'queue_name': queue_name,
+                   'project_id': project_id,
+                   'claim_id': claim_id})
+        try:
+            meta, msgs = self._claim_controller.get(
+                queue_name,
+                claim_id=claim_id,
+                project=project_id)
+
+            # Buffer claimed messages
+            # TODO(vkmc): Optimize along with serialization (see below)
+            meta['messages'] = list(msgs)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            error = _('Claim %s does not exist.') % claim_id
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers, error)
+
+        # Serialize claimed messages
+        # TODO(vkmc): Optimize
+        meta['messages'] = [api_utils.format_message(msg, claim_id)
+                            for msg in meta['messages']]
+
+        del meta['id']
+
+        headers = {'status': 200}
+        body = meta
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def claim_update(self, req):
+        """Updates a claim
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        claim_id = req._body.get('claim_id')
+
+        LOG.debug(u'Claim update - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project:%(project_id)s' %
+                  {'queue_name': queue_name,
+                   'project_id': project_id,
+                   'claim_id': claim_id})
+
+        self._claim_patch_spec = (
+            ('ttl', int, self._defaults.claim_ttl),
+            ('grace', int, self._defaults.claim_grace),
+        )
+
+        # Read claim metadata (e.g., TTL) and raise appropriate
+        # HTTP errors as needed.
+        metadata = api_utils.sanitize(req._body, self._claim_patch_spec)
+
+        try:
+            self._validate.claim_updating(metadata)
+            self._claim_controller.update(queue_name,
+                                          claim_id=claim_id,
+                                          metadata=metadata,
+                                          project=project_id)
+            headers = {'status': 204}
+            body = _('Claim %s updated.') % claim_id
+            return response.Response(req, body, headers)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            error = _('Claim %s does not exist.') % claim_id
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers, error)
+
+    @api_utils.raises_conn_error
+    def claim_delete(self, req):
+        """Deletes a claim
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        claim_id = req._body.get('claim_id')
+
+        LOG.debug(u'Claim delete - claim: %(claim_id)s, '
+                  u'queue: %(queue_name)s, project: %(project_id)s' %
+                  {'queue_name': queue_name,
+                   'project_id': project_id,
+                   'claim_id': claim_id})
+
+        self._claim_controller.delete(queue_name,
+                                      claim_id=claim_id,
+                                      project=project_id)
+
+        headers = {'status': 204}
+        body = _('Claim %s deleted.') % claim_id
+
+        return response.Response(req, body, headers)

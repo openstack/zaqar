@@ -149,6 +149,10 @@ def get_client_uuid(req):
 def get_headers(req):
     kwargs = {}
 
+    # TODO(vkmc) We should add a control here to make sure
+    # that the headers/request combination is possible
+    # e.g. we cannot have messages_post with grace
+
     if req._body.get('marker') is not None:
         kwargs['marker'] = req._body.get('marker')
 
@@ -165,6 +169,12 @@ def get_headers(req):
     if req._body.get('include_claimed') is not None:
         kwargs['include_claimed'] = strutils.bool_from_string(
             req._body.get('include_claimed'))
+
+    if req._body.get('ttl') is not None:
+        kwargs['ttl'] = int(req._body.get('ttl'))
+
+    if req._body.get('grace') is not None:
+        kwargs['grace'] = int(req._body.get('grace'))
 
     return kwargs
 
@@ -196,9 +206,10 @@ def error_response(req, exception, headers=None, error=None):
     return resp
 
 
-def format_message(message):
+def format_message(message, claim_id=None):
     return {
         'id': message['id'],
+        'claim_id': claim_id,
         'ttl': message['ttl'],
         'age': message['age'],
         'body': message['body'],
