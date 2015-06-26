@@ -138,6 +138,8 @@ def load_storage_driver(conf, cache, storage_type=None,
         return mgr.driver
 
     except Exception as exc:
+        LOG.error('Failed to load "{}" driver for "{}"'.format(driver_type,
+                                                               storage_type))
         LOG.exception(exc)
         raise errors.InvalidDriver(exc)
 

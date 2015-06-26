@@ -72,12 +72,19 @@ class ControlDriver(storage.ControlDriverBase):
     def connection(self):
         return self.engine.connect()
 
+    def run(self, *args, **kwargs):
+        return self.connection.execute(*args, **kwargs)
+
     def close_connection(self):
         self.connection.close()
 
     @property
     def pools_controller(self):
         return controllers.PoolsController(self)
+
+    @property
+    def queue_controller(self):
+        return controllers.QueueController(self)
 
     @property
     def catalogue_controller(self):
