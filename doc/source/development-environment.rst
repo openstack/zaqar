@@ -95,22 +95,26 @@ Configuration
 
     $ mkdir ~/.zaqar
 
-2. Copy the Zaqar configuration samples to the directory .zaqar/::
+2. Create the sample configuration file zaqar/etc/zaqar.conf.sample::
+
+    $ tox -e genconfig
+
+3. Copy the Zaqar configuration samples to the directory ~/.zaqar/::
 
     $ cp zaqar/etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
     $ cp zaqar/etc/logging.conf.sample ~/.zaqar/logging.conf
 
-3. Find the [drivers] section in ~/.zaqar/zaqar.conf and specify mongodb as the message store::
+4. Find the [drivers] section in ~/.zaqar/zaqar.conf and specify mongodb as the message store::
 
     storage = mongodb
 
-4. Find the [drivers:storage:mongodb] section and modify the URI to point to your local mongod instance::
+5. Find the [drivers:message_store:mongodb] section and modify the URI to point to your local mongod instance::
 
     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT  # default = mongodb://localhost:27017
 
-5. For logging, find the [DEFAULT] section in ~/.zaqar/zaqar.conf and modify as desired::
+6. For logging, find the [handler_file] section in ~/.zaqar/logging.conf and modify as desired::
 
-    log_file = server.log
+    args=('zaqar.log', 'w')
 
 Installing and using virtualenv
 ###############################
@@ -121,22 +125,26 @@ Installing and using virtualenv
 
 2. Create and activate a virtual environment::
 
-    $ virtualenv marconi
-    $ source zaqar/bin/activate
+    $ virtualenv zaqarenv
+    $ source zaqarenv/bin/activate
 
 3. Install Zaqar::
 
     $ pip install -e .
 
-4. Start the Zaqar server::
+4. Install the required Python binding for MongoDB::
+
+    $ pip install pymongo
+
+5. Start the Zaqar server::
 
     $ zaqar-server -v
 
-5. Verify Zaqar is running by creating a queue::
+6. Verify Zaqar is running by creating a queue::
 
     $ curl -i -X PUT http://localhost:8888/v1/queues/samplequeue -H "Content-type: application/json"
 
-6. Get ready to code!
+7. Get ready to code!
 
 .. note::
 
