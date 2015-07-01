@@ -55,5 +55,14 @@ Adding New Tests
     messages/test_messages.py
     claim/test_claims.py
 
+Using a custom MongoDB instance
+-------------------------------
+
+If you need to run the tests against a non-default MongoDB installation, you
+can set the ZAQAR_TEST_MONGODB_URL environemment variable. For example: ::
+
+     export ZAQAR_TEST_MONGODB_URL=mongodb://remote-server:27017
+
+
 .. _README : https://github.com/openstack/zaqar/blob/master/README.rst
 .. _requests : https://pypi.python.org/pypi/requests

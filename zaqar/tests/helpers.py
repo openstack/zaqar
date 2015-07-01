@@ -16,6 +16,7 @@
 import contextlib
 import functools
 import os
+import tempfile
 import uuid
 
 import six
@@ -254,3 +255,26 @@ def is_slow(condition=lambda self: True):
         return wrapper
 
     return decorator
+
+
+def override_mongo_conf(conf_file, test):
+    test_mongo_url = os.environ.get('ZAQAR_TEST_MONGODB_URL')
+    if test_mongo_url:
+        parser = six.moves.configparser.ConfigParser()
+        parser.read(test.conf_path(conf_file))
+        sections = ['drivers:management_store:mongodb',
+                    'drivers:message_store:mongodb']
+        for section in sections:
+            if not parser.has_section(section):
+                parser.add_section(section)
+            parser.set(section, 'uri', test_mongo_url)
+        fd, path = tempfile.mkstemp()
+        conf_fd = os.fdopen(fd, 'w')
+        try:
+            parser.write(conf_fd)
+        finally:
+            conf_fd.close()
+        test.addCleanup(os.remove, path)
+        return path
+    else:
+        return conf_file

@@ -17,6 +17,7 @@ from zaqar import bootstrap
 from zaqar.common import errors
 from zaqar.storage import pooling
 from zaqar.tests import base
+from zaqar.tests import helpers
 from zaqar.transport import websocket
 from zaqar.transport import wsgi
 
@@ -24,6 +25,7 @@ from zaqar.transport import wsgi
 class TestBootstrap(base.TestBase):
 
     def _bootstrap(self, conf_file):
+        conf_file = helpers.override_mongo_conf(conf_file, self)
         self.conf = self.load_conf(conf_file)
         return bootstrap.Bootstrap(self.conf)
 
