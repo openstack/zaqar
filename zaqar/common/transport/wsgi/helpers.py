@@ -21,12 +21,39 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import urls
 from zaqar import context
 from zaqar.i18n import _
 from zaqar.transport import validation
 
 
 LOG = logging.getLogger(__name__)
+
+
+def verify_pre_signed_url(key, req, resp, params):
+    headers = req.headers
+    project = headers.get('X-PROJECT-ID')
+    expires = headers.get('URL-EXPIRES')
+    methods = headers.get('URL-METHODS', '').split(',')
+    signature = headers.get('URL-SIGNATURE')
+
+    if not signature:
+        return
+
+    if req.method not in methods:
+        raise falcon.HTTPNotFound()
+
+    try:
+        verified = urls.verify_signed_headers_data(key, req.path,
+                                                   project=project,
+                                                   methods=methods,
+                                                   expires=expires,
+                                                   signature=signature)
+    except ValueError:
+        raise falcon.HTTPNotFound()
+
+    if not verified:
+        raise falcon.HTTPNotFound()
 
 
 def get_client_uuid(req):

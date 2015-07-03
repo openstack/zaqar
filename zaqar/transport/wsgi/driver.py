@@ -65,6 +65,8 @@ class Driver(transport.DriverBase):
     def before_hooks(self):
         """Exposed to facilitate unit testing."""
         return [
+            functools.partial(helpers.verify_pre_signed_url,
+                              self._conf.signed_url.secret_key),
             helpers.require_accepts_json,
             helpers.require_client_id,
             helpers.extract_project_id,
@@ -104,10 +106,14 @@ class Driver(transport.DriverBase):
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""
 
+        auth_app = self.app
+
         # NOTE(flaper87): Install Auth
         if self._conf.auth_strategy:
             strategy = auth.strategy(self._conf.auth_strategy)
-            self.app = strategy.install(self.app, self._conf)
+            auth_app = strategy.install(self.app, self._conf)
+
+        self.app = auth.SignedHeadersAuth(self.app, auth_app)
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""

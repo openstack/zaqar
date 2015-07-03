@@ -34,7 +34,7 @@ class TestURLs(base.TestBase):
         methods = ['POST']
         project = 'my-project'
         path = '/v2/queues/shared/messages'
-        expires = timeutils.utcnow(True) + datetime.timedelta(days=1)
+        expires = timeutils.utcnow() + datetime.timedelta(days=1)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
         hmac_body = six.b('%(path)s\\n%(methods)s\\n'
@@ -49,9 +49,8 @@ class TestURLs(base.TestBase):
 
     def test_create_signed_url_utc(self):
         """Test that the method converts the TZ to UTC."""
-
-        date_str = '2015-05-31T19:00:17+02'
-        date_str_utc = '2015-05-31T17:00:17Z'
+        date_str = '2100-05-31T19:00:17+02'
+        date_str_utc = '2100-05-31T17:00:17'
 
         key = six.b('test')
         project = None

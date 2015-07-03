@@ -31,7 +31,6 @@ class TestURL(base.V2Base):
         super(TestURL, self).setUp()
 
         self.signed_url_prefix = self.url_prefix + '/queues/shared_queue/share'
-        self.config(secret_key='test', group='signed_url')
 
     def test_url_generation(self):
         timeutils.set_time_override()
@@ -68,3 +67,79 @@ class TestURL(base.V2Base):
         data = {'methods': 'methods not list'}
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+    def test_url_verification_success(self):
+        data = {'methods': ['GET', 'POST']}
+        response = self.simulate_post(self.signed_url_prefix,
+                                      body=jsonutils.dumps(data))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        content = jsonutils.loads(response[0])
+
+        headers = {
+            'URL-Signature': content['signature'],
+            'URL-Expires': content['expires'],
+            'URL-Methods': ','.join(content['methods'])
+        }
+        headers.update(self.headers)
+        response = self.simulate_get(content['path'], headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+
+    def test_url_verification_bad_request(self):
+        path = self.url_prefix + '/queues/shared_queue/messages'
+        expires = timeutils.utcnow() + datetime.timedelta(days=1)
+        expires_str = expires.strftime(urls._DATE_FORMAT)
+
+        headers = {
+            'URL-Signature': 'dummy',
+            'URL-Expires': 'not a real date',
+            'URL-Methods': 'GET,POST'
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+        headers = {
+            'URL-Signature': 'dummy',
+            'URL-Expires': expires_str,
+            'URL-Methods': ''
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+        headers = {
+            'URL-Signature': 'dummy',
+            'URL-Expires': expires_str,
+            'URL-Methods': 'nothing here'
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+        headers = {
+            'URL-Signature': 'dummy',
+            'URL-Expires': expires_str,
+            'URL-Methods': 'POST,PUT'
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+        headers = {
+            'URL-Signature': 'wrong signature',
+            'URL-Expires': expires_str,
+            'URL-Methods': 'GET,POST'
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+        headers = {
+            'URL-Signature': 'will fail because of the old date',
+            'URL-Expires': '2015-01-01T00:00:00',
+            'URL-Methods': 'GET,POST'
+        }
+        headers.update(self.headers)
+        self.simulate_get(path, headers=headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_404)

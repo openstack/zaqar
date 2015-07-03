@@ -25,7 +25,7 @@ from zaqar import i18n
 
 _LE = i18n._LE
 
-_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S%Z'
+_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 def create_signed_url(key, path, project=None, expires=None, methods=None):
@@ -66,7 +66,10 @@ def create_signed_url(key, path, project=None, expires=None, methods=None):
         expires = timeutils.normalize_time(parsed)
     else:
         delta = datetime.timedelta(days=1)
-        expires = timeutils.utcnow(with_timezone=True) + delta
+        expires = timeutils.utcnow() + delta
+
+    if expires <= timeutils.utcnow():
+        raise ValueError(_LE('`expires` is lower than the current time'))
 
     methods.sort()
     expires_str = expires.strftime(_DATE_FORMAT)
@@ -82,3 +85,23 @@ def create_signed_url(key, path, project=None, expires=None, methods=None):
             'project': project,
             'expires': expires_str,
             'signature': hmac.new(key, hmac_body, hashlib.sha256).hexdigest()}
+
+
+def verify_signed_headers_data(key, path, project,
+                               signature, methods, expires):
+    """Verify that `signature` matches for the given values
+
+    :param key: A string to use as a `key` for the hmac generation.
+    :param path: A string representing an URL path.
+    :param project: The ID of the project this URL belongs to.
+    :param signature: The pre-generated signature
+    :param methods: A list of methods that will be
+        supported by the generated URL.
+    :params expires: The expiration date for
+        the generated URL.
+    """
+
+    generated = create_signed_url(key, path, project=project,
+                                  methods=methods, expires=expires)
+
+    return signature == generated['signature']
