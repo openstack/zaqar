@@ -22,6 +22,7 @@ from zaqar.transport.wsgi.v2_0 import pools
 from zaqar.transport.wsgi.v2_0 import queues
 from zaqar.transport.wsgi.v2_0 import stats
 from zaqar.transport.wsgi.v2_0 import subscriptions
+from zaqar.transport.wsgi.v2_0 import urls
 
 
 VERSION = {
@@ -103,6 +104,9 @@ def public_endpoints(driver, conf):
         ('/queues/{queue_name}/subscriptions/{subscription_id}',
          subscriptions.ItemResource(driver._validate,
                                     subscription_controller)),
+
+        # Pre-Signed URL Endpoint
+        ('/queues/{queue_name}/share', urls.Resource(driver)),
     ]
 
 
