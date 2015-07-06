@@ -37,7 +37,7 @@ class TestBase(testing.TestBase):
 
         self.conf.register_opts(driver._WS_OPTIONS,
                                 group=driver._WS_GROUP)
-        self.wsgi_cfg = self.conf[driver._WS_GROUP]
+        self.ws_cfg = self.conf[driver._WS_GROUP]
 
         self.conf.unreliable = True
         self.conf.admin_mode = True

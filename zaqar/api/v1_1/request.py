@@ -239,8 +239,9 @@ class RequestSchema(api.Api):
                     'type': 'object',
                     'properties': {
                         'queue_name': {'type': 'string'},
+                        'messages': {'type': 'array'},
                     },
-                    'required': ['queue_name'],
+                    'required': ['queue_name', 'messages'],
                 }
             },
             'required': ['action', 'headers', 'body']
