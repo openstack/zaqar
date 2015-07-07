@@ -14,15 +14,15 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 1. Install prerequisites:
 
 # Ubuntu/Debian:
-sudo apt-get install gcc python-pip libxml2 libxml2-dev libxslt libxslt-dev
+sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev
 
 # Fedora/RHEL:
-sudo yum install gcc python-pip libxml2 libxml2-devel libxslt libxslt-devel
+sudo yum install gcc python-pip libxml2-devel libxslt-devel
 
 2. From your home folder create the ``~/.zaqar`` folder and clone the repo::
 
     $ cd
-    $ mkdir .zaqar
+    $ mkdir ~/.zaqar
     $ git clone https://github.com/openstack/zaqar.git
 
 3. Generate and copy the Zaqar config files to the directory ``~/.zaqar``::
@@ -36,7 +36,8 @@ sudo yum install gcc python-pip libxml2 libxml2-devel libxslt libxslt-devel
 4. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
    and specify to use mongodb storage::
 
-    storage = mongodb
+    message_storage = mongodb
+    management_store = mongodb
 
    Then find the ``[drivers:message_store:mongodb]`` and
    ``[drivers:management_store:mongodb]`` sections and
