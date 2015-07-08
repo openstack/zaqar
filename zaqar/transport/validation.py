@@ -72,7 +72,7 @@ _TRANSPORT_LIMITS_OPTIONS = (
                deprecated_group='limits:transport',
                help='Defines the maximum message grace period in seconds.'),
 
-    cfg.ListOpt('subscriber_types', default=['http'],
+    cfg.ListOpt('subscriber_types', default=['http', 'https'],
                 help='Defines supported subscriber types.'),
 )
 
