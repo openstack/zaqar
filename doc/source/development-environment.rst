@@ -59,11 +59,11 @@ Install the prerequisite packages.
 
 On Ubuntu::
 
-  $ sudo apt-get install python-pip python-dev git-core
+  $ sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev
 
 On Fedora-based distributions (e.g., Fedora/RHEL/CentOS)::
 
-  $ sudo yum install python-pip python-devel git
+  $ sudo yum install gcc python-pip libxml2-devel libxslt-devel
 
 Install MongoDB
 ###############
@@ -95,18 +95,21 @@ Configuration
 
     $ mkdir ~/.zaqar
 
-2. Create the sample configuration file zaqar/etc/zaqar.conf.sample::
+2. Generate the sample configuration file zaqar/etc/zaqar.conf.sample::
 
+    $ pip install tox
+    $ cd zaqar
     $ tox -e genconfig
 
 3. Copy the Zaqar configuration samples to the directory ~/.zaqar/::
 
-    $ cp zaqar/etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
-    $ cp zaqar/etc/logging.conf.sample ~/.zaqar/logging.conf
+    $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
+    $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
 
 4. Find the [drivers] section in ~/.zaqar/zaqar.conf and specify mongodb as the message store::
 
-    storage = mongodb
+    message_storage = mongodb
+    management_store = mongodb
 
 5. Find the [drivers:message_store:mongodb] section and modify the URI to point to your local mongod instance::
 
