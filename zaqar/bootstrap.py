@@ -18,6 +18,7 @@ from oslo_log import log
 from stevedore import driver
 
 from zaqar.api import handler
+from zaqar.common import configs
 from zaqar.common import decorators
 from zaqar.common import errors
 from zaqar.i18n import _
@@ -31,11 +32,8 @@ from zaqar.transport import validation
 LOG = log.getLogger(__name__)
 
 
-ADMIN_MODE_OPT = cfg.BoolOpt('admin_mode', default=False,
-                             help='Activate privileged endpoints.')
-
 _CLI_OPTIONS = (
-    ADMIN_MODE_OPT,
+    configs._ADMIN_MODE_OPT,
     cfg.BoolOpt('daemon', default=False,
                 help='Run Zaqar server in the background.'),
 )
@@ -45,35 +43,6 @@ _CLI_OPTIONS = (
 CONF = cfg.CONF
 CONF.register_cli_opts(_CLI_OPTIONS)
 log.register_options(CONF)
-
-_GENERAL_OPTIONS = (
-    ADMIN_MODE_OPT,
-    cfg.BoolOpt('pooling', default=False,
-                help=('Enable pooling across multiple storage backends. '
-                      'If pooling is enabled, the storage driver '
-                      'configuration is used to determine where the '
-                      'catalogue/control plane data is kept.'),
-                deprecated_opts=[cfg.DeprecatedOpt('sharding')]),
-    cfg.BoolOpt('unreliable', default=None,
-                help='Disable all reliability constrains.'),
-)
-
-_DRIVER_OPTIONS = (
-    cfg.StrOpt('transport', default='wsgi',
-               help='Transport driver to use.'),
-    cfg.StrOpt('message_store', default='mongodb',
-               deprecated_opts=[cfg.DeprecatedOpt('storage')],
-               help='Storage driver to use as the messaging store.'),
-    cfg.StrOpt('management_store', default='mongodb',
-               help='Storage driver to use as the management store.'),
-)
-
-_DRIVER_GROUP = 'drivers'
-
-
-def _config_options():
-    return [(None, _GENERAL_OPTIONS),
-            (_DRIVER_GROUP, _DRIVER_OPTIONS)]
 
 
 class Bootstrap(object):
@@ -85,9 +54,11 @@ class Bootstrap(object):
 
     def __init__(self, conf):
         self.conf = conf
-        self.conf.register_opts(_GENERAL_OPTIONS)
-        self.conf.register_opts(_DRIVER_OPTIONS, group=_DRIVER_GROUP)
-        self.driver_conf = self.conf[_DRIVER_GROUP]
+
+        for group, opts in configs._config_options():
+            self.conf.register_opts(opts, group=group)
+
+        self.driver_conf = self.conf[configs._DRIVER_GROUP]
 
         log.setup(conf, 'zaqar')
 

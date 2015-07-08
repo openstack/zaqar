@@ -18,6 +18,7 @@ from falcon import testing as ftest
 from oslo_serialization import jsonutils
 
 from zaqar import bootstrap
+from zaqar.common import configs
 from zaqar import tests as testing
 from zaqar.transport import validation
 from zaqar.transport.wsgi import driver
@@ -33,7 +34,7 @@ class TestBase(testing.TestBase):
         if not self.config_file:
             self.skipTest("No config specified")
 
-        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+        self.conf.register_opts(configs._GENERAL_OPTIONS)
         self.conf.register_opts(validation._TRANSPORT_LIMITS_OPTIONS,
                                 group=validation._TRANSPORT_LIMITS_GROUP)
         self.transport_cfg = self.conf[validation._TRANSPORT_LIMITS_GROUP]

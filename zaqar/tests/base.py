@@ -21,7 +21,7 @@ from oslo_log import log
 import six
 import testtools
 
-from zaqar import bootstrap
+from zaqar.common import configs
 
 
 class TestBase(testtools.TestCase):
@@ -51,9 +51,9 @@ class TestBase(testtools.TestCase):
         else:
             self.conf = cfg.ConfigOpts()
 
-        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
-        self.conf.register_opts(bootstrap._DRIVER_OPTIONS,
-                                group=bootstrap._DRIVER_GROUP)
+        self.conf.register_opts(configs._GENERAL_OPTIONS)
+        self.conf.register_opts(configs._DRIVER_OPTIONS,
+                                group=configs._DRIVER_GROUP)
 
     @classmethod
     def conf_path(cls, filename):

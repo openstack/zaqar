@@ -25,7 +25,7 @@ import pymongo.errors
 import six
 from testtools import matchers
 
-from zaqar import bootstrap
+from zaqar.common import configs
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar import storage
 from zaqar.storage import errors
@@ -154,7 +154,7 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
     def setUp(self):
         super(MongodbDriverTest, self).setUp()
 
-        self.conf.register_opts(bootstrap._GENERAL_OPTIONS)
+        self.conf.register_opts(configs._GENERAL_OPTIONS)
         self.config(unreliable=False)
 
     def test_db_instance(self):
