@@ -353,6 +353,16 @@ class RedisMessagesTest(base.MessageControllerTest):
         num_removed = self.controller.gc()
         self.assertEqual(num_removed, 100)
 
+    def test_invalid_uuid(self):
+        queue_name = 'invalid-uuid-test'
+        msgs = [{
+            'ttl': 300,
+            'body': 'di mo fy'
+        }]
+        client_id = "invalid_uuid"
+        self.controller.post(queue_name, msgs, client_id)
+        self.assertRaises(ValueError, self.controller.first, queue_name)
+
 
 @testing.requires_redis
 class RedisClaimsTest(base.ClaimControllerTest):
