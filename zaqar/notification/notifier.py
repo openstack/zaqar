@@ -15,13 +15,12 @@
 
 import uuid
 
+import futurist
 from oslo_log import log as logging
 import six
 from taskflow import engines
 from taskflow.patterns import unordered_flow as uf
 from taskflow import task
-from taskflow.types import futures
-from taskflow.utils import eventlet_utils
 
 from zaqar.notification.task import webhook
 
@@ -35,12 +34,11 @@ class NotifierDriver(object):
 
     def __init__(self, *args, **kwargs):
         self.subscription_controller = kwargs.get('subscription_controller')
-
-        if eventlet_utils.EVENTLET_AVAILABLE:
-            self.executor = futures.GreenThreadPoolExecutor()
-        else:
+        try:
+            self.executor = futurist.GreenThreadPoolExecutor()
+        except RuntimeError:
             # TODO(flwang): Make the max_workers configurable
-            self.executor = futures.ThreadPoolExecutor(max_workers=10)
+            self.executor = futurist.ThreadPoolExecutor(max_workers=10)
 
     def _generate_task(self, subscriber_uri, message):
         task_name = uuid.uuid4()
