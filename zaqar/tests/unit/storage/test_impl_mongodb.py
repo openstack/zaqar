@@ -274,7 +274,7 @@ class MongodbQueueTests(MongodbSetupMixin, base.QueueControllerTest):
 
         with mock.patch.object(cursor.Cursor,
                                'next' if six.PY2 else '__next__',
-                               autospec=True) as method:
+                               spec=True) as method:
             error = pymongo.errors.ConnectionFailure()
             method.side_effect = error
 
