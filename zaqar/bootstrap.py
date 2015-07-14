@@ -133,6 +133,9 @@ class Bootstrap(object):
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)
+            LOG.error(u'Failed to load transport driver zaqar.transport.'
+                      u'%(driver)s with args %(args)s',
+                      {'driver': transport_name, 'args': args})
             raise errors.InvalidDriver(exc)
 
     def run(self):
