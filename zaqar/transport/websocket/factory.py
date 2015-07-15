@@ -22,8 +22,9 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
 
     protocol = protocol.MessagingProtocol
 
-    def __init__(self, uri, debug, handler):
-        websocket.WebSocketServerFactory.__init__(self, uri, debug)
+    def __init__(self, uri, debug, handler, external_port):
+        websocket.WebSocketServerFactory.__init__(
+            self, url=uri, debug=debug, externalPort=external_port)
         self._handler = handler
 
     def __call__(self):

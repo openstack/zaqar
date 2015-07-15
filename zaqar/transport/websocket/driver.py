@@ -33,6 +33,9 @@ _WS_OPTIONS = (
     cfg.IntOpt('port', default=9000,
                help='Port on which the self-hosting server will listen.'),
 
+    cfg.IntOpt('external-port', default=None,
+               help='Port on which the service is provided to the user.'),
+
     cfg.BoolOpt('debug', default=False, help='Print debugging output')
 )
 
@@ -58,8 +61,9 @@ class Driver(object):
     @decorators.lazy_property(write=False)
     def factory(self):
         uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
-        return factory.ProtocolFactory(uri, debug=self._ws_conf.debug,
-                                       handler=self._api)
+        return factory.ProtocolFactory(
+            uri, debug=self._ws_conf.debug, handler=self._api,
+            external_port=self._ws_conf.external_port)
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WS config group."""
