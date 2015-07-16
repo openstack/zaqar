@@ -13,6 +13,7 @@
 # the License.
 
 import functools
+import json
 import uuid
 
 import msgpack
@@ -78,7 +79,7 @@ class SubscriptionController(base.Subscription):
                 'source': record[0],
                 'subscriber': record[1],
                 'ttl': record[2],
-                'options': record[3],
+                'options': json.loads(record[3]),
             }
             marker_next['next'] = sid
 

@@ -40,10 +40,13 @@ class NotifierDriver(object):
 
             for sub in next(subscribers):
                 s_type = urllib_parse.urlparse(sub['subscriber']).scheme
-
+                data_driver = self.subscription_controller.driver
+                conf = (getattr(data_driver, 'conf', None) or
+                        getattr(data_driver, '_conf'))
                 mgr = driver.DriverManager('zaqar.notification.tasks',
                                            s_type,
                                            invoke_on_load=True)
-                self.executor.submit(mgr.driver.execute, sub, messages)
+                self.executor.submit(mgr.driver.execute, sub, messages,
+                                     conf=conf)
         else:
             LOG.error('Failed to get subscription controller.')

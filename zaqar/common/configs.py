@@ -54,7 +54,17 @@ _SIGNED_URL_OPTIONS = (
 _SIGNED_URL_GROUP = 'signed_url'
 
 
+_NOTIFICATION_OPTIONS = (
+    cfg.StrOpt('smtp_command', default='/usr/sbin/sendmail -t -oi',
+               help=('The command of smtp to send email. The format is '
+                     '"command_name arg1 arg2".')),
+)
+
+_NOTIFICATION_GROUP = 'notification'
+
+
 def _config_options():
     return [(None, _GENERAL_OPTIONS),
             (_DRIVER_GROUP, _DRIVER_OPTIONS),
-            (_SIGNED_URL_GROUP, _SIGNED_URL_OPTIONS)]
+            (_SIGNED_URL_GROUP, _SIGNED_URL_OPTIONS),
+            (_NOTIFICATION_GROUP, _NOTIFICATION_OPTIONS)]
