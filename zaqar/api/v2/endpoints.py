@@ -31,6 +31,7 @@ class Endpoints(object):
         self._queue_controller = storage.queue_controller
         self._message_controller = storage.message_controller
         self._claim_controller = storage.claim_controller
+        self._subscription_controller = storage.subscription_controller
 
         self._pools_controller = control.pools_controller
         self._flavors_controller = control.flavors_controller
@@ -38,6 +39,7 @@ class Endpoints(object):
         self._validate = validate
 
         self._defaults = defaults
+        self._subscription_url = None
 
     # Queues
     @api_utils.raises_conn_error
@@ -725,3 +727,165 @@ class Endpoints(object):
         body = _('Claim %s deleted.') % claim_id
 
         return response.Response(req, body, headers)
+
+    # Subscriptions
+    @api_utils.raises_conn_error
+    def subscription_list(self, req):
+        """List all subscriptions for a queue.
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+
+        LOG.debug(u'Subscription list - project: %(project)s',
+                  {'project': project_id})
+
+        try:
+            kwargs = api_utils.get_headers(req)
+
+            self._validate.subscription_listing(**kwargs)
+            results = self._subscription_controller.list(
+                queue_name, project=project_id, **kwargs)
+        except (ValueError, validation.ValidationFailed) as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.ExceptionBase as ex:
+            LOG.exception(ex)
+            error = 'Subscriptions could not be listed.'
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, error, headers)
+
+        # Buffer list of queues
+        subscriptions = list(next(results))
+
+        # Got some. Prepare the response.
+        body = {'subscriptions': subscriptions}
+        headers = {'status': 200}
+
+        return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def subscription_create(self, req, subscriber):
+        """Create a subscription for a queue.
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+
+        LOG.debug(
+            u'Subscription create - queue: %(queue)s, project: %(project)s',
+            {'queue': queue_name,
+             'project': project_id})
+
+        try:
+            data = {'subscriber': subscriber,
+                    'options': req._body.get('options'),
+                    'ttl': req._body.get('ttl')}
+            self._validate.subscription_posting(data)
+            created = self._subscription_controller.create(queue_name,
+                                                           subscriber,
+                                                           data['ttl'],
+                                                           data['options'],
+                                                           project=project_id)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            error = _('Queue %s does not exist.') % queue_name
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers, error)
+        except storage_errors.ExceptionBase as ex:
+            LOG.exception(ex)
+            error = _('Subscription %s could not be created.') % queue_name
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers, error)
+        else:
+            if created:
+                msg = _('Subscription %s created.') % queue_name
+                body = {'subscription_id': str(created), 'message': msg}
+                headers = {'status': 201}
+            else:
+                body = _('Subscription %s not created.') % queue_name
+                headers = {'status': 409}
+            return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def subscription_delete(self, req):
+        """Delete a specific subscription by ID.
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        subscription_id = req._body.get('subscription_id')
+
+        LOG.debug(
+            u'Subscription delete - queue: %(queue)s, project: %(project)s',
+            {'queue': queue_name, 'project': project_id})
+        try:
+            self._subscription_controller.delete(queue_name,
+                                                 subscription_id,
+                                                 project=project_id)
+        except storage_errors.ExceptionBase as ex:
+            LOG.exception(ex)
+            error = _('Subscription %(subscription)s for queue %(queue)s '
+                      'could not be deleted.') % {
+                'subscription': subscription_id, 'queue': queue_name}
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers, error)
+        else:
+            body = _('Subscription %s removed.') % subscription_id
+            headers = {'status': 204}
+            return response.Response(req, body, headers)
+
+    @api_utils.raises_conn_error
+    def subscription_get(self, req):
+        """Retrieve details about an existing subscription.
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        subscription_id = req._body.get('subscription_id')
+
+        LOG.debug(u'Subscription get - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        try:
+            resp_dict = self._subscription_controller.get(queue_name,
+                                                          subscription_id,
+                                                          project=project_id)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            error = _('Subscription %(subscription)s for queue %(queue)s '
+                      'does not exist.') % {
+                'subscription': subscription_id, 'queue': queue_name}
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers, error)
+        except storage_errors.ExceptionBase as ex:
+            LOG.exception(ex)
+            headers = {'status': 503}
+            error = _('Cannot retrieve subscription %s.') % subscription_id
+            return api_utils.error_response(req, ex, headers, error)
+        else:
+            body = resp_dict
+            headers = {'status': 200}
+            return response.Response(req, body, headers)

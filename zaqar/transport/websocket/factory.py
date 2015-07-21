@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 from autobahn.asyncio import websocket
 
 from zaqar.transport.websocket import protocol
@@ -30,8 +32,34 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
         self._auth_strategy = auth_strategy
         self._loop = loop
         self._secret_key = secret_key
+        self._protos = {}
 
     def __call__(self):
-        proto = self.protocol(self._handler, self._auth_strategy, self._loop)
+        proto_id = str(uuid.uuid4())
+        proto = self.protocol(self._handler, proto_id, self._auth_strategy,
+                              self._loop)
+        self._protos[proto_id] = proto
         proto.factory = self
         return proto
+
+
+class NotificationFactory(object):
+
+    protocol = protocol.NotificationProtocol
+
+    def __init__(self, factory):
+        self.message_factory = factory
+
+    def set_subscription_url(self, url):
+        self._subscription_url = url
+
+    def get_subscriber(self, protocol):
+        return '%s%s' % (self._subscription_url, protocol.proto_id)
+
+    def send_data(self, data, proto_id):
+        instance = self.message_factory._protos.get(proto_id)
+        if instance:
+            instance.sendMessage(data, False)
+
+    def __call__(self):
+        return self.protocol(self)

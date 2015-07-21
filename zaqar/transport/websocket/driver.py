@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import socket
+
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -56,6 +58,7 @@ class Driver(base.DriverBase):
         super(Driver, self).__init__(conf, None, None, None)
         self._api = api
         self._cache = cache
+        self._hostname = socket.gethostname()
 
         self._conf.register_opts(_WS_OPTIONS, group=_WS_GROUP)
         self._ws_conf = self._conf[_WS_GROUP]
@@ -79,6 +82,10 @@ class Driver(base.DriverBase):
             loop=asyncio.get_event_loop(),
             secret_key=self._conf.signed_url.secret_key)
 
+    @decorators.lazy_property(write=False)
+    def notification_factory(self):
+        return factory.NotificationFactory(self.factory)
+
     def listen(self):
         """Self-host using 'bind' and 'port' from the WS config group."""
 
@@ -87,15 +94,27 @@ class Driver(base.DriverBase):
                  {'bind': self._ws_conf.bind, 'port': self._ws_conf.port})
 
         loop = asyncio.get_event_loop()
+        coro_notification = loop.create_server(
+            self.notification_factory, port=0)
         coro = loop.create_server(self.factory,
                                   self._ws_conf.bind,
                                   self._ws_conf.port)
-        server = loop.run_until_complete(coro)
+
+        def got_server(task):
+            # Retrieve the port number of the listening socket
+            port = task.result().sockets[0].getsockname()[1]
+            self.notification_factory.set_subscription_url(
+                'http://%s:%s/' % (self._hostname, port))
+            self._api.set_subscription_factory(self.notification_factory)
+
+        task = asyncio.Task(coro_notification)
+        task.add_done_callback(got_server)
+
+        loop.run_until_complete(asyncio.wait([coro, task]))
 
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             pass
         finally:
-            server.close()
             loop.close()

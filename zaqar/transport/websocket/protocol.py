@@ -14,12 +14,26 @@
 # limitations under the License.
 
 import datetime
+import io
 import json
 
 from autobahn.asyncio import websocket
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import pytz
+
+try:
+    import asyncio
+except ImportError:
+    import trollius as asyncio
+
+try:
+    import mimetools
+    Message = mimetools.Message
+except ImportError:
+    from email.mime import message
+    Message = message.MIMEMessage
+
 
 LOG = logging.getLogger(__name__)
 
@@ -36,9 +50,10 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         'wsgi.url_scheme': 'http'
     }
 
-    def __init__(self, handler, auth_strategy, loop):
+    def __init__(self, handler, proto_id, auth_strategy, loop):
         websocket.WebSocketServerProtocol.__init__(self)
         self._handler = handler
+        self.proto_id = proto_id
         self._auth_strategy = auth_strategy
         self._loop = loop
         self._authentified = False
@@ -76,7 +91,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                     if 'URL-Signature' in payload.get('headers', {}):
                         if self._handler.verify_signature(
                                 self.factory._secret_key, payload):
-                            resp = self._handler.process_request(req)
+                            resp = self._handler.process_request(req, self)
                         else:
                             body = {'error': 'Not authentified.'}
                             resp = self._handler.create_response(
@@ -89,7 +104,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             elif payload.get('action') == 'authenticate':
                 return self._authenticate(payload)
             else:
-                resp = self._handler.process_request(req)
+                resp = self._handler.process_request(req, self)
         return self._send_response(resp)
 
     def onClose(self, wasClean, code, reason):
@@ -139,3 +154,54 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
     def _send_response(self, resp):
         resp_json = json.dumps(resp.get_response())
         self.sendMessage(resp_json, False)
+
+
+class NotificationProtocol(asyncio.Protocol):
+
+    def __init__(self, factory):
+        self._factory = factory
+
+    def connection_made(self, transport):
+        self._transport = transport
+        self._data = bytearray()
+        self._state = 'INIT'
+        self._subscriber_id = None
+        self._length = 0
+
+    def write_status(self, status):
+        self._transport.write(b'HTTP/1.0 %s\r\n\r\n' % status)
+        self._transport.close()
+
+    def data_received(self, data):
+        self._data.extend(data)
+        if self._state == 'INIT' and b'\r\n' in self._data:
+            first_line, self._data = self._data.split(b'\r\n', 1)
+            verb, uri, version = first_line.split()
+            if verb != b'POST':
+                self.write_status(b'405 Not Allowed')
+                return
+            self._state = 'HEADERS'
+            self._subscriber_id = uri[1:]
+
+        if self._state == 'HEADERS' and b'\r\n\r\n' in self._data:
+            headers, self._data = self._data.split(b'\r\n\r\n', 1)
+            headers = Message(io.BytesIO(headers))
+            length = headers.get(b'content-length')
+            if not length:
+                self.write_status(b'400 Bad Request')
+                return
+            self._length = int(length)
+            self._state = 'BODY'
+
+        if self._state == 'BODY':
+            if len(self._data) >= self._length:
+                if self._subscriber_id:
+                    self._factory.send_data(bytes(self._data),
+                                            str(self._subscriber_id))
+                    self.write_status(b'200 OK')
+                else:
+                    self.write_status(b'400 Bad Request')
+
+    def connection_lost(self, exc):
+        self._data = self._subscriber_id = None
+        self._length = 0
