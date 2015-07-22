@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from oslo_log import log as logging
 import requests
 from taskflow import task
@@ -27,6 +28,7 @@ class WebhookTask(task.Task):
 
     def execute(self, uri, message, **kwargs):
         try:
-            requests.post(uri, data=message)
+            requests.post(uri, data=json.dumps(message),
+                          headers={'Content-Type': 'application/json'})
         except Exception as e:
             LOG.error(e)
