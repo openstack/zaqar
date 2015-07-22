@@ -98,6 +98,12 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('body could not be parsed', resp_doc['description'])
 
+    def test_create_no_body(self):
+        resp = self.simulate_post(self.subscription_path, headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertIn('Missing parameter',
+                      jsonutils.loads(resp[0])['description'])
+
     def test_create_invalid_subscriber_400(self):
         resp = self._create_subscription(subscriber='fake')
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
@@ -232,6 +238,20 @@ class TestSubscriptionsMongoDB(base.V2Base):
                             body='{"ttl": 300}',
                             headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_404)
+
+    def test_patch_no_body(self):
+        self._create_subscription()
+        resp = self.simulate_get(self.subscription_path,
+                                 headers=self.headers)
+        resp_doc = jsonutils.loads(resp[0])
+        sid = resp_doc['subscriptions'][0]['id']
+
+        resp = self.simulate_patch(self.subscription_path + '/' + sid,
+                                   headers=self.headers)
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
+        resp_doc = jsonutils.loads(resp[0])
+        self.assertNotIn('{subscription_id}', resp_doc['description'])
 
     def test_patch_invalid_ttl(self):
         self.simulate_patch(self.subscription_path + '/x',
