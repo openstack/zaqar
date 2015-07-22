@@ -82,8 +82,16 @@ class TestSubscriptionsMongoDB(base.V2Base):
                                   headers=self.headers)
 
     def test_create_works(self):
-        self._create_subscription()
+        resp = self._create_subscription()
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        resp_doc = jsonutils.loads(resp[0])
+
+        resp_list = self.simulate_get(self.subscription_path,
+                                      headers=self.headers)
+        resp_list_doc = jsonutils.loads(resp_list[0])
+        sid = resp_list_doc['subscriptions'][0]['id']
+
+        self.assertEqual(sid, resp_doc['subscription_id'])
 
     def test_create_duplicate_409(self):
         self._create_subscription(subscriber='http://CCC.com')
