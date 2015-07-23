@@ -606,3 +606,17 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertTrue(send_mock.called)
 
         return self.response
+
+    def test_invalid_request(self):
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        send_mock = send_mock.start()
+
+        self.protocol.onMessage('foo', False)
+        self.assertEqual(1, send_mock.call_count)
+        response = json.loads(send_mock.call_args[0][0])
+        self.assertIn('error', response['body'])
+        self.assertEqual({'status': 400}, response['headers'])
+        self.assertEqual(
+            {'action': None, 'api': None, 'body': None, 'headers': {}},
+            response['request'])
