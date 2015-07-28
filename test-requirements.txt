@@ -5,7 +5,7 @@
 hacking<0.11,>=0.10.0
 
 # Packaging
-mock>=1.0
+mock>=1.2
 
 # Backends
 redis>=2.10.0
