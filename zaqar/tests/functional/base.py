@@ -29,6 +29,7 @@ from zaqar import tests as testing
 from zaqar.tests.functional import config
 from zaqar.tests.functional import helpers
 from zaqar.tests.functional import http
+from zaqar.tests import helpers as base_helpers
 from zaqar.transport import base as transport_base
 # TODO(flaper87): This is necessary to register,
 # wsgi configs and won't be permanent. It'll be
@@ -61,8 +62,11 @@ class FunctionalTestBase(testing.TestBase):
         if not self.cfg.run_tests:
             self.skipTest("Functional tests disabled")
 
-        self.mconf = self.load_conf(self.config_file or
-                                    self.cfg.zaqar.config)
+        config_file = self.config_file or self.cfg.zaqar.config
+
+        config_file = base_helpers.override_mongo_conf(config_file, self)
+
+        self.mconf = self.load_conf(config_file)
 
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf

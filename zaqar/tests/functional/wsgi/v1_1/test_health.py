@@ -40,7 +40,7 @@ class TestHealth(base.V1_1FunctionalTestBase):
         # as pool node and the mongodb is working on gate successfully.
         doc = helpers.create_pool_body(
             weight=10,
-            uri="mongodb://localhost:27017",
+            uri=self.mconf['drivers:management_store:mongodb'].uri,
             options=dict(database='zaqar_test_pooled_1')
         )
 

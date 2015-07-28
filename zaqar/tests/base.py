@@ -22,6 +22,7 @@ import six
 import testtools
 
 from zaqar.common import configs
+from zaqar.tests import helpers
 
 
 class TestBase(testtools.TestCase):
@@ -47,6 +48,8 @@ class TestBase(testtools.TestCase):
             self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
         if self.config_file:
+            self.config_file = helpers.override_mongo_conf(
+                self.config_file, self)
             self.conf = self.load_conf(self.config_file)
         else:
             self.conf = cfg.ConfigOpts()
