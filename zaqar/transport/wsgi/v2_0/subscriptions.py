@@ -84,6 +84,8 @@ class ItemResource(object):
 
         if req.content_length:
             document = wsgi_utils.deserialize(req.stream, req.content_length)
+        else:
+            document = {}
 
         try:
             self._validate.subscription_patching(document)
@@ -167,6 +169,8 @@ class CollectionResource(object):
 
         if req.content_length:
             document = wsgi_utils.deserialize(req.stream, req.content_length)
+        else:
+            document = {}
 
         try:
             self._validate.subscription_posting(document)
