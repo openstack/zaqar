@@ -119,6 +119,8 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF DEFAULT use_syslog $SYSLOG
 
+    iniset $ZAQAR_CONF storage message_pipeline zaqar.notification.notifier
+
     # Enable pooling by default for now
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF 'drivers:transport:wsgi' bind $ZAQAR_SERVICE_HOST
