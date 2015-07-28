@@ -192,3 +192,6 @@ class CollectionResource(object):
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_409
         resp.location = req.path
+        if created:
+            resp.body = utils.to_json(
+                {'subscription_id': six.text_type(created)})
