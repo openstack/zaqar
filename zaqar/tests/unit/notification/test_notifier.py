@@ -70,3 +70,12 @@ class NotifierTest(testing.TestBase):
         subscriber = self.subscription[0]['subscriber']
         new_task = self.driver._generate_task(subscriber, self.messages)
         self.assertIsInstance(new_task, task.webhook.WebhookTask)
+
+    def test_post_no_subscriber(self):
+        ctlr = mock.MagicMock()
+        ctlr.list = mock.Mock(return_value=iter([[]]))
+        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        with mock.patch('requests.post') as mock_post:
+            driver.post('fake_queue', self.messages, self.client_id,
+                        self.project)
+            self.assertEqual(0, mock_post.call_count)

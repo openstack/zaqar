@@ -65,8 +65,9 @@ class NotifierDriver(object):
                 for m in messages:
                     wh_flow.add(self._generate_task(s['subscriber'], m))
 
-            e = engines.load(wh_flow, executor=self.executor,
-                             engine='parallel')
-            e.run()
+            if wh_flow:
+                e = engines.load(wh_flow, executor=self.executor,
+                                 engine='parallel')
+                e.run()
         else:
             LOG.error('Failed to get subscription controller.')
