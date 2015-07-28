@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import uuid
 
 import mock
@@ -47,22 +48,29 @@ class NotifierTest(testing.TestBase):
         self.driver = notifier.NotifierDriver(subscription_controller=ctlr)
 
     def test_post(self):
+        headers = {'Content-Type': 'application/json'}
         with mock.patch('requests.post') as mock_post:
             self.driver.post('fake_queue', self.messages,
                              self.client_id, self.project)
             mock_post.assert_has_calls([
                 mock.call(self.subscription[0]['subscriber'],
-                          data=self.messages[0]),
+                          data=json.dumps(self.messages[0]),
+                          headers=headers),
                 mock.call(self.subscription[1]['subscriber'],
-                          data=self.messages[0]),
+                          data=json.dumps(self.messages[0]),
+                          headers=headers),
                 mock.call(self.subscription[2]['subscriber'],
-                          data=self.messages[0]),
+                          data=json.dumps(self.messages[0]),
+                          headers=headers),
                 mock.call(self.subscription[0]['subscriber'],
-                          data=self.messages[1]),
+                          data=json.dumps(self.messages[1]),
+                          headers=headers),
                 mock.call(self.subscription[1]['subscriber'],
-                          data=self.messages[1]),
+                          data=json.dumps(self.messages[1]),
+                          headers=headers),
                 mock.call(self.subscription[2]['subscriber'],
-                          data=self.messages[1]),
+                          data=json.dumps(self.messages[1]),
+                          headers=headers),
                 ], any_order=True)
             self.assertEqual(6, len(mock_post.mock_calls))
 
