@@ -46,6 +46,15 @@ _DRIVER_OPTIONS = (
 _DRIVER_GROUP = 'drivers'
 
 
+_SIGNED_URL_OPTIONS = (
+    cfg.StrOpt('secret_key', default=None,
+               help=('Secret key used to encrypt pre-signed URLs.')),
+)
+
+_SIGNED_URL_GROUP = 'signed_url'
+
+
 def _config_options():
     return [(None, _GENERAL_OPTIONS),
-            (_DRIVER_GROUP, _DRIVER_OPTIONS)]
+            (_DRIVER_GROUP, _DRIVER_OPTIONS),
+            (_SIGNED_URL_GROUP, _SIGNED_URL_OPTIONS)]
