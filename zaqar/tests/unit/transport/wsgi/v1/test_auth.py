@@ -32,7 +32,7 @@ class TestAuth(base.V1Base):
         self.headers = {'Client-ID': str(uuid.uuid4())}
 
     def test_auth_install(self):
-        self.assertIsInstance(self.app, auth_token.AuthProtocol)
+        self.assertIsInstance(self.app._auth_app, auth_token.AuthProtocol)
 
     def test_non_authenticated(self):
         env = testing.create_environ(self.url_prefix + '/480924/queues/',
