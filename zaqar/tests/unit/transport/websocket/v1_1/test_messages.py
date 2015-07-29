@@ -542,5 +542,5 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertIn('error', response['body'])
         self.assertEqual({'status': 400}, response['headers'])
         self.assertEqual(
-            {'action': None, 'api': None, 'body': None, 'headers': {}},
+            {'action': None, 'api': 'v1.1', 'body': {}, 'headers': {}},
             response['request'])
