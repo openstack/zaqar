@@ -61,7 +61,6 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                 body = {'error': str(ex)}
                 headers = {'status': 400}
                 resp = response.Response(req, body, headers)
-                return resp
 
         resp_json = json.dumps(resp.get_response())
         self.sendMessage(resp_json, isBinary)
@@ -100,5 +99,5 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
 
     @staticmethod
     def _dummy_request():
-        action = 'None'
+        action = None
         return request.Request(action)
