@@ -382,9 +382,14 @@ class Endpoints(object):
             ('body', '*', None),
         )
 
-        messages = api_utils.sanitize(messages,
-                                      _message_post_spec,
-                                      doctype=list)
+        try:
+            messages = api_utils.sanitize(messages,
+                                          _message_post_spec,
+                                          doctype=list)
+        except api_errors.BadRequest as ex:
+            LOG.debug(ex)
+            headers = {'status': 400}
+            return api_utils.error_response(req, ex, headers)
 
         try:
             client_uuid = api_utils.get_client_uuid(req)

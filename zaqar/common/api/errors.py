@@ -26,15 +26,15 @@ class ExceptionBase(Exception):
 class BadRequest(ExceptionBase):
     """Raised when an invalid request is received."""
 
-    msg_format = u'Bad request. {error} {description}'
+    msg_format = u'Bad request. {description}'
 
-    def __init__(self, error, description):
+    def __init__(self, description):
         """Initializes the error with contextual information.
 
         :param description: Error description
         """
 
-        super(BadRequest, self).__init__(error=error, description=description)
+        super(BadRequest, self).__init__(description=description)
 
 
 class DocumentTypeNotSupported(ExceptionBase):

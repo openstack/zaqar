@@ -278,6 +278,47 @@ class MessagesBaseTest(base.V1_1Base):
         resp = self._post_messages(queue_name)
         self.assertEqual(resp['headers']['status'], 201)
 
+    def test_post_invalid_ttl(self):
+        sample_messages = [
+            {'body': {'key': 'value'}, 'ttl': '200'},
+        ]
+
+        action = "message_post"
+        body = {"queue_name": "kitkat",
+                "messages": sample_messages}
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        send_mock = send_mock.start()
+
+        req = test_utils.create_request(action, body, self.headers)
+        self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(400, resp['headers']['status'])
+        self.assertEqual(
+            'Bad request. The value of the "ttl" field must be a int.',
+            resp['body']['exception'])
+
+    def test_post_no_body(self):
+        sample_messages = [
+            {'ttl': 200},
+        ]
+
+        action = "message_post"
+        body = {"queue_name": "kitkat",
+                "messages": sample_messages}
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        send_mock = send_mock.start()
+
+        req = test_utils.create_request(action, body, self.headers)
+        self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(400, resp['headers']['status'])
+        self.assertEqual(
+            'Bad request. Missing "body" field.', resp['body']['exception'])
+
     def test_get_from_missing_queue(self):
         action = "message_list"
         body = {"queue_name": "anothernonexistent"}

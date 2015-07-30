@@ -54,7 +54,7 @@ def sanitize(document, spec=None, doctype=dict):
         if not isinstance(document, dict):
             raise api_errors.DocumentTypeNotSupported()
 
-        return document if spec is None else filter(document, spec)
+        return document if spec is None else filter_fields(document, spec)
 
     if doctype is list:
         if not isinstance(document, list):
@@ -63,12 +63,12 @@ def sanitize(document, spec=None, doctype=dict):
         if spec is None:
             return document
 
-        return [filter(obj, spec) for obj in document]
+        return [filter_fields(obj, spec) for obj in document]
 
     raise TypeError(_(u'Doctype must be either a JSONObject or JSONArray'))
 
 
-def filter(document, spec):
+def filter_fields(document, spec):
     """Validates and retrieves typed fields from a single document.
 
     Sanitizes a dict-like document by checking it against a
@@ -143,7 +143,7 @@ def get_client_uuid(req):
         return uuid.UUID(req._headers.get('Client-ID'))
     except ValueError:
         description = _(u'Malformed hexadecimal UUID.')
-        raise api_errors.BadRequest(_(u'Wrong UUID value'), description)
+        raise api_errors.BadRequest(description)
 
 
 def get_headers(req):
