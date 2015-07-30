@@ -16,15 +16,11 @@
 import json
 from oslo_log import log as logging
 import requests
-from taskflow import task
 
 LOG = logging.getLogger(__name__)
 
 
-class WebhookTask(task.Task):
-    def __init__(self, name, show_name=True, inject=None):
-        super(WebhookTask, self).__init__(name, inject=inject)
-        self._show_name = show_name
+class WebhookTask(object):
 
     def execute(self, subscription, messages, **kwargs):
         try:
