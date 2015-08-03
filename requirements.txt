@@ -27,3 +27,4 @@ trollius>=1.0
 autobahn>=0.10.1 # MIT License
 requests>=2.5.2
 taskflow>=1.16.0
+futurist>=0.1.2 # Apache-2.0
