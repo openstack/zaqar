@@ -49,52 +49,42 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "kitkat"}
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 201)
-
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
-            msg_mock.side_effect = validator
             self.protocol.onMessage(req, False)
+            resp = json.loads(msg_mock.call_args[0][0])
+            self.assertEqual(resp['headers']['status'], 201)
 
     def tearDown(self):
         super(MessagesBaseTest, self).tearDown()
         action = "queue_delete"
         body = {"queue_name": "kitkat"}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
 
     def _test_post(self, sample_messages):
         action = "message_post"
         body = {"queue_name": "kitkat",
                 "messages": sample_messages}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 201)
-            self.msg_ids = resp['body']['message_ids']
-            self.assertEqual(len(self.msg_ids), len(sample_messages))
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 201)
+        self.msg_ids = resp['body']['message_ids']
+        self.assertEqual(len(self.msg_ids), len(sample_messages))
 
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
 
@@ -114,33 +104,29 @@ class MessagesBaseTest(base.V1_1Base):
 
                 req = test_utils.create_request(action, body, headers)
 
-                def validator(resp, isBinary):
-                    resp = json.loads(resp)
-                    self.assertEqual(resp['headers']['status'], 404)
-
-                send_mock.side_effect = validator
                 self.protocol.onMessage(req, False)
+
+                resp = json.loads(send_mock.call_args[0][0])
+                self.assertEqual(resp['headers']['status'], 404)
 
                 # Correct project ID
                 req = test_utils.create_request(action, body, self.headers)
 
-                def validator(resp, isBinary):
-                    resp = json.loads(resp)
-                    self.assertEqual(resp['headers']['status'], 200)
-
-                    # Check message properties
-                    message = resp['body']['messages']
-                    self.assertEqual(message['body'], lookup[message['ttl']])
-                    self.assertEqual(message['id'], msg_id)
-
-                    # no negative age
-                    # NOTE(cpp-cabrera): testtools lacks
-                    # GreaterThanEqual on py26
-                    self.assertThat(message['age'],
-                                    matchers.GreaterThan(-1))
-
-                send_mock.side_effect = validator
                 self.protocol.onMessage(req, False)
+
+                resp = json.loads(send_mock.call_args[0][0])
+                self.assertEqual(resp['headers']['status'], 200)
+
+                # Check message properties
+                message = resp['body']['messages']
+                self.assertEqual(message['body'], lookup[message['ttl']])
+                self.assertEqual(message['id'], msg_id)
+
+                # no negative age
+                # NOTE(cpp-cabrera): testtools lacks
+                # GreaterThanEqual on py26
+                self.assertThat(message['age'],
+                                matchers.GreaterThan(-1))
 
         # Test bulk GET
         action = "message_get_many"
@@ -148,17 +134,15 @@ class MessagesBaseTest(base.V1_1Base):
                 "message_ids": self.msg_ids}
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 200)
-            expected_ttls = set(m['ttl'] for m in sample_messages)
-            actual_ttls = set(m['ttl'] for m in resp['body']['messages'])
-            self.assertFalse(expected_ttls - actual_ttls)
-            actual_ids = set(m['id'] for m in resp['body']['messages'])
-            self.assertFalse(set(self.msg_ids) - actual_ids)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 200)
+        expected_ttls = set(m['ttl'] for m in sample_messages)
+        actual_ttls = set(m['ttl'] for m in resp['body']['messages'])
+        self.assertFalse(expected_ttls - actual_ttls)
+        actual_ids = set(m['id'] for m in resp['body']['messages'])
+        self.assertFalse(set(self.msg_ids) - actual_ids)
 
     def test_exceeded_payloads(self):
         # Get a valid message id
@@ -171,23 +155,21 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "kitkat",
                 "message_ids": get_msg_ids}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
         # Listing restriction
         body['limit'] = 21
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
         # Bulk deletion restriction
         del_msg_ids = msg_id * 22
@@ -196,6 +178,8 @@ class MessagesBaseTest(base.V1_1Base):
                 "message_ids": del_msg_ids}
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     def test_post_single(self):
         sample_messages = [
@@ -222,33 +206,26 @@ class MessagesBaseTest(base.V1_1Base):
                 "messages": messages}
         req = test_utils.create_request(action, body, self.headers)
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 201)
-            self.msg_id = resp['body']['message_ids'][0]
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
 
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 201)
+        msg_id = resp['body']['message_ids'][0]
+
         action = "message_get"
-        body = {"queue_name": "kitkat",
-                "message_id": self.msg_id}
+        body = {"queue_name": "kitkat", "message_id": msg_id}
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 200)
-            self.assertEqual(self.default_message_ttl,
-                             resp['body']['messages']['ttl'])
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(self.default_message_ttl,
+                         resp['body']['messages']['ttl'])
 
     def test_post_to_non_ascii_queue(self):
         queue_name = u'non-ascii-n\u0153me'
@@ -283,17 +260,14 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "anothernonexistent"}
         req = test_utils.create_request(action, body, self.headers)
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 200)
-            self.assertEqual(resp['body']['messages'], [])
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(resp['body']['messages'], [])
 
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
@@ -308,18 +282,15 @@ class MessagesBaseTest(base.V1_1Base):
             'X-Project-ID': self.project_id
         }
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
         action = "message_get"
         body = {
@@ -331,6 +302,9 @@ class MessagesBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
 
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
+
     @ddt.data(None, '[', '[]', '{}', '.')
     def test_post_bad_message(self, document):
         action = "message_post"
@@ -339,18 +313,15 @@ class MessagesBaseTest(base.V1_1Base):
             "messages": document
         }
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
@@ -358,18 +329,15 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "kinder",
                 "messages": [{"ttl": ttl, "body": ""}]}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     def test_exceeded_message_posting(self):
         # Total (raw request) size
@@ -380,18 +348,15 @@ class MessagesBaseTest(base.V1_1Base):
             "messages": document
         }
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     @ddt.data('{"overflow": 9223372036854775808}',
               '{"underflow": -9223372036854775809}')
@@ -402,18 +367,15 @@ class MessagesBaseTest(base.V1_1Base):
             "messages": document
         }
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     def test_delete(self):
         resp = self._post_messages("tofi")
@@ -423,55 +385,40 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "tofi",
                 "message_id": msg_id}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 200)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 200)
 
         # Delete queue
         action = "message_delete"
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
 
         # Get non existent queue
         action = "message_get"
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 404)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 404)
 
         # Safe to delete non-existing ones
         action = "message_delete"
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
 
     def test_bulk_delete(self):
         resp = self._post_messages("nerds", repeat=5)
@@ -481,42 +428,32 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": "nerds",
                 "message_ids": msg_ids}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
 
         action = "message_get"
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 400)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
         # Safe to delete non-existing ones
         action = "message_delete_many"
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
 
         # Even after the queue is gone
         action = "queue_delete"
@@ -524,65 +461,60 @@ class MessagesBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
+
         action = "message_delete_many"
         body = {"queue_name": "nerds",
                 "message_ids": msg_ids}
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 204)
+
     def test_get_nonexistent_message_404s(self):
         action = "message_get"
         body = {"queue_name": "notthere",
                 "message_id": "a"}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 404)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 404)
 
     def test_get_multiple_invalid_messages_404s(self):
         action = "message_get_many"
         body = {"queue_name": "notnotthere",
                 "message_ids": ["a", "b", "c"]}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 404)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 200)
 
     def test_delete_multiple_invalid_messages_204s(self):
         action = "message_delete"
         body = {"queue_name": "yetanothernotthere",
                 "message_ids": ["a", "b", "c"]}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 204)
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(resp['headers']['status'], 400)
 
     def _post_messages(self, queue_name, repeat=1):
         messages = [{'body': 239, 'ttl': 300}] * repeat
@@ -591,26 +523,18 @@ class MessagesBaseTest(base.V1_1Base):
         body = {"queue_name": queue_name,
                 "messages": messages}
 
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         req = test_utils.create_request(action, body, self.headers)
 
-        def validator(resp, isBinary):
-            resp = json.loads(resp)
-            self.response = resp
-
-        send_mock.side_effect = validator
         self.protocol.onMessage(req, False)
-        self.assertTrue(send_mock.called)
 
-        return self.response
+        return json.loads(send_mock.call_args[0][0])
 
     def test_invalid_request(self):
-        send_mock = mock.patch.object(self.protocol, 'sendMessage')
-        self.addCleanup(send_mock.stop)
-        send_mock = send_mock.start()
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
 
         self.protocol.onMessage('foo', False)
         self.assertEqual(1, send_mock.call_count)
