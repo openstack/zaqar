@@ -36,4 +36,6 @@ from zaqar import bootstrap
 conf = cfg.CONF
 conf(project='zaqar', prog='zaqar-queues', args=[])
 
-app = bootstrap.Bootstrap(conf).transport.app
+boot = bootstrap.Bootstrap(conf)
+conf.drivers.transport = 'wsgi'
+app = boot.transport.app

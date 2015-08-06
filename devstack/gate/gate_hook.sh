@@ -14,7 +14,7 @@
 
 # This script is executed inside gate_hook function in devstack gate.
 
-ENABLED_SERVICES="mysql,key,tempest,zaqar-server,"
+ENABLED_SERVICES="mysql,key,tempest,zaqar-websocket,zaqar-wsgi"
 
 export DEVSTACK_GATE_ZAQAR=1
 export DEVSTACK_GATE_INSTALL_TESTONLY=1

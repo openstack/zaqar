@@ -5,7 +5,7 @@
 
 # To enable a minimal set of Zaqar services, add the following to localrc:
 #
-#     enable_service zaqar-server
+#     enable_service zaqar-websocket zaqar-wsgi
 #
 # Dependencies:
 # - functions
@@ -37,6 +37,7 @@ ZAQAR_DIR=$DEST/zaqar
 ZAQARCLIENT_DIR=$DEST/python-zaqarclient
 ZAQAR_CONF_DIR=/etc/zaqar
 ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
+ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
 ZAQAR_API_LOG_DIR=/var/log/zaqar
 ZAQAR_API_LOG_FILE=$ZAQAR_API_LOG_DIR/queues.log
 ZAQAR_AUTH_CACHE_DIR=${ZAQAR_AUTH_CACHE_DIR:-/var/cache/zaqar}
@@ -59,6 +60,7 @@ ZAQARCLIENT_BRANCH=${ZAQARCLIENT_BRANCH:-master}
 # Set Zaqar Connection Info
 ZAQAR_SERVICE_HOST=${ZAQAR_SERVICE_HOST:-$SERVICE_HOST}
 ZAQAR_SERVICE_PORT=${ZAQAR_SERVICE_PORT:-8888}
+ZAQAR_WEBSOCKET_PORT=${ZAQAR_WEBSOCKET_PORT:-9000}
 ZAQAR_SERVICE_PROTOCOL=${ZAQAR_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
 # Tell Tempest this project is present
@@ -124,7 +126,9 @@ function configure_zaqar {
 
     # Enable pooling by default for now
     iniset $ZAQAR_CONF DEFAULT admin_mode True
-    iniset $ZAQAR_CONF 'drivers:transport:wsgi' bind $ZAQAR_SERVICE_HOST
+    iniset $ZAQAR_CONF 'drivers:transport:websocket' bind $ZAQAR_SERVICE_HOST
+    iniset $ZAQAR_CONF 'drivers:transport:websocket' port $ZAQAR_WEBSOCKET_PORT
+    iniset $ZAQAR_CONF drivers transport websocket
 
     configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
 
@@ -152,6 +156,13 @@ function configure_zaqar {
     fi
     iniset_rpc_backend zaqar $ZAQAR_CONF DEFAULT
 
+    pip_install uwsgi
+    iniset $ZAQAR_UWSGI_CONF uwsgi http $ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT
+    iniset $ZAQAR_UWSGI_CONF uwsgi processes 1
+    iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
+    iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
+    iniset $ZAQAR_UWSGI_CONF uwsgi callable app
+
     cleanup_zaqar
 }
 
@@ -170,6 +181,7 @@ function configure_redis {
 function configure_mongodb {
     # Set nssize to 2GB. This increases the number of namespaces supported
     # # per database.
+    pip_install pymongo
     if is_ubuntu; then
         install_package mongodb-server
         sudo sed -i -e "
@@ -207,9 +219,11 @@ function install_zaqarclient {
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
     if [[ "$USE_SCREEN" = "False" ]]; then
-        run_process zaqar-server "zaqar-server --config-file $ZAQAR_CONF --daemon"
+        run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF --daemonize $ZAQAR_API_LOG_DIR/uwsgi.log"
+        run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF --daemon"
     else
-        run_process zaqar-server "zaqar-server --config-file $ZAQAR_CONF"
+        run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF"
+        run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
     fi
 
     echo "Waiting for Zaqar to start..."
@@ -223,7 +237,7 @@ function start_zaqar {
 function stop_zaqar {
     local serv
     # Kill the zaqar screen windows
-    for serv in zaqar-server; do
+    for serv in zaqar-wsgi zaqar-websocket; do
         screen -S $SCREEN_NAME -p $serv -X kill
     done
 }
@@ -240,14 +254,19 @@ function create_zaqar_accounts {
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT"
+
+        local zaqar_ws_service=$(get_or_create_service "zaqar-websocket" \
+            "messaging-websocket" "Zaqar Service")
+        get_or_create_endpoint $zaqar_service \
+            "$REGION_NAME" \
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT"
     fi
 
 }
 
-
-
-
-if is_service_enabled zaqar-server; then
+if is_service_enabled zaqar-websocket || is_service_enabled zaqar-wsgi; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Zaqar"
         install_zaqarclient
@@ -270,9 +289,6 @@ if is_service_enabled zaqar-server; then
     if [[ "$1" == "unstack" ]]; then
         stop_zaqar
     fi
-
-    #if [[ "$1" == "clean" ]]; then
-    #fi
 fi
 
 # Restore xtrace
