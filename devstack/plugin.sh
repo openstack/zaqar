@@ -118,6 +118,7 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF DEFAULT use_syslog $SYSLOG
+    iniset $ZAQAR_CONF DEFAULT auth_strategy keystone
 
     iniset $ZAQAR_CONF storage message_pipeline zaqar.notification.notifier
 
@@ -212,7 +213,8 @@ function start_zaqar {
     fi
 
     echo "Waiting for Zaqar to start..."
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
+    token=$(openstack token issue -c id -f value)
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
 }
