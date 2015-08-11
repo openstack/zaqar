@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Zaqar WebSocket example</title>
+        <meta charset='utf-8' />
+        <link rel='stylesheet'  href='http://yui.yahooapis.com/pure/0.6.0/pure-nr-min.css' />
+        <script type='text/javascript' src='http://code.jquery.com/jquery-2.1.4.min.js'></script>
+        <style>
+        .pure-g > div {
+            box-sizing: border-box;
+        }
+        #title h1 {
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            margin: 0;
+            padding: 1em;
+        }
+        #queues {
+            padding-left: 1em;
+            background-color: #bbb;
+            min-height: 800px;
+        }
+        #messages {
+            padding-left: 1em;
+        }
+        #log {
+            font-size: 80%;
+        }
+        #right-col {
+            padding-left: 1em;
+            background-color: #f7e699;
+            min-height: 800px;
+        }
+        </style>
+        <script type='text/javascript'>
+        var socket = new WebSocket('ws://localhost:9000/');
+        var project = 'cf38008b72d04b89a505b9d66d1d5768';
+        var client_id = '31209ff3-ba03-4cec-b4ca-655f4899f8f4';
+        socket.onopen = function(evt) {
+            list_queues();
+        }
+        socket.onmessage = function(evt) {
+            var node = document.createElement('div');
+            var msg = new Date().toUTCString();
+            var data = JSON.parse(evt.data);
+            var action = data["request"]["action"];
+            msg += " action: " + action;
+            msg += " status: " + data["headers"]["status"];
+            msg += " body: " + JSON.stringify(data["body"]);
+            node.appendChild(document.createTextNode(msg));
+            $('#log').append(node);
+
+            if (action == 'queue_list') {
+                var queues = data['body']['queues'];
+                display_queues(queues);
+            } else if (action == 'message_list') {
+                var messages = data['body']['messages'];
+                display_messages(messages);
+            } else if (action == 'queue_create' || action == 'queue_delete') {
+                list_queues();
+            } else if (action == 'message_post' || action == 'message_delete') {
+               list_messages();
+            }
+        }
+        send_message = function(action, body) {
+            var msg = {'action': action,
+                       'headers': {'Client-ID': client_id, 'X-Project-ID': project}}
+            if (body) {
+                msg['body'] = body;
+            }
+
+            socket.send(JSON.stringify(msg));
+        }
+        list_queues = function() {
+            send_message('queue_list')
+        }
+        create_queue = function(frm) {
+            send_message('queue_create', {'queue_name': frm['queue'].value});
+            return false;
+        }
+        get_selected_queue = function() {
+            var queue_select = $('#queue_list');
+            return queue_select.val();
+        }
+        display_queues = function(queues) {
+            var queue_select = $('#queue_list');
+            queue_select.empty();
+            $.each(queues, function(idx, queue) {
+                queue_select.append('<option>' + queue.name + '</option>');
+            });
+        }
+        display_messages = function(messages) {
+            var table_body = $('#message_list tbody');
+            table_body.empty();
+            $.each(messages, function(idx, message) {
+                table_body.append('<tr><td>' + message.age + '</td><td>' + message.body + '</td><td>' + message.ttl + '</td><td><button class=\'pure-button\' onclick=\'delete_message("' + message.id + '")\'>Delete</button></td></tr>');
+            });
+        }
+        delete_queue = function() {
+            send_message('queue_delete', {'queue_name': get_selected_queue()});
+        }
+        list_messages = function() {
+            send_message('message_list', {'queue_name': get_selected_queue(), 'echo': true})
+        }
+        queue_message = function(frm) {
+            var body = frm['body'].value;
+            var ttl = parseInt(frm['ttl'].value);
+            send_message('message_post', {'queue_name': get_selected_queue(), 'messages': [{'body': body, 'ttl': ttl}]})
+            return false;
+        }
+        delete_message = function(message_id) {
+            send_message('message_delete', {'queue_name': get_selected_queue(), 'message_id': message_id});
+        }
+        subscribe_queue = function() {
+            send_message('subscription_create', {'queue_name': get_selected_queue(), 'ttl': 3600})
+        }
+        </script>
+    </head>
+    <body>
+        <div id='title'>
+            <h1>Zaqar WebSocket example</h1>
+        </div>
+
+        <div class='pure-g'>
+            <div id='queues' class='pure-u-1-3'>
+                <h4>Queues</h4>
+                <form class='pure-form' onsubmit='return create_queue(this)'>
+                    <fieldset>
+                        <input type='text' name='queue' />
+                        <button class='pure-button' type='submit'>Create</button>
+                    </fieldset>
+                </form>
+                <form class='pure-form' onsubmit='return false'>
+                    <fieldset>
+                        <select id='queue_list'></select>
+                        <button class='pure-button' onclick='delete_queue()'>Delete</button>
+                        <button class='pure-button' onclick='list_messages()'>List messages</button>
+                        <button class='pure-button' onclick='subscribe_queue()'>Subscribe</button>
+                    </fieldset>
+                </form>
+            </div>
+
+            <div id='messages' class='pure-u-1-3'>
+                <h4>Messages</h4>
+                <form class='pure-form' onsubmit='return queue_message(this)'>
+                    <fieldset>
+                        <input type='text' name='body' />
+                        <input type='text' name='ttl' size='5' value='3600' />
+                        <button type='submit' class='pure-button'>Post</button>
+                    </fieldset>
+                </form>
+                <table class='pure-table pure-table-horizontal' id='message_list'>
+                    <thead>
+                        <tr>
+                            <th>Age</th>
+                            <th>Body</th>
+                            <th>TTL</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class='pure-u-1-3' id='right-col'>
+                <h4>Logs</h4>
+                <div id='log'></div>
+            </div>
+        </div>
+    </body>
+</html>
