@@ -26,9 +26,11 @@ class WebhookTask(task.Task):
         super(WebhookTask, self).__init__(name, inject=inject)
         self._show_name = show_name
 
-    def execute(self, uri, message, **kwargs):
+    def execute(self, subscription, messages, **kwargs):
         try:
-            requests.post(uri, data=json.dumps(message),
-                          headers={'Content-Type': 'application/json'})
+            for msg in messages:
+                requests.post(subscription['subscriber'],
+                              data=json.dumps(msg),
+                              headers={'Content-Type': 'application/json'})
         except Exception as e:
             LOG.error(e)

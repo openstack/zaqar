@@ -19,7 +19,6 @@ import uuid
 import mock
 
 from zaqar.notification import notifier
-from zaqar.notification import task
 from zaqar import tests as testing
 
 
@@ -73,11 +72,6 @@ class NotifierTest(testing.TestBase):
                           headers=headers),
                 ], any_order=True)
             self.assertEqual(6, len(mock_post.mock_calls))
-
-    def test_generate_task(self):
-        subscriber = self.subscription[0]['subscriber']
-        new_task = self.driver._generate_task(subscriber, self.messages)
-        self.assertIsInstance(new_task, task.webhook.WebhookTask)
 
     def test_post_no_subscriber(self):
         ctlr = mock.MagicMock()

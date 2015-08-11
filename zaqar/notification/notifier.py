@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from stevedore import driver
 import uuid
 
 import futurist
 from oslo_log import log as logging
-import six
+from six.moves import urllib_parse
 from taskflow import engines
 from taskflow.patterns import unordered_flow as uf
-from taskflow import task
-
-from zaqar.notification.task import webhook
 
 LOG = logging.getLogger(__name__)
 
@@ -40,17 +38,6 @@ class NotifierDriver(object):
             # TODO(flwang): Make the max_workers configurable
             self.executor = futurist.ThreadPoolExecutor(max_workers=10)
 
-    def _generate_task(self, subscriber_uri, message):
-        task_name = uuid.uuid4()
-        # TODO(flwang): Need to work out a better way to make tasks
-        s_type = six.moves.urllib_parse.urlparse(subscriber_uri).scheme
-
-        t = task.Task
-        if s_type in ('http', 'https'):
-            t = webhook.WebhookTask
-
-        return t(task_name, inject={'uri': subscriber_uri, 'message': message})
-
     def post(self, queue_name, messages, client_uuid, project=None):
         """Send messages to the subscribers."""
         if self.subscription_controller:
@@ -59,9 +46,18 @@ class NotifierDriver(object):
 
             wh_flow = uf.Flow('webhook_notifier_flow')
 
-            for s in list(next(subscribers)):
-                for m in messages:
-                    wh_flow.add(self._generate_task(s['subscriber'], m))
+            for sub in next(subscribers):
+                s_type = urllib_parse.urlparse(sub['subscriber']).scheme
+                invoke_args = [uuid.uuid4()]
+                invoke_kwds = {'inject': {'subscription': sub,
+                                          'messages': messages}}
+
+                mgr = driver.DriverManager('zaqar.notification.tasks',
+                                           s_type,
+                                           invoke_on_load=True,
+                                           invoke_args=invoke_args,
+                                           invoke_kwds=invoke_kwds)
+                wh_flow.add(mgr.driver)
 
             if wh_flow:
                 e = engines.load(wh_flow, executor=self.executor,
