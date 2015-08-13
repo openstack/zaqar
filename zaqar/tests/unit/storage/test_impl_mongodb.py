@@ -306,60 +306,65 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
         queue_name = self.queue_name
         iterations = 10
 
-        seed_marker1 = self.queue_controller._get_counter(queue_name,
-                                                          self.project)
-        self.assertEqual(seed_marker1, 1, 'First marker is 1')
+        m = mock.MagicMock(controllers.QueueController)
+        self.controller._queue_ctrl = m
+        del self.controller._queue_ctrl._get_counter
+        del self.controller._queue_ctrl._inc_counter
+
+        seed_marker1 = self.controller._get_counter(queue_name,
+                                                    self.project)
+        self.assertEqual(seed_marker1, 0, 'First marker is 0')
 
         for i in range(iterations):
             self.controller.post(queue_name, [{'ttl': 60}],
                                  'uuid', project=self.project)
 
-            marker1 = self.queue_controller._get_counter(queue_name,
-                                                         self.project)
-            marker2 = self.queue_controller._get_counter(queue_name,
-                                                         self.project)
-            marker3 = self.queue_controller._get_counter(queue_name,
-                                                         self.project)
+            marker1 = self.controller._get_counter(queue_name,
+                                                   self.project)
+            marker2 = self.controller._get_counter(queue_name,
+                                                   self.project)
+            marker3 = self.controller._get_counter(queue_name,
+                                                   self.project)
 
             self.assertEqual(marker1, marker2)
             self.assertEqual(marker2, marker3)
-            self.assertEqual(marker1, i + 2)
+            self.assertEqual(marker1, i + 1)
 
-        new_value = self.queue_controller._inc_counter(queue_name,
-                                                       self.project)
+        new_value = self.controller._inc_counter(queue_name,
+                                                 self.project)
         self.assertIsNotNone(new_value)
 
-        value_before = self.queue_controller._get_counter(queue_name,
-                                                          project=self.project)
-        new_value = self.queue_controller._inc_counter(queue_name,
-                                                       project=self.project)
+        value_before = self.controller._get_counter(queue_name,
+                                                    project=self.project)
+        new_value = self.controller._inc_counter(queue_name,
+                                                 project=self.project)
         self.assertIsNotNone(new_value)
-        value_after = self.queue_controller._get_counter(queue_name,
-                                                         project=self.project)
+        value_after = self.controller._get_counter(queue_name,
+                                                   project=self.project)
         self.assertEqual(value_after, value_before + 1)
 
         value_before = value_after
-        new_value = self.queue_controller._inc_counter(queue_name,
-                                                       project=self.project,
-                                                       amount=7)
-        value_after = self.queue_controller._get_counter(queue_name,
-                                                         project=self.project)
+        new_value = self.controller._inc_counter(queue_name,
+                                                 project=self.project,
+                                                 amount=7)
+        value_after = self.controller._get_counter(queue_name,
+                                                   project=self.project)
         self.assertEqual(value_after, value_before + 7)
         self.assertEqual(value_after, new_value)
 
         reference_value = value_after
 
-        unchanged = self.queue_controller._inc_counter(queue_name,
-                                                       project=self.project,
-                                                       window=10)
+        unchanged = self.controller._inc_counter(queue_name,
+                                                 project=self.project,
+                                                 window=10)
         self.assertIsNone(unchanged)
 
         timeutils.set_time_override()
         timeutils.advance_time_delta(datetime.timedelta(seconds=10))
 
-        changed = self.queue_controller._inc_counter(queue_name,
-                                                     project=self.project,
-                                                     window=5)
+        changed = self.controller._inc_counter(queue_name,
+                                               project=self.project,
+                                               window=5)
         self.assertEqual(changed, reference_value + 1)
 
         timeutils.clear_time_override()
@@ -410,17 +415,18 @@ class MongodbFIFOMessageTests(MongodbSetupMixin, base.MessageControllerTest):
         # what happens when we have parallel requests and the "winning"
         # requests hasn't gotten around to calling _inc_counter before the
         # "losing" request attempts to insert it's batch of messages.
-        with mock.patch.object(mongodb.queues.QueueController,
-                               '_inc_counter', autospec=True) as method:
+        with mock.patch.object(mongodb.messages.MessageController,
+                               '_inc_counter', autospec=True) as ic:
 
-            method.return_value = 2
+            ic.return_value = 2
             messages = expected_messages[:1]
-            created = list(self.controller.post(queue_name, messages,
-                                                uuid, project=self.project))
+            created = list(self.controller.post(queue_name,
+                                                messages, uuid,
+                                                project=self.project))
             self.assertEqual(len(created), 1)
 
             # Force infinite retries
-            method.return_value = None
+            ic.return_value = None
 
             with testing.expect(errors.MessageConflict):
                 self.controller.post(queue_name, messages,
