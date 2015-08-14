@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 06:25+0000\n"
-"PO-Revision-Date: 2015-07-14 12:49+0000\n"
-"Last-Translator: Pablo Sanchez <furybeat@gmail.com>\n"
+"POT-Creation-Date: 2015-08-14 06:07+0000\n"
+"PO-Revision-Date: 2015-08-05 02:30+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/openstack/zaqar/language/"
 "es/)\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -142,14 +142,6 @@ msgstr "Solicitud no válida"
 
 msgid "Invalid scheme in Redis URI"
 msgstr "Esquema en Redis URI no válido"
-
-#, python-format
-msgid "Invalid string format: %s"
-msgstr "Formato de cadena inválido: %s"
-
-#, python-format
-msgid "Invalid unit system: \"%s\""
-msgstr "Unidad del sistema inválida: \"%s\""
 
 msgid "JSON contains integer that is too large."
 msgstr "JSON contiene entero muy largo."
@@ -433,11 +425,6 @@ msgstr "No se puede actualizar suscripción"
 
 msgid "Unexpected error."
 msgstr "Error inesperado."
-
-#, python-format
-msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
-msgstr ""
-"Valor no reconocido '%(val)s', los valores aceptados son: %(acceptable)s"
 
 msgid ""
 "Unreliable's default value will be changed to False in the Kilo release. "

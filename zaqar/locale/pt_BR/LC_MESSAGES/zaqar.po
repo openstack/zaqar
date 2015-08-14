@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Zaqar\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 06:25+0000\n"
-"PO-Revision-Date: 2015-07-06 23:14+0000\n"
+"POT-Creation-Date: 2015-08-14 06:07+0000\n"
+"PO-Revision-Date: 2015-08-05 02:30+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/openstack/zaqar/"
 "language/pt_BR/)\n"
@@ -106,14 +106,6 @@ msgstr "Corpo da requisição inválido"
 
 msgid "Invalid scheme in Redis URI"
 msgstr "Esquema inválido na URI do Redis"
-
-#, python-format
-msgid "Invalid string format: %s"
-msgstr "Formato de string inválido: %s"
-
-#, python-format
-msgid "Invalid unit system: \"%s\""
-msgstr "Unidade inválida do sistema: \"%s\""
 
 msgid "JSON contains integer that is too large."
 msgstr "JSON possui um numero inteiro muito grande."
@@ -288,11 +280,6 @@ msgstr "Impossível excluir"
 
 msgid "Unexpected error."
 msgstr "Erro inesperado."
-
-#, python-format
-msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
-msgstr ""
-"Valor não reconhecido '%(val)s', os valores aceitáveis são: %(acceptable)s"
 
 msgid "{0} is not a valid action"
 msgstr "{0} não é uma ação válida"
