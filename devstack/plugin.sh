@@ -256,8 +256,8 @@ function create_zaqar_accounts {
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT"
 
         local zaqar_ws_service=$(get_or_create_service "zaqar-websocket" \
-            "messaging-websocket" "Zaqar Service")
-        get_or_create_endpoint $zaqar_service \
+            "messaging-websocket" "Zaqar Websocket Service")
+        get_or_create_endpoint $zaqar_ws_service \
             "$REGION_NAME" \
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
