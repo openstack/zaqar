@@ -29,7 +29,7 @@ _GENERAL_OPTIONS = (
                       'configuration is used to determine where the '
                       'catalogue/control plane data is kept.'),
                 deprecated_opts=[cfg.DeprecatedOpt('sharding')]),
-    cfg.BoolOpt('unreliable', default=None,
+    cfg.BoolOpt('unreliable', default=False,
                 help='Disable all reliability constraints.'),
 )
 

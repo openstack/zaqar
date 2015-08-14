@@ -21,7 +21,6 @@ from zaqar.api import handler
 from zaqar.common import configs
 from zaqar.common import decorators
 from zaqar.common import errors
-from zaqar.i18n import _
 from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
@@ -61,14 +60,6 @@ class Bootstrap(object):
         self.driver_conf = self.conf[configs._DRIVER_GROUP]
 
         log.setup(conf, 'zaqar')
-
-        if self.conf.unreliable is None:
-            msg = _(u'Unreliable\'s default value will be changed to False '
-                    'in the Kilo release. Please, make sure your deployments '
-                    'are working in a reliable mode or that `unreliable` is '
-                    'explicitly set to `True` in your configuration files.')
-            LOG.warn(msg)
-            self.conf.unreliable = True
 
     @decorators.lazy_property(write=False)
     def api(self):
