@@ -65,6 +65,17 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers'],
             'admin': True,
         },
+        'authenticate': {
+            'properties': {
+                'action': {'enum': ['authenticate']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['X-Project-ID', 'X-Auth-Token']
+                }
+            },
+            'required': ['action', 'headers'],
+        },
 
         # Queues
         'queue_list': {

@@ -23,6 +23,8 @@ except ImportError:
 
 from zaqar.common import decorators
 from zaqar.i18n import _
+from zaqar.transport import auth
+from zaqar.transport import base
 from zaqar.transport.websocket import factory
 
 
@@ -48,22 +50,33 @@ def _config_options():
     return [(_WS_GROUP, _WS_OPTIONS)]
 
 
-class Driver(object):
+class Driver(base.DriverBase):
 
     def __init__(self, conf, api, cache):
-        self._conf = conf
+        super(Driver, self).__init__(conf, None, None, None)
         self._api = api
         self._cache = cache
 
         self._conf.register_opts(_WS_OPTIONS, group=_WS_GROUP)
         self._ws_conf = self._conf[_WS_GROUP]
 
+        if self._conf.auth_strategy:
+            auth_strategy = auth.strategy(self._conf.auth_strategy)
+            self._auth_strategy = lambda app: auth_strategy.install(
+                app, self._conf)
+        else:
+            self._auth_strategy = None
+
     @decorators.lazy_property(write=False)
     def factory(self):
         uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
         return factory.ProtocolFactory(
-            uri, debug=self._ws_conf.debug, handler=self._api,
-            external_port=self._ws_conf.external_port)
+            uri,
+            debug=self._ws_conf.debug,
+            handler=self._api,
+            external_port=self._ws_conf.external_port,
+            auth_strategy=self._auth_strategy,
+            loop=asyncio.get_event_loop())
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WS config group."""

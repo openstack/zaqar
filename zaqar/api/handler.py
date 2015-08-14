@@ -13,6 +13,11 @@
 # the License.
 
 from zaqar.api.v1_1 import endpoints
+from zaqar.api.v1_1 import request as schema_validator
+
+from zaqar.common.api import request
+from zaqar.common.api import response
+from zaqar.common import errors
 
 
 class Handler(object):
@@ -28,3 +33,40 @@ class Handler(object):
     def process_request(self, req):
         # FIXME(vkmc): Control API version
         return getattr(self.v1_1_endpoints, req._action)(req)
+
+    @staticmethod
+    def validate_request(payload, req):
+        """Validate a request and its payload against a schema.
+
+        :return: a Response object if validation failed, None otherwise.
+        """
+        try:
+            action = payload.get('action')
+            validator = schema_validator.RequestSchema()
+            is_valid = validator.validate(action=action, body=payload)
+        except errors.InvalidAction as ex:
+            body = {'error': str(ex)}
+            headers = {'status': 400}
+            return response.Response(req, body, headers)
+        else:
+            if not is_valid:
+                body = {'error': 'Schema validation failed.'}
+                headers = {'status': 400}
+                return response.Response(req, body, headers)
+
+    def create_response(self, code, body, req=None):
+        if req is None:
+            req = self.create_request()
+        headers = {'status': code}
+        return response.Response(req, body, headers)
+
+    @staticmethod
+    def create_request(payload=None):
+        if payload is None:
+            payload = {}
+        action = payload.get('action')
+        body = payload.get('body', {})
+        headers = payload.get('headers')
+
+        return request.Request(action=action, body=body,
+                               headers=headers, api="v1.1")

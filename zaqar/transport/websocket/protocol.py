@@ -13,24 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autobahn.asyncio import websocket
-from oslo_log import log as logging
-
+import datetime
 import json
 
-from zaqar.api.v1_1 import request as schema_validator
-from zaqar.common.api import request
-from zaqar.common.api import response
-from zaqar.common import errors
+from autobahn.asyncio import websocket
+from oslo_log import log as logging
+from oslo_utils import timeutils
+import pytz
 
 LOG = logging.getLogger(__name__)
+
+_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)
 
 
 class MessagingProtocol(websocket.WebSocketServerProtocol):
 
-    def __init__(self, handler):
+    _fake_env = {
+        'REQUEST_METHOD': 'POST',
+        'SERVER_NAME': 'zaqar',
+        'SERVER_PORT': 80,
+        'SERVER_PROTOCOL': 'HTTP/1.1',
+        'PATH_INFO': '/',
+        'SCRIPT_NAME': '',
+        'wsgi.url_scheme': 'http'
+    }
+
+    def __init__(self, handler, auth_strategy, loop):
         websocket.WebSocketServerProtocol.__init__(self)
         self._handler = handler
+        self._auth_strategy = auth_strategy
+        self._loop = loop
+        self._authentified = False
+        self._auth_app = None
+        self._deauth_handle = None
 
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
@@ -43,61 +58,75 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             # TODO(vkmc): Binary support will be added in the next cycle
             # For now, we are returning an invalid request response
             print("Binary message received: {0} bytes".format(len(payload)))
-            req = self._dummy_request()
             body = {'error': 'Schema validation failed.'}
-            headers = {'status': 400}
-            resp = response.Response(req, body, headers)
-            return resp
-        else:
-            try:
-                print("Text message received: {0}".format(payload))
-                pl = json.loads(payload)
-                req = self._create_request(pl)
-                resp = (self._validate_request(pl, req) or
-                        self._handler.process_request(req))
-            except ValueError as ex:
-                LOG.exception(ex)
-                req = self._dummy_request()
-                body = {'error': str(ex)}
-                headers = {'status': 400}
-                resp = response.Response(req, body, headers)
+            resp = self._handler.create_response(400, body)
+            return self._send_response(resp)
+        try:
+            print("Text message received: {0}".format(payload))
+            payload = json.loads(payload)
+        except ValueError as ex:
+            LOG.exception(ex)
+            body = {'error': str(ex)}
+            resp = self._handler.create_response(400, body)
+            return self._send_response(resp)
 
-        resp_json = json.dumps(resp.get_response())
-        self.sendMessage(resp_json, isBinary)
+        req = self._handler.create_request(payload)
+        resp = self._handler.validate_request(payload, req)
+        if resp is None:
+            if self._auth_strategy and not self._authentified:
+                if self._auth_app or payload.get('action') != 'authenticate':
+                    body = {'error': 'Not authentified.'}
+                    resp = self._handler.create_response(403, body)
+                else:
+                    return self._authenticate(payload)
+            elif payload.get('action') == 'authenticate':
+                return self._authenticate(payload)
+            else:
+                resp = self._handler.process_request(req)
+        return self._send_response(resp)
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
 
-    @staticmethod
-    def _create_request(pl):
-        action = pl.get('action')
-        body = pl.get('body', {})
-        headers = pl.get('headers')
+    def _authenticate(self, payload):
+        self._auth_app = self._auth_strategy(self._auth_start)
+        env = self._fake_env.copy()
+        env.update(
+            (self._header_to_env_var(key), value)
+            for key, value in payload.get('headers').items())
+        self._auth_app(env, self._auth_response)
 
-        return request.Request(action=action, body=body,
-                               headers=headers, api="v1.1")
+    def _auth_start(self, env, start_response):
+        self._authentified = True
+        self._auth_app = None
+        expire = env['keystone.token_info']['token']['expires_at']
+        expire_time = timeutils.parse_isotime(expire)
+        timestamp = (expire_time - _EPOCH).total_seconds()
+        if self._deauth_handle is not None:
+            self._deauth_handle.cancel()
+        self._deauth_handle = self._loop.call_at(
+            timestamp, self._deauthenticate)
 
-    @staticmethod
-    def _validate_request(pl, req):
-        try:
-            action = pl.get('action')
-            validator = schema_validator.RequestSchema()
-            is_valid = validator.validate(action=action, body=pl)
-        except errors.InvalidAction as ex:
-            body = {'error': str(ex)}
-            headers = {'status': 400}
-            resp = response.Response(req, body, headers)
-            return resp
+        start_response('200 OK', [])
+
+    def _deauthenticate(self):
+        self._authentified = False
+        self.sendClose(403, 'Authentication expired.')
+
+    def _auth_response(self, status, message):
+        code = int(status.split()[0])
+        if code != 200:
+            body = {'error': 'Authentication failed.'}
+            resp = self._handler.create_response(code, body)
+            self._send_response(resp)
         else:
-            if not is_valid:
-                body = {'error': 'Schema validation failed.'}
-                headers = {'status': 400}
-                resp = response.Response(req, body, headers)
-                return resp
+            body = {'message': 'Authentified.'}
+            resp = self._handler.create_response(200, body)
+            self._send_response(resp)
 
-            return None
+    def _header_to_env_var(self, key):
+        return 'HTTP_%s' % key.replace('-', '_').upper()
 
-    @staticmethod
-    def _dummy_request():
-        action = None
-        return request.Request(action)
+    def _send_response(self, resp):
+        resp_json = json.dumps(resp.get_response())
+        self.sendMessage(resp_json, False)
