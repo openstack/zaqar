@@ -16,6 +16,11 @@
             margin: 0;
             padding: 1em;
         }
+
+        #login {
+            background-color: #c7e8f2;
+            padding-left: 1em;
+        }
         #queues {
             padding-left: 1em;
             background-color: #bbb;
@@ -38,7 +43,11 @@
         var project = 'cf38008b72d04b89a505b9d66d1d5768';
         var client_id = '31209ff3-ba03-4cec-b4ca-655f4899f8f4';
         socket.onopen = function(evt) {
-            list_queues();
+            var node = document.createElement('div');
+            var msg = new Date().toUTCString();
+            msg += " Connection opened"
+            node.appendChild(document.createTextNode(msg));
+            $('#log').append(node);
         }
         socket.onmessage = function(evt) {
             var node = document.createElement('div');
@@ -57,11 +66,43 @@
             } else if (action == 'message_list') {
                 var messages = data['body']['messages'];
                 display_messages(messages);
-            } else if (action == 'queue_create' || action == 'queue_delete') {
+            } else if (action == 'queue_create' || action == 'queue_delete' || action == 'authenticate') {
                 list_queues();
             } else if (action == 'message_post' || action == 'message_delete') {
                list_messages();
             }
+        }
+        login = function(frm) {
+            var data = {
+                'auth': {
+                    'identity': {
+                        'methods': ['password'],
+                        'password': {
+                            'user': {
+                                'name': frm['user'].value,
+                                'domain': {'id': 'default'},
+                                'password': frm['password'].value
+                            }
+                        }
+                    }
+                }
+            }
+            $.ajax({
+                'type': 'POST',
+                'url': 'http://localhost:5000/v3/auth/tokens',
+                'data': JSON.stringify(data),
+                'contentType': 'application/json',
+                'dataType': 'json',
+                'success': function(data, code, response) {
+                    var token = response.getResponseHeader('X-Subject-Token')
+                    var msg = {'action': 'authenticate',
+                               'headers': {'X-Auth-Token': token,
+                                           'Client-ID': client_id,
+                                           'X-Project-ID': project}}
+                    socket.send(JSON.stringify(msg));
+                }
+            });
+            return false;
         }
         send_message = function(action, body) {
             var msg = {'action': action,
@@ -122,12 +163,22 @@
             <h1>Zaqar WebSocket example</h1>
         </div>
 
+        <div id='login'>
+            <form class='pure-form' onsubmit='return login(this)'>
+                <fieldset>
+                    <input type='text' name='user' placeholder='User' />
+                    <input type='password' name='password' placeholder='Password' />
+                    <button class='pure-button' type='submit'>Login</button>
+                </fieldset>
+             </form>
+        </div>
+
         <div class='pure-g'>
             <div id='queues' class='pure-u-1-3'>
                 <h4>Queues</h4>
                 <form class='pure-form' onsubmit='return create_queue(this)'>
                     <fieldset>
-                        <input type='text' name='queue' />
+                        <input type='text' name='queue' placeholder='Queue name' />
                         <button class='pure-button' type='submit'>Create</button>
                     </fieldset>
                 </form>
@@ -145,8 +196,8 @@
                 <h4>Messages</h4>
                 <form class='pure-form' onsubmit='return queue_message(this)'>
                     <fieldset>
-                        <input type='text' name='body' />
-                        <input type='text' name='ttl' size='5' value='3600' />
+                        <input type='text' name='body' placeholder='Message body' />
+                        <input type='text' name='ttl' size='5' value='3600' placeholder='TTL' />
                         <button type='submit' class='pure-button'>Post</button>
                     </fieldset>
                 </form>
