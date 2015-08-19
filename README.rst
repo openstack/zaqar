@@ -23,7 +23,7 @@ sudo yum install gcc python-pip libxml2-devel libxslt-devel
 
     $ cd
     $ mkdir ~/.zaqar
-    $ git clone https://github.com/openstack/zaqar.git
+    $ git clone https://git.openstack.org/openstack/zaqar.git
 
 3. Generate and copy the Zaqar config files to the directory ``~/.zaqar``::
 
