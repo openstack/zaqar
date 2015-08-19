@@ -121,6 +121,7 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF DEFAULT use_syslog $SYSLOG
     iniset $ZAQAR_CONF DEFAULT auth_strategy keystone
+    iniset $ZAQAR_CONF signed_url secret_key notreallysecret
 
     iniset $ZAQAR_CONF storage message_pipeline zaqar.notification.notifier
 
