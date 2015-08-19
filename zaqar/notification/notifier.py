@@ -14,13 +14,10 @@
 # limitations under the License.
 
 from stevedore import driver
-import uuid
 
 import futurist
 from oslo_log import log as logging
 from six.moves import urllib_parse
-from taskflow import engines
-from taskflow.patterns import unordered_flow as uf
 
 LOG = logging.getLogger(__name__)
 
@@ -44,24 +41,12 @@ class NotifierDriver(object):
             subscribers = self.subscription_controller.list(queue_name,
                                                             project)
 
-            wh_flow = uf.Flow('webhook_notifier_flow')
-
             for sub in next(subscribers):
                 s_type = urllib_parse.urlparse(sub['subscriber']).scheme
-                invoke_args = [uuid.uuid4()]
-                invoke_kwds = {'inject': {'subscription': sub,
-                                          'messages': messages}}
 
                 mgr = driver.DriverManager('zaqar.notification.tasks',
                                            s_type,
-                                           invoke_on_load=True,
-                                           invoke_args=invoke_args,
-                                           invoke_kwds=invoke_kwds)
-                wh_flow.add(mgr.driver)
-
-            if wh_flow:
-                e = engines.load(wh_flow, executor=self.executor,
-                                 engine='parallel')
-                e.run()
+                                           invoke_on_load=True)
+                self.executor.submit(mgr.driver.execute, sub, messages)
         else:
             LOG.error('Failed to get subscription controller.')
