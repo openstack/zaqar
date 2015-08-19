@@ -73,8 +73,17 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         if resp is None:
             if self._auth_strategy and not self._authentified:
                 if self._auth_app or payload.get('action') != 'authenticate':
-                    body = {'error': 'Not authentified.'}
-                    resp = self._handler.create_response(403, body, req)
+                    if 'URL-Signature' in payload.get('headers', {}):
+                        if self._handler.verify_signature(
+                                self.factory._secret_key, payload):
+                            resp = self._handler.process_request(req)
+                        else:
+                            body = {'error': 'Not authentified.'}
+                            resp = self._handler.create_response(
+                                403, body, req)
+                    else:
+                        body = {'error': 'Not authentified.'}
+                        resp = self._handler.create_response(403, body, req)
                 else:
                     return self._authenticate(payload)
             elif payload.get('action') == 'authenticate':

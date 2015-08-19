@@ -18,6 +18,7 @@ from zaqar.api.v1_1 import request as schema_validator
 from zaqar.common.api import request
 from zaqar.common.api import response
 from zaqar.common import errors
+from zaqar.common import urls
 
 
 class Handler(object):
@@ -25,6 +26,15 @@ class Handler(object):
 
     The handler validates and process the requests
     """
+
+    _actions_mapping = {
+        'message_list': 'GET',
+        'message_get': 'GET',
+        'message_get_many': 'GET',
+        'message_post': 'POST',
+        'message_delete': 'DELETE',
+        'message_delete_many': 'DELETE'
+    }
 
     def __init__(self, storage, control, validate, defaults):
         self.v1_1_endpoints = endpoints.Endpoints(storage, control,
@@ -73,3 +83,31 @@ class Handler(object):
 
     def get_defaults(self):
         return self.v1_1_endpoints._defaults
+
+    def verify_signature(self, key, payload):
+        action = payload.get('action')
+        method = self._actions_mapping.get(action)
+
+        queue_name = payload.get('body', {}).get('queue_name')
+        path = '/v2/queues/%(queue_name)s/messages' % {
+            'queue_name': queue_name}
+
+        headers = payload.get('headers', {})
+        project = headers.get('X-Project-ID')
+        expires = headers.get('URL-Expires')
+        methods = headers.get('URL-Methods')
+        signature = headers.get('URL-Signature')
+
+        if not method or method not in methods:
+            return False
+
+        try:
+            verified = urls.verify_signed_headers_data(key, path,
+                                                       project=project,
+                                                       methods=methods,
+                                                       expires=expires,
+                                                       signature=signature)
+        except ValueError:
+            return False
+
+        return verified

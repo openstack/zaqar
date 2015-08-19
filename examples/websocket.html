@@ -66,7 +66,9 @@
             } else if (action == 'message_list') {
                 var messages = data['body']['messages'];
                 display_messages(messages);
-            } else if (action == 'queue_create' || action == 'queue_delete' || action == 'authenticate') {
+            } else if (action == 'queue_create' || action == 'queue_delete') {
+                list_queues();
+            } else if (action == 'authenticate' && data["headers"]["status"] == 200) {
                 list_queues();
             } else if (action == 'message_post' || action == 'message_delete') {
                list_messages();
@@ -188,6 +190,7 @@
                         <button class='pure-button' onclick='delete_queue()'>Delete</button>
                         <button class='pure-button' onclick='list_messages()'>List messages</button>
                         <button class='pure-button' onclick='subscribe_queue()'>Subscribe</button>
+                        <button class='pure-button' onclick='list_queues()'>Refresh</button>
                     </fieldset>
                 </form>
             </div>

@@ -23,12 +23,13 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
     protocol = protocol.MessagingProtocol
 
     def __init__(self, uri, debug, handler, external_port, auth_strategy,
-                 loop):
+                 loop, secret_key):
         websocket.WebSocketServerFactory.__init__(
             self, url=uri, debug=debug, externalPort=external_port)
         self._handler = handler
         self._auth_strategy = auth_strategy
         self._loop = loop
+        self._secret_key = secret_key
 
     def __call__(self):
         proto = self.protocol(self._handler, self._auth_strategy, self._loop)
