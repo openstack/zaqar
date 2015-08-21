@@ -126,14 +126,16 @@ class AuthTest(base.V1_1Base):
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 
-        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
-                                      project=self.project_id, methods=['GET'])
+        data = urls.create_signed_url(
+            'secret', ['/v2/queues/myqueue/messages'], project=self.project_id,
+            methods=['GET'])
 
         headers = self.headers.copy()
         headers.update({
             'URL-Signature': data['signature'],
             'URL-Expires': data['expires'],
-            'URL-Methods': ['GET']
+            'URL-Methods': ['GET'],
+            'URL-Paths': ['/v2/queues/myqueue/messages']
         })
         req = json.dumps({'action': 'message_list',
                           'body': {'queue_name': 'myqueue'},
@@ -148,14 +150,16 @@ class AuthTest(base.V1_1Base):
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 
-        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
-                                      project=self.project_id, methods=['GET'])
+        data = urls.create_signed_url(
+            'secret', ['/v2/queues/myqueue/messages'], project=self.project_id,
+            methods=['GET'])
 
         headers = self.headers.copy()
         headers.update({
             'URL-Signature': data['signature'],
             'URL-Expires': data['expires'],
-            'URL-Methods': ['GET']
+            'URL-Methods': ['GET'],
+            'URL-Paths': ['/v2/queues/otherqueue/messages']
         })
         req = json.dumps({'action': 'message_list',
                           'body': {'queue_name': 'otherqueue'},
@@ -170,14 +174,16 @@ class AuthTest(base.V1_1Base):
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 
-        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
-                                      project=self.project_id, methods=['GET'])
+        data = urls.create_signed_url(
+            'secret', ['/v2/queues/myqueue/messages'], project=self.project_id,
+            methods=['GET'])
 
         headers = self.headers.copy()
         headers.update({
             'URL-Signature': data['signature'],
             'URL-Expires': data['expires'],
-            'URL-Methods': ['GET']
+            'URL-Methods': ['GET'],
+            'URL-Paths': ['/v2/queues/myqueue/messages']
         })
         req = json.dumps({'action': 'message_delete',
                           'body': {'queue_name': 'myqueue',

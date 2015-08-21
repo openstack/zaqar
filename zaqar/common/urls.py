@@ -28,7 +28,7 @@ _LE = i18n._LE
 _DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
-def create_signed_url(key, path, project=None, expires=None, methods=None):
+def create_signed_url(key, paths, project=None, expires=None, methods=None):
     """Creates a signed url for the specified path
 
     This function will create a pre-signed URL for `path` using the
@@ -36,7 +36,7 @@ def create_signed_url(key, path, project=None, expires=None, methods=None):
     hex value of the hmac created using `key`
 
     :param key: A string to use as a `key` for the hmac generation.
-    :param path: A string representing an URL path.
+    :param paths: A list of strings representing URL paths.
     :param project: (Default None) The ID of the project this URL belongs to.
     :param methods: (Default ['GET']) A list of methods that will be
         supported by the generated URL.
@@ -49,8 +49,8 @@ def create_signed_url(key, path, project=None, expires=None, methods=None):
     if key is None:
         raise ValueError(_LE('The `key` can\'t be None'))
 
-    if path is None:
-        raise ValueError(_LE('The `path` can\'t be None'))
+    if not isinstance(paths, list) or not paths:
+        raise ValueError(_LE('`paths` must be a non-empty list'))
 
     if not isinstance(methods, list):
         raise ValueError(_LE('`methods` should be a list'))
@@ -72,27 +72,28 @@ def create_signed_url(key, path, project=None, expires=None, methods=None):
         raise ValueError(_LE('`expires` is lower than the current time'))
 
     methods.sort()
+    paths.sort()
     expires_str = expires.strftime(_DATE_FORMAT)
-    hmac_body = six.b('%(path)s\\n%(methods)s\\n%(project)s\\n%(expires)s' %
-                      {'path': path, 'methods': ','.join(methods),
+    hmac_body = six.b(r'%(paths)s\n%(methods)s\n%(project)s\n%(expires)s' %
+                      {'paths': ','.join(paths), 'methods': ','.join(methods),
                        'project': project, 'expires': expires_str})
 
     if not isinstance(key, six.binary_type):
         key = six.binary_type(key.encode('utf-8'))
 
-    return {'path': path,
+    return {'paths': paths,
             'methods': methods,
             'project': project,
             'expires': expires_str,
             'signature': hmac.new(key, hmac_body, hashlib.sha256).hexdigest()}
 
 
-def verify_signed_headers_data(key, path, project,
+def verify_signed_headers_data(key, paths, project,
                                signature, methods, expires):
     """Verify that `signature` matches for the given values
 
     :param key: A string to use as a `key` for the hmac generation.
-    :param path: A string representing an URL path.
+    :param paths: A list of strings representing URL paths.
     :param project: The ID of the project this URL belongs to.
     :param signature: The pre-generated signature
     :param methods: A list of methods that will be
@@ -101,7 +102,7 @@ def verify_signed_headers_data(key, path, project,
         the generated URL.
     """
 
-    generated = create_signed_url(key, path, project=project,
+    generated = create_signed_url(key, paths, project=project,
                                   methods=methods, expires=expires)
 
     return signature == generated['signature']
