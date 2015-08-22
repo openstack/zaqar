@@ -18,7 +18,7 @@ Welcome to the Zaqar developer documentation!
 Zaqar is a multi-tenant cloud messaging and notification service for web
 and mobile developers.
 
-The service features a ReST API, which developers can use to send messages
+The service features a REST API, which developers can use to send messages
 between various components of their SaaS and mobile applications, by using a
 variety of communication patterns. Underlying this API is an efficient
 messaging engine designed with scalability and security in mind.
