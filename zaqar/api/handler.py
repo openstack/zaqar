@@ -70,3 +70,6 @@ class Handler(object):
 
         return request.Request(action=action, body=body,
                                headers=headers, api="v1.1")
+
+    def get_defaults(self):
+        return self.v1_1_endpoints._defaults

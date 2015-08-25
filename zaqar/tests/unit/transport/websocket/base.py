@@ -45,6 +45,7 @@ class TestBase(testing.TestBase):
         self.boot = bootstrap.Bootstrap(self.conf)
 
         self.transport = self.boot.transport
+        self.api = self.boot.api
 
     def tearDown(self):
         if self.conf.pooling:
