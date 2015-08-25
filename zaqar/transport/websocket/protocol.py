@@ -23,8 +23,6 @@ import pytz
 
 LOG = logging.getLogger(__name__)
 
-_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)
-
 
 class MessagingProtocol(websocket.WebSocketServerProtocol):
 
@@ -76,7 +74,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             if self._auth_strategy and not self._authentified:
                 if self._auth_app or payload.get('action') != 'authenticate':
                     body = {'error': 'Not authentified.'}
-                    resp = self._handler.create_response(403, body)
+                    resp = self._handler.create_response(403, body, req)
                 else:
                     return self._authenticate(payload)
             elif payload.get('action') == 'authenticate':
@@ -101,27 +99,29 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._auth_app = None
         expire = env['keystone.token_info']['token']['expires_at']
         expire_time = timeutils.parse_isotime(expire)
-        timestamp = (expire_time - _EPOCH).total_seconds()
+        now = datetime.datetime.now(tz=pytz.UTC)
+        delta = (expire_time - now).total_seconds()
         if self._deauth_handle is not None:
             self._deauth_handle.cancel()
-        self._deauth_handle = self._loop.call_at(
-            timestamp, self._deauthenticate)
+        self._deauth_handle = self._loop.call_later(
+            delta, self._deauthenticate)
 
         start_response('200 OK', [])
 
     def _deauthenticate(self):
         self._authentified = False
-        self.sendClose(403, 'Authentication expired.')
+        self.sendClose(4003, u'Authentication expired.')
 
     def _auth_response(self, status, message):
         code = int(status.split()[0])
+        req = self._handler.create_request({'action': 'authenticate'})
         if code != 200:
             body = {'error': 'Authentication failed.'}
-            resp = self._handler.create_response(code, body)
+            resp = self._handler.create_response(code, body, req)
             self._send_response(resp)
         else:
             body = {'message': 'Authentified.'}
-            resp = self._handler.create_response(200, body)
+            resp = self._handler.create_response(200, body, req)
             self._send_response(resp)
 
     def _header_to_env_var(self, key):

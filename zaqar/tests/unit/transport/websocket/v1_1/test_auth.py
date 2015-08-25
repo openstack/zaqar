@@ -89,6 +89,7 @@ class AuthTest(base.V1_1Base):
         self.assertEqual(1, msg_mock.call_count)
         resp = json.loads(msg_mock.call_args[0][0])
         self.assertEqual(resp['headers']['status'], 401)
+        self.assertEqual(resp['request']['action'], 'authenticate')
 
     def test_reauth(self):
         headers = self.headers.copy()
