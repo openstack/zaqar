@@ -59,11 +59,11 @@ Install the prerequisite packages.
 
 On Ubuntu::
 
-  $ sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev
+  $ sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev python-dev zlib1g-dev
 
 On Fedora-based distributions (e.g., Fedora/RHEL/CentOS)::
 
-  $ sudo yum install gcc python-pip libxml2-devel libxslt-devel
+  $ sudo yum install gcc python-pip libxml2-devel libxslt-devel python-devel
 
 Install MongoDB
 ###############
