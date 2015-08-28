@@ -63,7 +63,7 @@ class QueueController(storage.Queue):
                                 tables.Queues.c.project == project,
                                 tables.Queues.c.name == name
                                 ))
-            return utils.json_decode(self.driver.get(sel)[0])
+            return utils.json_decode(self.driver.run(sel).fetchone()[0])
         except utils.NoResult:
             raise errors.QueueDoesNotExist(name, project)
 
