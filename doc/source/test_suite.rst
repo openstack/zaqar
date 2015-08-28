@@ -13,7 +13,7 @@ Functional tests
     conform to the specs.  These include positive and negative tests.
 
 Tempest tests
-    Tempest tests are integration tests for Openstack [#f1]_.
+    Tempest tests are integration tests for OpenStack [#f1]_.
     Tempest tests for Zaqar are available at https://github.com/openstack/tempest.
 
 This document focuses on the unit and functional tests.  Please refer to the

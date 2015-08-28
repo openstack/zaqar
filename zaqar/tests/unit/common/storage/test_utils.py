@@ -28,18 +28,15 @@ class TestUtils(testing.TestBase):
         self.conf.register_opts(configs._GENERAL_OPTIONS)
 
     @testing.requires_mongodb
-    def test_can_connect_suceeds_if_good_uri_mongo(self):
+    def test_can_connect_succeeds_if_good_uri_mongo(self):
         self.config(unreliable=True)
         self.assertTrue(utils.can_connect('mongodb://localhost:27017',
                                           conf=self.conf))
 
     @testing.requires_redis
-    def test_can_connect_suceeds_if_good_uri_redis(self):
+    def test_can_connect_succeeds_if_good_uri_redis(self):
         self.assertTrue(utils.can_connect('redis://localhost'))
         self.assertTrue(utils.can_connect('redis://localhost:6379'))
-
-    # def test_can_connect_suceeds_if_good_uri_sqlite(self):
-    #    self.assertTrue(utils.can_connect('sqlite://:memory:'))
 
     def test_can_connect_fails_if_bad_uri_missing_schema(self):
         self.assertFalse(utils.can_connect('localhost:27017'))
