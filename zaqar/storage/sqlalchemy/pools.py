@@ -100,8 +100,8 @@ class PoolsController(base.PoolsBase):
         except sa.exc.IntegrityError:
             # TODO(cpp-cabrera): merge update/create into a single
             # method with introduction of upsert
-            self.update(name, weight=weight, uri=uri,
-                        group=group, options=options)
+            self._update(name, weight=weight, uri=uri,
+                         group=group, options=options)
 
     @utils.raises_conn_error
     def _exists(self, name):
