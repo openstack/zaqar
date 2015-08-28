@@ -92,8 +92,7 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def flavors_controller(self):
-        # NOTE(flaper87): Needed to avoid `abc` errors.
-        pass
+        return controllers.FlavorsController(self)
 
     @property
     def subscriptions_controller(self):

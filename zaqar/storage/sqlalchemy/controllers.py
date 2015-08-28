@@ -14,6 +14,7 @@
 # the License.
 
 from zaqar.storage.sqlalchemy import catalogue
+from zaqar.storage.sqlalchemy import flavors
 from zaqar.storage.sqlalchemy import pools
 from zaqar.storage.sqlalchemy import queues
 
@@ -21,3 +22,4 @@ from zaqar.storage.sqlalchemy import queues
 QueueController = queues.QueueController
 CatalogueController = catalogue.CatalogueController
 PoolsController = pools.PoolsController
+FlavorsController = flavors.FlavorsController
