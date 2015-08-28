@@ -67,7 +67,7 @@ class Listing(object):
         cursor = self._ctrl.list(project=project_id, **store)
         flavors = list(next(cursor))
 
-        results = {}
+        results = {'links': []}
 
         if flavors:
             store['marker'] = next(cursor)
@@ -82,12 +82,14 @@ class Listing(object):
         if detailed is not None:
             store['detailed'] = detailed
 
-        results['links'] = [
-            {
-                'rel': 'next',
-                'href': request.path + falcon.to_query_str(store)
-            }
-        ]
+        if flavors:
+            results['links'] = [
+                {
+                    'rel': 'next',
+                    'href': request.path + falcon.to_query_str(store)
+                }
+            ]
+
         results['flavors'] = flavors
 
         response.body = transport_utils.to_json(results)

@@ -149,14 +149,18 @@ class CollectionResource(object):
         for each_queue in queues:
             each_queue['href'] = req.path + '/' + each_queue['name']
 
-        response_body = {
-            'queues': queues,
-            'links': [
+        links = []
+        if queues:
+            links = [
                 {
                     'rel': 'next',
                     'href': req.path + falcon.to_query_str(kwargs)
                 }
             ]
+
+        response_body = {
+            'queues': queues,
+            'links': links
         }
 
         resp.body = utils.to_json(response_body)
