@@ -24,7 +24,7 @@ from zaqar.tests.unit.transport.websocket import utils as test_utils
 
 
 @ddt.ddt
-class QueueLifecycleBaseTest(base.V1_1Base):
+class QueueLifecycleBaseTest(base.V2Base):
 
     config_file = "websocket_mongodb.conf"
 

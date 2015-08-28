@@ -24,7 +24,7 @@ from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
 
-class AuthTest(base.V1_1Base):
+class AuthTest(base.V2Base):
 
     config_file = "websocket_mongodb_keystone_auth.conf"
 
