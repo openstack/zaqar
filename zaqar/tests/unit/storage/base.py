@@ -1258,8 +1258,15 @@ class CatalogueControllerTest(ControllerBaseTest):
     def setUp(self):
         super(CatalogueControllerTest, self).setUp()
         self.controller = self.driver.catalogue_controller
-        self.queue = six.text_type(uuid.uuid1())
-        self.project = six.text_type(uuid.uuid1())
+        self.pool_ctrl = self.driver.pools_controller
+        self.queue = six.text_type(uuid.uuid4())
+        self.project = six.text_type(uuid.uuid4())
+
+        self.pool = str(uuid.uuid1())
+        self.pool_group = str(uuid.uuid1())
+        self.pool_ctrl.create(self.pool, 100, 'localhost',
+                              group=self.pool_group, options={})
+        self.addCleanup(self.pool_ctrl.delete, self.pool)
 
     def tearDown(self):
         self.controller.drop_all()
@@ -1287,13 +1294,14 @@ class CatalogueControllerTest(ControllerBaseTest):
             self.fail('There should be no entries at this time')
 
         # create a listing, check its length
-        with helpers.pool_entries(self.controller, 10) as expect:
+        with helpers.pool_entries(self.controller,
+                                  self.pool_ctrl, 10) as expect:
             project = expect[0][0]
             xs = list(self.controller.list(project))
             self.assertEqual(len(xs), 10)
 
         # create, check existence, delete
-        with helpers.pool_entry(self.controller, project, queue, u'a'):
+        with helpers.pool_entry(self.controller, project, queue, self.pool):
             self.assertTrue(self.controller.exists(project, queue))
 
         # verify it no longer exists
@@ -1303,7 +1311,8 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.assertEqual(len(list(self.controller.list(project))), 0)
 
     def test_list(self):
-        with helpers.pool_entries(self.controller, 10) as expect:
+        with helpers.pool_entries(self.controller,
+                                  self.pool_ctrl, 10) as expect:
             values = zip(self.controller.list(u'_'), expect)
             for e, x in values:
                 p, q, s = x
@@ -1311,12 +1320,18 @@ class CatalogueControllerTest(ControllerBaseTest):
                 self._check_value(e, xqueue=q, xproject=p, xpool=s)
 
     def test_update(self):
+        p2 = u'b'
+        self.pool_ctrl.create(p2, 100, '127.0.0.1',
+                              group=self.pool_group,
+                              options={})
+        self.addCleanup(self.pool_ctrl.delete, p2)
+
         with helpers.pool_entry(self.controller, self.project,
-                                self.queue, u'a') as expect:
+                                self.queue, self.pool) as expect:
             p, q, s = expect
-            self.controller.update(p, q, pool=u'b')
+            self.controller.update(p, q, pool=p2)
             entry = self.controller.get(p, q)
-            self._check_value(entry, xqueue=q, xproject=p, xpool=u'b')
+            self._check_value(entry, xqueue=q, xproject=p, xpool=p2)
 
     def test_update_raises_when_entry_does_not_exist(self):
         e = self.assertRaises(errors.QueueNotMapped,
@@ -1327,7 +1342,7 @@ class CatalogueControllerTest(ControllerBaseTest):
     def test_get(self):
         with helpers.pool_entry(self.controller,
                                 self.project,
-                                self.queue, u'a') as expect:
+                                self.queue, self.pool) as expect:
             p, q, s = expect
             e = self.controller.get(p, q)
             self._check_value(e, xqueue=q, xproject=p, xpool=s)
@@ -1350,7 +1365,7 @@ class CatalogueControllerTest(ControllerBaseTest):
     def test_exists(self):
         with helpers.pool_entry(self.controller,
                                 self.project,
-                                self.queue, u'a') as expect:
+                                self.queue, self.pool) as expect:
             p, q, _ = expect
             self.assertTrue(self.controller.exists(p, q))
             self.assertFalse(self.controller.exists('nada', 'not_here'))

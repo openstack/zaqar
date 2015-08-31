@@ -58,14 +58,16 @@ class QueueController(storage.Queue):
         if project is None:
             project = ''
 
-        try:
-            sel = sa.sql.select([tables.Queues.c.metadata], sa.and_(
-                                tables.Queues.c.project == project,
-                                tables.Queues.c.name == name
-                                ))
-            return utils.json_decode(self.driver.run(sel).fetchone()[0])
-        except utils.NoResult:
+        sel = sa.sql.select([tables.Queues.c.metadata], sa.and_(
+            tables.Queues.c.project == project,
+            tables.Queues.c.name == name
+        ))
+
+        queue = self.driver.run(sel).fetchone()
+        if queue is None:
             raise errors.QueueDoesNotExist(name, project)
+
+        return utils.json_decode(queue[0])
 
     def _get(self, name, project=None):
         try:

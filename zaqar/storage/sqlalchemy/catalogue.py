@@ -76,12 +76,18 @@ class CatalogueController(base.CatalogueBase):
             self._conn.execute(stmt)
 
         except sa.exc.IntegrityError:
-            self.update(project, queue, pool)
+            self._update(project, queue, pool)
 
     def delete(self, project, queue):
         stmt = sa.sql.delete(tables.Catalogue).where(
             _match(project, queue)
         )
+        self._conn.execute(stmt)
+
+    def _update(self, project, queue, pool):
+        stmt = sa.sql.update(tables.Catalogue).where(
+            _match(project, queue)
+        ).values(pool=pool)
         self._conn.execute(stmt)
 
     def update(self, project, queue, pool=None):
@@ -91,10 +97,7 @@ class CatalogueController(base.CatalogueBase):
         if not self.exists(project, queue):
             raise errors.QueueNotMapped(queue, project)
 
-        stmt = sa.sql.update(tables.Catalogue).where(
-            _match(project, queue)
-        ).values(pool=pool)
-        self._conn.execute(stmt)
+        self._update(project, queue, pool)
 
     def drop_all(self):
         stmt = sa.sql.expression.delete(tables.Catalogue)
