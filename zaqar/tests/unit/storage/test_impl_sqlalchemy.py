@@ -42,6 +42,13 @@ class SqlalchemyCatalogueTest(base.CatalogueControllerTest):
     control_driver_class = sqlalchemy.ControlDriver
 
 
+class SqlalchemyFlavorsTest(base.FlavorsControllerTest):
+    config_file = 'wsgi_sqlalchemy.conf'
+    driver_class = sqlalchemy.ControlDriver
+    controller_class = controllers.FlavorsController
+    control_driver_class = sqlalchemy.ControlDriver
+
+
 class MsgidTests(testing.TestBase):
 
     def test_encode(self):

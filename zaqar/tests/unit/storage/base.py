@@ -1480,13 +1480,19 @@ class FlavorsControllerTest(ControllerBaseTest):
         res = self.flavors_controller.get(name, project=self.project,
                                           detailed=True)
 
+        p = 'olympic'
+        group = 'sports'
+        self.pools_controller.create(p, 100, 'localhost2',
+                                     group=group, options={})
+        self.addCleanup(self.pools_controller.delete, p)
+
         new_capabilities = {'fifo': False}
         self.flavors_controller.update(name, project=self.project,
-                                       pool='olympic',
+                                       pool=group,
                                        capabilities={'fifo': False})
         res = self.flavors_controller.get(name, project=self.project,
                                           detailed=True)
-        self._flavors_expects(res, name, self.project, 'olympic')
+        self._flavors_expects(res, name, self.project, group)
         self.assertEqual(res['capabilities'], new_capabilities)
 
     def test_delete_works(self):
