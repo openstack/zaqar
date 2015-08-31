@@ -171,7 +171,7 @@ environment, you can add it to your DevStack_ deployment.
 To do this, you first need to add the following setting
 to your local.conf::
 
-    enable-service zaqar-server
+    enable_service zaqar-server
 
 Then run the stack.sh script as usual.
 
