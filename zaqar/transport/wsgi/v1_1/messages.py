@@ -131,14 +131,18 @@ class CollectionResource(object):
                                                        m['claim_id'])
                         for m in messages]
 
-        return {
-            'messages': messages,
-            'links': [
+        links = []
+        if messages:
+            links = [
                 {
                     'rel': 'next',
                     'href': req.path + falcon.to_query_str(kwargs)
                 }
             ]
+
+        return {
+            'messages': messages,
+            'links': links
         }
 
     # ----------------------------------------------------------------------

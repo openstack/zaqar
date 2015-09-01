@@ -89,7 +89,7 @@ class Listing(object):
         cursor = self._ctrl.list(**store)
         pools = list(next(cursor))
 
-        results = {}
+        results = {'links': []}
 
         if pools:
             store['marker'] = next(cursor)
@@ -97,12 +97,13 @@ class Listing(object):
             for entry in pools:
                 entry['href'] = request.path + '/' + entry['name']
 
-        results['links'] = [
-            {
-                'rel': 'next',
-                'href': request.path + falcon.to_query_str(store)
-            }
-        ]
+            results['links'] = [
+                {
+                    'rel': 'next',
+                    'href': request.path + falcon.to_query_str(store)
+                }
+            ]
+
         results['pools'] = pools
 
         response.content_location = request.relative_uri

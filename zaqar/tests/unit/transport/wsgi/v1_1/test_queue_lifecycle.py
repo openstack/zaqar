@@ -262,10 +262,7 @@ class TestQueueLifecycleMongoDB(base.V1_1Base):
         results = jsonutils.loads(result[0])
         self.assertEqual(results['queues'], [])
         self.assertIn('links', results)
-        link = results['links'][0]
-        self.assertEqual('next', link['rel'])
-        href = falcon.uri.parse_query_string(link['href'])
-        self.assertNotIn('marker', href)
+        self.assertEqual(len(results['links']), 0)
 
         # Payload exceeded
         self.simulate_get(self.queue_path, headers=header,

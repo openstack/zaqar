@@ -66,7 +66,7 @@ class Listing(object):
         cursor = self._ctrl.list(project=project_id, **store)
         flavors = list(next(cursor))
 
-        results = {}
+        results = {'links': []}
 
         if flavors:
             store['marker'] = next(cursor)
@@ -74,12 +74,13 @@ class Listing(object):
             for entry in flavors:
                 entry['href'] = request.path + '/' + entry['name']
 
-        results['links'] = [
-            {
-                'rel': 'next',
-                'href': request.path + falcon.to_query_str(store)
-            }
-        ]
+            results['links'] = [
+                {
+                    'rel': 'next',
+                    'href': request.path + falcon.to_query_str(store)
+                }
+            ]
+
         results['flavors'] = flavors
 
         response.body = transport_utils.to_json(results)
