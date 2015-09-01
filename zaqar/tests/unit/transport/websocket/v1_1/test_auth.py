@@ -19,6 +19,7 @@ import uuid
 from keystonemiddleware import auth_token
 import mock
 
+from zaqar.common import urls
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
@@ -30,6 +31,7 @@ class AuthTest(base.V1_1Base):
     def setUp(self):
         super(AuthTest, self).setUp()
         self.protocol = self.transport.factory()
+        self.protocol.factory._secret_key = 'secret'
 
         self.default_message_ttl = 3600
 
@@ -119,3 +121,70 @@ class AuthTest(base.V1_1Base):
         self.assertEqual(2, len(responses))
         self.assertIn('cancelled', repr(handle))
         self.assertNotIn('cancelled', repr(self.protocol._deauth_handle))
+
+    def test_signed_url(self):
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+
+        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
+                                      project=self.project_id, methods=['GET'])
+
+        headers = self.headers.copy()
+        headers.update({
+            'URL-Signature': data['signature'],
+            'URL-Expires': data['expires'],
+            'URL-Methods': ['GET']
+        })
+        req = json.dumps({'action': 'message_list',
+                          'body': {'queue_name': 'myqueue'},
+                          'headers': headers})
+        self.protocol.onMessage(req, False)
+
+        self.assertEqual(1, send_mock.call_count)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(200, resp['headers']['status'])
+
+    def test_signed_url_wrong_queue(self):
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+
+        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
+                                      project=self.project_id, methods=['GET'])
+
+        headers = self.headers.copy()
+        headers.update({
+            'URL-Signature': data['signature'],
+            'URL-Expires': data['expires'],
+            'URL-Methods': ['GET']
+        })
+        req = json.dumps({'action': 'message_list',
+                          'body': {'queue_name': 'otherqueue'},
+                          'headers': headers})
+        self.protocol.onMessage(req, False)
+
+        self.assertEqual(1, send_mock.call_count)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(403, resp['headers']['status'])
+
+    def test_signed_url_wrong_method(self):
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+
+        data = urls.create_signed_url('secret', '/v2/queues/myqueue/messages',
+                                      project=self.project_id, methods=['GET'])
+
+        headers = self.headers.copy()
+        headers.update({
+            'URL-Signature': data['signature'],
+            'URL-Expires': data['expires'],
+            'URL-Methods': ['GET']
+        })
+        req = json.dumps({'action': 'message_delete',
+                          'body': {'queue_name': 'myqueue',
+                                   'message_id': '123'},
+                          'headers': headers})
+        self.protocol.onMessage(req, False)
+
+        self.assertEqual(1, send_mock.call_count)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(403, resp['headers']['status'])

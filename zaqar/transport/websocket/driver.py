@@ -76,7 +76,8 @@ class Driver(base.DriverBase):
             handler=self._api,
             external_port=self._ws_conf.external_port,
             auth_strategy=self._auth_strategy,
-            loop=asyncio.get_event_loop())
+            loop=asyncio.get_event_loop(),
+            secret_key=self._conf.signed_url.secret_key)
 
     def listen(self):
         """Self-host using 'bind' and 'port' from the WS config group."""
