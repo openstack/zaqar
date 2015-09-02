@@ -51,6 +51,7 @@ class NotifierTest(testing.TestBase):
         with mock.patch('requests.post') as mock_post:
             self.driver.post('fake_queue', self.messages,
                              self.client_id, self.project)
+            self.driver.executor.shutdown()
             mock_post.assert_has_calls([
                 mock.call(self.subscription[0]['subscriber'],
                           data=json.dumps(self.messages[0]),
