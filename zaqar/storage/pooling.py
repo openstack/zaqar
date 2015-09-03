@@ -491,13 +491,15 @@ class Catalog(object):
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
 
-                if not pool and self.lookup(queue, project) is None:
+                if not pool:
                     # NOTE(flaper87): We used to raise NoPoolFound in this
                     # case but we've decided to support automatic pool
                     # creation. Note that we're now returning and the queue
                     # is not being registered in the catalogue. This is done
                     # on purpose since no pool exists and the "dummy" pool
                     # doesn't exist in the storage
+                    if self.lookup(queue, project) is not None:
+                        return
                     raise errors.NoPoolFound()
 
             self._catalogue_ctrl.insert(project, queue, pool)
