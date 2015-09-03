@@ -46,11 +46,30 @@ class TestURL(base.V2Base):
         expires = timeutils.utcnow(True) + datetime.timedelta(days=1)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        for field in ['signature', 'project', 'methods', 'path', 'expires']:
+        for field in ['signature', 'project', 'methods', 'paths', 'expires']:
             self.assertIn(field, content)
 
         self.assertEqual(expires_str, content['expires'])
         self.assertEqual(data['methods'], content['methods'])
+        self.assertEqual(['/v2/queues/shared_queue/messages'],
+                         content['paths'])
+
+    def test_url_paths(self):
+        timeutils.set_time_override()
+        self.addCleanup(timeutils.clear_time_override)
+
+        data = {'methods': ['GET', 'POST'],
+                'paths': ['messages', 'subscriptions']}
+        response = self.simulate_post(self.signed_url_prefix,
+                                      body=jsonutils.dumps(data))
+
+        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        content = jsonutils.loads(response[0])
+
+        self.assertEqual(
+            ['/v2/queues/shared_queue/messages',
+             '/v2/queues/shared_queue/subscriptions'],
+            content['paths'])
 
     def test_url_bad_request(self):
         self.simulate_post(self.signed_url_prefix, body='not json')
@@ -68,6 +87,10 @@ class TestURL(base.V2Base):
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
+        data = {'paths': ['notallowed']}
+        self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
     def test_url_verification_success(self):
         data = {'methods': ['GET', 'POST']}
         response = self.simulate_post(self.signed_url_prefix,
@@ -79,10 +102,12 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': content['signature'],
             'URL-Expires': content['expires'],
-            'URL-Methods': ','.join(content['methods'])
+            'URL-Methods': ','.join(content['methods']),
+            'URL-Paths': ','.join(content['paths'])
         }
         headers.update(self.headers)
-        response = self.simulate_get(content['path'], headers=headers)
+
+        response = self.simulate_get(content['paths'][0], headers=headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
     def test_url_verification_bad_request(self):
@@ -93,7 +118,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'dummy',
             'URL-Expires': 'not a real date',
-            'URL-Methods': 'GET,POST'
+            'URL-Methods': 'GET,POST',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
@@ -102,7 +128,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'dummy',
             'URL-Expires': expires_str,
-            'URL-Methods': ''
+            'URL-Methods': '',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
@@ -111,7 +138,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'dummy',
             'URL-Expires': expires_str,
-            'URL-Methods': 'nothing here'
+            'URL-Methods': 'nothing here',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
@@ -120,7 +148,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'dummy',
             'URL-Expires': expires_str,
-            'URL-Methods': 'POST,PUT'
+            'URL-Methods': 'POST,PUT',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
@@ -129,7 +158,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'wrong signature',
             'URL-Expires': expires_str,
-            'URL-Methods': 'GET,POST'
+            'URL-Methods': 'GET,POST',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
@@ -138,7 +168,8 @@ class TestURL(base.V2Base):
         headers = {
             'URL-Signature': 'will fail because of the old date',
             'URL-Expires': '2015-01-01T00:00:00',
-            'URL-Methods': 'GET,POST'
+            'URL-Methods': 'GET,POST',
+            'URL-Paths': '/v2/queues/shared_queue/messages'
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)

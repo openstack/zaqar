@@ -33,17 +33,41 @@ class TestURLs(base.TestBase):
         key = six.b('test')
         methods = ['POST']
         project = 'my-project'
-        path = '/v2/queues/shared/messages'
+        paths = ['/v2/queues/shared/messages']
         expires = timeutils.utcnow() + datetime.timedelta(days=1)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        hmac_body = six.b('%(path)s\\n%(methods)s\\n'
-                          '%(project)s\\n%(expires)s' %
-                          {'path': path, 'methods': ','.join(methods),
+        hmac_body = six.b(r'%(paths)s\n%(methods)s\n'
+                          r'%(project)s\n%(expires)s' %
+                          {'paths': ','.join(paths),
+                           'methods': ','.join(methods),
                            'project': project, 'expires': expires_str})
 
         expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
-        actual = urls.create_signed_url(key, path, methods=['POST'],
+        actual = urls.create_signed_url(key, paths, methods=['POST'],
+                                        project=project)
+        self.assertEqual(expected, actual['signature'])
+
+    def test_create_signed_url_multiple_paths(self):
+        timeutils.set_time_override()
+        self.addCleanup(timeutils.clear_time_override)
+
+        key = six.b('test')
+        methods = ['POST']
+        project = 'my-project'
+        paths = ['/v2/queues/shared/messages',
+                 '/v2/queues/shared/subscriptions']
+        expires = timeutils.utcnow() + datetime.timedelta(days=1)
+        expires_str = expires.strftime(urls._DATE_FORMAT)
+
+        hmac_body = six.b(r'%(paths)s\n%(methods)s\n'
+                          r'%(project)s\n%(expires)s' %
+                          {'paths': ','.join(paths),
+                           'methods': ','.join(methods),
+                           'project': project, 'expires': expires_str})
+
+        expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
+        actual = urls.create_signed_url(key, paths, methods=['POST'],
                                         project=project)
         self.assertEqual(expected, actual['signature'])
 
@@ -55,24 +79,27 @@ class TestURLs(base.TestBase):
         key = six.b('test')
         project = None
         methods = ['GET']
-        path = '/v2/queues/shared/messages'
+        paths = ['/v2/queues/shared/messages']
         parsed = timeutils.parse_isotime(date_str_utc)
         expires = timeutils.normalize_time(parsed)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        hmac_body = six.b('%(path)s\\n%(methods)s\\n'
+        hmac_body = six.b('%(paths)s\\n%(methods)s\\n'
                           '%(project)s\\n%(expires)s' %
-                          {'path': path, 'methods': ','.join(methods),
+                          {'paths': ','.join(paths),
+                           'methods': ','.join(methods),
                            'project': project, 'expires': expires_str})
 
         expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
-        actual = urls.create_signed_url(key, path, expires=date_str)
+        actual = urls.create_signed_url(key, paths, expires=date_str)
         self.assertEqual(expected, actual['signature'])
 
     def test_create_signed_urls_validation(self):
-        self.assertRaises(ValueError, urls.create_signed_url, None, '/test')
+        self.assertRaises(ValueError, urls.create_signed_url, None, ['/test'])
         self.assertRaises(ValueError, urls.create_signed_url, 'test', None)
-        self.assertRaises(ValueError, urls.create_signed_url, 'test', '/test',
-                          methods='not list')
-        self.assertRaises(ValueError, urls.create_signed_url, 'test', '/test',
-                          expires='wrong date format')
+        self.assertRaises(ValueError, urls.create_signed_url, 'test',
+                          ['/test'], methods='not list')
+        self.assertRaises(ValueError, urls.create_signed_url, 'test', [])
+        self.assertRaises(ValueError, urls.create_signed_url, 'test', '/test')
+        self.assertRaises(ValueError, urls.create_signed_url, 'test',
+                          ['/test'], expires='wrong date format')

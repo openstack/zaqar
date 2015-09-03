@@ -27,7 +27,9 @@ _ = i18n._
 _LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
-_KNOWN_KEYS = set(['methods', 'expires'])
+_KNOWN_KEYS = {'methods', 'expires', 'paths'}
+
+_VALID_PATHS = {'messages', 'subscriptions', 'claims'}
 
 
 class Resource(object):
@@ -55,10 +57,18 @@ class Resource(object):
             raise wsgi_errors.HTTPBadRequestAPI(msg)
 
         key = self._conf.signed_url.secret_key
-        path = os.path.join(req.path[:-6], 'messages')
+        paths = document.pop('paths', None)
+        if not paths:
+            paths = [os.path.join(req.path[:-6], 'messages')]
+        else:
+            diff = set(paths) - _VALID_PATHS
+            if diff:
+                msg = six.text_type(_LE('Invalid paths: %s') % diff)
+                raise wsgi_errors.HTTPBadRequestAPI(msg)
+            paths = [os.path.join(req.path[:-6], path) for path in paths]
 
         try:
-            data = urls.create_signed_url(key, path,
+            data = urls.create_signed_url(key, paths,
                                           project=project_id,
                                           **document)
         except ValueError as err:

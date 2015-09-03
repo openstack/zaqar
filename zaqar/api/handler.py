@@ -88,21 +88,18 @@ class Handler(object):
         action = payload.get('action')
         method = self._actions_mapping.get(action)
 
-        queue_name = payload.get('body', {}).get('queue_name')
-        path = '/v2/queues/%(queue_name)s/messages' % {
-            'queue_name': queue_name}
-
         headers = payload.get('headers', {})
         project = headers.get('X-Project-ID')
         expires = headers.get('URL-Expires')
         methods = headers.get('URL-Methods')
+        paths = headers.get('URL-Paths')
         signature = headers.get('URL-Signature')
 
         if not method or method not in methods:
             return False
 
         try:
-            verified = urls.verify_signed_headers_data(key, path,
+            verified = urls.verify_signed_headers_data(key, paths,
                                                        project=project,
                                                        methods=methods,
                                                        expires=expires,

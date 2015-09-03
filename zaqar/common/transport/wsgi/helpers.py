@@ -35,6 +35,7 @@ def verify_pre_signed_url(key, req, resp, params):
     project = headers.get('X-PROJECT-ID')
     expires = headers.get('URL-EXPIRES')
     methods = headers.get('URL-METHODS', '').split(',')
+    paths = headers.get('URL-PATHS', '').split(',')
     signature = headers.get('URL-SIGNATURE')
 
     if not signature:
@@ -43,8 +44,11 @@ def verify_pre_signed_url(key, req, resp, params):
     if req.method not in methods:
         raise falcon.HTTPNotFound()
 
+    if req.path not in paths:
+        raise falcon.HTTPNotFound()
+
     try:
-        verified = urls.verify_signed_headers_data(key, req.path,
+        verified = urls.verify_signed_headers_data(key, paths,
                                                    project=project,
                                                    methods=methods,
                                                    expires=expires,
