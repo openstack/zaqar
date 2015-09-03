@@ -173,7 +173,7 @@ def pool_entry(controller, project, queue, pool):
 
 
 @contextlib.contextmanager
-def pool_entries(controller, count):
+def pool_entries(controller, pool_ctrl, count):
     """Context manager to create several catalogue entries for testing.
 
     The entries are automatically deleted when the context manager
@@ -190,12 +190,14 @@ def pool_entries(controller, count):
             for i in range(count)]
 
     for p, q, s in spec:
+        pool_ctrl.create(s, 100, s)
         controller.insert(p, q, s)
 
     yield spec
 
-    for p, q, _ in spec:
+    for p, q, s in spec:
         controller.delete(p, q)
+        pool_ctrl.delete(s)
 
 
 def requires_mongodb(test_case):

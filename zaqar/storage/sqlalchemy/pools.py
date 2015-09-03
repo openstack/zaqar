@@ -86,10 +86,21 @@ class PoolsController(base.PoolsBase):
 
         return _normalize(pool, detailed)
 
+    def _ensure_group_exists(self, name):
+        try:
+            stmt = sa.sql.expression.insert(tables.PoolGroup).values(name=name)
+            self._conn.execute(stmt)
+            return True
+        except sa.exc.IntegrityError:
+            return False
+
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
     def _create(self, name, weight, uri, group=None, options=None):
         opts = None if options is None else utils.json_encode(options)
+
+        if group is not None:
+            self._ensure_group_exists(group)
 
         try:
             stmt = sa.sql.expression.insert(tables.Pools).values(
@@ -142,6 +153,8 @@ class PoolsController(base.PoolsBase):
     @utils.raises_conn_error
     def _drop_all(self):
         stmt = sa.sql.expression.delete(tables.Pools)
+        self._conn.execute(stmt)
+        stmt = sa.sql.expression.delete(tables.PoolGroup)
         self._conn.execute(stmt)
 
 
