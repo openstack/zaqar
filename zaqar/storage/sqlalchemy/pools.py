@@ -15,11 +15,6 @@
 """pools: an implementation of the pool management storage
 controller for sqlalchemy.
 
-Schema:
-  'n': name :: six.text_type
-  'u': uri :: six.text_type
-  'w': weight :: int
-  'o': options :: dict
 """
 
 import functools

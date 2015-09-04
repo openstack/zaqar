@@ -12,14 +12,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-"""pools: an implementation of the pool management storage
+"""flavors: an implementation of the flavor management storage
 controller for sqlalchemy.
 
-Schema:
-  'n': name :: six.text_type
-  'u': uri :: six.text_type
-  'w': weight :: int
-  'o': options :: dict
 """
 
 import sqlalchemy as sa
