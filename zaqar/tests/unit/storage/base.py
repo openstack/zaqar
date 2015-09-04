@@ -790,7 +790,11 @@ class ClaimControllerTest(ControllerBaseTest):
 
         messages2 = list(messages2)
         self.assertEqual(len(messages2), 15)
-        self.assertEqual(messages, messages2)
+        for msg1, msg2 in zip(messages, messages2):
+            self.assertEqual(msg1['body'], msg2['body'])
+            self.assertEqual(msg1['claim_id'], msg2['claim_id'])
+            self.assertEqual(msg1['id'], msg2['id'])
+            self.assertEqual(msg1['ttl'], msg2['ttl'])
         self.assertEqual(claim['ttl'], 70)
         self.assertEqual(claim['id'], claim_id)
 
