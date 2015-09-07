@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Endpoints(object):
-    """v1.1 API Endpoints."""
+    """v2 API Endpoints."""
 
     def __init__(self, storage, control, validate, defaults):
         self._queue_controller = storage.queue_controller

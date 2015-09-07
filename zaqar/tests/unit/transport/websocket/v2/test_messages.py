@@ -29,7 +29,7 @@ from zaqar.transport import validation
 
 
 @ddt.ddt
-class MessagesBaseTest(base.V1_1Base):
+class MessagesBaseTest(base.V2Base):
 
     config_file = "websocket_mongodb.conf"
 
@@ -583,5 +583,5 @@ class MessagesBaseTest(base.V1_1Base):
         self.assertIn('error', response['body'])
         self.assertEqual({'status': 400}, response['headers'])
         self.assertEqual(
-            {'action': None, 'api': 'v1.1', 'body': {}, 'headers': {}},
+            {'action': None, 'api': 'v2', 'body': {}, 'headers': {}},
             response['request'])

@@ -18,180 +18,369 @@ from zaqar.common.api import api
 
 class RequestSchema(api.Api):
 
+    headers = {
+        'User-Agent': {'type': 'string'},
+        'Date': {'type': 'string'},
+        'Accept': {'type': 'string'},
+        'Client-ID': {'type': 'string'},
+        'X-Project-ID': {'type': 'string'},
+        'X-Auth-Token': {'type': 'string'}
+        }
+
     schema = {
-        'queue_list': {
-            'ref': 'queues',
-            'method': 'GET',
-            'properties': {
-                'marker': {'type': 'string'},
-                'limit': {'type': 'integer'},
-                'detailed': {'type': 'boolean'}
-            }
-        },
 
-        'queue_create': {
-            'ref': 'queues/{queue_name}',
-            'method': 'PUT',
-            'required': ['queue_name'],
+        # Base
+        'get_home_doc': {
             'properties': {
-                'queue_name': {'type': 'string'}
+                'action': {'enum': ['get_home_doc']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                }
             },
-        },
-
-        'queue_exists': {
-            'ref': 'queues/{queue_name}',
-            'method': 'HEAD',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'queue_delete': {
-            'ref': 'queues/{queue_name}',
-            'method': 'DELETE',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'queue_set_metadata': {
-            'ref': 'queues/{queue_name}/metadata',
-            'method': 'PUT',
-            'required': ['queue_name'],
-            'properties': {
-                # NOTE(flaper87): Metadata is part
-                # of the request content. No need to
-                # add it here.
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'queue_get_metadata': {
-            'ref': 'queues/{queue_name}/metadata',
-            'method': 'GET',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'queue_get_stats': {
-            'ref': 'queues/{queue_name}/stats',
-            'method': 'GET',
-            'required': ['queue_name'],
+            'required': ['action', 'headers'],
             'admin': True,
-            'properties': {
-                'queue_name': {'type': 'string'},
-            }
-        },
-
-        'message_list': {
-            'ref': 'queues/{queue_name}/messages',
-            'method': 'GET',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'marker': {'type': 'string'},
-                'limit': {'type': 'integer'},
-                'echo': {'type': 'boolean'},
-                'include_claimed': {'type': 'boolean'}
-            }
-        },
-
-        'message_post': {
-            'ref': 'queues/{queue_name}/messages',
-            'method': 'POST',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'}
-            }
-        },
-
-        'message_get': {
-            'ref': 'queues/{queue_name}/messages/{message_id}',
-            'method': 'GET',
-            'required': ['queue_name', 'message_id'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'message_id': {'type': 'string'}
-            }
-        },
-
-        'message_get_many': {
-            'ref': 'queues/{queue_name}/messages',
-            'method': 'GET',
-            'required': ['queue_name', 'ids'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'ids': {'type': 'array'}
-            }
-        },
-
-        'message_delete': {
-            'ref': 'queues/{queue_name}/messages/{message_id}',
-            'method': 'DELETE',
-            'required': ['queue_name', 'message_id'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'message_id': {'type': 'string'},
-                'claim_id': {'type': 'string'}
-            }
-        },
-
-        'message_delete_many': {
-            'ref': 'queues/{queue_name}/messages',
-            'method': 'DELETE',
-            'required': ['queue_name', 'ids'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'ids': {'type': 'array'}
-            }
-        },
-
-        'claim_create': {
-            'ref': 'queues/{queue_name}/claims',
-            'method': 'POST',
-            'required': ['queue_name'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'limit': {'type': 'integer'}
-            }
-        },
-
-        'claim_get': {
-            'ref': 'queues/{queue_name}/claims/{claim_id}',
-            'method': 'GET',
-            'required': ['queue_name', 'claim_id'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'claim_id': {'type': 'string'}
-            }
-        },
-
-        'claim_update': {
-            'ref': 'queues/{queue_name}/claims/{claim_id}',
-            'method': 'PATCH',
-            'required': ['queue_name', 'claim_id'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'claim_id': {'type': 'string'}
-            }
-        },
-
-        'claim_delete': {
-            'ref': 'queues/{queue_name}/claims/{claim_id}',
-            'method': 'DELETE',
-            'required': ['queue_name', 'claim_id'],
-            'properties': {
-                'queue_name': {'type': 'string'},
-                'claim_id': {'type': 'string'}
-            }
         },
 
         'check_node_health': {
-            'ref': '/v1/health',
-            'method': 'GET',
+            'properties': {
+                'action': {'enum': ['check_node_health']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                }
+            },
+            'required': ['action', 'headers'],
+            'admin': True,
+        },
+
+        'ping_node': {
+            'properties': {
+                'action': {'enum': ['ping_node']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                }
+            },
+            'required': ['action', 'headers'],
+            'admin': True,
+        },
+        'authenticate': {
+            'properties': {
+                'action': {'enum': ['authenticate']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['X-Project-ID', 'X-Auth-Token']
+                }
+            },
+            'required': ['action', 'headers'],
+        },
+
+        # Queues
+        'queue_list': {
+            'properties': {
+                'action': {'enum': ['queue_list']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'marker': {'type': 'string'},
+                        'limit': {'type': 'integer'},
+                        'detailed': {'type': 'boolean'}
+                    }
+                }
+            },
+            'required': ['action', 'headers']
+        },
+
+        'queue_create': {
+            'properties': {
+                'action': {'enum': ['queue_create']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']},
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'queue_delete': {
+            'properties': {
+                'action': {'enum': ['queue_delete']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                    },
+                    'required': ['queue_name']
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'queue_get': {
+            'properties': {
+                'action': {'enum': ['queue_get']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'queue_get_stats': {
+            'properties': {
+                'action': {'enum': ['queue_get_stats']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body'],
+            'admin': True
+        },
+
+        # Messages
+        'message_list': {
+            'properties': {
+                'action': {'enum': ['message_list']},
+                'headers':  {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'marker': {'type': 'string'},
+                        'limit': {'type': 'integer'},
+                        'echo': {'type': 'boolean'},
+                        'include_claimed': {'type': 'boolean'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'message_get': {
+            'properties': {
+                'action': {'enum': ['message_get']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'message_id': {'type': 'string'},
+                    },
+                    'required': ['queue_name', 'message_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'message_get_many': {
+            'properties': {
+                'action': {'enum': ['message_get_many']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'message_ids': {'type': 'array'},
+                    },
+                    'required': ['queue_name', 'message_ids'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'message_post': {
+            'properties': {
+                'action': {'enum': ['message_post']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'messages': {'type': 'array'},
+                    },
+                    'required': ['queue_name', 'messages'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'message_delete': {
+            'properties': {
+                'action': {'enum': ['message_delete']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'message_id': {'type': 'string'},
+                        'claim_id': {'type': 'string'}
+                    },
+                    'required': ['queue_name', 'message_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'message_delete_many': {
+            'properties': {
+                'action': {'enum': ['message_delete_many']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'message_ids': {'type': 'array'},
+                        'pop': {'type': 'integer'}
+                    },
+                    'required': ['queue_name', 'message_ids'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        # Claims
+        'claim_create': {
+            'properties': {
+                'action': {'enum': ['claim_create']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'limit': {'type': 'integer'},
+                        'ttl': {'type': 'integer'},
+                        'grace': {'type': 'integer'}
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'claim_get': {
+            'properties': {
+                'action': {'enum': ['claim_get']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'claim_id': {'type': 'string'}
+                    },
+                    'required': ['queue_name', 'claim_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'claim_update': {
+            'properties': {
+                'action': {'enum': ['claim_update']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'claim_id': {'type': 'string'},
+                        'ttl': {'type': 'integer'}
+                    },
+                    'required': ['queue_name', 'claim_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'claim_delete': {
+            'properties': {
+                'action': {'enum': ['claim_delete']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'claim_id': {'type': 'string'}
+                    },
+                    'required': ['queue_name', 'claim_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
         },
     }

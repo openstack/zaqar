@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from zaqar.api.v1_1 import endpoints
-from zaqar.api.v1_1 import request as schema_validator
+from zaqar.api.v2 import endpoints
+from zaqar.api.v2 import request as schema_validator
 
 from zaqar.common.api import request
 from zaqar.common.api import response
@@ -37,12 +37,12 @@ class Handler(object):
     }
 
     def __init__(self, storage, control, validate, defaults):
-        self.v1_1_endpoints = endpoints.Endpoints(storage, control,
-                                                  validate, defaults)
+        self.v2_endpoints = endpoints.Endpoints(storage, control,
+                                                validate, defaults)
 
     def process_request(self, req):
         # FIXME(vkmc): Control API version
-        return getattr(self.v1_1_endpoints, req._action)(req)
+        return getattr(self.v2_endpoints, req._action)(req)
 
     @staticmethod
     def validate_request(payload, req):
@@ -79,10 +79,10 @@ class Handler(object):
         headers = payload.get('headers')
 
         return request.Request(action=action, body=body,
-                               headers=headers, api="v1.1")
+                               headers=headers, api="v2")
 
     def get_defaults(self):
-        return self.v1_1_endpoints._defaults
+        return self.v2_endpoints._defaults
 
     def verify_signature(self, key, payload):
         action = payload.get('action')
