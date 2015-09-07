@@ -49,7 +49,6 @@ ZAQAR_BIN_DIR=$(get_python_exec_prefix)
 # Set up database backend
 ZAQAR_BACKEND=${ZAQAR_BACKEND:-mongodb}
 
-
 # Set Zaqar repository
 ZAQAR_REPO=${ZAQAR_REPO:-${GIT_BASE}/openstack/zaqar.git}
 ZAQAR_BRANCH=${ZAQAR_BRANCH:-master}
@@ -143,6 +142,10 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT pooling True
     iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
 
+    # NOTE(flaper87): Configure mongodb regardless so we can use it as a pool
+    # in tests.
+    configure_mongodb
+
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         iniset $ZAQAR_CONF  drivers message_store mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
@@ -151,10 +154,10 @@ function configure_zaqar {
         iniset $ZAQAR_CONF  drivers management_store mongodb
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' uri mongodb://localhost:27017/zaqar_mgmt
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' database zaqar_mgmt
-        configure_mongodb
     elif [ "$ZAQAR_BACKEND" = 'redis' ] ; then
+        recreate_database zaqar
         iniset $ZAQAR_CONF  drivers management_store sqlalchemy
-        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri sqlite://
+        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri `database_connection_url zaqar`
         iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' database zaqar_mgmt
 
         iniset $ZAQAR_CONF  drivers message_store redis
@@ -171,10 +174,12 @@ function configure_zaqar {
 
     pip_install uwsgi
     iniset $ZAQAR_UWSGI_CONF uwsgi http $ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT
+    iniset $ZAQAR_UWSGI_CONF uwsgi harakiri 60
     iniset $ZAQAR_UWSGI_CONF uwsgi processes 1
     iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
     iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
     iniset $ZAQAR_UWSGI_CONF uwsgi callable app
+    iniset $ZAQAR_UWSGI_CONF uwsgi master true
 
     cleanup_zaqar
 }
@@ -197,15 +202,12 @@ function configure_mongodb {
     pip_install pymongo
     if is_ubuntu; then
         install_package mongodb-server
-        sudo sed -i -e "
-            s|[^ \t]*#[ \t]*\(nssize[ \t]*=.*\$\)|\1|
-            s|^\(nssize[ \t]*=[ \t]*\).*\$|\1 2047|
-        " /etc/mongodb.conf
+        echo "smallfiles = true" | sudo tee --append /etc/mongodb.conf > /dev/null
         restart_service mongodb
     elif is_fedora; then
         install_package mongodb
         install_package mongodb-server
-        sudo sed -i '/--nssize/!s/OPTIONS=\"/OPTIONS=\"--nssize 2047 /' /etc/sysconfig/mongod
+        sudo sed -i '/--smallfiles/!s/OPTIONS=\"/OPTIONS=\"--smallfiles /' /etc/sysconfig/mongod
         restart_service mongod
     fi
 }
@@ -220,18 +222,21 @@ function init_zaqar {
 
 # install_zaqar() - Collect source and prepare
 function install_zaqar {
-    setup_develop $ZAQAR_DIR -e
+    setup_develop $ZAQAR_DIR
 }
 
 # install_zaqarclient() - Collect source and prepare
 function install_zaqarclient {
     git_clone $ZAQARCLIENT_REPO $ZAQARCLIENT_DIR $ZAQARCLIENT_BRANCH
-    setup_develop $ZAQARCLIENT_DIR
+    # NOTE(flaper87): Ideally, this should be develop but apparently
+    # there's a bug in devstack that skips test-requirements when using
+    # setup_develop
+    setup_install $ZAQARCLIENT_DIR
 }
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
-    run_process zaqar-wsgi "uwsgi --master --ini $ZAQAR_UWSGI_CONF"
+    run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF"
     run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
