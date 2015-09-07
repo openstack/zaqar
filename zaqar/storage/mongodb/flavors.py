@@ -144,7 +144,6 @@ class FlavorsController(base.FlavorsBase):
 def _normalize(flavor, detailed=False):
     ret = {
         'name': flavor['n'],
-        'project': flavor['p'],
         'pool': flavor['s'],
     }
 

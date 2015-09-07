@@ -138,7 +138,6 @@ class FlavorsController(base.FlavorsBase):
 def _normalize(flavor, detailed=False):
     ret = {
         'name': flavor[0],
-        'project': flavor[1],
         'pool': flavor[2],
     }
 
