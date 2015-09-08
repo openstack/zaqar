@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import mock
 import uuid
 
 from zaqar.openstack.common.cache import cache as oslo_cache
@@ -96,3 +97,15 @@ class PoolCatalogTest(testing.TestBase):
                           self.catalog.register,
                           'test', project=self.project,
                           flavor='fake')
+
+    def test_queues_list_on_multi_pools(self):
+        def fake_list(project=None, marker=None, limit=10, detailed=False):
+            yield iter([{'name': 'fake_queue'}])
+
+        list_str = 'zaqar.storage.mongodb.queues.QueueController.list'
+        with mock.patch(list_str) as queues_list:
+            queues_list.side_effect = fake_list
+            queue_controller = pooling.QueueController(self.catalog)
+            result = queue_controller.list(project=self.project)
+            queue_list = list(next(result))
+            self.assertEqual(1, len(queue_list))
