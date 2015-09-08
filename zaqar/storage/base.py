@@ -716,9 +716,9 @@ class PoolsBase(ControllerBase):
         :type name: six.text_type
         """
         if name:
-            group = list(self._get_group(self._get(name)['group']))
+            group = list(self._get_pools_by_group(self._get(name)['group']))
         else:
-            group = list(self._get_group(group))
+            group = list(self._get_pools_by_group(group))
 
         if not len(group) > 0:
             return ()
@@ -770,11 +770,11 @@ class PoolsBase(ControllerBase):
 
     _create = abc.abstractmethod(lambda x: None)
 
-    def get_group(self, group=None, detailed=False):
-        """Returns a single pool entry.
+    def get_pools_by_group(self, group=None, detailed=False):
+        """Returns a pool list filtered by given pool group.
 
         :param group: The group to filter on. `None` returns
-            pools that are not assigned to any pool.
+            pools that are not assigned to any pool group.
         :type group: six.text_type
         :param detailed: Should the options data be included?
         :type detailed: bool
@@ -782,9 +782,9 @@ class PoolsBase(ControllerBase):
         :rtype: {}
         :raises: PoolDoesNotExist if not found
         """
-        return self._get_group(group, detailed)
+        return self._get_pools_by_group(group, detailed)
 
-    _get_group = abc.abstractmethod(lambda x: None)
+    _get_pools_by_group = abc.abstractmethod(lambda x: None)
 
     def get(self, name, detailed=False):
         """Returns a single pool entry.

@@ -89,7 +89,7 @@ class PoolsController(base.PoolsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def _get_group(self, group=None, detailed=False):
+    def _get_pools_by_group(self, group=None, detailed=False):
         cursor = self._col.find({'g': group}, projection=_field_spec(detailed))
         normalizer = functools.partial(_normalize, detailed=detailed)
         return utils.HookedCursor(cursor, normalizer)
@@ -131,7 +131,7 @@ class PoolsController(base.PoolsBase):
         # recursion error.
         try:
             pool = self.get(name)
-            pools_group = self.get_group(pool['group'])
+            pools_group = self.get_pools_by_group(pool['group'])
             flavor_ctl = self.driver.flavors_controller
             res = list(flavor_ctl._list_by_pool(pool['group']))
 

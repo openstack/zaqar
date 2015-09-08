@@ -60,7 +60,7 @@ class PoolsController(base.PoolsBase):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
-    def _get_group(self, group=None, detailed=False):
+    def _get_pools_by_group(self, group=None, detailed=False):
         stmt = sa.sql.select([tables.Pools]).where(
             tables.Pools.c.group == group
         )
