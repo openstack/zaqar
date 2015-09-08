@@ -39,23 +39,18 @@ def _match(project, queue):
 
 class CatalogueController(base.CatalogueBase):
 
-    def __init__(self, *args, **kwargs):
-        super(CatalogueController, self).__init__(*args, **kwargs)
-
-        self._conn = self.driver.connection
-
     def list(self, project):
         stmt = sa.sql.select([tables.Catalogue]).where(
             tables.Catalogue.c.project == project
         )
-        cursor = self._conn.execute(stmt)
+        cursor = self.driver.connection.execute(stmt)
         return (_normalize(v) for v in cursor)
 
     def get(self, project, queue):
         stmt = sa.sql.select([tables.Catalogue]).where(
             _match(project, queue)
         )
-        entry = self._conn.execute(stmt).fetchone()
+        entry = self.driver.connection.execute(stmt).fetchone()
 
         if entry is None:
             raise errors.QueueNotMapped(queue, project)
@@ -73,7 +68,7 @@ class CatalogueController(base.CatalogueBase):
             stmt = sa.sql.insert(tables.Catalogue).values(
                 project=project, queue=queue, pool=pool
             )
-            self._conn.execute(stmt)
+            self.driver.connection.execute(stmt)
 
         except sa.exc.IntegrityError:
             self._update(project, queue, pool)
@@ -82,13 +77,13 @@ class CatalogueController(base.CatalogueBase):
         stmt = sa.sql.delete(tables.Catalogue).where(
             _match(project, queue)
         )
-        self._conn.execute(stmt)
+        self.driver.connection.execute(stmt)
 
     def _update(self, project, queue, pool):
         stmt = sa.sql.update(tables.Catalogue).where(
             _match(project, queue)
         ).values(pool=pool)
-        self._conn.execute(stmt)
+        self.driver.connection.execute(stmt)
 
     def update(self, project, queue, pool=None):
         if pool is None:
@@ -101,7 +96,7 @@ class CatalogueController(base.CatalogueBase):
 
     def drop_all(self):
         stmt = sa.sql.expression.delete(tables.Catalogue)
-        self._conn.execute(stmt)
+        self.driver.connection.execute(stmt)
 
 
 def _normalize(entry):
