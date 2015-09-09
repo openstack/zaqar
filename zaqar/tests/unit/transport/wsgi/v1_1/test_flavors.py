@@ -158,8 +158,14 @@ class TestFlavorsMongoDB(base.V1_1Base):
         self.simulate_delete(self.pool_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
 
-        self.simulate_put(self.flavor_path, body=jsonutils.dumps(self.doc))
+        resp = self.simulate_put(self.flavor_path,
+                                 body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(
+            {'description': 'Flavor test-flavor could not be created. '
+                            'Pool mypool-group does not exist',
+             'title': 'Unable to create'},
+            jsonutils.loads(resp[0]))
 
     def test_delete_works(self):
         self.simulate_delete(self.flavor_path)

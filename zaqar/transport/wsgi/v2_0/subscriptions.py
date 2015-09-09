@@ -102,7 +102,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
         except Exception as ex:
             LOG.exception(ex)
-            description = (_(u'Subscription {subscription_id} could not be'
+            description = (_(u'Subscription %(subscription_id)s could not be'
                              ' updated.') %
                            dict(subscription_id=subscription_id))
             raise falcon.HTTPBadRequest(_('Unable to update subscription'),

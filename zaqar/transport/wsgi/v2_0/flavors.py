@@ -165,8 +165,8 @@ class Resource(object):
             response.location = request.path
         except errors.PoolDoesNotExist as ex:
             LOG.exception(ex)
-            description = (_(u'Flavor {flavor} could not be created. '
-                             u'Pool {pool} does not exist') %
+            description = (_(u'Flavor %(flavor)s could not be created. '
+                             u'Pool %(pool)s does not exist') %
                            dict(flavor=flavor, pool=data['pool']))
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
