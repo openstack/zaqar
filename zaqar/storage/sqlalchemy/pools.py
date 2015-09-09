@@ -126,6 +126,9 @@ class PoolsController(base.PoolsBase):
         if 'options' in fields:
             fields['options'] = utils.json_encode(fields['options'])
 
+        if fields.get('group') is not None:
+            self._ensure_group_exists(fields.get('group'))
+
         stmt = sa.sql.update(tables.Pools).where(
             tables.Pools.c.name == name).values(**fields)
 
