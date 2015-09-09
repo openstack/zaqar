@@ -22,7 +22,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @ddt.ddt
-class TestQueueLifecycleMongoDB(base.V1BaseFaulty):
+class TestQueueLifecycleMongoDB(base.V1Base):
 
     config_file = 'wsgi_mongodb.conf'
 
