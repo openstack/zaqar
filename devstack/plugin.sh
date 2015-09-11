@@ -119,7 +119,6 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT verbose True
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
-    iniset $ZAQAR_CONF DEFAULT use_syslog $SYSLOG
     iniset $ZAQAR_CONF DEFAULT auth_strategy keystone
     iniset $ZAQAR_CONF signed_url secret_key notreallysecret
 
@@ -219,13 +218,8 @@ function install_zaqarclient {
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
-    if [[ "$USE_SCREEN" = "False" ]]; then
-        run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF --daemonize $ZAQAR_API_LOG_DIR/uwsgi.log"
-        run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF --daemon"
-    else
-        run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF"
-        run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
-    fi
+    run_process zaqar-wsgi "uwsgi --master --ini $ZAQAR_UWSGI_CONF"
+    run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
     token=$(openstack token issue -c id -f value)
