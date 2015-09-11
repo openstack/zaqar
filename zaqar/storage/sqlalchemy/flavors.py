@@ -29,8 +29,6 @@ class FlavorsController(base.FlavorsBase):
 
     def __init__(self, *args, **kwargs):
         super(FlavorsController, self).__init__(*args, **kwargs)
-
-        self._conn = self.driver.connection
         self._pools_ctrl = self.driver.pools_controller
 
     @utils.raises_conn_error
@@ -47,7 +45,7 @@ class FlavorsController(base.FlavorsBase):
 
         if limit > 0:
             stmt = stmt.limit(limit)
-        cursor = self._conn.execute(stmt)
+        cursor = self.driver.connection.execute(stmt)
 
         marker_name = {}
 
@@ -66,7 +64,7 @@ class FlavorsController(base.FlavorsBase):
                     tables.Flavors.c.project == project)
         )
 
-        flavor = self._conn.execute(stmt).fetchone()
+        flavor = self.driver.connection.execute(stmt).fetchone()
         if flavor is None:
             raise errors.FlavorDoesNotExist(name)
 
@@ -80,7 +78,7 @@ class FlavorsController(base.FlavorsBase):
             stmt = sa.sql.expression.insert(tables.Flavors).values(
                 name=name, pool=pool, project=project, capabilities=cap
             )
-            self._conn.execute(stmt)
+            self.driver.connection.execute(stmt)
         except sa.exc.IntegrityError:
             if not self._pools_ctrl.get_group(pool):
                 raise errors.PoolDoesNotExist(pool)
@@ -97,7 +95,7 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         ).limit(1)
-        return self._conn.execute(stmt).fetchone() is not None
+        return self.driver.connection.execute(stmt).fetchone() is not None
 
     @utils.raises_conn_error
     def update(self, name, project=None, pool=None, capabilities=None):
@@ -117,7 +115,7 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)).values(**fields)
 
-        res = self._conn.execute(stmt)
+        res = self.driver.connection.execute(stmt)
         if res.rowcount == 0:
             raise errors.FlavorDoesNotExist(name)
 
@@ -127,12 +125,12 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         )
-        self._conn.execute(stmt)
+        self.driver.connection.execute(stmt)
 
     @utils.raises_conn_error
     def drop_all(self):
         stmt = sa.sql.expression.delete(tables.Flavors)
-        self._conn.execute(stmt)
+        self.driver.connection.execute(stmt)
 
 
 def _normalize(flavor, detailed=False):
