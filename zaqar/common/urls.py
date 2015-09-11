@@ -71,8 +71,8 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
     if expires <= timeutils.utcnow():
         raise ValueError(_LE('`expires` is lower than the current time'))
 
-    methods.sort()
-    paths.sort()
+    methods = sorted(methods)
+    paths = sorted(paths)
     expires_str = expires.strftime(_DATE_FORMAT)
     hmac_body = six.b(r'%(paths)s\n%(methods)s\n%(project)s\n%(expires)s' %
                       {'paths': ','.join(paths), 'methods': ','.join(methods),
