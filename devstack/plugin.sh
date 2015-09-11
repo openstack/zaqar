@@ -135,9 +135,10 @@ function configure_zaqar {
 
     configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
 
+    iniset $ZAQAR_CONF DEFAULT pooling True
+    iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
+
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
-        iniset $ZAQAR_CONF DEFAULT pooling True
-        iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
         iniset $ZAQAR_CONF  drivers message_store mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' database zaqar
@@ -147,6 +148,10 @@ function configure_zaqar {
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' database zaqar_mgmt
         configure_mongodb
     elif [ "$ZAQAR_BACKEND" = 'redis' ] ; then
+        iniset $ZAQAR_CONF  drivers management_store sqlalchemy
+        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri sqlite://
+        iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' database zaqar_mgmt
+
         iniset $ZAQAR_CONF  drivers message_store redis
         iniset $ZAQAR_CONF 'drivers:message_store:redis' uri redis://localhost:6379
         iniset $ZAQAR_CONF 'drivers:message_store:redis' database zaqar
