@@ -119,8 +119,11 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT verbose True
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
-    iniset $ZAQAR_CONF DEFAULT auth_strategy keystone
     iniset $ZAQAR_CONF signed_url secret_key notreallysecret
+
+    if is_service_enabled key; then
+	iniset $ZAQAR_CONF DEFAULT auth_strategy keystone
+    fi
 
     iniset $ZAQAR_CONF storage message_pipeline zaqar.notification.notifier
 
