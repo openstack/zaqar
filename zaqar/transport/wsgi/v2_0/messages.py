@@ -111,9 +111,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_errors.DoesNotExist as ex:
+        except storage_errors.QueueDoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            messages = None
 
         except Exception as ex:
             LOG.exception(ex)
