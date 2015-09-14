@@ -20,6 +20,7 @@ import six
 from zaqar.common.transport.wsgi import helpers as wsgi_helpers
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
@@ -149,6 +150,7 @@ class CollectionResource(object):
     # Interface
     # ----------------------------------------------------------------------
 
+    @acl.enforce("messages:create")
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Messages collection POST - queue:  %(queue)s, '
                   u'project: %(project)s',
@@ -213,6 +215,7 @@ class CollectionResource(object):
         resp.body = utils.to_json(body)
         resp.status = falcon.HTTP_201
 
+    @acl.enforce("messages:get_all")
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(u'Messages collection GET - queue: %(queue)s, '
                   u'project: %(project)s',
@@ -237,6 +240,7 @@ class CollectionResource(object):
             resp.body = utils.to_json(response)
         # status defaults to 200
 
+    @acl.enforce("messages:delete_all")
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(u'Messages collection DELETE - queue: %(queue)s, '
                   u'project: %(project)s',
@@ -306,6 +310,7 @@ class ItemResource(object):
     def __init__(self, message_controller):
         self._message_controller = message_controller
 
+    @acl.enforce("messages:get")
     def on_get(self, req, resp, project_id, queue_name, message_id):
         LOG.debug(u'Messages item GET - message: %(message)s, '
                   u'queue: %(queue)s, project: %(project)s',
@@ -336,6 +341,7 @@ class ItemResource(object):
         resp.body = utils.to_json(message)
         # status defaults to 200
 
+    @acl.enforce("messages:delete")
     def on_delete(self, req, resp, project_id, queue_name, message_id):
 
         LOG.debug(u'Messages item DELETE - message: %(message)s, '

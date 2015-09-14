@@ -19,11 +19,11 @@ import six
 
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
-
 
 LOG = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ class ItemResource(object):
         self._queue_controller = queue_controller
         self._message_controller = message_controller
 
+    @acl.enforce("queues:get")
     def on_get(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
                   u'project: %(project)s',
@@ -58,6 +59,7 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
+    @acl.enforce("queues:create")
     def on_put(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue item PUT - queue: %(queue)s, '
                   u'project: %(project)s',
@@ -93,6 +95,7 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
+    @acl.enforce("queues:delete")
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue item DELETE - queue: %(queue)s, '
                   u'project: %(project)s',
@@ -116,6 +119,7 @@ class CollectionResource(object):
         self._queue_controller = queue_controller
         self._validate = validate
 
+    @acl.enforce("queues:get_all")
     def on_get(self, req, resp, project_id):
         LOG.debug(u'Queue collection GET - project: %(project)s',
                   {'project': project_id})

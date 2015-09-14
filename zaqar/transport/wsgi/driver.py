@@ -25,6 +25,7 @@ from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
 from zaqar.i18n import _
 from zaqar import transport
+from zaqar.transport import acl
 from zaqar.transport import auth
 from zaqar.transport import validation
 from zaqar.transport.wsgi import v1_0
@@ -116,6 +117,8 @@ class Driver(transport.DriverBase):
             auth_app = strategy.install(self.app, self._conf)
 
         self.app = auth.SignedHeadersAuth(self.app, auth_app)
+
+        acl.setup_policy(self._conf)
 
     def _error_handler(self, exc, request, response, params):
         if isinstance(exc, falcon.HTTPError):

@@ -37,6 +37,7 @@ ZAQAR_DIR=$DEST/zaqar
 ZAQARCLIENT_DIR=$DEST/python-zaqarclient
 ZAQAR_CONF_DIR=/etc/zaqar
 ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
+ZAQAR_POLICY_CONF=$ZAQAR_CONF_DIR/policy.json
 ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
 ZAQAR_API_LOG_DIR=/var/log/zaqar
 ZAQAR_API_LOG_FILE=$ZAQAR_API_LOG_DIR/queues.log
@@ -111,6 +112,10 @@ function configure_zaqar {
 
     [ ! -d $ZAQAR_CONF_DIR ] && sudo mkdir -m 755 -p $ZAQAR_CONF_DIR
     sudo chown $USER $ZAQAR_CONF_DIR
+
+    if [[ -f $ZAQAR_DIR/etc/policy.json.sample ]]; then
+        cp -p $ZAQAR_DIR/etc/policy.json.sample $ZAQAR_POLICY_CONF
+    fi
 
     [ ! -d $ZAQAR_API_LOG_DIR ] &&  sudo mkdir -m 755 -p $ZAQAR_API_LOG_DIR
     sudo chown $USER $ZAQAR_API_LOG_DIR

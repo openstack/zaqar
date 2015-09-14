@@ -14,6 +14,8 @@
 
 import falcon
 
+from zaqar.transport import acl
+
 
 class Resource(object):
 
@@ -22,9 +24,11 @@ class Resource(object):
     def __init__(self, driver):
         self._driver = driver
 
+    @acl.enforce("ping:get")
     def on_get(self, req, resp, **kwargs):
         resp.status = (falcon.HTTP_204 if self._driver.is_alive()
                        else falcon.HTTP_503)
 
+    @acl.enforce("ping:get")
     def on_head(self, req, resp, **kwargs):
         resp.status = falcon.HTTP_204
