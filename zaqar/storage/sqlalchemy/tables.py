@@ -40,7 +40,7 @@ Pools = sa.Table('Pools', metadata,
                  sa.Column('uri', sa.String(255),
                            unique=True, nullable=False),
                  sa.Column('weight', sa.INTEGER, nullable=False),
-                 sa.Column('options', sa.BINARY))
+                 sa.Column('options', sa.Text()))
 
 
 Flavors = sa.Table('Flavors', metadata,
@@ -49,7 +49,7 @@ Flavors = sa.Table('Flavors', metadata,
                    sa.Column('pool', sa.ForeignKey('PoolGroup.name',
                                                    ondelete='CASCADE'),
                              nullable=False),
-                   sa.Column('capabilities', sa.BINARY))
+                   sa.Column('capabilities', sa.Text()))
 
 
 Catalogue = sa.Table('Catalogue', metadata,
