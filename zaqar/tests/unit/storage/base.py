@@ -1414,8 +1414,7 @@ class FlavorsControllerTest(ControllerBaseTest):
     def _flavors_expects(self, flavor, xname, xproject, xpool):
         self.assertIn('name', flavor)
         self.assertEqual(flavor['name'], xname)
-        self.assertIn('project', flavor)
-        self.assertEqual(flavor['project'], xproject)
+        self.assertNotIn('project', flavor)
         self.assertIn('pool', flavor)
         self.assertEqual(flavor['pool'], xpool)
 
