@@ -991,11 +991,14 @@ class SubscriptionControllerTest(ControllerBaseTest):
     def test_list(self):
         for s in six.moves.xrange(15):
             subscriber = 'http://fake_{0}'.format(s)
-            self.subscription_controller.create(self.source,
-                                                subscriber,
-                                                self.ttl,
-                                                self.options,
-                                                project=self.project)
+            s_id = self.subscription_controller.create(
+                self.source,
+                subscriber,
+                self.ttl,
+                self.options,
+                project=self.project)
+            self.addCleanup(self.subscription_controller.delete, self.source,
+                            s_id, self.project)
 
         interaction = self.subscription_controller.list(self.source,
                                                         project=self.project)
@@ -1062,11 +1065,15 @@ class SubscriptionControllerTest(ControllerBaseTest):
                           self.queue_name, s_id)
 
     def test_create_existed(self):
-        self.subscription_controller.create(self.source,
-                                            self.subscriber,
-                                            self.ttl,
-                                            self.options,
-                                            project=self.project)
+        s_id = self.subscription_controller.create(
+            self.source,
+            self.subscriber,
+            self.ttl,
+            self.options,
+            project=self.project)
+        self.addCleanup(self.subscription_controller.delete, self.source, s_id,
+                        self.project)
+        self.assertIsNotNone(s_id)
 
         s_id = self.subscription_controller.create(self.source,
                                                    self.subscriber,

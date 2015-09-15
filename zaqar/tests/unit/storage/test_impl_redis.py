@@ -304,6 +304,7 @@ class RedisMessagesTest(base.MessageControllerTest):
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.MessageController
     control_driver_class = mongodb.ControlDriver
+    gc_interval = 1
 
     def setUp(self):
         super(RedisMessagesTest, self).setUp()
@@ -360,8 +361,8 @@ class RedisMessagesTest(base.MessageControllerTest):
             'body': 'di mo fy'
         }]
         client_id = "invalid_uuid"
-        self.controller.post(queue_name, msgs, client_id)
-        self.assertRaises(ValueError, self.controller.first, queue_name)
+        self.assertRaises(ValueError, self.controller.post, queue_name, msgs,
+                          client_id)
 
 
 @testing.requires_redis
@@ -437,3 +438,4 @@ class RedisSubscriptionTests(base.SubscriptionControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.SubscriptionController
+    control_driver_class = driver.ControlDriver
