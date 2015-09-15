@@ -95,7 +95,7 @@ class TestFlavorsMongoDB(base.V1_1Base):
         self.pool_path = self.url_prefix + '/pools/' + self.pool
         self.pool_doc = {'weight': 100,
                          'group': self.pool_group,
-                         'uri': 'mongodb://localhost:27017'}
+                         'uri': self.mongodb_url}
         self.simulate_put(self.pool_path, body=jsonutils.dumps(self.pool_doc))
 
         self.flavor = 'test-flavor'

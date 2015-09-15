@@ -533,14 +533,11 @@ class MongodbCatalogueTests(base.CatalogueControllerTest):
     driver_class = mongodb.ControlDriver
     controller_class = controllers.CatalogueController
     control_driver_class = mongodb.ControlDriver
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(MongodbCatalogueTests, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
-
-    def tearDown(self):
-        self.controller.drop_all()
-        super(MongodbCatalogueTests, self).tearDown()
+        self.addCleanup(self.controller.drop_all)
 
 
 @testing.requires_mongodb
@@ -579,8 +576,8 @@ class MongodbFlavorsTest(base.FlavorsControllerTest):
     driver_class = mongodb.ControlDriver
     controller_class = controllers.FlavorsController
     control_driver_class = mongodb.ControlDriver
+    config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
         super(MongodbFlavorsTest, self).setUp()
-        self.load_conf('wsgi_mongodb.conf')
         self.addCleanup(self.controller.drop_all)

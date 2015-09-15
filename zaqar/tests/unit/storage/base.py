@@ -66,7 +66,7 @@ class ControllerBaseTest(testing.TestBase):
                 args.append(self.control)
             self.driver = self.driver_class(*args)
         else:
-            uri = "mongodb://localhost:27017"
+            uri = self.mongodb_url
             for i in range(4):
                 db_name = "zaqar_test_pools_" + str(i)
 

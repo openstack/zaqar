@@ -42,7 +42,7 @@ class TestMessagesMongoDB(base.V1_1Base):
 
         if self.conf.pooling:
             for i in range(4):
-                uri = "%s/%s" % ('mongodb://localhost:27017', str(i))
+                uri = "%s/%s" % (self.mongodb_url, str(i))
                 doc = {'weight': 100, 'uri': uri}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))

@@ -49,9 +49,18 @@ class PoolCatalogTest(testing.TestBase):
         self.flavor = str(uuid.uuid1())
         self.project = str(uuid.uuid1())
 
-        self.pools_ctrl.create(self.pool, 100, 'mongodb://localhost:27017')
+        # FIXME(therve) This is horrible, we need to manage duplication in a
+        # nicer way
+        if 'localhost' in self.mongodb_url:
+            other_url = self.mongodb_url.replace('localhost', '127.0.0.1')
+        elif '127.0.0.1' in self.mongodb_url:
+            other_url = self.mongodb_url.replace('127.0.0.1', 'localhost')
+        else:
+            self.skipTest("Can't build a dummy mongo URL.")
+
+        self.pools_ctrl.create(self.pool, 100, self.mongodb_url)
         self.pools_ctrl.create(self.pool2, 100,
-                               'mongodb://127.0.0.1:27017',
+                               other_url,
                                group=self.pool_group)
         self.catalogue_ctrl.insert(self.project, self.queue, self.pool)
         self.catalog = pooling.Catalog(self.conf, cache, control)
