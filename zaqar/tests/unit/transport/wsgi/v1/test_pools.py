@@ -87,7 +87,7 @@ class TestPoolsMongoDB(base.V1Base):
     @testing.requires_mongodb
     def setUp(self):
         super(TestPoolsMongoDB, self).setUp()
-        self.doc = {'weight': 100, 'uri': 'mongodb://localhost:27017'}
+        self.doc = {'weight': 100, 'uri': self.mongodb_url}
         self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
@@ -110,7 +110,7 @@ class TestPoolsMongoDB(base.V1Base):
 
         self.simulate_put(path,
                           body=jsonutils.dumps(
-                              {'uri': 'mongodb://localhost:27017'}))
+                              {'uri': self.mongodb_url}))
         self.assertEqual(self.srmock.status, falcon.HTTP_400)
 
     @ddt.data(-1, 2**32+1, 'big')
@@ -208,13 +208,13 @@ class TestPoolsMongoDB(base.V1Base):
 
     def test_patch_works(self):
         doc = {'weight': 101,
-               'uri': 'mongodb://localhost:27017',
+               'uri': self.mongodb_url,
                'options': {'a': 1}}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
         doc = {'weight': 101,
-               'uri': 'mongodb://localhost:27017',
+               'uri': self.mongodb_url,
                'options': {'a': 1},
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)

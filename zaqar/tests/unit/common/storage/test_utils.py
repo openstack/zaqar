@@ -30,7 +30,7 @@ class TestUtils(testing.TestBase):
     @testing.requires_mongodb
     def test_can_connect_succeeds_if_good_uri_mongo(self):
         self.config(unreliable=True)
-        self.assertTrue(utils.can_connect('mongodb://localhost:27017',
+        self.assertTrue(utils.can_connect(self.mongodb_url,
                                           conf=self.conf))
 
     @testing.requires_redis

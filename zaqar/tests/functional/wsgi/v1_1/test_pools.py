@@ -43,15 +43,14 @@ class TestPools(base.V1_1FunctionalTestBase):
     @ddt.data(
         {
             'name': "newpool",
-            'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
+            'weight': 10
         }
     )
     def test_insert_pool(self, params):
         """Test the registering of one pool."""
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
 
         pool_name = params.get('name', "newpool")
@@ -67,15 +66,14 @@ class TestPools(base.V1_1FunctionalTestBase):
     @ddt.data(
         {
             'name': "newpool",
-            'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
+            'weight': 10
         }
     )
     def test_pool_details(self, params):
         """Get the details of a pool. Assert the respective schema."""
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
 
         pool_name = params.get('name', "newpool")
@@ -92,7 +90,6 @@ class TestPools(base.V1_1FunctionalTestBase):
         {
             'name': "newpool",
             'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
         }
     )
     def test_delete_pool(self, params):
@@ -104,7 +101,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         # Create the pool
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
 
         pool_name = params.get('name', "newpool")
@@ -123,7 +120,6 @@ class TestPools(base.V1_1FunctionalTestBase):
         {
             'name': "newpool",
             'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
         }
     )
     def test_list_pools(self, params):
@@ -133,7 +129,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         """
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
         self.addCleanup(self.client.delete, url='/'+pool_name)
@@ -148,7 +144,6 @@ class TestPools(base.V1_1FunctionalTestBase):
         {
             'name': "newpool",
             'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
         }
     )
     def test_patch_pool(self, params):
@@ -159,7 +154,7 @@ class TestPools(base.V1_1FunctionalTestBase):
 
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
         self.addCleanup(self.client.delete, url='/'+pool_name)
@@ -169,7 +164,7 @@ class TestPools(base.V1_1FunctionalTestBase):
 
         patchdoc = helpers.create_pool_body(
             weight=5,
-            uri="mongodb://127.0.0.1:27017"
+            uri=self.mongodb_url
         )
         result = self.client.patch('/'+pool_name, data=patchdoc)
         self.assertEqual(result.status_code, 200)
@@ -183,7 +178,6 @@ class TestPools(base.V1_1FunctionalTestBase):
         {
             'name': "newpool",
             'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
         }
     )
     def test_patch_pool_bad_data(self, params):
@@ -191,7 +185,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         # create a pool
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
         self.addCleanup(self.client.delete, url='/'+pool_name)
@@ -206,14 +200,13 @@ class TestPools(base.V1_1FunctionalTestBase):
         {
             'name': "newpool",
             'weight': 10,
-            'uri': "mongodb://127.0.0.1:27017"
         }
     )
     def test_patch_pool_non_exist(self, params):
         """Issue patch command to pool that doesn't exist. Assert 404."""
         doc = helpers.create_pool_body(
             weight=5,
-            uri=params.get('uri', "mongodb://127.0.0.1:27018")
+            uri=self.mongodb_url
         )
         result = self.client.patch('/nonexistpool', data=doc)
         self.assertEqual(result.status_code, 404)
@@ -228,7 +221,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         self.skip("FIXME: https://bugs.launchpad.net/zaqar/+bug/1373486")
         doc = helpers.create_pool_body(
             weight=params.get('weight', 10),
-            uri=params.get('uri', "mongodb://127.0.0.1:27017")
+            uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
         self.addCleanup(self.client.delete, url='/'+pool_name)

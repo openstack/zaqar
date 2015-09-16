@@ -40,7 +40,7 @@ class TestMessagesMongoDB(base.V2Base):
         self.default_message_ttl = self.boot.transport._defaults.message_ttl
 
         if self.conf.pooling:
-            uri = "mongodb://localhost:27017"
+            uri = self.mongodb_url
             for i in range(4):
                 db_name = "zaqar_test_pools_" + str(i)
                 # NOTE(dynarro): we need to create a unique uri.
