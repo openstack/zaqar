@@ -108,7 +108,7 @@ Configuration
 
 4. Find the [drivers] section in ~/.zaqar/zaqar.conf and specify mongodb as the message store::
 
-    message_storage = mongodb
+    message_store = mongodb
     management_store = mongodb
 
 5. Find the [drivers:message_store:mongodb] section and modify the URI to point to your local mongod instance::

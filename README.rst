@@ -36,7 +36,7 @@ sudo yum install gcc python-pip libxml2-devel libxslt-devel
 4. Find ``[drivers]`` section in ``~/.zaqar/zaqar.conf``
    and specify to use mongodb storage::
 
-    message_storage = mongodb
+    message_store = mongodb
     management_store = mongodb
 
    Then find the ``[drivers:message_store:mongodb]`` and
