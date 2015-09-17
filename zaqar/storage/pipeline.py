@@ -126,6 +126,9 @@ class DataDriver(base.DataDriverBase):
     def capabilities(self):
         return self._storage.capabilities()
 
+    def close(self):
+        self._storage.close()
+
     def is_alive(self):
         return self._storage.is_alive()
 

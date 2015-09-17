@@ -123,6 +123,9 @@ class DataDriver(storage.DataDriverBase):
         except pymongo.errors.PyMongoError:
             return False
 
+    def close(self):
+        self.connection.close()
+
     def _health(self):
         KPI = {}
         KPI['storage_reachable'] = self.is_alive()
@@ -211,6 +214,9 @@ class ControlDriver(storage.ControlDriverBase):
                                 group=options.MANAGEMENT_MONGODB_GROUP)
 
         self.mongodb_conf = self.conf[options.MANAGEMENT_MONGODB_GROUP]
+
+    def close(self):
+        self.connection.close()
 
     @decorators.lazy_property(write=False)
     def connection(self):

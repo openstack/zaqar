@@ -174,6 +174,9 @@ class DataDriver(storage.DataDriverBase):
         except redis.exceptions.ConnectionError:
             return False
 
+    def close(self):
+        self.connection.close()
+
     def _health(self):
         KPI = {}
         KPI['storage_reachable'] = self.is_alive()
@@ -217,6 +220,9 @@ class ControlDriver(storage.ControlDriverBase):
                                 group=options.MANAGEMENT_REDIS_GROUP)
 
         self.redis_conf = self.conf[options.MANAGEMENT_REDIS_GROUP]
+
+    def close(self):
+        self.connection.close()
 
     @decorators.lazy_property(write=False)
     def connection(self):

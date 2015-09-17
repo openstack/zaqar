@@ -86,6 +86,13 @@ class DataDriver(storage.DataDriverBase):
         # is neither used for pools creation nor flavor creation.
         return self.BASE_CAPABILITIES
 
+    def close(self):
+        cursor = self._pool_catalog._pools_ctrl.list(limit=0)
+        # Messages of each pool
+        for pool in next(cursor):
+            driver = self._pool_catalog.get_driver(pool['name'])
+            driver.close()
+
     def is_alive(self):
         cursor = self._pool_catalog._pools_ctrl.list(limit=0)
         pools = next(cursor)

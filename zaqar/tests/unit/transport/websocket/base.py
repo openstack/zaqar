@@ -43,6 +43,8 @@ class TestBase(testing.TestBase):
         self.conf.unreliable = True
         self.conf.admin_mode = True
         self.boot = bootstrap.Bootstrap(self.conf)
+        self.addCleanup(self.boot.storage.close)
+        self.addCleanup(self.boot.control.close)
 
         self.transport = self.boot.transport
         self.api = self.boot.api
