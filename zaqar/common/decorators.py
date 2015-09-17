@@ -17,8 +17,34 @@ import functools
 
 import msgpack
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 LOG = logging.getLogger(__name__)
+
+
+class TransportLog(object):
+    """Standard logging for transport driver responders
+
+    This class implements a logging decorator that the transport driver
+    responders can use for standard logging
+    """
+
+    def __init__(self, resource_type):
+        self.resource_type = resource_type
+
+    def __call__(self, func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # The below line takes function names like 'on_get' and 'on_patch'
+            # and returns 'GET' and 'PATCH' respectively, so we do not need
+            # the name of the HTTP method to be passed.
+            method = func.__name__[3:].upper()
+            LOG.debug(u'%(type) %(method) - %(subtype): %(arguments)',
+                      {'type': self.resource_type,
+                       'method': method, 'arguments': jsonutils.dumps(kwargs)})
+            return func(*args, **kwargs)
+
+        return wrapper
 
 
 def memoized_getattr(meth):

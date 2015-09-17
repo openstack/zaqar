@@ -17,6 +17,7 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.transport import utils
 from zaqar.transport import validation
@@ -34,10 +35,8 @@ class ItemResource(object):
         self._queue_controller = queue_controller
         self._message_controller = message_controller
 
+    @decorators.TransportLog("Queue item")
     def on_put(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue item PUT - queue: %(queue)s, ',
-                  {'queue': queue_name})
-
         try:
             created = self._queue_controller.create(
                 queue_name, project=project_id)
@@ -50,11 +49,8 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
+    @decorators.TransportLog("Queue item")
     def on_head(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue item exists - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         if self._queue_controller.exists(queue_name, project=project_id):
             resp.status = falcon.HTTP_204
         else:
@@ -64,10 +60,8 @@ class ItemResource(object):
 
     on_get = on_head
 
+    @decorators.TransportLog("Queue item")
     def on_delete(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue item DELETE - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
         try:
             self._queue_controller.delete(queue_name, project=project_id)
 

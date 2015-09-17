@@ -17,6 +17,7 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import utils
@@ -37,11 +38,8 @@ class ItemResource(object):
         self._queue_controller = queue_controller
         self._message_controller = message_controller
 
+    @decorators.TransportLog("Queue metadata")
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue metadata GET - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         try:
             resp_dict = self._queue_controller.get(queue_name,
                                                    project=project_id)
@@ -58,11 +56,8 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
+    @decorators.TransportLog("Queue item")
     def on_put(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue item PUT - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         try:
             # Place JSON size restriction before parsing
             self._validate.queue_metadata_length(req.content_length)
@@ -93,10 +88,8 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
+    @decorators.TransportLog("Queue item")
     def on_delete(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Queue item DELETE - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
         try:
             self._queue_controller.delete(queue_name, project=project_id)
 
@@ -116,10 +109,8 @@ class CollectionResource(object):
         self._queue_controller = queue_controller
         self._validate = validate
 
+    @decorators.TransportLog("Queue collection")
     def on_get(self, req, resp, project_id):
-        LOG.debug(u'Queue collection GET - project: %(project)s',
-                  {'project': project_id})
-
         kwargs = {}
 
         # NOTE(kgriffs): This syntax ensures that
