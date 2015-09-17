@@ -14,10 +14,11 @@
 # limitations under the License.
 
 import msgpack
+from oslo_cache import core
 from oslo_config import cfg
 
+from zaqar.common import cache as oslo_cache
 from zaqar.common import decorators
-from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.tests import base
 
 
@@ -38,8 +39,9 @@ class TestDecorators(base.TestBase):
 
     def test_cached(self):
         conf = cfg.ConfigOpts()
-        oslo_cache.register_oslo_configs(conf)
-        cache = oslo_cache.get_cache(conf.cache_url)
+        oslo_cache.register_config(conf)
+        conf.cache.backend = 'dogpile.cache.memory'
+        cache = oslo_cache.get_cache(conf)
 
         sample_project = {
             u'name': u'Cats Abound',
@@ -95,8 +97,9 @@ class TestDecorators(base.TestBase):
 
     def test_cached_with_cond(self):
         conf = cfg.ConfigOpts()
-        oslo_cache.register_oslo_configs(conf)
-        cache = oslo_cache.get_cache(conf.cache_url)
+        oslo_cache.register_config(conf)
+        conf.cache.backend = 'dogpile.cache.memory'
+        cache = oslo_cache.get_cache(conf)
 
         class TestClass(object):
 
@@ -132,7 +135,7 @@ class TestDecorators(base.TestBase):
         for i in range(3):
             user = instance.get_user(name)
 
-            self.assertEqual(cache.get(name), None)
+            self.assertEqual(cache.get(name), core.NO_VALUE)
 
             self.assertEqual(user, name)
             self.assertEqual(instance.user_gets, 2 + i)

@@ -15,7 +15,7 @@
 import mock
 import uuid
 
-from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.common import cache as oslo_cache
 from zaqar.storage import errors
 from zaqar.storage import mongodb
 from zaqar.storage import pooling
@@ -34,7 +34,8 @@ class PoolCatalogTest(testing.TestBase):
     def setUp(self):
         super(PoolCatalogTest, self).setUp()
 
-        cache = oslo_cache.get_cache()
+        oslo_cache.register_config(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
         control = utils.load_storage_driver(self.conf, cache,
                                             control_mode=True)
 

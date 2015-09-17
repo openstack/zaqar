@@ -59,7 +59,7 @@ class DriverBase(object):
     :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
+    :type cache: `dogpile.cache.region.CacheRegion`
     """
     _DRIVER_OPTIONS = []
 
@@ -91,7 +91,7 @@ class DataDriverBase(DriverBase):
     :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
+    :type cache: `dogpile.cache.region.CacheRegion`
     """
 
     BASE_CAPABILITIES = []
@@ -258,7 +258,7 @@ class ControlDriverBase(DriverBase):
     :type conf: `oslo_config.ConfigOpts`
     :param cache: Cache instance to use for reducing latency
         for certain lookups.
-    :type cache: `zaqar.openstack.common.cache.backends.BaseCache`
+    :type cache: `dogpile.cache.region.CacheRegion`
     """
 
     @abc.abstractproperty

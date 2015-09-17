@@ -104,11 +104,11 @@ class TestFlavorsMongoDB(base.V2Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_201)
 
     def tearDown(self):
-        self.simulate_delete(self.pool_path)
+        self.simulate_delete(self.queue_path)
         self.simulate_delete(self.flavor_path)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.simulate_delete(self.pool_path)
 
-        self.simulate_delete(self.queue_path)
         super(TestFlavorsMongoDB, self).tearDown()
 
     def test_put_flavor_works(self):

@@ -16,6 +16,7 @@
 import functools
 
 import msgpack
+from oslo_cache import core
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ def caches(keygen, ttl, cond=None):
         def wrapper(self, *args, **kwargs):
             # First, purge from cache
             key = keygen(*args, **kwargs)
-            del self._cache[key]
+            self._cache.delete(key)
 
             # Remove/delete from origin
             remover(self, *args, **kwargs)
@@ -101,9 +102,9 @@ def caches(keygen, ttl, cond=None):
         @functools.wraps(getter)
         def wrapper(self, *args, **kwargs):
             key = keygen(*args, **kwargs)
-            packed_value = self._cache.get(key)
+            packed_value = self._cache.get(key, expiration_time=ttl)
 
-            if packed_value is None:
+            if packed_value is core.NO_VALUE:
                 value = getter(self, *args, **kwargs)
 
                 # Cache new value if desired
@@ -115,8 +116,7 @@ def caches(keygen, ttl, cond=None):
                     # str format family.
                     packed_value = msgpack.packb(value, use_bin_type=True)
 
-                    if not self._cache.set(key, packed_value, ttl):
-                        LOG.warn('Failed to cache key: ' + key)
+                    self._cache.set(key, packed_value)
             else:
                 # NOTE(kgriffs): unpackb does not default to UTF-8,
                 # so we have to explicitly ask for it.

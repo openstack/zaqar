@@ -21,8 +21,8 @@ from oslo_utils import timeutils
 from oslo_utils import uuidutils
 import redis
 
+from zaqar.common import cache as oslo_cache
 from zaqar.common import errors
-from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar import storage
 from zaqar.storage import mongodb
 from zaqar.storage.redis import controllers
@@ -173,7 +173,8 @@ class RedisDriverTest(testing.TestBase):
     config_file = 'wsgi_redis.conf'
 
     def test_db_instance(self):
-        cache = oslo_cache.get_cache()
+        oslo_cache.register_config(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
         redis_driver = driver.DataDriver(self.conf, cache,
                                          driver.ControlDriver
                                          (self.conf, cache))
@@ -181,7 +182,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertTrue(isinstance(redis_driver.connection, redis.StrictRedis))
 
     def test_version_match(self):
-        cache = oslo_cache.get_cache()
+        oslo_cache.register_config(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
 
         with mock.patch('redis.StrictRedis.info') as info:
             info.return_value = {'redis_version': '2.4.6'}

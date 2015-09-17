@@ -18,10 +18,10 @@ from oslo_log import log
 from stevedore import driver
 
 from zaqar.api import handler
+from zaqar.common import cache as oslo_cache
 from zaqar.common import configs
 from zaqar.common import decorators
 from zaqar.common import errors
-from zaqar.openstack.common.cache import cache as oslo_cache
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
@@ -93,9 +93,8 @@ class Bootstrap(object):
     def cache(self):
         LOG.debug(u'Loading proxy cache driver')
         try:
-            oslo_cache.register_oslo_configs(self.conf)
-            mgr = oslo_cache.get_cache(self.conf.cache_url)
-            return mgr
+            oslo_cache.register_config(self.conf)
+            return oslo_cache.get_cache(self.conf)
         except RuntimeError as exc:
             LOG.exception(exc)
             raise errors.InvalidDriver(exc)
