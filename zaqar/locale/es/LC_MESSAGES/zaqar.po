@@ -7,12 +7,13 @@
 # Milton Mazzarri <inactive+milmazz@transifex.com>, 2014
 # Pablo Sanchez <furybeat@gmail.com>, 2015
 # Victoria Martínez de la Cruz <vickymsee@gmail.com>, 2014
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version:  Zaqar\n"
+"Project-Id-Version: zaqar 1.0.0.0b4.dev50\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-14 06:07+0000\n"
-"PO-Revision-Date: 2015-08-05 02:30+0000\n"
+"POT-Creation-Date: 2015-09-18 06:13+0000\n"
+"PO-Revision-Date: 2015-08-27 07:38+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/openstack/zaqar/language/"
 "es/)\n"
@@ -113,9 +114,6 @@ msgid ""
 msgstr ""
 "Fallo el primer intento mientras agregaba mensajes a la cola \"%(queue)s\" "
 "del proyecto %(project)s"
-
-msgid "Flavor {flavor} could not be created. Pool {pool} does not exist"
-msgstr "No se pudo crear tipo {flavor}. No existe pool {pool}"
 
 msgid "Health status could not be read."
 msgstr "No se pudo leer el estado de salud."
@@ -321,9 +319,6 @@ msgstr "No se puede eliminar suscripción."
 msgid "Subscription could not be retrieved."
 msgstr "No se puede recuperar suscripción."
 
-msgid "Subscription {subscription_id} could not be updated."
-msgstr "No se puede actualizar suscripción {subscription_id}."
-
 msgid "Subscriptions could not be listed."
 msgstr "No se pueden listar suscripciones."
 
@@ -427,16 +422,6 @@ msgid "Unexpected error."
 msgstr "Error inesperado."
 
 msgid ""
-"Unreliable's default value will be changed to False in the Kilo release. "
-"Please, make sure your deployments are working in a reliable mode or that "
-"`unreliable` is explicitly set to `True` in your configuration files."
-msgstr ""
-"El valor por defecto que no sea confiable será reemplazado con False en la "
-"versión de Kilo. Por favor asegúrese de que sus implementaciones están "
-"funcionando de manera confiable o que `unreliable` se configura "
-"explícitamente como `True` en sus ficheros de configuración."
-
-msgid ""
 "Using a write concern other than `majority` or > 2 makes the service "
 "unreliable. Please use a different write concern or set `unreliable` to True "
 "in the config file."
@@ -444,9 +429,6 @@ msgstr ""
 "Emplear un asunto escrito diferente a  `majority` o > 2 hace que el servicio "
 "sea desconfiable. Por favor emplee un asunto diferente o configure "
 "`unreliable` como True en el fichero de configuración."
-
-msgid "Wrong UUID value"
-msgstr "Valor UUID incorrecto"
 
 msgid "ids parameter should have at least 1 and not greater than {0} values."
 msgstr ""
