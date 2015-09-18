@@ -146,13 +146,14 @@ class QueueController(storage.Queue):
 
         def all_pages():
             cursor = self._pool_catalog._pools_ctrl.list(limit=0)
-            for pool in next(cursor):
-                yield next(self._pool_catalog.get_driver(pool['name'])
-                           .queue_controller.list(
-                               project=project,
-                               marker=marker,
-                               limit=limit,
-                               detailed=detailed))
+            pools_list = list(next(cursor))
+            anypool = pools_list and pools_list[0]
+            yield next(self._pool_catalog.get_driver(anypool['name'])
+                       .queue_controller.list(
+                           project=project,
+                           marker=marker,
+                           limit=limit,
+                           detailed=detailed))
 
         # make a heap compared with 'name'
         ls = heapq.merge(*[
