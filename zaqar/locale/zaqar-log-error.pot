@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 1.0.0.0b2\n"
+"Project-Id-Version: zaqar 1.0.0.0b4.dev50\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-03 06:12+0000\n"
+"POT-Creation-Date: 2015-09-18 06:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgid "The `key` can't be None"
 msgstr ""
 
 #: zaqar/common/urls.py:53
-msgid "The `path` can't be None"
+msgid "`paths` must be a non-empty list"
 msgstr ""
 
 #: zaqar/common/urls.py:56
@@ -31,6 +31,15 @@ msgstr ""
 
 #: zaqar/common/urls.py:72
 msgid "`expires` is lower than the current time"
+msgstr ""
+
+#: zaqar/notification/task/mailto.py:46
+#, python-format
+msgid "Failed to create process for sendmail, because %s"
+msgstr ""
+
+#: zaqar/notification/task/mailto.py:49
+msgid "Failed to send email"
 msgstr ""
 
 #: zaqar/openstack/common/excutils.py:76
@@ -48,8 +57,13 @@ msgstr ""
 msgid "Could not release the acquired lock `%s`"
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/urls.py:54
+#: zaqar/transport/wsgi/v2_0/urls.py:56
 #, python-format
 msgid "Unknown keys: %s"
+msgstr ""
+
+#: zaqar/transport/wsgi/v2_0/urls.py:66
+#, python-format
+msgid "Invalid paths: %s"
 msgstr ""
 
