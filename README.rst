@@ -51,10 +51,10 @@ sudo yum install gcc python-pip libxml2-devel libxslt-devel
 
     uri = mongodb://127.0.0.1:27017
 
-5. For logging, find the ``[DEFAULT]`` section in
-   ``~/.zaqar/zaqar.conf`` and modify as desired::
+5. For logging, find the ``[handler_file]`` section in 
+   ``~/.zaqar/logging.conf`` and modify as desired::
 
-    log_file = server.log
+    args=('zaqar.log', 'w')
 
 6. Change directories back to your local copy of the repo::
 
