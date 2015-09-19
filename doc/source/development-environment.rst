@@ -11,6 +11,7 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+====================================
 Setting up a development environment
 ====================================
 
@@ -178,7 +179,7 @@ Then run the stack.sh script as usual.
 After running the DevStack_ script, you can start the Zaqar server
 and test it by following steps 5 and 6 from the previous section.
 
-.. _DevStack: http://devstack.org
+.. _DevStack: http://docs.openstack.org/developer/devstack/
 
 Running unit tests
 ------------------

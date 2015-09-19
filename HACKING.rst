@@ -1,4 +1,5 @@
-Zaqar Style Commandments
+========================
+Zaqar style commandments
 ========================
 
 - Step 1: Read the OpenStack Style Commandments
