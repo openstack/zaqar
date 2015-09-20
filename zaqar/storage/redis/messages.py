@@ -404,9 +404,6 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def post(self, queue, messages, client_uuid, project=None):
-        if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue, project)
-
         msgset_key = utils.msgset_key(queue, project)
         counter_key = utils.scope_queue_index(queue, project,
                                               MESSAGE_RANK_COUNTER_SUFFIX)

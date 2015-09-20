@@ -121,6 +121,14 @@ def descope_subscription_ids_set(subset_key):
     return (tokens[1] or None, tokens[0] or None)
 
 
+def scope_subscribers_set(queue=None, project=None,
+                          subscriber_suffix=''):
+
+    return "%s.%s.%s" % (normalize_none_str(project),
+                         normalize_none_str(queue),
+                         subscriber_suffix)
+
+
 # NOTE(prashanthr_): Aliasing the scope_message_ids_set function
 # to be used in the pools and claims controller as similar
 # functionality is required to scope redis id's.
