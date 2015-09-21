@@ -28,6 +28,9 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
 
+    def close(self):
+        pass
+
     @property
     def default_options(self):
         return {}
@@ -63,6 +66,9 @@ class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
+
+    def close(self):
+        pass
 
     @property
     def queue_controller(self):

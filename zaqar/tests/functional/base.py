@@ -92,8 +92,10 @@ class FunctionalTestBase(testing.TestBase):
                 self.mconf.pooling = True
                 self.mconf.admin_mode = True
 
-            self.client = http.WSGIClient(
-                bootstrap.Bootstrap(self.mconf).transport.app)
+            boot = bootstrap.Bootstrap(self.mconf)
+            self.addCleanup(boot.storage.close)
+            self.addCleanup(boot.control.close)
+            self.client = http.WSGIClient(boot.transport.app)
 
         self.headers = helpers.create_zaqar_headers(self.cfg)
 

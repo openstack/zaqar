@@ -128,6 +128,11 @@ class DataDriverBase(DriverBase):
         """Return the health status based on different backends."""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def close(self):
+        """Close connections to the backend."""
+        raise NotImplementedError
+
     def _get_operation_status(self):
         op_status = {}
         status_template = lambda s, t, r: {'succeeded': s,
@@ -274,6 +279,11 @@ class ControlDriverBase(DriverBase):
     @abc.abstractproperty
     def queue_controller(self):
         """Returns the driver's queue controller."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def close(self):
+        """Close connections to the backend."""
         raise NotImplementedError
 
 

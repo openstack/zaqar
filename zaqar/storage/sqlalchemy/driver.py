@@ -75,7 +75,7 @@ class ControlDriver(storage.ControlDriverBase):
     def run(self, *args, **kwargs):
         return self.connection.execute(*args, **kwargs)
 
-    def close_connection(self):
+    def close(self):
         self.connection.close()
 
     @property
