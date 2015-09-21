@@ -1,3 +1,4 @@
+==============================
 Project hosting with Launchpad
 ==============================
 
@@ -50,5 +51,5 @@ You can also reach us in #openstack-zaqar at irc.freenode.org.
 
 .. _Launchpad: http://launchpad.net
 .. _Wiki: http://wiki.openstack.org
-.. _Zaqar Team: https://launchpad.net/~zaqar
+.. _Zaqar Team: https://launchpad.net/zaqar
 .. _Ask OpenStack: http://ask.openstack.org/
