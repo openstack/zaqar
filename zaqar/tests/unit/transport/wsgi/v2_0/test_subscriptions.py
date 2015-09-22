@@ -141,7 +141,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         for i in range(count):
             self._create_subscription(subscriber='http://' + str(i))
 
-        query = '?limit={0}'.format(limit)
+        query = 'limit={0}'.format(limit)
         if marker:
             query += '&marker={1}'.format(marker)
 
@@ -158,11 +158,11 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         link = resp_doc['links'][0]
         self.assertEqual('next', link['rel'])
-        href = falcon.uri.parse_query_string(link['href'])
+        href = falcon.uri.parse_query_string(link['href'].split('?')[1])
         self.assertIn('marker', href)
         self.assertEqual(href['limit'], str(limit))
 
-        next_query_string = ('?marker={marker}&limit={limit}').format(**href)
+        next_query_string = ('marker={marker}&limit={limit}').format(**href)
         next_result = self.simulate_get(link['href'].split('?')[0],
                                         query_string=next_query_string)
         next_subscriptions = jsonutils.loads(next_result[0])
@@ -190,13 +190,13 @@ class TestSubscriptionsMongoDB(base.V2Base):
             self._create_subscription(subscriber='http://' + str(i))
 
         resp = self.simulate_get(self.subscription_path,
-                                 query_string='?limit=20',
+                                 query_string='limit=20',
                                  headers=self.headers)
         subscriptions_list = jsonutils.loads(resp[0])['subscriptions']
         id_list = sorted([s['id'] for s in subscriptions_list])
 
         resp = self.simulate_get(self.subscription_path,
-                                 query_string='?marker={0}'.format(id_list[9]),
+                                 query_string='marker={0}'.format(id_list[9]),
                                  headers=self.headers)
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         next_subscriptions_list = jsonutils.loads(resp[0])['subscriptions']

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
 from wsgiref import simple_server
 
 import falcon
@@ -63,12 +62,19 @@ class Driver(transport.DriverBase):
         self._init_routes()
         self._init_middleware()
 
+    def _verify_pre_signed_url(self, req, resp, params):
+        return helpers.verify_pre_signed_url(self._conf.signed_url.secret_key,
+                                             req, resp, params)
+
+    def _validate_queue_identification(self, req, resp, params):
+        return helpers.validate_queue_identification(
+            self._validate.queue_identification, req, resp, params)
+
     @decorators.lazy_property(write=False)
     def before_hooks(self):
         """Exposed to facilitate unit testing."""
         return [
-            functools.partial(helpers.verify_pre_signed_url,
-                              self._conf.signed_url.secret_key),
+            self._verify_pre_signed_url,
             helpers.require_accepts_json,
             helpers.require_client_id,
             helpers.extract_project_id,
@@ -78,8 +84,7 @@ class Driver(transport.DriverBase):
             helpers.inject_context,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
-            functools.partial(helpers.validate_queue_identification,
-                              self._validate.queue_identification)
+            self._validate_queue_identification
         ]
 
     def _init_routes(self):

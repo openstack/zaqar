@@ -198,7 +198,7 @@ class TestPoolsMongoDB(base.V2Base):
 
     def test_detailed_get_works(self):
         result = self.simulate_get(self.pool,
-                                   query_string='?detailed=True')
+                                   query_string='detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
         self._pool_expect(pool, self.pool, self.doc['weight'],
@@ -217,7 +217,7 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
 
         result = self.simulate_get(self.pool,
-                                   query_string='?detailed=True')
+                                   query_string='detailed=True')
         self.assertEqual(self.srmock.status, falcon.HTTP_200)
         pool = jsonutils.loads(result[0])
         self._pool_expect(pool, self.pool, doc['weight'],
@@ -274,7 +274,7 @@ class TestPoolsMongoDB(base.V2Base):
         # NOTE(cpp-cabrera): delete initial pool - it will interfere
         # with listing tests
         self.simulate_delete(self.pool)
-        query = '?limit={0}&detailed={1}'.format(limit, detailed)
+        query = 'limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
             query += '&marker={0}'.format(marker)
 
@@ -290,12 +290,12 @@ class TestPoolsMongoDB(base.V2Base):
 
             link = results['links'][0]
             self.assertEqual('next', link['rel'])
-            href = falcon.uri.parse_query_string(link['href'])
+            href = falcon.uri.parse_query_string(link['href'].split('?')[1])
             self.assertIn('marker', href)
             self.assertEqual(href['limit'], str(limit))
             self.assertEqual(href['detailed'], str(detailed).lower())
 
-            next_query_string = ('?marker={marker}&limit={limit}'
+            next_query_string = ('marker={marker}&limit={limit}'
                                  '&detailed={detailed}').format(**href)
             next_result = self.simulate_get(link['href'].split('?')[0],
                                             query_string=next_query_string)
@@ -345,7 +345,7 @@ class TestPoolsMongoDB(base.V2Base):
 
         with pools(self, 10, self.doc['uri'], 'my-group') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
-                                       query_string='?marker=3')
+                                       query_string='marker=3')
             self.assertEqual(self.srmock.status, falcon.HTTP_200)
             pool_list = jsonutils.loads(result[0])['pools']
             self.assertEqual(len(pool_list), 6)
