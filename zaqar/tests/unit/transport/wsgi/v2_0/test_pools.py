@@ -152,6 +152,20 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(doc['weight'], expect['weight'])
         self.assertEqual(doc['uri'], expect['uri'])
 
+    def test_put_capabilities_mismatch_pool(self):
+        mongodb_doc = self.doc
+        self.simulate_put(self.pool,
+                          body=jsonutils.dumps(mongodb_doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+
+        redis_doc = {'weight': 100,
+                     'group': 'mygroup',
+                     'uri': 'redis://127.0.0.1:6379'}
+
+        self.simulate_put(self.pool,
+                          body=jsonutils.dumps(redis_doc))
+        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+
     def test_delete_works(self):
         self.simulate_delete(self.pool)
         self.assertEqual(self.srmock.status, falcon.HTTP_204)
