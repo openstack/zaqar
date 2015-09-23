@@ -52,6 +52,11 @@ sudo yum install gcc python-pip libxml2-devel libxslt-devel
 
     uri = mongodb://127.0.0.1:27017
 
+   NOTE: If your local dev/test mongodb doesn't enable the replica set, then
+   you have to set below in [default] section::
+
+    unreliable = True
+
 5. For logging, find the ``[handler_file]`` section in 
    ``~/.zaqar/logging.conf`` and modify as desired::
 
