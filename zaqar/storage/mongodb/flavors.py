@@ -101,7 +101,7 @@ class FlavorsController(base.FlavorsBase):
 
         # NOTE(flaper87): Check if there are pools in this group.
         # Should there be a `group_exists` method?
-        if not list(self._pools_ctrl.get_group(pool)):
+        if not list(self._pools_ctrl.get_pools_by_group(pool)):
             raise errors.PoolDoesNotExist(pool)
 
         capabilities = {} if capabilities is None else capabilities

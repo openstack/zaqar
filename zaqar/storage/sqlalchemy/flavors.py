@@ -80,7 +80,7 @@ class FlavorsController(base.FlavorsBase):
             )
             self.driver.connection.execute(stmt)
         except sa.exc.IntegrityError:
-            if not self._pools_ctrl.get_group(pool):
+            if not self._pools_ctrl.get_pools_by_group(pool):
                 raise errors.PoolDoesNotExist(pool)
 
             # TODO(flaper87): merge update/create into a single
