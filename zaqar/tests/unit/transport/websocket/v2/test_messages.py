@@ -90,7 +90,7 @@ class MessagesBaseTest(base.V2Base):
 
         # Test GET on the message resource directly
         # NOTE(cpp-cabrera): force the passing of time to age a message
-        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow'
+        timeutils_utcnow = 'oslo_utils.timeutils.utcnow'
         now = timeutils.utcnow() + datetime.timedelta(seconds=10)
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now

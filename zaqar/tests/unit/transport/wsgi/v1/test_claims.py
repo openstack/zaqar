@@ -137,7 +137,7 @@ class TestClaimsMongoDB(base.V1Base):
         self.assertEqual(len(listed['messages']), len(claimed))
 
         now = timeutils.utcnow() + datetime.timedelta(seconds=10)
-        timeutils_utcnow = 'zaqar.openstack.common.timeutils.utcnow'
+        timeutils_utcnow = 'oslo_utils.timeutils.utcnow'
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
             body = self.simulate_get(claim_href, self.project_id)

@@ -25,7 +25,7 @@ from oslo_utils import timeutils
 import six
 from testtools import matchers
 
-from zaqar.openstack.common.cache import cache as oslo_cache
+from zaqar.common import cache as oslo_cache
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage import pipeline
@@ -51,8 +51,8 @@ class ControllerBaseTest(testing.TestBase):
                               self.controller_class,
                               self.controller_base_class))
 
-        oslo_cache.register_oslo_configs(self.conf)
-        cache = oslo_cache.get_cache(self.conf.cache_url)
+        oslo_cache.register_config(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
 
         pooling = 'pooling' in self.conf and self.conf.pooling
         if pooling and not self.control_driver_class:

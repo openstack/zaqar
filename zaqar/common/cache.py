@@ -1,3 +1,4 @@
+# Copyright 2015 Red Hat, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -11,7 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
+from oslo_cache import core
 
 
-six.add_move(six.MovedModule('mox', 'mox', 'mox3.mox'))
+def register_config(conf):
+    core.configure(conf)
+
+
+def get_cache(conf):
+    region = core.create_region()
+    return core.configure_cache_region(conf, region)

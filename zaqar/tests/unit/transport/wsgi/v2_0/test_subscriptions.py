@@ -55,21 +55,16 @@ class TestSubscriptionsMongoDB(base.V2Base):
         self.subscription_path = (self.url_prefix + '/queues/' + self.queue +
                                   '/subscriptions')
 
-        self.addCleanup(self._delete_subscription)
-
-    def _delete_subscription(self, sid=None):
-        if sid:
-            self.simulate_delete(self.subscription_path + '/' + sid,
+    def tearDown(self):
+        resp = self.simulate_get(self.subscription_path,
                                  headers=self.headers)
-        else:
-            resp = self.simulate_get(self.subscription_path,
-                                     headers=self.headers)
-            resp_doc = jsonutils.loads(resp[0])
-            for s in resp_doc['subscriptions']:
-                self.simulate_delete(self.subscription_path + '/' + s['id'],
-                                     headers=self.headers)
+        resp_doc = jsonutils.loads(resp[0])
+        for s in resp_doc['subscriptions']:
+            self.simulate_delete(self.subscription_path + '/' + s['id'],
+                                 headers=self.headers)
 
         self.simulate_delete(self.queue_path)
+        super(TestSubscriptionsMongoDB, self).tearDown()
 
     def _create_subscription(self,
                              subscriber='http://triger.me',

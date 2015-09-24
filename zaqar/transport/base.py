@@ -76,7 +76,7 @@ class DriverBase(object):
     :param storage: The storage driver
     :type storage: zaqar.storage.base.DataDriverBase
     :param cache: caching object
-    :type cache: zaqar.openstack.common.cache.backends.BaseCache
+    :type cache: dogpile.cache.region.CacheRegion
     :param control: Storage driver to handle the control plane
     :type control: zaqar.storage.base.ControlDriverBase
     """
