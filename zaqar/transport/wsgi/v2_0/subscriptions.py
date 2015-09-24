@@ -17,6 +17,7 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import acl
@@ -37,12 +38,9 @@ class ItemResource(object):
         self._validate = validate
         self._subscription_controller = subscription_controller
 
+    @decorators.TransportLog("Subscription")
     @acl.enforce("subscription:get")
     def on_get(self, req, resp, project_id, queue_name, subscription_id):
-        LOG.debug(u'Subscription GET - subscription id: %(subscription_id)s,'
-                  u' project: %(project)s, queue: %(queue)s',
-                  {'subscription_id': subscription_id, 'project': project_id,
-                   'queue': queue_name})
         try:
             resp_dict = self._subscription_controller.get(queue_name,
                                                           subscription_id,
@@ -60,13 +58,9 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
+    @decorators.TransportLog("Subscription")
     @acl.enforce("subscription:delete")
     def on_delete(self, req, resp, project_id, queue_name, subscription_id):
-        LOG.debug(u'Subscription DELETE - '
-                  u'subscription id: %(subscription_id)s,'
-                  u' project: %(project)s, queue: %(queue)s',
-                  {'subscription_id': subscription_id, 'project': project_id,
-                   'queue': queue_name})
         try:
             self._subscription_controller.delete(queue_name,
                                                  subscription_id,
@@ -79,13 +73,9 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_204
 
+    @decorators.TransportLog("Subscription")
     @acl.enforce("subscription:update")
     def on_patch(self, req, resp, project_id, queue_name, subscription_id):
-        LOG.debug(u'Subscription PATCH - subscription id: %(subscription_id)s,'
-                  u' project: %(project)s, queue: %(queue)s',
-                  {'subscription_id': subscription_id, 'project': project_id,
-                   'queue': queue_name})
-
         if req.content_length:
             document = wsgi_utils.deserialize(req.stream, req.content_length)
         else:
@@ -121,12 +111,9 @@ class CollectionResource(object):
         self._subscription_controller = subscription_controller
         self._validate = validate
 
+    @decorators.TransportLog("Subscription collection")
     @acl.enforce("subscription:get_all")
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Subscription collection GET - project: %(project)s, '
-                  u'queue: %(queue)s',
-                  {'project': project_id, 'queue': queue_name})
-
         kwargs = {}
 
         # NOTE(kgriffs): This syntax ensures that
@@ -167,12 +154,9 @@ class CollectionResource(object):
         resp.body = utils.to_json(response_body)
         # status defaults to 200
 
+    @decorators.TransportLog("Subscription item")
     @acl.enforce("subscription:create")
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Subscription item POST - project: %(project)s, '
-                  u'queue: %(queue)s',
-                  {'project': project_id, 'queue': queue_name})
-
         if req.content_length:
             document = wsgi_utils.deserialize(req.stream, req.content_length)
         else:

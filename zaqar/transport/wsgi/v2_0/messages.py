@@ -17,6 +17,7 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers as wsgi_helpers
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
@@ -150,12 +151,9 @@ class CollectionResource(object):
     # Interface
     # ----------------------------------------------------------------------
 
+    @decorators.TransportLog("Messages collection")
     @acl.enforce("messages:create")
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Messages collection POST - queue:  %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         client_uuid = wsgi_helpers.get_client_uuid(req)
 
         try:
@@ -215,12 +213,9 @@ class CollectionResource(object):
         resp.body = utils.to_json(body)
         resp.status = falcon.HTTP_201
 
+    @decorators.TransportLog("Messages collection")
     @acl.enforce("messages:get_all")
     def on_get(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Messages collection GET - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         ids = req.get_param_as_list('ids')
 
         if ids is None:
@@ -240,12 +235,9 @@ class CollectionResource(object):
             resp.body = utils.to_json(response)
         # status defaults to 200
 
+    @decorators.TransportLog("Messages collection")
     @acl.enforce("messages:delete_all")
     def on_delete(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Messages collection DELETE - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         ids = req.get_param_as_list('ids')
         pop_limit = req.get_param_as_int('pop')
         try:
@@ -310,13 +302,9 @@ class ItemResource(object):
     def __init__(self, message_controller):
         self._message_controller = message_controller
 
+    @decorators.TransportLog("Messages item")
     @acl.enforce("messages:get")
     def on_get(self, req, resp, project_id, queue_name, message_id):
-        LOG.debug(u'Messages item GET - message: %(message)s, '
-                  u'queue: %(queue)s, project: %(project)s',
-                  {'message': message_id,
-                   'queue': queue_name,
-                   'project': project_id})
         try:
             message = self._message_controller.get(
                 queue_name,
@@ -341,15 +329,9 @@ class ItemResource(object):
         resp.body = utils.to_json(message)
         # status defaults to 200
 
+    @decorators.TransportLog("Messages item")
     @acl.enforce("messages:delete")
     def on_delete(self, req, resp, project_id, queue_name, message_id):
-
-        LOG.debug(u'Messages item DELETE - message: %(message)s, '
-                  u'queue: %(queue)s, project: %(project)s',
-                  {'message': message_id,
-                   'queue': queue_name,
-                   'project': project_id})
-
         error_title = _(u'Unable to delete')
 
         try:

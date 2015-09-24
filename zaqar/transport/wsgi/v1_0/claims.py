@@ -17,6 +17,7 @@ import falcon
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import utils
@@ -41,11 +42,8 @@ class Resource(object):
 
 class CollectionResource(Resource):
 
+    @decorators.TransportLog("Claims collection")
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Claims collection POST - queue: %(queue)s, '
-                  u'project: %(project)s',
-                  {'queue': queue_name, 'project': project_id})
-
         # Check for an explicit limit on the # of messages to claim
         limit = req.get_param_as_int('limit')
         claim_options = {} if limit is None else {'limit': limit}
@@ -98,12 +96,8 @@ class ItemResource(Resource):
         self._claim_controller = claim_controller
         self._validate = validate
 
+    @decorators.TransportLog("Claim item")
     def on_get(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(u'Claim item GET - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project: %(project_id)s',
-                  {'queue_name': queue_name,
-                   'project_id': project_id,
-                   'claim_id': claim_id})
         try:
             meta, msgs = self._claim_controller.get(
                 queue_name,
@@ -135,13 +129,8 @@ class ItemResource(Resource):
         resp.body = utils.to_json(meta)
         # status defaults to 200
 
+    @decorators.TransportLog("Claim item")
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(u'Claim Item PATCH - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project:%(project_id)s' %
-                  {'queue_name': queue_name,
-                   'project_id': project_id,
-                   'claim_id': claim_id})
-
         # Read claim metadata (e.g., TTL) and raise appropriate
         # HTTP errors as needed.
         document = wsgi_utils.deserialize(req.stream, req.content_length)
@@ -169,12 +158,8 @@ class ItemResource(Resource):
             description = _(u'Claim could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
+    @decorators.TransportLog("Claim item")
     def on_delete(self, req, resp, project_id, queue_name, claim_id):
-        LOG.debug(u'Claim item DELETE - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project: %(project_id)s' %
-                  {'queue_name': queue_name,
-                   'project_id': project_id,
-                   'claim_id': claim_id})
         try:
             self._claim_controller.delete(queue_name,
                                           claim_id=claim_id,
