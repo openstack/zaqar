@@ -92,15 +92,15 @@ class TestInsertQueue(base.V1FunctionalTestBase):
         self.addCleanup(self.client.delete, self.url)
 
         result = self.client.put(self.url)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_empty, response_headers)
 
         self.url = self.url + '/metadata'
         result = self.client.get(self.url)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), {})
+        self.assertEqual(200, result.status_code)
+        self.assertEqual({}, result.json())
 
     test_insert_queue.tags = ['positive', 'smoke']
 
@@ -117,11 +117,11 @@ class TestInsertQueue(base.V1FunctionalTestBase):
         self.addCleanup(self.client.delete, self.url)
 
         result = self.client.put(self.url)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
         self.url = self.url + '/metadata'
         result = self.client.get(self.url)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_insert_queue_invalid_name.tags = ['negative']
 
@@ -141,7 +141,7 @@ class TestInsertQueue(base.V1FunctionalTestBase):
         header['X-Auth-Token'] = 'invalid'
 
         result = self.client.put(self.url, headers=header)
-        self.assertEqual(result.status_code, 401)
+        self.assertEqual(401, result.status_code)
 
     test_insert_queue_invalid_authtoken.tags = ['negative']
 
@@ -152,7 +152,7 @@ class TestInsertQueue(base.V1FunctionalTestBase):
 
         header = {"Accept": 'plain/text'}
         result = self.client.put(path, headers=header)
-        self.assertEqual(result.status_code, 406)
+        self.assertEqual(406, result.status_code)
 
     test_insert_queue_header_plaintext.tags = ['negative']
 
@@ -163,7 +163,7 @@ class TestInsertQueue(base.V1FunctionalTestBase):
         self.addCleanup(self.client.delete, url=path, headers=headers)
 
         result = self.client.put(path, headers=headers)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
     test_insert_queue_header_asterisk.tags = ['positive']
 
@@ -174,13 +174,13 @@ class TestInsertQueue(base.V1FunctionalTestBase):
         self.addCleanup(self.client.delete, self.url)
         result = self.client.put(self.url, data=doc)
 
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         self.url = self.base_url + '/queues/hasmetadata/metadata'
         result = self.client.get(self.url)
 
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json(), {})
+        self.assertEqual(200, result.status_code)
+        self.assertEqual({}, result.json())
 
     test_insert_queue_with_metadata.tags = ['negative']
 
@@ -218,10 +218,10 @@ class TestQueueMetaData(base.V1FunctionalTestBase):
     def test_insert_queue_metadata(self, doc):
         """Insert Queue with empty json."""
         result = self.client.put(data=doc)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
         result = self.client.get()
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         doc_decoded = {}
         for k, v in doc.items():
@@ -244,7 +244,7 @@ class TestQueueMetaData(base.V1FunctionalTestBase):
         """Insert invalid metadata."""
 
         result = self.client.put(data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_insert_queue_invalid_metadata.tags = ['negative']
 
@@ -275,7 +275,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         result = self.client.get('/{0}/queues'
                                  .format('v1'))
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
         self.assertSchema(result.json(), 'queue_list')
 
     test_list_queues.tags = ['smoke', 'positive']
@@ -290,7 +290,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         result = self.client.get('/{0}/queues'
                                  .format("v1"),
                                  params=params)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
         self.assertSchema(result.json(), 'queue_list')
 
         response_keys = result.json()['queues'][0].keys()
@@ -306,7 +306,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         result = self.client.get('/{0}/queues'
                                  .format("v1"),
                                  params=params)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_list_queue_invalid_limit.tags = ['negative']
 
@@ -315,7 +315,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
 
         result = self.client.get('/{0}/health'
                                  .format("v1"))
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_check_health.tags = ['positive']
 
@@ -325,10 +325,10 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
         result = self.client.get(self.queue_url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
         result = self.client.head(self.queue_url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_check_queue_exists.tags = ['positive']
 
@@ -336,10 +336,10 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         """Checks non-existing queue."""
         path = '/{0}/queues/nonexistingqueue'.format("v1")
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
         result = self.client.head(path)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     test_check_queue_exists_negative.tags = ['negative']
 
@@ -348,7 +348,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
 
         path = '/{0}/queues?marker=zzz'.format("v1")
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_get_queue_malformed_marker.tags = ['negative']
 
@@ -357,17 +357,17 @@ class TestQueueMisc(base.V1FunctionalTestBase):
 
         result = self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         stats_url = self.queue_url + '/stats'
 
         # Get stats on an empty queue
         result = self.client.get(stats_url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         expected_response = {'messages':
                              {'claimed': 0, 'total': 0, 'free': 0}}
-        self.assertEqual(result.json(), expected_response)
+        self.assertEqual(expected_response, result.json())
 
     test_get_stats_empty_queue.tags = ['positive']
 
@@ -376,7 +376,7 @@ class TestQueueMisc(base.V1FunctionalTestBase):
         """Get stats on a queue."""
         result = self.client.put(self.queue_url)
         self.addCleanup(self.client.delete, self.queue_url)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Post Messages to the test queue
         doc = helpers.create_message_body(
@@ -384,18 +384,18 @@ class TestQueueMisc(base.V1FunctionalTestBase):
 
         message_url = self.queue_url + '/messages'
         result = self.client.post(message_url, data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         if claimed > 0:
             claim_url = self.queue_url + '/claims?limit=' + str(claimed)
             doc = {'ttl': 300, 'grace': 300}
             result = self.client.post(claim_url, data=doc)
-            self.assertEqual(result.status_code, 201)
+            self.assertEqual(201, result.status_code)
 
         # Get stats on the queue.
         stats_url = self.queue_url + '/stats'
         result = self.client.get(stats_url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         self.assertQueueStats(result.json(), claimed)
 
@@ -426,36 +426,36 @@ class TestQueueNonExisting(base.V1FunctionalTestBase):
     def test_get_queue(self):
         """Get non existing Queue."""
         result = self.client.get()
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     def test_get_stats(self):
         """Get stats on non existing Queue."""
         result = self.client.get('/stats')
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     def test_get_metadata(self):
         """Get metadata on non existing Queue."""
         result = self.client.get('/metadata')
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     def test_get_messages(self):
         """Get messages on non existing Queue."""
         result = self.client.get('/messages')
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     def test_post_messages(self):
         """Post messages to a non existing Queue."""
         doc = [{"ttl": 200, "body": {"Home": ""}}]
         result = self.client.post('/messages', data=doc)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     def test_claim_messages(self):
         """Claim messages from a non existing Queue."""
         doc = {"ttl": 200, "grace": 300}
         result = self.client.post('/claims', data=doc)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     def test_delete_queue(self):
         """Delete non existing Queue."""
         result = self.client.delete()
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)

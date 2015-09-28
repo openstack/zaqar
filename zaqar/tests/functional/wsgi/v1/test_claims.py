@@ -49,7 +49,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         for i in range(10):
             result = self.client.post(url, data=doc)
-            self.assertEqual(result.status_code, 201)
+            self.assertEqual(201, result.status_code)
 
     @ddt.data({}, dict(limit=2))
     def test_claim_messages(self, params):
@@ -60,7 +60,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         actual_message_count = len(result.json())
         self.assertMessageCount(actual_message_count, message_count)
@@ -77,14 +77,14 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         location = result.headers['Location']
 
         url = self.cfg.zaqar.url + location
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         self.assertSchema(result.json(), 'claim_get')
 
@@ -99,7 +99,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(params=params, data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_claim_more_than_allowed.tags = ['negative']
 
@@ -109,7 +109,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 400}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Patch Claim
         claim_location = result.headers['Location']
@@ -117,12 +117,12 @@ class TestClaims(base.V1FunctionalTestBase):
         doc_updated = {"ttl": 300}
 
         result = self.client.patch(url, data=doc_updated)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
         # verify that the claim TTL is updated
         result = self.client.get(url)
         new_ttl = result.json()['ttl']
-        self.assertEqual(new_ttl, 300)
+        self.assertEqual(300, new_ttl)
 
     test_claim_patch.tags = ['smoke', 'positive']
 
@@ -132,14 +132,14 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 60, "grace": 60}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Delete Claimed Messages
         for rst in result.json():
             href = rst['href']
             url = self.cfg.zaqar.url + href
             result = self.client.delete(url)
-            self.assertEqual(result.status_code, 204)
+            self.assertEqual(204, result.status_code)
 
     test_delete_claimed_message.tags = ['smoke', 'positive']
 
@@ -148,7 +148,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 300, "grace": 100}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Extract claim location and construct the claim URL.
         location = result.headers['Location']
@@ -156,7 +156,7 @@ class TestClaims(base.V1FunctionalTestBase):
 
         # Release Claim.
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_claim_release.tags = ['smoke', 'positive']
 
@@ -171,7 +171,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": ttl, "grace": 100}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_claim_invalid_ttl.tags = ['negative']
 
@@ -186,7 +186,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 100, "grace": grace}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_claim_invalid_grace.tags = ['negative']
 
@@ -200,7 +200,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 100, "grace": grace}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_claim_invalid_limit.tags = ['negative']
 
@@ -215,7 +215,7 @@ class TestClaims(base.V1FunctionalTestBase):
         doc = {"ttl": 100, "grace": 100}
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Extract claim location and construct the claim URL.
         location = result.headers['Location']
@@ -224,7 +224,7 @@ class TestClaims(base.V1FunctionalTestBase):
         # Patch Claim.
         doc = {"ttl": ttl}
         result = self.client.patch(url, data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_patch_claim_invalid_ttl.tags = ['negative']
 
@@ -232,7 +232,7 @@ class TestClaims(base.V1FunctionalTestBase):
         """Query Non Existing Claim."""
         path = '/non-existing-claim'
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     test_query_non_existing_claim.tags = ['negative']
 
@@ -241,7 +241,7 @@ class TestClaims(base.V1FunctionalTestBase):
         path = '/non-existing-claim'
         doc = {"ttl": 400}
         result = self.client.patch(path, data=doc)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     test_patch_non_existing_claim.tags = ['negative']
 
@@ -249,7 +249,7 @@ class TestClaims(base.V1FunctionalTestBase):
         """Patch Non Existing Claim."""
         path = '/non-existing-claim'
         result = self.client.delete(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_delete_non_existing_claim.tags = ['negative']
 

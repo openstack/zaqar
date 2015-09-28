@@ -137,11 +137,9 @@ class FunctionalTestBase(testing.TestBase):
         total = self.limits.max_messages_per_claim_or_pop
         free = total - claimed
 
-        self.assertEqual(result_json['messages']['claimed'], claimed)
-        self.assertEqual(result_json['messages']['free'],
-                         free)
-        self.assertEqual(result_json['messages']['total'],
-                         total)
+        self.assertEqual(claimed, result_json['messages']['claimed'])
+        self.assertEqual(free, result_json['messages']['free'])
+        self.assertEqual(total, result_json['messages']['total'])
 
         if 'oldest' in result_json['messages']:
             oldest_message = result_json['messages']['oldest']
@@ -174,7 +172,7 @@ class FunctionalTestBase(testing.TestBase):
 
         response_keys = message.keys()
         response_keys = sorted(response_keys)
-        self.assertEqual(response_keys, expected_keys)
+        self.assertEqual(expected_keys, response_keys)
 
         # Verify that age has valid values
         age = message['age']
@@ -184,7 +182,7 @@ class FunctionalTestBase(testing.TestBase):
         # Verify that GET on href returns 200
         path = message['href']
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         # Verify that created time falls within the last 10 minutes
         # NOTE(malini): The messages are created during the test.

@@ -73,7 +73,7 @@ class TestMessages(base.V1FunctionalTestBase):
         doc = helpers.create_message_body(messagecount=1)
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         response_headers = set(result.headers.keys())
         self.assertIsSubset(self.headers_response_with_body, response_headers)
@@ -83,30 +83,30 @@ class TestMessages(base.V1FunctionalTestBase):
         url = self.cfg.zaqar.url + href
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         # Compare message metadata
         result_body = result.json()['body']
         posted_metadata = doc[0]['body']
-        self.assertEqual(result_body, posted_metadata)
+        self.assertEqual(posted_metadata, result_body)
 
         # Post a claim & verify the include_claimed flag.
         url = self.queue_url + '/claims'
         doc = {"ttl": 300, "grace": 100}
         result = self.client.post(url, data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         params = {'include_claimed': True,
                   'echo': True}
         result = self.client.get(params=params)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         response_message_body = result.json()["messages"][0]["body"]
-        self.assertEqual(response_message_body, posted_metadata)
+        self.assertEqual(posted_metadata, response_message_body)
 
         # By default, include_claimed = false
         result = self.client.get(self.message_url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_message_single_insert.tags = ['smoke', 'positive']
 
@@ -116,13 +116,13 @@ class TestMessages(base.V1FunctionalTestBase):
         doc = helpers.create_message_body(messagecount=message_count)
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # GET on posted messages
         location = result.headers['location']
         url = self.cfg.zaqar.url + location
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         self.skipTest('Bug #1273335 - Get set of messages returns wrong hrefs '
                       '(happens randomly)')
@@ -139,7 +139,7 @@ class TestMessages(base.V1FunctionalTestBase):
                            for i in range(message_count)]
         posted_metadata.sort()
 
-        self.assertEqual(result_body, posted_metadata)
+        self.assertEqual(posted_metadata, result_body)
 
     test_message_bulk_insert.tags = ['smoke', 'positive']
 
@@ -154,7 +154,7 @@ class TestMessages(base.V1FunctionalTestBase):
             messagecount=self.limits.max_messages_per_page)
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         url = ''
         params['echo'] = True
@@ -174,7 +174,7 @@ class TestMessages(base.V1FunctionalTestBase):
                 href = result.json()['links'][0]['href']
                 url = self.cfg.zaqar.url + href
 
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_get_message.tags = ['smoke', 'positive']
 
@@ -183,17 +183,17 @@ class TestMessages(base.V1FunctionalTestBase):
         # Test Setup
         doc = helpers.create_message_body(messagecount=1)
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Delete posted message
         href = result.json()['resources'][0]
         url = self.cfg.zaqar.url + href
 
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     test_message_delete.tags = ['smoke', 'positive']
 
@@ -202,17 +202,17 @@ class TestMessages(base.V1FunctionalTestBase):
         doc = helpers.create_message_body(messagecount=10)
         result = self.client.post(data=doc)
 
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Delete posted messages
         location = result.headers['Location']
         url = self.cfg.zaqar.url + location
 
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_message_bulk_delete.tags = ['smoke', 'positive']
 
@@ -220,7 +220,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """Delete non-existing Messages."""
         result = self.client.delete('/non-existing')
 
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_message_delete_nonexisting.tags = ['negative']
 
@@ -229,14 +229,14 @@ class TestMessages(base.V1FunctionalTestBase):
         doc = helpers.create_message_body(messagecount=3)
         result = self.client.post(data=doc)
 
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Delete posted message
         location = result.headers['Location']
         url = self.cfg.zaqar.url + location
         url += ',nonexisting'
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_message_partial_delete.tags = ['negative']
 
@@ -245,14 +245,14 @@ class TestMessages(base.V1FunctionalTestBase):
         doc = helpers.create_message_body(messagecount=3)
         result = self.client.post(data=doc)
 
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         # Get posted message and a nonexisting message
         location = result.headers['Location']
         url = self.cfg.zaqar.url + location
         url += ',nonexisting'
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(200, result.status_code)
 
         self.assertSchema(result.json(), "message_get_many")
 
@@ -262,7 +262,7 @@ class TestMessages(base.V1FunctionalTestBase):
     def test_message_bulk_insert_large_bodies(self, offset):
         """Insert just under than max allowed messages."""
         result = self._post_large_bulk_insert(offset)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
     test_message_bulk_insert_large_bodies.tags = ['positive']
 
@@ -270,7 +270,7 @@ class TestMessages(base.V1FunctionalTestBase):
     def test_message_bulk_insert_large_bodies_(self, offset):
         """Insert just under than max allowed messages."""
         result = self._post_large_bulk_insert(offset)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_message_bulk_insert_large_bodies_.tags = ['negative']
 
@@ -285,7 +285,7 @@ class TestMessages(base.V1FunctionalTestBase):
                          helpers.generate_random_string(half_size + 1))
 
         result = self.client.post(data=doc)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_message_bulk_insert_oversized.tags = ['negative']
 
@@ -297,7 +297,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """
         params = {'limit': limit}
         result = self.client.get(params=params)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_message_get_invalid_limit.tags = ['negative']
 
@@ -312,7 +312,7 @@ class TestMessages(base.V1FunctionalTestBase):
                         range(self.limits.max_messages_per_page + 1)))
         result = self.client.delete(url)
 
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_message_bulk_delete_negative.tags = ['negative']
 
@@ -327,7 +327,7 @@ class TestMessages(base.V1FunctionalTestBase):
                         range(self.limits.max_messages_per_page + 1)))
         result = self.client.get(url)
 
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_message_bulk_get_negative.tags = ['negative']
 
@@ -336,7 +336,7 @@ class TestMessages(base.V1FunctionalTestBase):
         url = self.message_url + '?marker=invalid'
 
         result = self.client.get(url)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_get_messages_malformed_marker.tags = ['negative']
 
@@ -351,7 +351,7 @@ class TestMessages(base.V1FunctionalTestBase):
         header['Client-ID'] = client_id
 
         result = self.client.get(url, headers=header)
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(400, result.status_code)
 
     test_get_messages_invalid_client_id.tags = ['negative']
 
@@ -359,7 +359,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """Get Non Existing Message."""
         path = '/non-existing-message'
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(404, result.status_code)
 
     test_query_non_existing_message.tags = ['negative']
 
@@ -367,7 +367,7 @@ class TestMessages(base.V1FunctionalTestBase):
         """Get Set of Non Existing Messages."""
         path = '?ids=not_there1,not_there2'
         result = self.client.get(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_query_non_existing_message_set.tags = ['negative']
 
@@ -375,6 +375,6 @@ class TestMessages(base.V1FunctionalTestBase):
         """Delete Non Existing Message."""
         path = '/non-existing-message'
         result = self.client.delete(path)
-        self.assertEqual(result.status_code, 204)
+        self.assertEqual(204, result.status_code)
 
     test_delete_non_existing_message.tags = ['negative']
