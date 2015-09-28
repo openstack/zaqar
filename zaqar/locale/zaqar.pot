@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 2.0.0.dev5.g146bd2a\n"
+"Project-Id-Version: zaqar 2.0.0.dev8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-24 20:25+0200\n"
+"POT-Creation-Date: 2015-09-28 06:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"Generated-By: Babel 2.1.1\n"
 
 #: zaqar/api/v2/endpoints.py:111
 #, python-format
@@ -56,32 +56,32 @@ msgstr ""
 msgid "Invalid request."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:368 zaqar/transport/wsgi/v1_1/messages.py:170
-#: zaqar/transport/wsgi/v2_0/messages.py:172
+#: zaqar/api/v2/endpoints.py:368 zaqar/transport/wsgi/v1_1/messages.py:168
+#: zaqar/transport/wsgi/v2_0/messages.py:170
 msgid "No messages were found in the request body."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:418 zaqar/transport/wsgi/v1_0/messages.py:168
-#: zaqar/transport/wsgi/v1_1/messages.py:199
-#: zaqar/transport/wsgi/v2_0/messages.py:201
+#: zaqar/api/v2/endpoints.py:418 zaqar/transport/wsgi/v1_0/messages.py:166
+#: zaqar/transport/wsgi/v1_1/messages.py:197
+#: zaqar/transport/wsgi/v2_0/messages.py:199
 msgid "No messages could be enqueued."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:457 zaqar/transport/wsgi/v1_0/messages.py:290
-#: zaqar/transport/wsgi/v1_1/messages.py:358
-#: zaqar/transport/wsgi/v2_0/messages.py:364
+#: zaqar/api/v2/endpoints.py:457 zaqar/transport/wsgi/v1_0/messages.py:276
+#: zaqar/transport/wsgi/v1_1/messages.py:340
+#: zaqar/transport/wsgi/v2_0/messages.py:346
 msgid "A claim was specified, but the message is not currently claimed."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:463 zaqar/transport/wsgi/v1_0/messages.py:296
-#: zaqar/transport/wsgi/v1_1/messages.py:364
-#: zaqar/transport/wsgi/v2_0/messages.py:370
+#: zaqar/api/v2/endpoints.py:463 zaqar/transport/wsgi/v1_0/messages.py:282
+#: zaqar/transport/wsgi/v1_1/messages.py:346
+#: zaqar/transport/wsgi/v2_0/messages.py:352
 msgid "The specified claim does not exist or has expired."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:469 zaqar/transport/wsgi/v1_0/messages.py:302
-#: zaqar/transport/wsgi/v1_1/messages.py:370
-#: zaqar/transport/wsgi/v2_0/messages.py:376
+#: zaqar/api/v2/endpoints.py:469 zaqar/transport/wsgi/v1_0/messages.py:288
+#: zaqar/transport/wsgi/v1_1/messages.py:352
+#: zaqar/transport/wsgi/v2_0/messages.py:358
 msgid "This message is claimed; it cannot be deleted without a valid claim ID."
 msgstr ""
 
@@ -156,21 +156,6 @@ msgstr ""
 
 #: zaqar/common/transport/wsgi/helpers.py:162
 msgid "The format of the submitted queue name or project id is not valid."
-msgstr ""
-
-#: zaqar/openstack/common/gettextutils.py:301
-msgid "Message objects do not support addition."
-msgstr ""
-
-#: zaqar/openstack/common/gettextutils.py:311
-msgid ""
-"Message objects do not support str() because they may contain non-ascii "
-"characters. Please use unicode() or translate() instead."
-msgstr ""
-
-#: zaqar/openstack/common/lockutils.py:101
-#, python-format
-msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
 msgstr ""
 
 #: zaqar/storage/pipeline.py:31
@@ -428,96 +413,96 @@ msgstr ""
 msgid "Request body could not be read."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/claims.py:77
-#: zaqar/transport/wsgi/v1_1/claims.py:97
-#: zaqar/transport/wsgi/v2_0/claims.py:99
+#: zaqar/transport/wsgi/v1_0/claims.py:75
+#: zaqar/transport/wsgi/v1_1/claims.py:95
+#: zaqar/transport/wsgi/v2_0/claims.py:97
 msgid "Claim could not be created."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/claims.py:122
-#: zaqar/transport/wsgi/v1_1/claims.py:149
-#: zaqar/transport/wsgi/v2_0/claims.py:152
+#: zaqar/transport/wsgi/v1_0/claims.py:116
+#: zaqar/transport/wsgi/v1_1/claims.py:143
+#: zaqar/transport/wsgi/v2_0/claims.py:146
 msgid "Claim could not be queried."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/claims.py:169
-#: zaqar/transport/wsgi/v1_1/claims.py:196
-#: zaqar/transport/wsgi/v2_0/claims.py:200
+#: zaqar/transport/wsgi/v1_0/claims.py:158
+#: zaqar/transport/wsgi/v1_1/claims.py:185
+#: zaqar/transport/wsgi/v2_0/claims.py:189
 msgid "Claim could not be updated."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/claims.py:187
-#: zaqar/transport/wsgi/v1_1/claims.py:214
-#: zaqar/transport/wsgi/v2_0/claims.py:219
+#: zaqar/transport/wsgi/v1_0/claims.py:172
+#: zaqar/transport/wsgi/v1_1/claims.py:199
+#: zaqar/transport/wsgi/v2_0/claims.py:204
 msgid "Claim could not be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:61
-#: zaqar/transport/wsgi/v1_0/messages.py:262
-#: zaqar/transport/wsgi/v1_1/messages.py:74
-#: zaqar/transport/wsgi/v1_1/messages.py:327
-#: zaqar/transport/wsgi/v2_0/messages.py:75
-#: zaqar/transport/wsgi/v2_0/messages.py:332
+#: zaqar/transport/wsgi/v1_0/messages.py:62
+#: zaqar/transport/wsgi/v1_0/messages.py:254
+#: zaqar/transport/wsgi/v1_1/messages.py:75
+#: zaqar/transport/wsgi/v1_1/messages.py:315
+#: zaqar/transport/wsgi/v2_0/messages.py:76
+#: zaqar/transport/wsgi/v2_0/messages.py:320
 msgid "Message could not be retrieved."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:104
-#: zaqar/transport/wsgi/v1_1/messages.py:120
-#: zaqar/transport/wsgi/v2_0/messages.py:121
+#: zaqar/transport/wsgi/v1_0/messages.py:105
+#: zaqar/transport/wsgi/v1_1/messages.py:121
+#: zaqar/transport/wsgi/v2_0/messages.py:122
 msgid "Messages could not be listed."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:173
-#: zaqar/transport/wsgi/v1_1/messages.py:204
-#: zaqar/transport/wsgi/v2_0/messages.py:206
+#: zaqar/transport/wsgi/v1_0/messages.py:171
+#: zaqar/transport/wsgi/v1_1/messages.py:202
+#: zaqar/transport/wsgi/v2_0/messages.py:204
 msgid "Messages could not be enqueued."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:231
-#: zaqar/transport/wsgi/v1_1/messages.py:272
-#: zaqar/transport/wsgi/v2_0/messages.py:276
+#: zaqar/transport/wsgi/v1_0/messages.py:227
+#: zaqar/transport/wsgi/v1_1/messages.py:264
+#: zaqar/transport/wsgi/v2_0/messages.py:268
 msgid "Messages could not be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:279
-#: zaqar/transport/wsgi/v1_1/messages.py:347
+#: zaqar/transport/wsgi/v1_0/messages.py:265
+#: zaqar/transport/wsgi/v1_1/messages.py:329
 #: zaqar/transport/wsgi/v1_1/pools.py:202
-#: zaqar/transport/wsgi/v2_0/messages.py:353
+#: zaqar/transport/wsgi/v2_0/messages.py:335
 #: zaqar/transport/wsgi/v2_0/pools.py:207
 msgid "Unable to delete"
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/messages.py:308
-#: zaqar/transport/wsgi/v1_1/messages.py:376
-#: zaqar/transport/wsgi/v2_0/messages.py:382
+#: zaqar/transport/wsgi/v1_0/messages.py:294
+#: zaqar/transport/wsgi/v1_1/messages.py:358
+#: zaqar/transport/wsgi/v2_0/messages.py:364
 msgid "Message could not be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/metadata.py:54
-#: zaqar/transport/wsgi/v1_1/queues.py:55
-#: zaqar/transport/wsgi/v2_0/queues.py:56
+#: zaqar/transport/wsgi/v1_0/metadata.py:52
+#: zaqar/transport/wsgi/v1_1/queues.py:53
+#: zaqar/transport/wsgi/v2_0/queues.py:54
 msgid "Queue metadata could not be retrieved."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/metadata.py:91
+#: zaqar/transport/wsgi/v1_0/metadata.py:86
 msgid "Metadata could not be updated."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/queues.py:47
-#: zaqar/transport/wsgi/v1_1/queues.py:90
-#: zaqar/transport/wsgi/v2_0/queues.py:92
+#: zaqar/transport/wsgi/v1_0/queues.py:46
+#: zaqar/transport/wsgi/v1_1/queues.py:85
+#: zaqar/transport/wsgi/v2_0/queues.py:87
 msgid "Queue could not be created."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/queues.py:76
-#: zaqar/transport/wsgi/v1_1/queues.py:105
-#: zaqar/transport/wsgi/v2_0/queues.py:108
+#: zaqar/transport/wsgi/v1_0/queues.py:70
+#: zaqar/transport/wsgi/v1_1/queues.py:98
+#: zaqar/transport/wsgi/v2_0/queues.py:104
 msgid "Queue could not be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_0/queues.py:111
-#: zaqar/transport/wsgi/v1_1/queues.py:141
-#: zaqar/transport/wsgi/v2_0/queues.py:145
+#: zaqar/transport/wsgi/v1_0/queues.py:105
+#: zaqar/transport/wsgi/v1_1/queues.py:132
+#: zaqar/transport/wsgi/v2_0/queues.py:139
 msgid "Queues could not be listed."
 msgstr ""
 
@@ -542,8 +527,8 @@ msgstr ""
 msgid "Health status could not be read."
 msgstr ""
 
-#: zaqar/transport/wsgi/v1_1/messages.py:290
-#: zaqar/transport/wsgi/v2_0/messages.py:294
+#: zaqar/transport/wsgi/v1_1/messages.py:282
+#: zaqar/transport/wsgi/v2_0/messages.py:286
 msgid "Messages could not be popped."
 msgstr ""
 
@@ -557,28 +542,28 @@ msgstr ""
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:57
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:55
 msgid "Subscription could not be retrieved."
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:77
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:71
 msgid "Subscription could not be deleted."
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:109
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:99
 #, python-format
 msgid "Subscription %(subscription_id)s could not be updated."
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:112
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:102
 msgid "Unable to update subscription"
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:148
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:135
 msgid "Subscriptions could not be listed."
 msgstr ""
 
-#: zaqar/transport/wsgi/v2_0/subscriptions.py:200
+#: zaqar/transport/wsgi/v2_0/subscriptions.py:184
 msgid "Subscription could not be created."
 msgstr ""
 
