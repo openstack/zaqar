@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 1.0.0.0b4.dev50\n"
+"Project-Id-Version: zaqar 2.0.0.dev8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-18 06:13+0000\n"
+"POT-Creation-Date: 2015-09-28 06:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"Generated-By: Babel 2.1.1\n"
 
 #: zaqar/common/urls.py:50
 msgid "The `key` can't be None"
@@ -40,21 +40,6 @@ msgstr ""
 
 #: zaqar/notification/task/mailto.py:49
 msgid "Failed to send email"
-msgstr ""
-
-#: zaqar/openstack/common/excutils.py:76
-#, python-format
-msgid "Original exception being dropped: %s"
-msgstr ""
-
-#: zaqar/openstack/common/excutils.py:105
-#, python-format
-msgid "Unexpected exception occurred %d time(s)... retrying."
-msgstr ""
-
-#: zaqar/openstack/common/lockutils.py:117
-#, python-format
-msgid "Could not release the acquired lock `%s`"
 msgstr ""
 
 #: zaqar/transport/wsgi/v2_0/urls.py:56
