@@ -75,41 +75,41 @@ class RedisUtilsTest(testing.TestBase):
         self.driver = MockDriver(self.redis_conf)
 
     def test_scope_queue_name(self):
-        self.assertEqual(utils.scope_queue_name('my-q'), '.my-q')
-        self.assertEqual(utils.scope_queue_name('my-q', None), '.my-q')
-        self.assertEqual(utils.scope_queue_name('my-q', '123'), '123.my-q')
-        self.assertEqual(utils.scope_queue_name('my-q_1', '123'), '123.my-q_1')
+        self.assertEqual('.my-q', utils.scope_queue_name('my-q'))
+        self.assertEqual('.my-q', utils.scope_queue_name('my-q', None))
+        self.assertEqual('123.my-q', utils.scope_queue_name('my-q', '123'))
+        self.assertEqual('123.my-q_1', utils.scope_queue_name('my-q_1', '123'))
 
-        self.assertEqual(utils.scope_queue_name(), '.')
-        self.assertEqual(utils.scope_queue_name(None, '123'), '123.')
+        self.assertEqual('.', utils.scope_queue_name())
+        self.assertEqual('123.', utils.scope_queue_name(None, '123'))
 
     def test_scope_messages_set(self):
-        self.assertEqual(utils.scope_message_ids_set('my-q'), '.my-q.')
-        self.assertEqual(utils.scope_message_ids_set('my-q', 'p'), 'p.my-q.')
-        self.assertEqual(utils.scope_message_ids_set('my-q', 'p', 's'),
-                         'p.my-q.s')
+        self.assertEqual('.my-q.', utils.scope_message_ids_set('my-q'))
+        self.assertEqual('p.my-q.', utils.scope_message_ids_set('my-q', 'p'))
+        self.assertEqual('p.my-q.s',
+                         utils.scope_message_ids_set('my-q', 'p', 's'))
 
-        self.assertEqual(utils.scope_message_ids_set(None), '..')
-        self.assertEqual(utils.scope_message_ids_set(None, '123'), '123..')
-        self.assertEqual(utils.scope_message_ids_set(None, None, 's'), '..s')
+        self.assertEqual('..', utils.scope_message_ids_set(None))
+        self.assertEqual('123..', utils.scope_message_ids_set(None, '123'))
+        self.assertEqual('..s', utils.scope_message_ids_set(None, None, 's'))
 
     def test_descope_messages_set(self):
         key = utils.scope_message_ids_set('my-q')
-        self.assertEqual(utils.descope_message_ids_set(key), ('my-q', None))
+        self.assertEqual(('my-q', None), utils.descope_message_ids_set(key))
 
         key = utils.scope_message_ids_set('my-q', '123')
-        self.assertEqual(utils.descope_message_ids_set(key), ('my-q', '123'))
+        self.assertEqual(('my-q', '123'), utils.descope_message_ids_set(key))
 
         key = utils.scope_message_ids_set(None, '123')
-        self.assertEqual(utils.descope_message_ids_set(key), (None, '123'))
+        self.assertEqual((None, '123'), utils.descope_message_ids_set(key))
 
         key = utils.scope_message_ids_set()
-        self.assertEqual(utils.descope_message_ids_set(key), (None, None))
+        self.assertEqual((None, None), utils.descope_message_ids_set(key))
 
     def test_normalize_none_str(self):
 
-        self.assertEqual(utils.normalize_none_str('my-q'), 'my-q')
-        self.assertEqual(utils.normalize_none_str(None), '')
+        self.assertEqual('my-q', utils.normalize_none_str('my-q'))
+        self.assertEqual('', utils.normalize_none_str(None))
 
     def test_msg_claimed_filter(self):
         now = timeutils.utcnow_ts()
@@ -125,9 +125,9 @@ class RedisUtilsTest(testing.TestBase):
         self.assertFalse(utils.msg_claimed_filter(claimed_msg, now))
 
     def test_descope_queue_name(self):
-        self.assertEqual(utils.descope_queue_name('p.q'), 'q')
-        self.assertEqual(utils.descope_queue_name('.q'), 'q')
-        self.assertEqual(utils.descope_queue_name('.'), '')
+        self.assertEqual('q', utils.descope_queue_name('p.q'))
+        self.assertEqual('q', utils.descope_queue_name('.q'))
+        self.assertEqual('', utils.descope_queue_name('.'))
 
     def test_msg_echo_filter(self):
         msg = _create_sample_message()
@@ -149,10 +149,10 @@ class RedisUtilsTest(testing.TestBase):
         msg = _create_sample_message(now=now, body=body)
         basic_msg = msg.to_basic(now + 5)
 
-        self.assertEqual(basic_msg['id'], msg.id)
-        self.assertEqual(basic_msg['age'], 5)
-        self.assertEqual(basic_msg['body'], body)
-        self.assertEqual(basic_msg['ttl'], msg.ttl)
+        self.assertEqual(msg.id, basic_msg['id'])
+        self.assertEqual(5, basic_msg['age'])
+        self.assertEqual(body, basic_msg['body'])
+        self.assertEqual(msg.ttl, basic_msg['ttl'])
 
     def test_retries_on_connection_error(self):
         num_calls = [0]
@@ -164,7 +164,7 @@ class RedisUtilsTest(testing.TestBase):
 
         self.assertRaises(redis.exceptions.ConnectionError,
                           _raises_connection_error, self)
-        self.assertEqual(num_calls, [self.redis_conf.max_reconnect_attempts])
+        self.assertEqual([self.redis_conf.max_reconnect_attempts], num_calls)
 
 
 @testing.requires_redis
@@ -230,56 +230,56 @@ class RedisDriverTest(testing.TestBase):
 
     def test_connection_url_tcp(self):
         uri = driver.ConnectionURI('redis://example.com')
-        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
-        self.assertEqual(uri.port, 6379)
-        self.assertEqual(uri.socket_timeout, 0.1)
+        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
+        self.assertEqual(6379, uri.port)
+        self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI('redis://example.com:7777')
-        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
-        self.assertEqual(uri.port, 7777)
+        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
+        self.assertEqual(7777, uri.port)
 
         uri = driver.ConnectionURI(
             'redis://example.com:7777?socket_timeout=1')
-        self.assertEqual(uri.strategy, driver.STRATEGY_TCP)
-        self.assertEqual(uri.port, 7777)
-        self.assertEqual(uri.socket_timeout, 1.0)
+        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
+        self.assertEqual(7777, uri.port)
+        self.assertEqual(1.0, uri.socket_timeout)
 
     def test_connection_uri_unix_socket(self):
         uri = driver.ConnectionURI('redis:/tmp/redis.sock')
-        self.assertEqual(uri.strategy, driver.STRATEGY_UNIX)
-        self.assertEqual(uri.unix_socket_path, '/tmp/redis.sock')
-        self.assertEqual(uri.socket_timeout, 0.1)
+        self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
+        self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
+        self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI('redis:/tmp/redis.sock?socket_timeout=1.5')
-        self.assertEqual(uri.strategy, driver.STRATEGY_UNIX)
-        self.assertEqual(uri.unix_socket_path, '/tmp/redis.sock')
-        self.assertEqual(uri.socket_timeout, 1.5)
+        self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
+        self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
+        self.assertEqual(1.5, uri.socket_timeout)
 
     def test_connection_uri_sentinel(self):
         uri = driver.ConnectionURI('redis://s1?master=dumbledore')
-        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
-        self.assertEqual(uri.sentinels, [('s1', 26379)])
-        self.assertEqual(uri.master, 'dumbledore')
-        self.assertEqual(uri.socket_timeout, 0.1)
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI('redis://s1,s2?master=dumbledore')
-        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
-        self.assertEqual(uri.sentinels, [('s1', 26379), ('s2', 26379)])
-        self.assertEqual(uri.master, 'dumbledore')
-        self.assertEqual(uri.socket_timeout, 0.1)
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379), ('s2', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI('redis://s1:26389,s1?master=dumbledore')
-        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
-        self.assertEqual(uri.sentinels, [('s1', 26389), ('s1', 26379)])
-        self.assertEqual(uri.master, 'dumbledore')
-        self.assertEqual(uri.socket_timeout, 0.1)
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26389), ('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI(
             'redis://s1?master=dumbledore&socket_timeout=0.5')
-        self.assertEqual(uri.strategy, driver.STRATEGY_SENTINEL)
-        self.assertEqual(uri.sentinels, [('s1', 26379)])
-        self.assertEqual(uri.master, 'dumbledore')
-        self.assertEqual(uri.socket_timeout, 0.5)
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.5, uri.socket_timeout)
 
 
 @testing.requires_redis
@@ -330,7 +330,7 @@ class RedisMessagesTest(base.MessageControllerTest):
         self.controller.post(queue_name, msgs, client_id)
 
         num_msg = self.controller._count(queue_name, None)
-        self.assertEqual(num_msg, 10)
+        self.assertEqual(10, num_msg)
 
     def test_empty_queue_exception(self):
         queue_name = 'empty-queue-test'
@@ -346,7 +346,7 @@ class RedisMessagesTest(base.MessageControllerTest):
                              client_uuid=str(uuid.uuid4()))
 
         num_removed = self.controller.gc()
-        self.assertEqual(num_removed, 1)
+        self.assertEqual(1, num_removed)
 
         for _ in range(100):
             self.controller.post(self.queue_name,
@@ -354,7 +354,7 @@ class RedisMessagesTest(base.MessageControllerTest):
                                  client_uuid=str(uuid.uuid4()))
 
         num_removed = self.controller.gc()
-        self.assertEqual(num_removed, 100)
+        self.assertEqual(100, num_removed)
 
     def test_invalid_uuid(self):
         queue_name = 'invalid-uuid-test'
@@ -417,7 +417,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
             self.controller.create(self.queue_name, {'ttl': 1, 'grace': 60})
 
         num_removed = self.controller._gc(self.queue_name, None)
-        self.assertEqual(num_removed, 1)
+        self.assertEqual(1, num_removed)
 
         # Test multiple claims
         with mock.patch(timeutils_utcnow) as mock_utcnow:
@@ -432,7 +432,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
         self.controller.create(self.queue_name, {'ttl': 60, 'grace': 60})
 
         num_removed = self.controller._gc(self.queue_name, None)
-        self.assertEqual(num_removed, 5)
+        self.assertEqual(5, num_removed)
 
 
 @testing.requires_redis

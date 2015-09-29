@@ -133,20 +133,20 @@ class QueueControllerTest(ControllerBaseTest):
                                            detailed=True)
         queues = list(next(interaction))
 
-        self.assertEqual(all(map(lambda queue:
-                                 'name' in queue and
-                                 'metadata' in queue, queues)), True)
-        self.assertEqual(len(queues), 10)
+        self.assertEqual(True, all(map(lambda queue:
+                                       'name' in queue and
+                                       'metadata' in queue, queues)))
+        self.assertEqual(10, len(queues))
 
         interaction = self.controller.list(project=project,
                                            marker=next(interaction))
         queues = list(next(interaction))
 
-        self.assertEqual(all(map(lambda queue:
-                                 'name' in queue and
-                                 'metadata' not in queue, queues)), True)
+        self.assertEqual(True, all(map(lambda queue:
+                                       'name' in queue and
+                                       'metadata' not in queue, queues)))
 
-        self.assertEqual(len(queues), 5)
+        self.assertEqual(5, len(queues))
 
     def test_queue_lifecycle(self):
         # Test queue creation
@@ -161,18 +161,18 @@ class QueueControllerTest(ControllerBaseTest):
         # Test queue retrieval
         interaction = self.controller.list(project=self.project)
         queue = list(next(interaction))[0]
-        self.assertEqual(queue['name'], 'test')
+        self.assertEqual('test', queue['name'])
 
         # Test queue metadata retrieval
         metadata = self.controller.get('test', project=self.project)
-        self.assertEqual(metadata['meta'], 'test_meta')
+        self.assertEqual('test_meta', metadata['meta'])
 
         # Touching an existing queue does not affect metadata
         created = self.controller.create('test', project=self.project)
         self.assertFalse(created)
 
         metadata = self.controller.get('test', project=self.project)
-        self.assertEqual(metadata['meta'], 'test_meta')
+        self.assertEqual('test_meta', metadata['meta'])
 
         # Test queue deletion
         self.controller.delete('test', project=self.project)
@@ -215,9 +215,9 @@ class MessageControllerTest(ControllerBaseTest):
         stats = self.queue_controller.stats('test', project=self.project)
         message_stats = stats['messages']
 
-        self.assertEqual(message_stats['free'], 0)
-        self.assertEqual(message_stats['claimed'], 0)
-        self.assertEqual(message_stats['total'], 0)
+        self.assertEqual(0, message_stats['free'])
+        self.assertEqual(0, message_stats['claimed'])
+        self.assertEqual(0, message_stats['total'])
 
         self.assertNotIn('newest', message_stats)
         self.assertNotIn('oldest', message_stats)
@@ -239,14 +239,14 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 10)
+        self.assertEqual(10, stats['total'])
 
         # Delete 5 messages
         self.controller.bulk_delete(queue_name, msg_keys[0:5],
                                     self.project)
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 5)
+        self.assertEqual(5, stats['total'])
 
     def test_queue_count_on_bulk_delete_with_invalid_id(self):
         self.addCleanup(self.queue_controller.delete, 'test-queue',
@@ -265,7 +265,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 10)
+        self.assertEqual(10, stats['total'])
 
         # Delete 5 messages
         self.controller.bulk_delete(queue_name,
@@ -274,7 +274,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 5)
+        self.assertEqual(5, stats['total'])
 
     def test_queue_count_on_delete(self):
         self.addCleanup(self.queue_controller.delete, 'test-queue',
@@ -293,13 +293,13 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 10)
+        self.assertEqual(10, stats['total'])
 
         # Delete 1 message
         self.controller.delete(queue_name, msg_keys[0], self.project)
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 9)
+        self.assertEqual(9, stats['total'])
 
     def test_queue_stats(self):
         # Test queue creation
@@ -327,9 +327,9 @@ class MessageControllerTest(ControllerBaseTest):
         stats = self.queue_controller.stats('test', project=self.project)
         message_stats = stats['messages']
 
-        self.assertEqual(message_stats['free'], 12)
-        self.assertEqual(message_stats['claimed'], 0)
-        self.assertEqual(message_stats['total'], 12)
+        self.assertEqual(12, message_stats['free'])
+        self.assertEqual(0, message_stats['claimed'])
+        self.assertEqual(12, message_stats['total'])
 
         oldest = message_stats['oldest']
         newest = message_stats['newest']
@@ -371,7 +371,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 15)
+        self.assertEqual(15, stats['total'])
 
         metadata = {'ttl': 120, 'grace': 60}
         # Claim 10 messages
@@ -380,7 +380,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['claimed'], 10)
+        self.assertEqual(10, stats['claimed'])
 
         # Delete one message and ensure stats are updated even
         # thought the claim itself has not been deleted.
@@ -388,18 +388,18 @@ class MessageControllerTest(ControllerBaseTest):
                                self.project, claim_id)
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 14)
-        self.assertEqual(stats['claimed'], 9)
-        self.assertEqual(stats['free'], 5)
+        self.assertEqual(14, stats['total'])
+        self.assertEqual(9, stats['claimed'])
+        self.assertEqual(5, stats['free'])
 
         # Same thing but use bulk_delete interface
         self.controller.bulk_delete(queue_name, msg_keys[1:3],
                                     self.project)
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
-        self.assertEqual(stats['total'], 12)
-        self.assertEqual(stats['claimed'], 7)
-        self.assertEqual(stats['free'], 5)
+        self.assertEqual(12, stats['total'])
+        self.assertEqual(7, stats['claimed'])
+        self.assertEqual(5, stats['free'])
 
         # Delete the claim
         self.claim_controller.delete(queue_name, claim_id,
@@ -407,7 +407,7 @@ class MessageControllerTest(ControllerBaseTest):
         stats = self.queue_controller.stats(queue_name,
                                             self.project)['messages']
 
-        self.assertEqual(stats['claimed'], 0)
+        self.assertEqual(0, stats['claimed'])
 
     def test_message_lifecycle(self):
         queue_name = self.queue_name
@@ -424,17 +424,17 @@ class MessageControllerTest(ControllerBaseTest):
         created = list(self.controller.post(queue_name, [message],
                                             project=self.project,
                                             client_uuid=uuid.uuid4()))
-        self.assertEqual(len(created), 1)
+        self.assertEqual(1, len(created))
         message_id = created[0]
 
         # Test Message Get
         message_out = self.controller.get(queue_name, message_id,
                                           project=self.project)
-        self.assertEqual(set(message_out),
-                         {'id', 'body', 'ttl', 'age', 'claim_id'})
-        self.assertEqual(message_out['id'], message_id)
-        self.assertEqual(message_out['body'], message['body'])
-        self.assertEqual(message_out['ttl'], message['ttl'])
+        self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_id'},
+                         set(message_out))
+        self.assertEqual(message_id, message_out['id'])
+        self.assertEqual(message['body'], message_out['body'])
+        self.assertEqual(message['ttl'], message_out['ttl'])
 
         # Test Message Deletion
         self.controller.delete(queue_name, message_id, project=self.project)
@@ -452,7 +452,7 @@ class MessageControllerTest(ControllerBaseTest):
         def load_messages(expected, *args, **kwargs):
             interaction = self.controller.list(*args, **kwargs)
             msgs = list(next(interaction))
-            self.assertEqual(len(msgs), expected)
+            self.assertEqual(expected, len(msgs))
             return interaction
 
         # Test all messages, echo False and uuid
@@ -486,9 +486,9 @@ class MessageControllerTest(ControllerBaseTest):
                                                 project=self.project)
 
         for idx, message in enumerate(messages_out):
-            self.assertEqual(set(message),
-                             {'id', 'body', 'ttl', 'age', 'claim_id'})
-            self.assertEqual(message['body'], idx)
+            self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_id'},
+                             set(message))
+            self.assertEqual(idx, message['body'])
 
         self.controller.bulk_delete(self.queue_name, ids,
                                     project=self.project)
@@ -601,21 +601,21 @@ class MessageControllerTest(ControllerBaseTest):
         stats = self.queue_controller.stats(self.queue_name,
                                             project=self.project)
 
-        self.assertEqual(stats['messages']['free'], 1)
+        self.assertEqual(1, stats['messages']['free'])
 
         # Make sure expired messages not return when listing
         interaction = self.controller.list(self.queue_name,
                                            project=self.project)
 
         messages = list(next(interaction))
-        self.assertEqual(len(messages), 1)
+        self.assertEqual(1, len(messages))
         self.assertEqual(msgid, messages[0]['id'])
 
         # Make sure expired messages not return when popping
         messages = self.controller.pop(self.queue_name,
                                        limit=10,
                                        project=self.project)
-        self.assertEqual(len(messages), 1)
+        self.assertEqual(1, len(messages))
         self.assertEqual(msgid, messages[0]['id'])
 
     def test_bad_id(self):
@@ -663,7 +663,7 @@ class MessageControllerTest(ControllerBaseTest):
                                            marker=bad_marker)
         messages = list(next(interaction))
 
-        self.assertEqual(messages, [])
+        self.assertEqual([], messages)
 
     def test_sort_for_first(self):
         client_uuid = uuid.uuid4()
@@ -684,12 +684,12 @@ class MessageControllerTest(ControllerBaseTest):
         msg_asc = self.controller.first(self.queue_name,
                                         self.project,
                                         1)
-        self.assertEqual(msg_asc['id'], msgid_first)
+        self.assertEqual(msgid_first, msg_asc['id'])
 
         msg_desc = self.controller.first(self.queue_name,
                                          self.project,
                                          -1)
-        self.assertEqual(msg_desc['id'], msgid_last)
+        self.assertEqual(msgid_last, msg_desc['id'])
 
     def test_get_first_with_empty_queue_exception(self):
         self.assertRaises(errors.QueueIsEmpty,
@@ -737,7 +737,7 @@ class MessageControllerTest(ControllerBaseTest):
                                               limit=1,
                                               project=self.project)
 
-        self.assertEqual(len(popped_messages), 1)
+        self.assertEqual(1, len(popped_messages))
 
 
 class ClaimControllerTest(ControllerBaseTest):
@@ -775,28 +775,28 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     limit=15)
 
         messages = list(messages)
-        self.assertEqual(len(messages), 15)
+        self.assertEqual(15, len(messages))
 
         # Ensure Queue stats
         countof = self.queue_controller.stats(self.queue_name,
                                               project=self.project)
-        self.assertEqual(countof['messages']['claimed'], 15)
-        self.assertEqual(countof['messages']['free'], 5)
-        self.assertEqual(countof['messages']['total'], 20)
+        self.assertEqual(15, countof['messages']['claimed'])
+        self.assertEqual(5, countof['messages']['free'])
+        self.assertEqual(20, countof['messages']['total'])
 
         # Make sure get works
         claim, messages2 = self.controller.get(self.queue_name, claim_id,
                                                project=self.project)
 
         messages2 = list(messages2)
-        self.assertEqual(len(messages2), 15)
+        self.assertEqual(15, len(messages2))
         for msg1, msg2 in zip(messages, messages2):
             self.assertEqual(msg1['body'], msg2['body'])
             self.assertEqual(msg1['claim_id'], msg2['claim_id'])
             self.assertEqual(msg1['id'], msg2['id'])
             self.assertEqual(msg1['ttl'], msg2['ttl'])
-        self.assertEqual(claim['ttl'], 70)
-        self.assertEqual(claim['id'], claim_id)
+        self.assertEqual(70, claim['ttl'])
+        self.assertEqual(claim_id, claim['id'])
 
         new_meta = {'ttl': 100, 'grace': 60}
         self.controller.update(self.queue_name, claim_id,
@@ -807,15 +807,15 @@ class ClaimControllerTest(ControllerBaseTest):
                                                project=self.project)
 
         messages2 = list(messages2)
-        self.assertEqual(len(messages2), 15)
+        self.assertEqual(15, len(messages2))
 
         # TODO(zyuan): Add some tests to ensure the ttl is
         # extended/not-extended.
         for msg1, msg2 in zip(messages, messages2):
             self.assertEqual(msg1['body'], msg2['body'])
 
-        self.assertEqual(claim['ttl'], new_meta['ttl'])
-        self.assertEqual(claim['id'], claim_id)
+        self.assertEqual(new_meta['ttl'], claim['ttl'])
+        self.assertEqual(claim_id, claim['id'])
 
         # Make sure delete works
         self.controller.delete(self.queue_name, claim_id,
@@ -843,12 +843,12 @@ class ClaimControllerTest(ControllerBaseTest):
 
             messages = list(messages)
             num_claimed = len(messages)
-            self.assertEqual(num_claimed,
-                             storage.DEFAULT_MESSAGES_PER_CLAIM)
+            self.assertEqual(storage.DEFAULT_MESSAGES_PER_CLAIM,
+                             num_claimed)
 
             total_claimed += num_claimed
 
-        self.assertEqual(total_claimed, num_messages)
+        self.assertEqual(num_messages, total_claimed)
 
     def test_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -861,7 +861,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEqual(message['ttl'], 777)
+            self.assertEqual(777, message['ttl'])
 
     def test_extend_lifetime_with_grace_1(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -874,7 +874,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEqual(message['ttl'], 800)
+            self.assertEqual(800, message['ttl'])
 
     def test_extend_lifetime_with_grace_2(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -887,7 +887,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEqual(message['ttl'], 143)
+            self.assertEqual(143, message['ttl'])
 
     def test_do_not_extend_lifetime(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -901,7 +901,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
 
         for message in messages:
-            self.assertEqual(message['ttl'], 120)
+            self.assertEqual(120, message['ttl'])
 
     def test_expired_claim(self):
         meta = {'ttl': 0, 'grace': 60}
@@ -1004,18 +1004,20 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                         project=self.project)
         subscriptions = list(next(interaction))
 
-        self.assertEqual(all(map(lambda s: 'source' in s and 'subscriber' in s,
-                                 subscriptions)), True)
-        self.assertEqual(len(subscriptions), 10)
+        self.assertEqual(True, all(map(lambda s:
+                                       'source' in s and 'subscriber' in s,
+                                       subscriptions)))
+        self.assertEqual(10, len(subscriptions))
 
         interaction = (self.subscription_controller.list(self.source,
                                                          project=self.project,
                        marker=next(interaction)))
         subscriptions = list(next(interaction))
 
-        self.assertEqual(all(map(lambda s: 'source' in s and 'subscriber' in s,
-                                 subscriptions)), True)
-        self.assertEqual(len(subscriptions), 5)
+        self.assertEqual(True, all(map(lambda s:
+                                       'source' in s and 'subscriber' in s,
+                                       subscriptions)))
+        self.assertEqual(5, len(subscriptions))
 
     def test_get_raises_if_subscription_does_not_exist(self):
         self.assertRaises(errors.SubscriptionDoesNotExist,
@@ -1136,11 +1138,11 @@ class PoolsControllerTest(ControllerBaseTest):
 
     def _pool_expects(self, pool, xname, xweight, xlocation):
         self.assertIn('name', pool)
-        self.assertEqual(pool['name'], xname)
+        self.assertEqual(xname, pool['name'])
         self.assertIn('weight', pool)
-        self.assertEqual(pool['weight'], xweight)
+        self.assertEqual(xweight, pool['weight'])
         self.assertIn('uri', pool)
-        self.assertEqual(pool['uri'], xlocation)
+        self.assertEqual(xlocation, pool['uri'])
 
     def test_get_returns_expected_content(self):
         res = self.pools_controller.get(self.pool)
@@ -1150,7 +1152,7 @@ class PoolsControllerTest(ControllerBaseTest):
     def test_detailed_get_returns_expected_content(self):
         res = self.pools_controller.get(self.pool, detailed=True)
         self.assertIn('options', res)
-        self.assertEqual(res['options'], {})
+        self.assertEqual({}, res['options'])
 
     def test_get_raises_if_not_found(self):
         self.assertRaises(errors.PoolDoesNotExist,
@@ -1172,7 +1174,7 @@ class PoolsControllerTest(ControllerBaseTest):
                                      options={'a': 1})
         res = self.pools_controller.get(self.pool, detailed=True)
         self._pool_expects(res, self.pool, 101, 'localhost3')
-        self.assertEqual(res['options'], {'a': 1})
+        self.assertEqual({'a': 1}, res['options'])
 
     def test_delete_works(self):
         self.pools_controller.delete(self.pool)
@@ -1207,7 +1209,7 @@ class PoolsControllerTest(ControllerBaseTest):
         # Get the target pool
         def _pool(name):
             pool = [p for p in pools if p['n'] == name]
-            self.assertEqual(len(pool), 1)
+            self.assertEqual(1, len(pool))
 
             pool = pool[0]
             n = pool['n']
@@ -1225,7 +1227,7 @@ class PoolsControllerTest(ControllerBaseTest):
             return res
 
         res = get_res()
-        self.assertEqual(len(res), 10)
+        self.assertEqual(10, len(res))
         for entry in res:
             n, w, u = _pool(entry['name'])
 
@@ -1233,10 +1235,10 @@ class PoolsControllerTest(ControllerBaseTest):
             self.assertNotIn('options', entry)
 
         res = get_res(limit=5)
-        self.assertEqual(len(res), 5)
+        self.assertEqual(5, len(res))
 
         res = get_res(limit=0)
-        self.assertEqual(len(res), 15)
+        self.assertEqual(15, len(res))
 
         next_name = marker + 'n'
         self.pools_controller.create(next_name, 123, '123', options={})
@@ -1245,13 +1247,13 @@ class PoolsControllerTest(ControllerBaseTest):
         self.pools_controller.delete(next_name)
 
         res = get_res(detailed=True)
-        self.assertEqual(len(res), 10)
+        self.assertEqual(10, len(res))
         for entry in res:
             n, w, u = _pool(entry['name'])
 
             self._pool_expects(entry, n, w, u)
             self.assertIn('options', entry)
-            self.assertEqual(entry['options'], {})
+            self.assertEqual({}, entry['options'])
 
     def test_mismatching_capabilities(self):
         # NOTE(flaper87): This may fail for redis. Create
@@ -1292,9 +1294,9 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.assertIsInstance(entry['pool'], six.text_type)
 
     def _check_value(self, entry, xqueue, xproject, xpool):
-        self.assertEqual(entry['queue'], xqueue)
-        self.assertEqual(entry['project'], xproject)
-        self.assertEqual(entry['pool'], xpool)
+        self.assertEqual(xqueue, entry['queue'])
+        self.assertEqual(xproject, entry['project'])
+        self.assertEqual(xpool, entry['pool'])
 
     def test_catalogue_entry_life_cycle(self):
         queue = self.queue
@@ -1309,7 +1311,7 @@ class CatalogueControllerTest(ControllerBaseTest):
                                   self.pool_ctrl, 10) as expect:
             project = expect[0][0]
             xs = list(self.controller.list(project))
-            self.assertEqual(len(xs), 10)
+            self.assertEqual(10, len(xs))
 
         # create, check existence, delete
         with helpers.pool_entry(self.controller, project, queue, self.pool):
@@ -1319,7 +1321,7 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.assertFalse(self.controller.exists(project, queue))
 
         # verify it isn't listable
-        self.assertEqual(len(list(self.controller.list(project))), 0)
+        self.assertEqual(0, len(list(self.controller.list(project))))
 
     def test_list(self):
         with helpers.pool_entries(self.controller,
@@ -1420,10 +1422,10 @@ class FlavorsControllerTest(ControllerBaseTest):
 
     def _flavors_expects(self, flavor, xname, xproject, xpool):
         self.assertIn('name', flavor)
-        self.assertEqual(flavor['name'], xname)
+        self.assertEqual(xname, flavor['name'])
         self.assertNotIn('project', flavor)
         self.assertIn('pool', flavor)
-        self.assertEqual(flavor['pool'], xpool)
+        self.assertEqual(xpool, flavor['pool'])
 
     def test_create_replaces_on_duplicate_insert(self):
         name = str(uuid.uuid1())
@@ -1462,7 +1464,7 @@ class FlavorsControllerTest(ControllerBaseTest):
                                           detailed=True)
         self._flavors_expects(res, name, self.project, self.pool_group)
         self.assertIn('capabilities', res)
-        self.assertEqual(res['capabilities'], capabilities)
+        self.assertEqual(capabilities, res['capabilities'])
 
     def test_get_raises_if_not_found(self):
         self.assertRaises(errors.FlavorDoesNotExist,
@@ -1503,7 +1505,7 @@ class FlavorsControllerTest(ControllerBaseTest):
         res = self.flavors_controller.get(name, project=self.project,
                                           detailed=True)
         self._flavors_expects(res, name, self.project, group)
-        self.assertEqual(res['capabilities'], new_capabilities)
+        self.assertEqual(new_capabilities, res['capabilities'])
 
     def test_delete_works(self):
         name = 'puke'
@@ -1544,23 +1546,23 @@ class FlavorsControllerTest(ControllerBaseTest):
             return res
 
         res = get_res()
-        self.assertEqual(len(res), 10)
+        self.assertEqual(10, len(res))
         for i, entry in enumerate(res):
             self._flavors_expects(entry, name_gen(i), self.project, str(i))
             self.assertNotIn('capabilities', entry)
 
         res = get_res(limit=5)
-        self.assertEqual(len(res), 5)
+        self.assertEqual(5, len(res))
 
         res = get_res(marker=name_gen(3))
         self._flavors_expects(res[0], name_gen(4), self.project, '4')
 
         res = get_res(detailed=True)
-        self.assertEqual(len(res), 10)
+        self.assertEqual(10, len(res))
         for i, entry in enumerate(res):
             self._flavors_expects(entry, name_gen(i), self.project, str(i))
             self.assertIn('capabilities', entry)
-            self.assertEqual(entry['capabilities'], {})
+            self.assertEqual({}, entry['capabilities'])
 
 
 def _insert_fixtures(controller, queue_name, project=None,
