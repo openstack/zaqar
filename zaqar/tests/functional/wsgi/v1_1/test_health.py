@@ -48,12 +48,12 @@ class TestHealth(base.V1_1FunctionalTestBase):
         self.addCleanup(self.client.delete, url='/pools/' + pool_name)
 
         result = self.client.put('/pools/' + pool_name, data=doc)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         queue_name = 'fake_queue'
         self.addCleanup(self.client.delete, url='/queues/' + queue_name)
         result = self.client.put('/queues/' + queue_name)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         sample_messages = {'messages': [
             {'body': 239, 'ttl': 999},
@@ -62,25 +62,25 @@ class TestHealth(base.V1_1FunctionalTestBase):
 
         result = self.client.post('/queues/%s/messages' % queue_name,
                                   data=sample_messages)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         claim_metadata = {'ttl': 100, 'grace': 300}
 
         result = self.client.post('/queues/%s/claims' % queue_name,
                                   data=claim_metadata)
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(201, result.status_code)
 
         response = self.client.get('/health')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
         health = response.json()
 
-        self.assertEqual(health['catalog_reachable'], True)
-        self.assertEqual(health[pool_name]['storage_reachable'], True)
+        self.assertEqual(True, health['catalog_reachable'])
+        self.assertEqual(True, health[pool_name]['storage_reachable'])
         op_status = health[pool_name]['operation_status']
         for op in op_status.keys():
             self.assertTrue(op_status[op]['succeeded'])
 
         message_volume = health[pool_name]['message_volume']
-        self.assertEqual(message_volume['claimed'], 2)
-        self.assertEqual(message_volume['free'], 0)
-        self.assertEqual(message_volume['total'], 2)
+        self.assertEqual(2, message_volume['claimed'])
+        self.assertEqual(0, message_volume['free'])
+        self.assertEqual(2, message_volume['total'])
