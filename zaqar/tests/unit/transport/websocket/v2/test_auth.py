@@ -81,7 +81,7 @@ class AuthTest(base.V2Base):
 
         self.assertEqual(1, msg_mock.call_count)
         resp = json.loads(msg_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 403)
+        self.assertEqual(403, resp['headers']['status'])
 
     def test_failed_auth(self):
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -90,8 +90,8 @@ class AuthTest(base.V2Base):
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
         resp = json.loads(msg_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 401)
-        self.assertEqual(resp['request']['action'], 'authenticate')
+        self.assertEqual(401, resp['headers']['status'])
+        self.assertEqual('authenticate', resp['request']['action'])
 
     def test_reauth(self):
         headers = self.headers.copy()
