@@ -40,4 +40,4 @@ class TestAuth(base.V1_1Base):
                                      headers=self.headers)
 
         self.app(env, self.srmock)
-        self.assertEqual(self.srmock.status, falcon.HTTP_401)
+        self.assertEqual(falcon.HTTP_401, self.srmock.status)
