@@ -47,7 +47,7 @@ class TestValidation(base.V1_1Base):
                           self.project_id,
                           body='{"timespace": "Shangri-la"}')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Too long
         max_queue_metadata = 64
@@ -63,7 +63,7 @@ class TestValidation(base.V1_1Base):
                               self.project_id,
                               body=doc)
 
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_message_deserialization(self):
         # Normal case
@@ -72,7 +72,7 @@ class TestValidation(base.V1_1Base):
                            self.project_id, body=body,
                            headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # Both messages' size are too long
         max_messages_post_size = 256
@@ -88,4 +88,4 @@ class TestValidation(base.V1_1Base):
                                body=doc,
                                headers=self.headers)
 
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
