@@ -40,7 +40,7 @@ class TestURL(base.V2Base):
         response = self.simulate_post(self.signed_url_prefix,
                                       body=jsonutils.dumps(data))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         content = jsonutils.loads(response[0])
 
         expires = timeutils.utcnow(True) + datetime.timedelta(days=1)
@@ -63,7 +63,7 @@ class TestURL(base.V2Base):
         response = self.simulate_post(self.signed_url_prefix,
                                       body=jsonutils.dumps(data))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         content = jsonutils.loads(response[0])
 
         self.assertEqual(
@@ -73,30 +73,30 @@ class TestURL(base.V2Base):
 
     def test_url_bad_request(self):
         self.simulate_post(self.signed_url_prefix, body='not json')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         data = {'dummy': 'meh'}
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         data = {'expires': 'wrong date format'}
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         data = {'methods': 'methods not list'}
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         data = {'paths': ['notallowed']}
         self.simulate_post(self.signed_url_prefix, body=jsonutils.dumps(data))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_url_verification_success(self):
         data = {'methods': ['GET', 'POST']}
         response = self.simulate_post(self.signed_url_prefix,
                                       body=jsonutils.dumps(data))
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         content = jsonutils.loads(response[0])
 
         headers = {
@@ -108,7 +108,7 @@ class TestURL(base.V2Base):
         headers.update(self.headers)
 
         response = self.simulate_get(content['paths'][0], headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     def test_url_verification_bad_request(self):
         path = self.url_prefix + '/queues/shared_queue/messages'
@@ -123,7 +123,7 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         headers = {
             'URL-Signature': 'dummy',
@@ -133,7 +133,7 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         headers = {
             'URL-Signature': 'dummy',
@@ -143,7 +143,7 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         headers = {
             'URL-Signature': 'dummy',
@@ -153,7 +153,7 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         headers = {
             'URL-Signature': 'wrong signature',
@@ -163,7 +163,7 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         headers = {
             'URL-Signature': 'will fail because of the old date',
@@ -173,4 +173,4 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)

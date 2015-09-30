@@ -94,28 +94,28 @@ class TestPoolsMongoDB(base.V2Base):
                     'uri': self.mongodb_url}
         self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def tearDown(self):
         super(TestPoolsMongoDB, self).tearDown()
         self.simulate_delete(self.pool)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_put_pool_works(self):
         name = str(uuid.uuid1())
         weight, uri = self.doc['weight'], self.doc['uri']
         with pool(self, name, weight, uri, group='my-group'):
-            self.assertEqual(self.srmock.status, falcon.HTTP_201)
+            self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_put_raises_if_missing_fields(self):
         path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(path, body=jsonutils.dumps({'weight': 100}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_put(path,
                           body=jsonutils.dumps(
                               {'uri': self.mongodb_url}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 2**32+1, 'big')
     def test_put_raises_if_invalid_weight(self, weight):
@@ -123,40 +123,40 @@ class TestPoolsMongoDB(base.V2Base):
         doc = {'weight': weight, 'uri': 'a'}
         self.simulate_put(path,
                           body=jsonutils.dumps(doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
         path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         self.simulate_put(path,
                           body=jsonutils.dumps({'weight': 1, 'uri': uri}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_options(self, options):
         path = self.url_prefix + '/pools/' + str(uuid.uuid1())
         doc = {'weight': 1, 'uri': 'a', 'options': options}
         self.simulate_put(path, body=jsonutils.dumps(doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default pool
         expect = self.doc
         self.simulate_put(self.pool,
                           body=jsonutils.dumps(expect))
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         result = self.simulate_get(self.pool)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         doc = jsonutils.loads(result[0])
-        self.assertEqual(doc['weight'], expect['weight'])
-        self.assertEqual(doc['uri'], expect['uri'])
+        self.assertEqual(expect['weight'], doc['weight'])
+        self.assertEqual(expect['uri'], doc['uri'])
 
     def test_put_capabilities_mismatch_pool(self):
         mongodb_doc = self.doc
         self.simulate_put(self.pool,
                           body=jsonutils.dumps(mongodb_doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         redis_doc = {'weight': 100,
                      'group': 'mygroup',
@@ -164,25 +164,25 @@ class TestPoolsMongoDB(base.V2Base):
 
         self.simulate_put(self.pool,
                           body=jsonutils.dumps(redis_doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_delete_works(self):
         self.simulate_delete(self.pool)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         self.simulate_get(self.pool)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_get_nonexisting_raises_404(self):
         self.simulate_get(self.url_prefix + '/pools/nonexisting')
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def _pool_expect(self, pool, xhref, xweight, xuri):
         self.assertIn('href', pool)
         self.assertIn('name', pool)
-        self.assertEqual(pool['href'], xhref)
+        self.assertEqual(xhref, pool['href'])
         self.assertIn('weight', pool)
-        self.assertEqual(pool['weight'], xweight)
+        self.assertEqual(xweight, pool['weight'])
         self.assertIn('uri', pool)
 
         # NOTE(dynarro): we are using startwith because we are adding to
@@ -191,7 +191,7 @@ class TestPoolsMongoDB(base.V2Base):
 
     def test_get_works(self):
         result = self.simulate_get(self.pool)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         pool = jsonutils.loads(result[0])
         self._pool_expect(pool, self.pool, self.doc['weight'],
                           self.doc['uri'])
@@ -199,30 +199,30 @@ class TestPoolsMongoDB(base.V2Base):
     def test_detailed_get_works(self):
         result = self.simulate_get(self.pool,
                                    query_string='detailed=True')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         pool = jsonutils.loads(result[0])
         self._pool_expect(pool, self.pool, self.doc['weight'],
                           self.doc['uri'])
         self.assertIn('options', pool)
-        self.assertEqual(pool['options'], {})
+        self.assertEqual({}, pool['options'])
 
     def test_patch_raises_if_missing_fields(self):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'location': 1}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def _patch_test(self, doc):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps(doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         result = self.simulate_get(self.pool,
                                    query_string='detailed=True')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         pool = jsonutils.loads(result[0])
         self._pool_expect(pool, self.pool, doc['weight'],
                           doc['uri'])
-        self.assertEqual(pool['options'], doc['options'])
+        self.assertEqual(doc['options'], pool['options'])
 
     def test_patch_works(self):
         doc = {'weight': 101,
@@ -242,30 +242,30 @@ class TestPoolsMongoDB(base.V2Base):
     def test_patch_raises_400_on_invalid_weight(self, weight):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'weight': weight}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_patch_raises_400_on_invalid_uri(self, uri):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'uri': uri}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 'wee', [])
     def test_patch_raises_400_on_invalid_options(self, options):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'options': options}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_patch_raises_404_if_pool_not_found(self):
         self.simulate_patch(self.url_prefix + '/pools/notexists',
                             body=jsonutils.dumps({'weight': 1}))
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_empty_listing(self):
         self.simulate_delete(self.pool)
         result = self.simulate_get(self.url_prefix + '/pools')
         results = jsonutils.loads(result[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         self.assertTrue(len(results['pools']) == 0)
         self.assertIn('links', results)
 
@@ -281,7 +281,7 @@ class TestPoolsMongoDB(base.V2Base):
         with pools(self, count, self.doc['uri'], 'my-group') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string=query)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(falcon.HTTP_200, self.srmock.status)
             results = jsonutils.loads(result[0])
             self.assertIsInstance(results, dict)
             self.assertIn('pools', results)
@@ -292,28 +292,28 @@ class TestPoolsMongoDB(base.V2Base):
             self.assertEqual('next', link['rel'])
             href = falcon.uri.parse_query_string(link['href'].split('?')[1])
             self.assertIn('marker', href)
-            self.assertEqual(href['limit'], str(limit))
-            self.assertEqual(href['detailed'], str(detailed).lower())
+            self.assertEqual(str(limit), href['limit'])
+            self.assertEqual(str(detailed).lower(), href['detailed'])
 
             next_query_string = ('marker={marker}&limit={limit}'
                                  '&detailed={detailed}').format(**href)
             next_result = self.simulate_get(link['href'].split('?')[0],
                                             query_string=next_query_string)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
             next_pool = jsonutils.loads(next_result[0])
             next_pool_list = next_pool['pools']
 
             self.assertIn('links', next_pool)
             if limit < count:
-                self.assertEqual(len(next_pool_list),
-                                 min(limit, count-limit))
+                self.assertEqual(min(limit, count-limit),
+                                 len(next_pool_list))
             else:
                 # NOTE(jeffrey4l): when limit >= count, there will be no
                 # pools in the 2nd page.
                 self.assertTrue(len(next_pool_list) == 0)
 
-            self.assertEqual(len(pool_list), min(limit, count))
+            self.assertEqual(min(limit, count), len(pool_list))
             for s in pool_list + next_pool_list:
                 # NOTE(flwang): It can't assumed that both sqlalchemy and
                 # mongodb can return query result with the same order. Just
@@ -346,8 +346,8 @@ class TestPoolsMongoDB(base.V2Base):
         with pools(self, 10, self.doc['uri'], 'my-group') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string='marker=3')
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(falcon.HTTP_200, self.srmock.status)
             pool_list = jsonutils.loads(result[0])['pools']
-            self.assertEqual(len(pool_list), 6)
+            self.assertEqual(6, len(pool_list))
             path, weight = expected[4][:2]
             self._pool_expect(pool_list[0], path, weight, self.doc['uri'])

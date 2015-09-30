@@ -29,10 +29,10 @@ class TestPing(base.V2Base):
         #     response = self.simulate_get('/ping')
         #
         response = self.simulate_get('/v2/ping')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-        self.assertEqual(response, [])
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+        self.assertEqual([], response)
 
     def test_head(self):
         response = self.simulate_head('/v2/ping')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
-        self.assertEqual(response, [])
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+        self.assertEqual([], response)

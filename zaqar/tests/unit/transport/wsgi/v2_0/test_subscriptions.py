@@ -37,7 +37,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
                 doc = {'weight': 100, 'uri': uri}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))
-                self.assertEqual(self.srmock.status, falcon.HTTP_201)
+                self.assertEqual(falcon.HTTP_201, self.srmock.status)
                 self.addCleanup(self.simulate_delete,
                                 self.url_prefix + '/pools/' + str(i),
                                 headers=self.headers)
@@ -78,7 +78,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
     def test_create_works(self):
         resp = self._create_subscription()
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
 
         resp_list = self.simulate_get(self.subscription_path,
@@ -86,49 +86,49 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp_list_doc = jsonutils.loads(resp_list[0])
         sid = resp_list_doc['subscriptions'][0]['id']
 
-        self.assertEqual(sid, resp_doc['subscription_id'])
+        self.assertEqual(resp_doc['subscription_id'], sid)
 
     def test_create_duplicate_409(self):
         self._create_subscription(subscriber='http://CCC.com')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         self._create_subscription(subscriber='http://CCC.com')
-        self.assertEqual(self.srmock.status, falcon.HTTP_409)
+        self.assertEqual(falcon.HTTP_409, self.srmock.status)
 
     def test_create_invalid_body_400(self):
         resp = self._create_subscription(options='xxx')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('body could not be parsed', resp_doc['description'])
 
     def test_create_no_body(self):
         resp = self.simulate_post(self.subscription_path, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         self.assertIn('Missing parameter',
                       jsonutils.loads(resp[0])['description'])
 
     def test_create_invalid_subscriber_400(self):
         resp = self._create_subscription(subscriber='fake')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('must be supported in the list', resp_doc['description'])
 
     def test_create_unsupported_subscriber_400(self):
         resp = self._create_subscription(subscriber='email://fake')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('must be supported in the list',
                       resp_doc['description'])
 
     def test_create_invalid_options_400(self):
         resp = self._create_subscription(options='1')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('must be a dict', resp_doc['description'])
 
     def test_create_invalid_ttl(self):
         resp = self._create_subscription(ttl='"invalid"')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertIn('must be an integer', resp_doc['description'])
 
@@ -143,7 +143,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp = self.simulate_get(self.subscription_path,
                                  query_string=query,
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         resp_doc = jsonutils.loads(resp[0])
         self.assertIsInstance(resp_doc, dict)
@@ -155,7 +155,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         self.assertEqual('next', link['rel'])
         href = falcon.uri.parse_query_string(link['href'].split('?')[1])
         self.assertIn('marker', href)
-        self.assertEqual(href['limit'], str(limit))
+        self.assertEqual(str(limit), href['limit'])
 
         next_query_string = ('marker={marker}&limit={limit}').format(**href)
         next_result = self.simulate_get(link['href'].split('?')[0],
@@ -163,15 +163,15 @@ class TestSubscriptionsMongoDB(base.V2Base):
         next_subscriptions = jsonutils.loads(next_result[0])
         next_subscriptions_list = next_subscriptions['subscriptions']
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         self.assertIn('links', next_subscriptions)
         if limit < count:
-            self.assertEqual(len(next_subscriptions_list),
-                             min(limit, count-limit))
+            self.assertEqual(min(limit, count-limit),
+                             len(next_subscriptions_list))
         else:
             self.assertTrue(len(next_subscriptions_list) == 0)
 
-        self.assertEqual(len(subscriptions_list), min(limit, count))
+        self.assertEqual(min(limit, count), len(subscriptions_list))
 
     def test_list_works(self):
         self._list_subscription()
@@ -193,9 +193,9 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp = self.simulate_get(self.subscription_path,
                                  query_string='marker={0}'.format(id_list[9]),
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         next_subscriptions_list = jsonutils.loads(resp[0])['subscriptions']
-        self.assertEqual(len(next_subscriptions_list), 5)
+        self.assertEqual(5, len(next_subscriptions_list))
         self.assertEqual(subscriptions_list[10], next_subscriptions_list[0])
 
     def test_get_works(self):
@@ -208,7 +208,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
         self.assertEqual(sid, resp_doc['id'])
         self.assertEqual(subscriber, resp_doc['subscriber'])
@@ -216,7 +216,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
     def test_get_nonexisting_raise_404(self):
         self.simulate_get(self.subscription_path + '/fake',
                           headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_patch_works(self):
         self._create_subscription()
@@ -228,19 +228,19 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp = self.simulate_patch(self.subscription_path + '/' + sid,
                                    body='{"ttl": 300}',
                                    headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         resp_doc = jsonutils.loads(resp[0])
-        self.assertEqual(resp_doc['ttl'], 300)
+        self.assertEqual(300, resp_doc['ttl'])
 
     def test_patch_nonexisting_raise_404(self):
         self.simulate_patch(self.subscription_path + '/x',
                             body='{"ttl": 300}',
                             headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_patch_no_body(self):
         self._create_subscription()
@@ -251,7 +251,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         resp = self.simulate_patch(self.subscription_path + '/' + sid,
                                    headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         resp_doc = jsonutils.loads(resp[0])
         self.assertNotIn('{subscription_id}', resp_doc['description'])
@@ -260,7 +260,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         self.simulate_patch(self.subscription_path + '/x',
                             body='{"ttl": "invalid"}',
                             headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_delete_works(self):
         self._create_subscription()
@@ -271,12 +271,12 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         self.simulate_delete(self.subscription_path + '/' + sid,
                              headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
