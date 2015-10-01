@@ -40,9 +40,10 @@ class TransportLog(object):
             # and returns 'GET' and 'PATCH' respectively, so we do not need
             # the name of the HTTP method to be passed.
             method = func.__name__[3:].upper()
-            LOG.debug(u'%(type) %(method) - %(subtype): %(arguments)',
+            LOG.debug(u'%(type)s %(method)s: %(arguments)s',
                       {'type': self.resource_type,
-                       'method': method, 'arguments': jsonutils.dumps(kwargs)})
+                       'method': method,
+                       'arguments': jsonutils.dumps(kwargs)})
             return func(*args, **kwargs)
 
         return wrapper
