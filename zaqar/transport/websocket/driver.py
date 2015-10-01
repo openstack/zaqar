@@ -38,7 +38,6 @@ _WS_OPTIONS = (
     cfg.IntOpt('external-port', default=None,
                help='Port on which the service is provided to the user.'),
 
-    cfg.BoolOpt('debug', default=False, help='Print debugging output')
 )
 
 _WS_GROUP = 'drivers:transport:websocket'
@@ -72,7 +71,7 @@ class Driver(base.DriverBase):
         uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
         return factory.ProtocolFactory(
             uri,
-            debug=self._ws_conf.debug,
+            debug=LOG.debug,
             handler=self._api,
             external_port=self._ws_conf.external_port,
             auth_strategy=self._auth_strategy,
