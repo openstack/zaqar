@@ -10,18 +10,19 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 1.0.0.0b4.dev50\n"
+"Project-Id-Version: zaqar 2.0.0.dev8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-18 06:13+0000\n"
+"POT-Creation-Date: 2015-10-05 06:10+0000\n"
 "PO-Revision-Date: 2015-08-27 07:38+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"Language: es\n"
 "Language-Team: Spanish (http://www.transifex.com/openstack/zaqar/language/"
 "es/)\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"Generated-By: Babel 2.1.1\n"
 
 msgid ""
 "\n"
@@ -164,16 +165,6 @@ msgstr "No se pudo eliminar mensaje."
 
 msgid "Message could not be retrieved."
 msgstr "No se pudo recuperar mensaje."
-
-msgid "Message objects do not support addition."
-msgstr "Objectos de tipo mensaje no soportan adición."
-
-msgid ""
-"Message objects do not support str() because they may contain non-ascii "
-"characters. Please use unicode() or translate() instead."
-msgstr ""
-"Los objetos Mensaje no soportan str() porque pueden contener caracteres no-"
-"ASCII. Por favor utilice unicode() o translate()."
 
 msgid "Messages could not be deleted."
 msgstr "No se pudo eliminar mensajes."
@@ -404,10 +395,6 @@ msgstr ""
 
 msgid "This pool is used by flavors {flavor}; It cannot be deleted."
 msgstr "Los tipos {flavor} usan este pool; no puede eliminarse."
-
-#, python-format
-msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
-msgstr "No se puede obtener bloqueo en `%(filename)s` a causa de %(exception)s"
 
 msgid "Unable to create"
 msgstr "No se puede crear"
