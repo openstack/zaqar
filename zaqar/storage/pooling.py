@@ -155,12 +155,13 @@ class QueueController(storage.Queue):
             cursor = self._pool_catalog._pools_ctrl.list(limit=0)
             pools_list = list(next(cursor))
             anypool = pools_list and pools_list[0]
-            yield next(self._pool_catalog.get_driver(anypool['name'])
-                       .queue_controller.list(
-                           project=project,
-                           marker=marker,
-                           limit=limit,
-                           detailed=detailed))
+            if anypool:
+                yield next(self._pool_catalog.get_driver(anypool['name'])
+                           .queue_controller.list(
+                               project=project,
+                               marker=marker,
+                               limit=limit,
+                               detailed=detailed))
 
         # make a heap compared with 'name'
         ls = heapq.merge(*[
