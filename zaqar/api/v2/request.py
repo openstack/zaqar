@@ -20,3 +20,87 @@ class RequestSchema(v1_1.RequestSchema):
 
     headers = v1_1.RequestSchema.headers
     schema = v1_1.RequestSchema.schema
+
+    schema.update({
+
+        # Subscriptions
+        'subscription_list': {
+            'properties': {
+                'action': {'enum': ['subscription_list']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'subscription_create': {
+            'properties': {
+                'action': {'enum': ['subscription_create']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']},
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'subscriber': {'type': 'string'},
+                        'ttl': {'type': 'integer'},
+                        'options': {'type': 'object'},
+                    },
+                    'required': ['queue_name', 'ttl'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'subscription_delete': {
+            'properties': {
+                'action': {'enum': ['subscription_delete']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'subscription_id': {'type': 'string'},
+                    },
+                    'required': ['queue_name', 'subscription_id']
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+
+        'subscription_get': {
+            'properties': {
+                'action': {'enum': ['subscription_get']},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']
+                },
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'subscription_id': {'type': 'string'},
+                    },
+                    'required': ['queue_name', 'subscription_id'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
+    })

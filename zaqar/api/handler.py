@@ -39,9 +39,21 @@ class Handler(object):
     def __init__(self, storage, control, validate, defaults):
         self.v2_endpoints = endpoints.Endpoints(storage, control,
                                                 validate, defaults)
+        self._subscription_factory = None
 
-    def process_request(self, req):
+    def set_subscription_factory(self, factory):
+        self._subscription_factory = factory
+
+    def process_request(self, req, protocol):
         # FIXME(vkmc): Control API version
+        if req._action == 'subscription_create':
+            subscriber = req._body.get('subscriber')
+            if not subscriber:
+                # Default to the connected websocket as subscriber
+                subscriber = self._subscription_factory.get_subscriber(
+                    protocol)
+            return self.v2_endpoints.subscription_create(req, subscriber)
+
         return getattr(self.v2_endpoints, req._action)(req)
 
     @staticmethod
