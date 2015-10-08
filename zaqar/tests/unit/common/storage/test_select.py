@@ -31,7 +31,7 @@ class TestSelect(testtools.TestCase):
         objs = [{'weight': 0, 'name': str(i)} for i in range(2)]
         expect = {'weight': 1, 'name': 'theone'}
         objs.append(expect)
-        self.assertEqual(select.weighted(objs), expect)
+        self.assertEqual(expect, select.weighted(objs))
 
     def test_weighted_returns_an_object_it_was_given(self):
         objs = [{'weight': 10, 'name': str(i)} for i in range(10)]
@@ -48,19 +48,19 @@ class TestSelect(testtools.TestCase):
     def test_weighted_returns_first_if_selector_is_zero(self):
         objs = [{'weight': 10, 'name': str(i)} for i in range(10)]
         zero_gen = lambda x, y: 0
-        self.assertEqual(select.weighted(objs, generator=zero_gen),
-                         objs[0])
+        self.assertEqual(objs[0],
+                         select.weighted(objs, generator=zero_gen))
 
     def test_weighted_returns_last_if_selector_is_sum_minus_one(self):
         objs = [{'weight': 10, 'name': str(i)} for i in range(10)]
         sum_weights = sum([o['weight'] for o in objs])
         capped_gen = lambda x, y: sum_weights - 1
-        self.assertEqual(select.weighted(objs, generator=capped_gen),
-                         objs[-1])
+        self.assertEqual(objs[-1],
+                         select.weighted(objs, generator=capped_gen))
 
     def test_weighted_boundaries(self):
         objs = [{'weight': 1, 'name': str(i)} for i in range(3)]
         for i in range(len(objs)):
             fixed_gen = lambda x, y: i
-            self.assertEqual(select.weighted(objs, generator=fixed_gen),
-                             objs[i])
+            self.assertEqual(objs[i],
+                             select.weighted(objs, generator=fixed_gen))
