@@ -47,4 +47,4 @@ class TestMediaType(base.V2Base):
                                          headers=headers)
 
             self.app(env, self.srmock)
-            self.assertEqual(self.srmock.status, falcon.HTTP_406)
+            self.assertEqual(falcon.HTTP_406, self.srmock.status)

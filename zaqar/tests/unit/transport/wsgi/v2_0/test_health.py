@@ -38,7 +38,7 @@ class TestHealthMongoDB(base.V2Base):
         path = self.url_prefix + '/health'
         body = self.simulate_get(path)
         health = jsonutils.loads(body[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         self.assertTrue(health['storage_reachable'])
         self.assertIsNotNone(health['message_volume'])
         for op in health['operation_status']:
@@ -56,11 +56,11 @@ class TestHealthMongoDB(base.V2Base):
         path = self.url_prefix + '/health'
         body = self.simulate_get(path)
         health = jsonutils.loads(body[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         message_volume = health['message_volume']
-        self.assertEqual(message_volume['free'], 1)
-        self.assertEqual(message_volume['claimed'], 2)
-        self.assertEqual(message_volume['total'], 3)
+        self.assertEqual(1, message_volume['free'])
+        self.assertEqual(2, message_volume['claimed'])
+        self.assertEqual(3, message_volume['total'])
 
     @mock.patch.object(mongo.messages.MessageController, 'delete')
     def test_operation_status(self, mock_messages_delete):
@@ -69,7 +69,7 @@ class TestHealthMongoDB(base.V2Base):
         path = self.url_prefix + '/health'
         body = self.simulate_get(path)
         health = jsonutils.loads(body[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         op_status = health['operation_status']
         for op in op_status.keys():
             if op == 'delete_messages':
@@ -86,4 +86,4 @@ class TestHealthFaultyDriver(base.V2BaseFaulty):
     def test_simple(self):
         path = self.url_prefix + '/health'
         self.simulate_get(path)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
