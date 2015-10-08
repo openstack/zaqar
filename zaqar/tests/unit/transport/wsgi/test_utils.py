@@ -41,10 +41,10 @@ class TestUtils(testtools.TestCase):
                           int, None)
 
         value = utils.get_checked_field(doc, 'missing', int, 0)
-        self.assertEqual(value, 0)
+        self.assertEqual(0, value)
 
         value = utils.get_checked_field(doc, 'missing', dict, {})
-        self.assertEqual(value, {})
+        self.assertEqual({}, value)
 
     def test_get_checked_field_bad_type(self):
         doc = {'openstack': '10'}
@@ -69,13 +69,13 @@ class TestUtils(testtools.TestCase):
         doc = {'hello': 'world', 'the answer': 42, 'question': []}
 
         value = utils.get_checked_field(doc, 'hello', str, None)
-        self.assertEqual(value, 'world')
+        self.assertEqual('world', value)
 
         value = utils.get_checked_field(doc, 'the answer', int, None)
-        self.assertEqual(value, 42)
+        self.assertEqual(42, value)
 
         value = utils.get_checked_field(doc, 'question', list, None)
-        self.assertEqual(value, [])
+        self.assertEqual([], value)
 
     def test_filter_missing(self):
         doc = {'body': {'event': 'start_backup'}}
@@ -85,7 +85,7 @@ class TestUtils(testtools.TestCase):
 
         spec = (('tag', str, 'db'),)
         filtered = utils.filter(doc, spec)
-        self.assertEqual(filtered, {'tag': 'db'})
+        self.assertEqual({'tag': 'db'}, filtered)
 
     def test_filter_bad_type(self):
         doc = {'ttl': '300', 'bogus': 'yogabbagabba'}
@@ -100,17 +100,17 @@ class TestUtils(testtools.TestCase):
             yield ('body', dict, None)
 
         filtered = utils.filter(doc, spec())
-        self.assertEqual(filtered, doc)
+        self.assertEqual(doc, filtered)
 
         doc = {'ttl': 300, 'bogus': 'yogabbagabba'}
         spec = [('ttl', int, None)]
         filtered = utils.filter(doc, spec)
-        self.assertEqual(filtered, {'ttl': 300})
+        self.assertEqual({'ttl': 300}, filtered)
 
         doc = {'body': {'event': 'start_backup'}, 'ttl': 300}
         spec = (('body', dict, None), ('ttl', int, None))
         filtered = utils.filter(doc, spec)
-        self.assertEqual(filtered, doc)
+        self.assertEqual(doc, filtered)
 
     def test_no_spec(self):
         obj = {u'body': {'event': 'start_backup'}, 'ttl': 300}
@@ -119,11 +119,11 @@ class TestUtils(testtools.TestCase):
 
         deserialized = utils.deserialize(doc_stream, len(document))
         filtered = utils.sanitize(deserialized, spec=None)
-        self.assertEqual(filtered, obj)
+        self.assertEqual(obj, filtered)
 
         # NOTE(kgriffs): Ensure default value for *spec* is None
         filtered2 = utils.sanitize(deserialized)
-        self.assertEqual(filtered2, filtered)
+        self.assertEqual(filtered, filtered2)
 
     def test_no_spec_array(self):
         things = [{u'body': {'event': 'start_backup'}, 'ttl': 300}]
@@ -133,7 +133,7 @@ class TestUtils(testtools.TestCase):
         deserialized = utils.deserialize(doc_stream, len(document))
         filtered = utils.sanitize(deserialized, doctype=utils.JSONArray,
                                   spec=None)
-        self.assertEqual(filtered, things)
+        self.assertEqual(things, filtered)
 
     def test_filter_star(self):
         doc = {'ttl': 300, 'body': {'event': 'start_backup'}}
@@ -141,7 +141,7 @@ class TestUtils(testtools.TestCase):
         spec = [('body', '*', None), ('ttl', '*', None)]
         filtered = utils.filter(doc, spec)
 
-        self.assertEqual(filtered, doc)
+        self.assertEqual(doc, filtered)
 
     def test_deserialize_and_sanitize_json_obj(self):
         obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
@@ -153,7 +153,7 @@ class TestUtils(testtools.TestCase):
         # Positive test
         deserialized_object = utils.deserialize(stream, len(document))
         filtered_object = utils.sanitize(deserialized_object, spec)
-        self.assertEqual(filtered_object, obj)
+        self.assertEqual(obj, filtered_object)
 
         # Negative test
         self.assertRaises(falcon.HTTPBadRequest,
@@ -171,7 +171,7 @@ class TestUtils(testtools.TestCase):
         deserialized_object = utils.deserialize(stream, len(document))
         filtered_object = utils.sanitize(deserialized_object, spec,
                                          doctype=utils.JSONArray)
-        self.assertEqual(filtered_object, array)
+        self.assertEqual(array, filtered_object)
 
         # Negative test
         self.assertRaises(falcon.HTTPBadRequest,

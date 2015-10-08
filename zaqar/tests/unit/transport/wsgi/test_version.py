@@ -81,6 +81,6 @@ class TestVersion(base.TestBase):
         response = self.simulate_get('/')
         versions = jsonutils.loads(response[0])['versions']
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_300)
-        self.assertEqual(len(versions), 3)
+        self.assertEqual(falcon.HTTP_300, self.srmock.status)
+        self.assertEqual(3, len(versions))
         self.assertEqual(EXPECTED_VERSIONS, versions)

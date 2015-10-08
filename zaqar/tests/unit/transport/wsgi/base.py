@@ -151,7 +151,7 @@ class V1_1Base(TestBase):
     url_prefix = '/v1.1'
 
     def _empty_message_list(self, body):
-        self.assertEqual(jsonutils.loads(body[0])['messages'], [])
+        self.assertEqual([], jsonutils.loads(body[0])['messages'])
 
 
 class V1_1BaseFaulty(TestBaseFaulty):
