@@ -46,7 +46,7 @@ class ClaimsBaseTest(base.V1_1Base):
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
             self.protocol.onMessage(req, False)
             resp = json.loads(msg_mock.call_args[0][0])
-            self.assertEqual(resp['headers']['status'], 201)
+            self.assertEqual(201, resp['headers']['status'])
 
         action = "message_post"
         body = {"queue_name": "skittle",
@@ -70,7 +70,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
 
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 201)
+        self.assertEqual(201, resp['headers']['status'])
 
     def tearDown(self):
         super(ClaimsBaseTest, self).tearDown()
@@ -84,7 +84,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
 
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
     @ddt.data('[', '[]', '.', '"fail"')
     def test_bad_claim(self, doc):
@@ -97,7 +97,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
         action = "claim_update"
         body = doc
@@ -105,7 +105,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
     def test_exceeded_claim(self):
         action = "claim_create"
@@ -120,7 +120,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data((-1, -1), (59, 60), (60, 59), (60, 43201), (43201, 60))
     def test_unacceptable_ttl_or_grace(self, ttl_grace):
@@ -136,7 +136,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data(-1, 59, 43201)
     def test_unacceptable_new_ttl(self, ttl):
@@ -153,7 +153,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
     def test_default_ttl_and_grace(self):
         action = "claim_create"
@@ -165,7 +165,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 201)
+        self.assertEqual(201, resp['headers']['status'])
 
         action = "claim_get"
         body = {"queue_name": "skittle",
@@ -175,7 +175,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
 
-        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(200, resp['headers']['status'])
         self.assertEqual(self.defaults.claim_ttl, resp['body']['ttl'])
 
     def test_lifecycle(self):
@@ -191,7 +191,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 201)
+        self.assertEqual(201, resp['headers']['status'])
         claimed_messages = resp['body']['messages']
         claim_id = resp['body']['claim_id']
 
@@ -203,7 +203,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
         # Listing messages, by default, won't include claimed, will echo
         action = "message_list"
@@ -213,8 +213,8 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
-        self.assertEqual(resp['body']['messages'], [])
+        self.assertEqual(200, resp['headers']['status'])
+        self.assertEqual([], resp['body']['messages'])
 
         # Listing messages, by default, won't include claimed, won't echo
 
@@ -224,8 +224,8 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
-        self.assertEqual(resp['body']['messages'], [])
+        self.assertEqual(200, resp['headers']['status'])
+        self.assertEqual([], resp['body']['messages'])
 
         # List messages, include_claimed, but don't echo
 
@@ -236,7 +236,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(200, resp['headers']['status'])
         self.assertEqual(resp['body']['messages'], [])
 
         # List messages with a different client-id and echo=false.
@@ -253,7 +253,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(200, resp['headers']['status'])
 
         # Include claimed messages this time, and echo
 
@@ -264,8 +264,8 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
-        self.assertEqual(len(resp['body']['messages']), len(claimed_messages))
+        self.assertEqual(200, resp['headers']['status'])
+        self.assertEqual(len(claimed_messages), len(resp['body']['messages']))
 
         message_id_1 = resp['body']['messages'][0]['id']
         message_id_2 = resp['body']['messages'][1]['id']
@@ -278,7 +278,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 403)
+        self.assertEqual(403,  resp['headers']['status'])
 
         # Delete the message and its associated claim
         body = {"queue_name": "skittle",
@@ -288,7 +288,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
         # Try to get it from the wrong project
         headers = {
@@ -302,7 +302,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 404)
+        self.assertEqual(404,  resp['headers']['status'])
 
         # Get the message
         action = "message_get"
@@ -311,7 +311,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(200, resp['headers']['status'])
 
         # Update the claim
         creation = timeutils.utcnow()
@@ -323,7 +323,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
         # Get the claimed messages (again)
         action = "claim_get"
@@ -333,8 +333,8 @@ class ClaimsBaseTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
         query = timeutils.utcnow()
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
-        self.assertEqual(resp['body']['ttl'], 60)
+        self.assertEqual(200, resp['headers']['status'])
+        self.assertEqual(60, resp['body']['ttl'])
 
         message_id_3 = resp['body']['messages'][0]['id']
 
@@ -348,7 +348,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
         # Try to delete a message with an invalid claim ID
         action = "message_delete"
@@ -359,7 +359,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 400)
+        self.assertEqual(400, resp['headers']['status'])
 
         # Make sure it wasn't deleted!
         action = "message_get"
@@ -368,7 +368,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 200)
+        self.assertEqual(200, resp['headers']['status'])
 
         # Try to get a claim that doesn't exist
         action = "claim_get"
@@ -377,7 +377,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 404)
+        self.assertEqual(404,  resp['headers']['status'])
 
         # Try to update a claim that doesn't exist
         action = "claim_update"
@@ -388,7 +388,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 404)
+        self.assertEqual(404,  resp['headers']['status'])
 
     def test_post_claim_nonexistent_queue(self):
         action = "claim_create"
@@ -402,7 +402,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 204)
+        self.assertEqual(204, resp['headers']['status'])
 
     def test_get_claim_nonexistent_queue(self):
         action = "claim_get"
@@ -415,7 +415,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 404)
+        self.assertEqual(404,  resp['headers']['status'])
 
     def _get_a_claim(self):
         action = "claim_create"
@@ -429,6 +429,6 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = json.loads(send_mock.call_args[0][0])
-        self.assertEqual(resp['headers']['status'], 201)
+        self.assertEqual(201, resp['headers']['status'])
 
         return resp
