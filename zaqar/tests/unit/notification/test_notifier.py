@@ -112,7 +112,7 @@ class NotifierTest(testing.TestBase):
         driver.executor.shutdown()
 
         self.assertEqual(4, len(called))
-        self.assertEqual(called, {mail1, mail2, mail3, mail4})
+        self.assertEqual({mail1, mail2, mail3, mail4}, called)
 
     def test_post_no_subscriber(self):
         ctlr = mock.MagicMock()
