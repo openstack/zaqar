@@ -43,7 +43,7 @@ class TestMessagesMongoDB(base.V1Base):
                 doc = {'weight': 100, 'uri': uri}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))
-                self.assertEqual(self.srmock.status, falcon.HTTP_201)
+                self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         self.project_id = '7e55e1a7e'
 
@@ -80,12 +80,12 @@ class TestMessagesMongoDB(base.V1Base):
 
         result = self.simulate_post(self.messages_path, self.project_id,
                                     body=sample_doc, headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         result_doc = jsonutils.loads(result[0])
 
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
-        self.assertEqual(len(msg_ids), len(sample_messages))
+        self.assertEqual(len(sample_messages), len(msg_ids))
 
         expected_resources = [six.text_type(self.messages_path + '/' + id)
                               for id in msg_ids]
@@ -96,7 +96,7 @@ class TestMessagesMongoDB(base.V1Base):
         # to enqueue the entire batch of messages.
         self.assertFalse(result_doc['partial'])
 
-        self.assertEqual(len(msg_ids), len(sample_messages))
+        self.assertEqual(len(sample_messages), len(msg_ids))
 
         lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
 
@@ -111,18 +111,18 @@ class TestMessagesMongoDB(base.V1Base):
 
                 # Wrong project ID
                 self.simulate_get(message_uri, '777777')
-                self.assertEqual(self.srmock.status, falcon.HTTP_404)
+                self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
                 # Correct project ID
                 result = self.simulate_get(message_uri, self.project_id)
-                self.assertEqual(self.srmock.status, falcon.HTTP_200)
-                self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                                 message_uri)
+                self.assertEqual(falcon.HTTP_200, self.srmock.status)
+                self.assertEqual(message_uri,
+                                 self.srmock.headers_dict['Content-Location'])
 
                 # Check message properties
                 message = jsonutils.loads(result[0])
-                self.assertEqual(message['href'], message_uri)
-                self.assertEqual(message['body'], lookup[message['ttl']])
+                self.assertEqual(message_uri, message['href'])
+                self.assertEqual(lookup[message['ttl']], message['body'])
 
                 # no negative age
                 # NOTE(cpp-cabrera): testtools lacks GreaterThanEqual on py26
@@ -134,7 +134,7 @@ class TestMessagesMongoDB(base.V1Base):
         result = self.simulate_get(self.messages_path, self.project_id,
                                    query_string=query_string)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         result_doc = jsonutils.loads(result[0])
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in result_doc)
@@ -150,21 +150,21 @@ class TestMessagesMongoDB(base.V1Base):
         self.simulate_get(self.messages_path, self.project_id,
                           query_string=query_string)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         # Listing restriction
         self.simulate_get(self.messages_path, self.project_id,
                           query_string='limit=21',
                           headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         # Bulk deletion restriction
         query_string = 'ids=' + ','.join([msg_id] * 22)
         self.simulate_delete(self.messages_path, self.project_id,
                              query_string=query_string)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_post_single(self):
         sample_messages = [
@@ -193,7 +193,7 @@ class TestMessagesMongoDB(base.V1Base):
             path = path.encode('utf-8')
 
         self._post_messages(path)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_post_with_long_queue_name(self):
         # NOTE(kgriffs): This test verifies that routes with
@@ -204,22 +204,22 @@ class TestMessagesMongoDB(base.V1Base):
 
         game_title = 'v' * validation.QUEUE_NAME_MAX_LEN
         self._post_messages(queues_path + game_title + '/messages')
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         game_title += 'v'
         self._post_messages(queues_path + game_title + '/messages')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_post_to_missing_queue(self):
         self._post_messages(self.url_prefix + '/queues/nonexistent/messages')
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_get_from_missing_queue(self):
         self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
                           self.project_id,
                           headers={'Client-ID':
                                    'dfcd3238-425c-11e3-8a80-28cfe91478b9'})
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
@@ -227,13 +227,13 @@ class TestMessagesMongoDB(base.V1Base):
                            body='{"ttl": 60, "body": ""}',
                            headers={'Client-ID': text_id})
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_get(self.queue_path + '/messages',
                           query_string='limit=3&echo=true',
                           headers={'Client-ID': text_id})
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(None, '[', '[]', '{}', '.')
     def test_post_bad_message(self, document):
@@ -241,7 +241,7 @@ class TestMessagesMongoDB(base.V1Base):
                            body=document,
                            headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
@@ -249,7 +249,7 @@ class TestMessagesMongoDB(base.V1Base):
                            body=jsonutils.dumps([{'ttl': ttl, 'body': None}]),
                            headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_exceeded_message_posting(self):
         # Total (raw request) size
@@ -263,7 +263,7 @@ class TestMessagesMongoDB(base.V1Base):
                            body=long_doc,
                            headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data('{"overflow": 9223372036854775808}',
               '{"underflow": -9223372036854775809}')
@@ -272,7 +272,7 @@ class TestMessagesMongoDB(base.V1Base):
                            body=document,
                            headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_delete(self):
         self._post_messages(self.messages_path)
@@ -280,17 +280,17 @@ class TestMessagesMongoDB(base.V1Base):
         target = self.messages_path + '/' + msg_id
 
         self.simulate_get(target, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         self.simulate_delete(target, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         self.simulate_get(target, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_bulk_delete(self):
         path = self.queue_path + '/messages'
@@ -299,24 +299,24 @@ class TestMessagesMongoDB(base.V1Base):
 
         # Deleting the whole collection is denied
         self.simulate_delete(path, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         self.simulate_get(target, self.project_id, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Safe to delete non-existing ones
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Even after the queue is gone
         self.simulate_delete(self.queue_path, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         self.simulate_delete(target, self.project_id, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_list(self):
         path = self.queue_path + '/messages'
@@ -327,9 +327,9 @@ class TestMessagesMongoDB(base.V1Base):
                                  query_string=query_string,
                                  headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         path + '?' + query_string)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        self.assertEqual(path + '?' + query_string,
+                         self.srmock.headers_dict['Content-Location'])
 
         cnt = 0
         while self.srmock.status == falcon.HTTP_200:
@@ -338,23 +338,23 @@ class TestMessagesMongoDB(base.V1Base):
 
             for msg in contents['messages']:
                 self.simulate_get(msg['href'], self.project_id)
-                self.assertEqual(self.srmock.status, falcon.HTTP_200)
+                self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
             body = self.simulate_get(target, self.project_id,
                                      query_string=params,
                                      headers=self.headers)
             cnt += 1
 
-        self.assertEqual(cnt, 4)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(4, cnt)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Stats
         body = self.simulate_get(self.queue_path + '/stats', self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         message_stats = jsonutils.loads(body[0])['messages']
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         self.queue_path + '/stats')
+        self.assertEqual(self.queue_path + '/stats',
+                         self.srmock.headers_dict['Content-Location'])
 
         # NOTE(kgriffs): The other parts of the stats are tested
         # in tests.storage.base and so are not repeated here.
@@ -367,7 +367,7 @@ class TestMessagesMongoDB(base.V1Base):
         self.simulate_get(self.url_prefix + '/queues/nonexistent/messages',
                           self.project_id,
                           headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_list_with_bad_marker(self):
         path = self.queue_path + '/messages'
@@ -378,7 +378,7 @@ class TestMessagesMongoDB(base.V1Base):
                           query_string=query_string,
                           headers=self.headers)
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_no_uuid(self):
         path = self.queue_path + '/messages'
@@ -387,48 +387,48 @@ class TestMessagesMongoDB(base.V1Base):
                            headers={},
                            body='[{"body": 0, "ttl": 100}]')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_get(path, '7e7e7e', headers={})
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     # NOTE(cpp-cabrera): regression test against bug #1210633
     def test_when_claim_deleted_then_messages_unclaimed(self):
         path = self.queue_path
         self._post_messages(path + '/messages', repeat=5)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # post claim
         self.simulate_post(path + '/claims', self.project_id,
                            body='{"ttl": 100, "grace": 100}')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
         location = self.srmock.headers_dict['location']
 
         # release claim
         self.simulate_delete(location, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # get unclaimed messages
         self.simulate_get(path + '/messages', self.project_id,
                           query_string='echo=true',
                           headers=self.headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     # NOTE(cpp-cabrera): regression test against bug #1203842
     def test_get_nonexistent_message_404s(self):
         path = self.url_prefix + '/queues/notthere/messages/a'
         self.simulate_get(path)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_get_multiple_invalid_messages_204s(self):
         path = self.url_prefix + '/queues/notthere/messages'
         self.simulate_get(path, query_string='ids=a,b,c')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_delete_multiple_invalid_messages_204s(self):
         path = self.url_prefix + '/queues/notthere/messages'
         self.simulate_delete(path, query_string='ids=a,b,c')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_delete_message_with_invalid_claim_doesnt_delete_message(self):
         path = self.queue_path
@@ -437,10 +437,10 @@ class TestMessagesMongoDB(base.V1Base):
 
         self.simulate_delete(location, self.project_id,
                              query_string='claim_id=invalid')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_get(location, self.project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     def test_no_duplicated_messages_path_in_href(self):
         """Test for bug 1240897."""
@@ -496,14 +496,14 @@ class TestMessagesFaultyDriver(base.V1BaseFaulty):
         self.simulate_post(path, project_id,
                            body=doc,
                            headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         self.simulate_get(path, project_id,
                           headers=headers)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         self.simulate_get(path + '/nonexistent', project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         self.simulate_delete(path + '/nada', project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)

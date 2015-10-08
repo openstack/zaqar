@@ -48,16 +48,16 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
     def test_empty_project_id(self):
         self.simulate_get(self.gumshoe_queue_path, '')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_put(self.gumshoe_queue_path, '')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_head(self.gumshoe_queue_path, '')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_delete(self.gumshoe_queue_path, '')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data('480924', 'foo', None)
     def test_basics_thoroughly(self, project_id):
@@ -66,77 +66,77 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         # Stats not found - queue not created yet
         self.simulate_get(gumshoe_queue_path_stats, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         # Metadata not found - queue not created yet
         self.simulate_get(gumshoe_queue_path_metadata, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         # Create
         self.simulate_put(self.gumshoe_queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         location = self.srmock.headers_dict['Location']
-        self.assertEqual(location, self.gumshoe_queue_path)
+        self.assertEqual(self.gumshoe_queue_path, location)
 
         # Ensure queue existence
         self.simulate_head(self.gumshoe_queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Add metadata
         doc = '{"messages": {"ttl": 600}}'
         self.simulate_put(gumshoe_queue_path_metadata,
                           project_id, body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Fetch metadata
         result = self.simulate_get(gumshoe_queue_path_metadata,
                                    project_id)
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(result_doc, jsonutils.loads(doc))
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        self.assertEqual(jsonutils.loads(doc), result_doc)
 
         # Stats empty queue
         self.simulate_get(gumshoe_queue_path_stats, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         # Delete
         self.simulate_delete(self.gumshoe_queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Get non-existent queue
         self.simulate_get(self.gumshoe_queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         # Get non-existent stats
         self.simulate_get(gumshoe_queue_path_stats, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
         # Get non-existent metadata
         self.simulate_get(gumshoe_queue_path_metadata, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_name_restrictions(self):
         self.simulate_put(self.queue_path + '/Nice-Boat_2')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         self.simulate_put(self.queue_path + '/Nice-Bo@t')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_put(self.queue_path + '/_' + 'niceboat' * 8)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_project_id_restriction(self):
         muvluv_queue_path = self.queue_path + '/Muv-Luv'
 
         self.simulate_put(muvluv_queue_path,
                           headers={'X-Project-ID': 'JAM Project' * 24})
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         # no charset restrictions
         self.simulate_put(muvluv_queue_path,
                           headers={'X-Project-ID': 'JAM Project'})
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_non_ascii_name(self):
         test_params = ((u'/queues/non-ascii-n\u0153me', 'utf-8'),
@@ -149,36 +149,36 @@ class TestQueueLifecycleMongoDB(base.V1Base):
                 uri = uri.encode(enc)
 
             self.simulate_put(uri)
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
             self.simulate_get(uri)
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
             self.simulate_delete(uri)
-            self.assertEqual(self.srmock.status, falcon.HTTP_400)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_no_metadata(self):
         self.simulate_put(self.fizbat_queue_path)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         self.simulate_put(self.fizbat_queue_path_metadata)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         self.simulate_put(self.fizbat_queue_path_metadata, body='')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data('{', '[]', '.', '  ', '')
     def test_bad_metadata(self, document):
         self.simulate_put(self.fizbat_queue_path, '7e55e1a7e')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         self.simulate_put(self.fizbat_queue_path_metadata, '7e55e1a7e',
                           body=document)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_too_much_metadata(self):
         self.simulate_put(self.fizbat_queue_path, '7e55e1a7e')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
         doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
 
         max_size = self.transport_cfg.max_queue_metadata
@@ -188,11 +188,11 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         self.simulate_put(self.fizbat_queue_path_metadata, '7e55e1a7e',
                           body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_way_too_much_metadata(self):
         self.simulate_put(self.fizbat_queue_path, '7e55e1a7e')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
         doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
 
         max_size = self.transport_cfg.max_queue_metadata
@@ -202,11 +202,11 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         self.simulate_put(self.fizbat_queue_path_metadata,
                           '7e55e1a7e', body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_custom_metadata(self):
         self.simulate_put(self.fizbat_queue_path, '480924')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # Set
         doc = '{{"messages": {{"ttl": 600}}, "padding": "{pad}"}}'
@@ -216,13 +216,13 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         doc = doc.format(pad='x' * padding_len)
         self.simulate_put(self.fizbat_queue_path_metadata, '480924', body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Get
         result = self.simulate_get(self.fizbat_queue_path_metadata, '480924')
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(result_doc, jsonutils.loads(doc))
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(jsonutils.loads(doc), result_doc)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     def test_update_metadata(self):
         xyz_queue_path = self.url_prefix + '/queues/xyz'
@@ -231,25 +231,25 @@ class TestQueueLifecycleMongoDB(base.V1Base):
         # Create
         project_id = '480924'
         self.simulate_put(xyz_queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # Set meta
         doc1 = '{"messages": {"ttl": 600}}'
         self.simulate_put(xyz_queue_path_metadata, project_id, body=doc1)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Update
         doc2 = '{"messages": {"ttl": 100}}'
         self.simulate_put(xyz_queue_path_metadata, project_id, body=doc2)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Get
         result = self.simulate_get(xyz_queue_path_metadata, project_id)
         result_doc = jsonutils.loads(result[0])
 
-        self.assertEqual(result_doc, jsonutils.loads(doc2))
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         xyz_queue_path_metadata)
+        self.assertEqual(jsonutils.loads(doc2), result_doc)
+        self.assertEqual(xyz_queue_path_metadata,
+                         self.srmock.headers_dict['Content-Location'])
 
     def test_list(self):
         arbitrary_number = 644079696574693
@@ -262,11 +262,11 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         # List empty
         self.simulate_get(self.queue_path, project_id)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # Payload exceeded
         self.simulate_get(self.queue_path, project_id, query_string='limit=21')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         # Create some
         def create_queue(name, project_id, body):
@@ -289,17 +289,17 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         result_doc = jsonutils.loads(result[0])
         queues = result_doc['queues']
-        self.assertEqual(len(queues), 2)
+        self.assertEqual(2, len(queues))
 
         for queue in queues:
-            self.assertEqual(queue['metadata'], {'answer': 42})
+            self.assertEqual({'answer': 42}, queue['metadata'])
 
         # List (limit)
         result = self.simulate_get(self.queue_path, project_id,
                                    query_string='limit=2')
 
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(len(result_doc['queues']), 2)
+        self.assertEqual(2, len(result_doc['queues']))
 
         # List (no metadata, get all)
         result = self.simulate_get(self.queue_path,
@@ -308,20 +308,20 @@ class TestQueueLifecycleMongoDB(base.V1Base):
         result_doc = jsonutils.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
-        self.assertEqual(self.srmock.headers_dict['Content-Location'],
-                         self.queue_path + '?limit=5')
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        self.assertEqual(self.queue_path + '?limit=5',
+                         self.srmock.headers_dict['Content-Location'])
 
         # Ensure we didn't pick up the queue from the alt project.
         queues = result_doc['queues']
-        self.assertEqual(len(queues), 3)
+        self.assertEqual(3, len(queues))
 
         for queue in queues:
             self.simulate_get(queue['href'] + '/metadata', project_id)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
             self.simulate_get(queue['href'] + '/metadata', 'imnothere')
-            self.assertEqual(self.srmock.status, falcon.HTTP_404)
+            self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
             self.assertNotIn('metadata', queue)
 
@@ -329,23 +329,23 @@ class TestQueueLifecycleMongoDB(base.V1Base):
         result = self.simulate_get(self.queue_path, project_id,
                                    query_string='detailed=true')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         result_doc = jsonutils.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
 
         queue = result_doc['queues'][0]
         result = self.simulate_get(queue['href'] + '/metadata', project_id)
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(result_doc, queue['metadata'])
-        self.assertEqual(result_doc, {'node': 31})
+        self.assertEqual(queue['metadata'], result_doc)
+        self.assertEqual({'node': 31}, result_doc)
 
         # List tail
         self.simulate_get(target, project_id, query_string=params)
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         # List manually-constructed tail
         self.simulate_get(target, project_id, query_string='marker=zzz')
-        self.assertEqual(self.srmock.status, falcon.HTTP_204)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
 
 class TestQueueLifecycleFaultyDriver(base.V1BaseFaulty):
@@ -356,21 +356,21 @@ class TestQueueLifecycleFaultyDriver(base.V1BaseFaulty):
         gumshoe_queue_path = self.url_prefix + '/queues/gumshoe'
         doc = '{"messages": {"ttl": 600}}'
         self.simulate_put(gumshoe_queue_path, '480924', body=doc)
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         location = ('Location', gumshoe_queue_path)
         self.assertNotIn(location, self.srmock.headers)
 
         result = self.simulate_get(gumshoe_queue_path + '/metadata', '480924')
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
         self.assertNotEqual(result_doc, jsonutils.loads(doc))
 
         self.simulate_get(gumshoe_queue_path + '/stats', '480924')
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         self.simulate_get(self.url_prefix + '/queues', '480924')
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
         self.simulate_delete(gumshoe_queue_path, '480924')
-        self.assertEqual(self.srmock.status, falcon.HTTP_503)
+        self.assertEqual(falcon.HTTP_503, self.srmock.status)

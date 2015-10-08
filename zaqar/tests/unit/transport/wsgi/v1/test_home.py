@@ -25,10 +25,10 @@ class TestHomeDocument(base.V1Base):
 
     def test_json_response(self):
         body = self.simulate_get(self.url_prefix)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         content_type = self.srmock.headers_dict['Content-Type']
-        self.assertEqual(content_type, 'application/json-home')
+        self.assertEqual('application/json-home', content_type)
 
         try:
             jsonutils.loads(body[0])
@@ -37,7 +37,7 @@ class TestHomeDocument(base.V1Base):
 
     def test_href_template(self):
         body = self.simulate_get(self.url_prefix)
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
         resp = jsonutils.loads(body[0])
         queue_href_template = resp['resources']['rel/queue']['href-template']
         path_1 = 'https://zaqar.example.com' + self.url_prefix
@@ -51,7 +51,7 @@ class TestHomeDocument(base.V1Base):
         url = urlparse.urljoin(path_1, queue_href_template)
         expected = ('https://zaqar.example.com' + self.url_prefix +
                     '/queues/foo')
-        self.assertEqual(url.format(queue_name='foo'), expected)
+        self.assertEqual(expected, url.format(queue_name='foo'))
 
         url = urlparse.urljoin(path_2, queue_href_template)
-        self.assertEqual(url.format(queue_name='foo'), expected)
+        self.assertEqual(expected, url.format(queue_name='foo'))

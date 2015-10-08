@@ -45,14 +45,14 @@ class TestDefaultLimits(base.V1Base):
         # 2 queues to list
         self.addCleanup(self.simulate_delete, self.queue_path + '/q2')
         self.simulate_put(self.queue_path + '/q2')
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         with self._prepare_queues(storage.DEFAULT_QUEUES_PER_PAGE + 1):
             result = self.simulate_get(self.queue_path)
-            self.assertEqual(self.srmock.status, falcon.HTTP_200)
+            self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
             queues = jsonutils.loads(result[0])['queues']
-            self.assertEqual(len(queues), storage.DEFAULT_QUEUES_PER_PAGE)
+            self.assertEqual(storage.DEFAULT_QUEUES_PER_PAGE, len(queues))
 
     def test_message_listing(self):
         self._prepare_messages(storage.DEFAULT_MESSAGES_PER_PAGE + 1)
@@ -60,10 +60,10 @@ class TestDefaultLimits(base.V1Base):
         result = self.simulate_get(self.messages_path,
                                    headers={'Client-ID': str(uuid.uuid4())})
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         messages = jsonutils.loads(result[0])['messages']
-        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_PAGE)
+        self.assertEqual(storage.DEFAULT_MESSAGES_PER_PAGE, len(messages))
 
     def test_claim_creation(self):
         self._prepare_messages(storage.DEFAULT_MESSAGES_PER_CLAIM + 1)
@@ -71,10 +71,10 @@ class TestDefaultLimits(base.V1Base):
         result = self.simulate_post(self.claims_path,
                                     body='{"ttl": 60, "grace": 60}')
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         messages = jsonutils.loads(result[0])
-        self.assertEqual(len(messages), storage.DEFAULT_MESSAGES_PER_CLAIM)
+        self.assertEqual(storage.DEFAULT_MESSAGES_PER_CLAIM, len(messages))
 
     @contextlib.contextmanager
     def _prepare_queues(self, count):
@@ -83,7 +83,7 @@ class TestDefaultLimits(base.V1Base):
 
         for path in queue_paths:
             self.simulate_put(path)
-            self.assertEqual(self.srmock.status, falcon.HTTP_201)
+            self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         yield
 
@@ -95,4 +95,4 @@ class TestDefaultLimits(base.V1Base):
         self.simulate_post(self.messages_path, body=doc,
                            headers={'Client-ID': str(uuid.uuid4())})
 
-        self.assertEqual(self.srmock.status, falcon.HTTP_201)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
