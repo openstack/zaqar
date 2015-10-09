@@ -68,19 +68,19 @@ class TestPipeLine(base.TestBase):
 
     def test_with_args(self):
         name = 'James'
-        self.assertEqual(self.pipeline.with_args(name), name)
+        self.assertEqual(name, self.pipeline.with_args(name))
 
     def test_with_kwargs(self):
         lastname = 'Bond'
-        self.assertEqual(self.pipeline.with_kwargs(lastname), lastname)
-        self.assertEqual(self.pipeline.with_kwargs(lastname=lastname),
-                         lastname)
+        self.assertEqual(lastname, self.pipeline.with_kwargs(lastname))
+        self.assertEqual(lastname,
+                         self.pipeline.with_kwargs(lastname=lastname))
 
     def test_with_args_kwargs(self):
         fullname = 'James Bond'
         name, lastname = fullname.split()
         result = self.pipeline.with_args_kwargs(name, lastname=lastname)
-        self.assertEqual(result, fullname)
+        self.assertEqual(fullname, result)
 
     def test_does_nothing(self):
         self.assertIsNone(self.pipeline.does_nothing())
