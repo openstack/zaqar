@@ -74,8 +74,8 @@ class TestHealth(base.V1_1FunctionalTestBase):
         self.assertEqual(200, response.status_code)
         health = response.json()
 
-        self.assertEqual(True, health['catalog_reachable'])
-        self.assertEqual(True, health[pool_name]['storage_reachable'])
+        self.assertTrue(health['catalog_reachable'])
+        self.assertTrue(health[pool_name]['storage_reachable'])
         op_status = health[pool_name]['operation_status']
         for op in op_status.keys():
             self.assertTrue(op_status[op]['succeeded'])
