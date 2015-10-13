@@ -133,18 +133,18 @@ class QueueControllerTest(ControllerBaseTest):
                                            detailed=True)
         queues = list(next(interaction))
 
-        self.assertEqual(True, all(map(lambda queue:
-                                       'name' in queue and
-                                       'metadata' in queue, queues)))
+        self.assertTrue(all(map(lambda queue:
+                                'name' in queue and
+                                'metadata' in queue, queues)))
         self.assertEqual(10, len(queues))
 
         interaction = self.controller.list(project=project,
                                            marker=next(interaction))
         queues = list(next(interaction))
 
-        self.assertEqual(True, all(map(lambda queue:
-                                       'name' in queue and
-                                       'metadata' not in queue, queues)))
+        self.assertTrue(all(map(lambda queue:
+                                'name' in queue and
+                                'metadata' not in queue, queues)))
 
         self.assertEqual(5, len(queues))
 
@@ -1004,9 +1004,9 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                         project=self.project)
         subscriptions = list(next(interaction))
 
-        self.assertEqual(True, all(map(lambda s:
-                                       'source' in s and 'subscriber' in s,
-                                       subscriptions)))
+        self.assertTrue(all(map(lambda s:
+                                'source' in s and 'subscriber' in s,
+                                subscriptions)))
         self.assertEqual(10, len(subscriptions))
 
         interaction = (self.subscription_controller.list(self.source,
@@ -1014,9 +1014,9 @@ class SubscriptionControllerTest(ControllerBaseTest):
                        marker=next(interaction)))
         subscriptions = list(next(interaction))
 
-        self.assertEqual(True, all(map(lambda s:
-                                       'source' in s and 'subscriber' in s,
-                                       subscriptions)))
+        self.assertTrue(all(map(lambda s:
+                                'source' in s and 'subscriber' in s,
+                                subscriptions)))
         self.assertEqual(5, len(subscriptions))
 
     def test_get_raises_if_subscription_does_not_exist(self):
