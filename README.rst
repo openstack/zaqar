@@ -15,7 +15,7 @@ all of these steps are required. It is assumed you have `MongoDB`_ and `tox`
 1. Install prerequisites:
 
 # Ubuntu/Debian:
-sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev
+sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev python-dev zlib1g-dev
 
 # Fedora/RHEL:
 sudo yum install gcc python-pip libxml2-devel libxslt-devel
