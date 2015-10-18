@@ -39,6 +39,7 @@ ZAQAR_CONF_DIR=/etc/zaqar
 ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
 ZAQAR_POLICY_CONF=$ZAQAR_CONF_DIR/policy.json
 ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
+ZAQAR_UWSGI_MASTER_PIDFILE=/tmp/uwsgizaqarmasterprocess.pid
 ZAQAR_API_LOG_DIR=/var/log/zaqar
 ZAQAR_API_LOG_FILE=$ZAQAR_API_LOG_DIR/queues.log
 ZAQAR_AUTH_CACHE_DIR=${ZAQAR_AUTH_CACHE_DIR:-/var/cache/zaqar}
@@ -236,7 +237,7 @@ function install_zaqarclient {
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
-    run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF"
+    run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
     run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
@@ -253,6 +254,7 @@ function stop_zaqar {
     for serv in zaqar-wsgi zaqar-websocket; do
         screen -S $SCREEN_NAME -p $serv -X kill
     done
+    uwsgi --stop $ZAQAR_UWSGI_MASTER_PIDFILE
 }
 
 function create_zaqar_accounts {
