@@ -202,7 +202,9 @@ function configure_mongodb {
     pip_install pymongo
     if is_ubuntu; then
         install_package mongodb-server
-        echo "smallfiles = true" | sudo tee --append /etc/mongodb.conf > /dev/null
+        if ! grep -qF "smallfiles = true" /etc/mongodb.conf; then
+            echo "smallfiles = true" | sudo tee --append /etc/mongodb.conf > /dev/null
+        fi
         restart_service mongodb
     elif is_fedora; then
         install_package mongodb
