@@ -10,6 +10,7 @@ mock>=1.2
 # Backends
 redis>=2.10.0
 pymongo>=3.0.2
+websocket-client>=0.32.0 # LGPLv2+
 
 # Unit testing
 coverage>=3.6

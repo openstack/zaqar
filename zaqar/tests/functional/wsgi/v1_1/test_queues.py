@@ -19,7 +19,7 @@ import uuid
 import ddt
 import six
 
-from zaqar.tests.functional import base  # noqa
+from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
 
 

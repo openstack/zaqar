@@ -75,6 +75,10 @@ class FunctionalTestBase(testing.TestBase):
 
         self.resource_defaults = transport_base.ResourceDefaults(self.mconf)
 
+        # Always register options
+        wrapper = bootstrap.Bootstrap(self.mconf)
+        wrapper.transport
+
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
             # an external wsgi server instance.
@@ -92,10 +96,9 @@ class FunctionalTestBase(testing.TestBase):
                 self.mconf.pooling = True
                 self.mconf.admin_mode = True
 
-            boot = bootstrap.Bootstrap(self.mconf)
-            self.addCleanup(boot.storage.close)
-            self.addCleanup(boot.control.close)
-            self.client = http.WSGIClient(boot.transport.app)
+            self.addCleanup(wrapper.storage.close)
+            self.addCleanup(wrapper.control.close)
+            self.client = http.WSGIClient(wrapper.transport.app)
 
         self.headers = helpers.create_zaqar_headers(self.cfg)
 
