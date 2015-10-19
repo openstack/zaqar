@@ -39,7 +39,7 @@ def _print_verbose_stats(name, stats):
 
 
 def _reset_queues():
-    cli = client.Client(CONF.server_url)
+    cli = client.Client(CONF.server_url, 1.1)
 
     for i in range(CONF.num_queues):
         # TODO(kgriffs): DRY up name generation so it is done
