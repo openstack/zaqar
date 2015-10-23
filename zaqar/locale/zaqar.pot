@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 2.0.0.dev8\n"
+"Project-Id-Version: zaqar 2.0.0.dev37\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-28 06:10+0000\n"
+"POT-Creation-Date: 2015-10-23 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,87 +17,122 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.1.1\n"
 
-#: zaqar/api/v2/endpoints.py:111
+#: zaqar/api/v2/endpoints.py:113
 #, python-format
 msgid "Queue %s could not be created."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:115
+#: zaqar/api/v2/endpoints.py:117
 #, python-format
 msgid "Queue %s created."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:137
+#: zaqar/api/v2/endpoints.py:139
 #, python-format
 msgid "Queue %s could not be deleted."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:141
+#: zaqar/api/v2/endpoints.py:143
 #, python-format
 msgid "Queue %s removed."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:166
+#: zaqar/api/v2/endpoints.py:168 zaqar/api/v2/endpoints.py:805
 #, python-format
 msgid "Queue %s does not exist."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:172
+#: zaqar/api/v2/endpoints.py:174
 #, python-format
 msgid "Cannot retrieve queue %s."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:213
+#: zaqar/api/v2/endpoints.py:215
 #, python-format
 msgid "Cannot retrieve queue %s stats."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:367
+#: zaqar/api/v2/endpoints.py:369
 msgid "Invalid request."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:368 zaqar/transport/wsgi/v1_1/messages.py:168
+#: zaqar/api/v2/endpoints.py:370 zaqar/transport/wsgi/v1_1/messages.py:168
 #: zaqar/transport/wsgi/v2_0/messages.py:170
 msgid "No messages were found in the request body."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:418 zaqar/transport/wsgi/v1_0/messages.py:166
+#: zaqar/api/v2/endpoints.py:420 zaqar/transport/wsgi/v1_0/messages.py:166
 #: zaqar/transport/wsgi/v1_1/messages.py:197
 #: zaqar/transport/wsgi/v2_0/messages.py:199
 msgid "No messages could be enqueued."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:457 zaqar/transport/wsgi/v1_0/messages.py:276
+#: zaqar/api/v2/endpoints.py:459 zaqar/transport/wsgi/v1_0/messages.py:276
 #: zaqar/transport/wsgi/v1_1/messages.py:340
 #: zaqar/transport/wsgi/v2_0/messages.py:346
 msgid "A claim was specified, but the message is not currently claimed."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:463 zaqar/transport/wsgi/v1_0/messages.py:282
+#: zaqar/api/v2/endpoints.py:465 zaqar/transport/wsgi/v1_0/messages.py:282
 #: zaqar/transport/wsgi/v1_1/messages.py:346
 #: zaqar/transport/wsgi/v2_0/messages.py:352
 msgid "The specified claim does not exist or has expired."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:469 zaqar/transport/wsgi/v1_0/messages.py:288
+#: zaqar/api/v2/endpoints.py:471 zaqar/transport/wsgi/v1_0/messages.py:288
 #: zaqar/transport/wsgi/v1_1/messages.py:352
 #: zaqar/transport/wsgi/v2_0/messages.py:358
 msgid "This message is claimed; it cannot be deleted without a valid claim ID."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:638 zaqar/api/v2/endpoints.py:697
+#: zaqar/api/v2/endpoints.py:640 zaqar/api/v2/endpoints.py:699
 #, python-format
 msgid "Claim %s does not exist."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:689
+#: zaqar/api/v2/endpoints.py:691
 #, python-format
 msgid "Claim %s updated."
 msgstr ""
 
-#: zaqar/api/v2/endpoints.py:725
+#: zaqar/api/v2/endpoints.py:727
 #, python-format
 msgid "Claim %s deleted."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:810
+#, python-format
+msgid "Subscription %s could not be created."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:815
+#, python-format
+msgid "Subscription %s created."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:819
+#, python-format
+msgid "Subscription %s not created."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:845
+#, python-format
+msgid "Subscription %(subscription)s for queue %(queue)s could not be deleted."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:851
+#, python-format
+msgid "Subscription %s removed."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:878
+#, python-format
+msgid "Subscription %(subscription)s for queue %(queue)s does not exist."
+msgstr ""
+
+#: zaqar/api/v2/endpoints.py:886
+#, python-format
+msgid "Cannot retrieve subscription %s."
 msgstr ""
 
 #: zaqar/common/cli.py:56
@@ -364,7 +399,7 @@ msgstr ""
 msgid "TTL must be an integer."
 msgstr ""
 
-#: zaqar/transport/websocket/driver.py:85 zaqar/transport/wsgi/driver.py:138
+#: zaqar/transport/websocket/driver.py:92 zaqar/transport/wsgi/driver.py:138
 #, python-format
 msgid "Serving on host %(bind)s:%(port)s"
 msgstr ""
