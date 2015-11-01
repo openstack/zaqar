@@ -36,8 +36,8 @@ _WSGI_OPTIONS = (
     cfg.StrOpt('bind', default='127.0.0.1',
                help='Address on which the self-hosting server will listen.'),
 
-    cfg.IntOpt('port', default=8888,
-               help='Port on which the self-hosting server will listen.'),
+    cfg.PortOpt('port', default=8888,
+                help='Port on which the self-hosting server will listen.'),
 )
 
 _WSGI_GROUP = 'drivers:transport:wsgi'

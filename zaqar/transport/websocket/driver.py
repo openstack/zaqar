@@ -34,11 +34,11 @@ _WS_OPTIONS = (
     cfg.StrOpt('bind', default='127.0.0.1',
                help='Address on which the self-hosting server will listen.'),
 
-    cfg.IntOpt('port', default=9000,
-               help='Port on which the self-hosting server will listen.'),
+    cfg.PortOpt('port', default=9000,
+                help='Port on which the self-hosting server will listen.'),
 
-    cfg.IntOpt('external-port', default=None,
-               help='Port on which the service is provided to the user.'),
+    cfg.PortOpt('external-port', default=None,
+                help='Port on which the service is provided to the user.'),
 
 )
 
