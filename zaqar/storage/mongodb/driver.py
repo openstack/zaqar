@@ -98,8 +98,16 @@ class DataDriver(storage.DataDriverBase):
         else:
 
             _mongo_wc = conn.write_concern.document.get('w')
-            durable = (_mongo_wc == 'majority' or
-                       _mongo_wc >= 2)
+            # NOTE(flwang): mongo client is using None as the default value of
+            # write concern. But in Python 3.x we can't compare by order
+            # different types of operands like in Python 2.x.
+            # And we can't set the write concern value when create the
+            # connection since it will fail with norepl if mongodb version
+            # below 2.6. Besides it doesn't make sense to create the
+            # connection again after getting the version.
+            durable = (_mongo_wc is not None and
+                       (_mongo_wc == 'majority' or _mongo_wc >= 2)
+                       )
 
             if not self.conf.unreliable and not durable:
                 raise RuntimeError(_('Using a write concern other than '
