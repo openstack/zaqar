@@ -45,13 +45,11 @@ class TestHealth(base.V1_1FunctionalTestBase):
         )
 
         pool_name = "pool_1"
-        self.addCleanup(self.client.delete, url='/pools/' + pool_name)
 
         result = self.client.put('/pools/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         queue_name = 'fake_queue'
-        self.addCleanup(self.client.delete, url='/queues/' + queue_name)
         result = self.client.put('/queues/' + queue_name)
         self.assertEqual(201, result.status_code)
 
