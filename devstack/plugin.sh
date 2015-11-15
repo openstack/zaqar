@@ -29,45 +29,6 @@ XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 
-# Defaults
-# --------
-
-# Set up default directories
-ZAQAR_DIR=$DEST/zaqar
-ZAQARCLIENT_DIR=$DEST/python-zaqarclient
-ZAQAR_CONF_DIR=/etc/zaqar
-ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
-ZAQAR_POLICY_CONF=$ZAQAR_CONF_DIR/policy.json
-ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
-ZAQAR_UWSGI_MASTER_PIDFILE=/tmp/uwsgizaqarmasterprocess.pid
-ZAQAR_API_LOG_DIR=/var/log/zaqar
-ZAQAR_API_LOG_FILE=$ZAQAR_API_LOG_DIR/queues.log
-ZAQAR_AUTH_CACHE_DIR=${ZAQAR_AUTH_CACHE_DIR:-/var/cache/zaqar}
-
-# Support potential entry-points console scripts
-ZAQAR_BIN_DIR=$(get_python_exec_prefix)
-
-# Set up database backend
-ZAQAR_BACKEND=${ZAQAR_BACKEND:-mongodb}
-
-# Set Zaqar repository
-ZAQAR_REPO=${ZAQAR_REPO:-${GIT_BASE}/openstack/zaqar.git}
-ZAQAR_BRANCH=${ZAQAR_BRANCH:-master}
-
-# Set client library repository
-ZAQARCLIENT_REPO=${ZAQARCLIENT_REPO:-${GIT_BASE}/openstack/python-zaqarclient.git}
-ZAQARCLIENT_BRANCH=${ZAQARCLIENT_BRANCH:-master}
-
-# Set Zaqar Connection Info
-ZAQAR_SERVICE_HOST=${ZAQAR_SERVICE_HOST:-$SERVICE_HOST}
-ZAQAR_SERVICE_PORT=${ZAQAR_SERVICE_PORT:-8888}
-ZAQAR_WEBSOCKET_PORT=${ZAQAR_WEBSOCKET_PORT:-9000}
-ZAQAR_SERVICE_PROTOCOL=${ZAQAR_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
-
-# Tell Tempest this project is present
-TEMPEST_SERVICES+=,zaqar
-
-
 # Functions
 # ---------
 
