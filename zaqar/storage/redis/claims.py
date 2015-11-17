@@ -294,7 +294,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
 
                 # NOTE(kgriffs): Add the claim ID to a set so that
                 # existence checks can be performed quickly. This
-                # is also used as a watch key in order to gaurd
+                # is also used as a watch key in order to guard
                 # against race conditions.
                 #
                 # A sorted set is used to facilitate cleaning
