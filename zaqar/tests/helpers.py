@@ -219,7 +219,7 @@ def requires_mongodb(test_case):
 def requires_redis(test_case):
     """Decorator to flag a test case as being dependent on Redis.
 
-    Redis-specific tests will be skipped unless the MARCONI_TEST_REDIS
+    Redis-specific tests will be skipped unless the ZAQAR_TEST_REDIS
     environment variable is set. If the variable is set, the tests will
     assume that redis is running and listening on localhost.
     """
