@@ -110,7 +110,7 @@ Setting up a development environment
 .. toctree::
    :maxdepth: 1
 
-   development-environment
+   devref/development.environment
 
 Your first patch and your first review
 ======================================
