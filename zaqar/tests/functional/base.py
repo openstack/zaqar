@@ -25,6 +25,7 @@ import six
 from zaqar.api.v1 import response as response_v1
 from zaqar.api.v1_1 import response as response_v1_1
 from zaqar import bootstrap
+from zaqar.storage import mongodb
 from zaqar import tests as testing
 from zaqar.tests.functional import config
 from zaqar.tests.functional import helpers
@@ -50,6 +51,8 @@ class FunctionalTestBase(testing.TestBase):
     server = None
     server_class = None
     config_file = None
+    class_bootstrap = None
+    wipe_dbs_projects = set([])
 
     def setUp(self):
         super(FunctionalTestBase, self).setUp()
@@ -76,8 +79,8 @@ class FunctionalTestBase(testing.TestBase):
         self.resource_defaults = transport_base.ResourceDefaults(self.mconf)
 
         # Always register options
-        wrapper = bootstrap.Bootstrap(self.mconf)
-        wrapper.transport
+        self.__class__.class_bootstrap = bootstrap.Bootstrap(self.mconf)
+        self.class_bootstrap.transport
 
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
@@ -96,9 +99,9 @@ class FunctionalTestBase(testing.TestBase):
                 self.mconf.pooling = True
                 self.mconf.admin_mode = True
 
-            self.addCleanup(wrapper.storage.close)
-            self.addCleanup(wrapper.control.close)
-            self.client = http.WSGIClient(wrapper.transport.app)
+            self.addCleanup(self.class_bootstrap.storage.close)
+            self.addCleanup(self.class_bootstrap.control.close)
+            self.client = http.WSGIClient(self.class_bootstrap.transport.app)
 
         self.headers = helpers.create_zaqar_headers(self.cfg)
 
@@ -109,6 +112,101 @@ class FunctionalTestBase(testing.TestBase):
         self.headers_response_with_body = {'location', 'content-type'}
 
         self.client.set_headers(self.headers)
+
+        # Store information required for cleaning databases after
+        # execution of test class
+        self.wipe_dbs_projects.add(self.headers["X-Project-ID"])
+
+    def tearDown(self):
+        super(FunctionalTestBase, self).tearDown()
+        # Project might has changed during test case execution.
+        # Lets add it again to the set.
+        self.wipe_dbs_projects.add(self.headers["X-Project-ID"])
+
+    @staticmethod
+    def _if_mongo_datadriver_drop_dbs(driver):
+        """Drops MongoDB datadriver's databases.
+
+        :param driver: instance of zaqar.storage.mongodb.driver.DataDriver
+        """
+        if not isinstance(driver, mongodb.DataDriver):
+            return
+        for db in driver.message_databases:
+            driver.connection.drop_database(db)
+        subscription_db = driver.subscriptions_database
+        driver.connection.drop_database(subscription_db)
+
+    @staticmethod
+    def _if_mongo_controldriver_drop_dbs(driver):
+        """Drops all MongoDB controldriver's databases.
+
+        :param driver: instance of zaqar.storage.mongodb.driver.ControlDriver
+        """
+        if not isinstance(driver, mongodb.ControlDriver):
+            return
+        driver.connection.drop_database(driver.database)
+        driver.connection.drop_database(driver.queues_database)
+
+    @classmethod
+    def _pooling_drop_dbs_by_project(cls, xproject):
+        """Finds all pool drivers by project, drops all their databases.
+
+        Assumes that pooling is enabled.
+
+        :param xproject: project name to use for pool drivers search
+        """
+        datadriver = cls.class_bootstrap.storage._storage
+        controldriver = cls.class_bootstrap.control
+        # Let's get list of all queues by project
+        queue_generator = controldriver.queue_controller.list(project=xproject)
+        queues = list(next(queue_generator))
+        # Let's extract all queue names from the list of queues
+        queue_names = [q['name'] for q in queues]
+        # Finally let's use queues names to get each one of pool datadrivers
+        catalog = datadriver._pool_catalog
+        for queue_name in queue_names:
+            pool_pipe_driver = catalog.lookup(queue_name, project=xproject)
+            pool_datadriver = pool_pipe_driver._storage
+            if pool_datadriver is not None:
+                # Let's delete the queue, so the next invocation of
+                # pooling_catalog.lookup() will not recreate pool driver
+                controldriver.queue_controller.delete(queue_name)
+                # Let's drop pool's databases
+                cls._if_mongo_datadriver_drop_dbs(pool_datadriver)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Cleans up after test class execution.
+
+        Drops all databases left.
+        Closes connections to databases.
+        """
+        # Bootstrap can be None if all test cases were skipped, so nothing to
+        # clean
+        if cls.class_bootstrap is None:
+            return
+
+        datadriver = cls.class_bootstrap.storage._storage
+        controldriver = cls.class_bootstrap.control
+
+        if cls.class_bootstrap.conf.pooling:
+            # Pooling detected, let's drop pooling-specific databases
+            for p in cls.wipe_dbs_projects:
+                # This will find all pool databases by project and drop them
+                cls._pooling_drop_dbs_by_project(p)
+            controldriver.pools_controller.drop_all()
+            controldriver.flavors_controller.drop_all()
+        else:
+            # No pooling detected, let's just drop datadriver's databases
+            cls._if_mongo_datadriver_drop_dbs(datadriver)
+
+        cls.class_bootstrap.storage.close()
+
+        # Let's drop controldriver's databases
+        controldriver.catalogue_controller.drop_all()
+        cls._if_mongo_controldriver_drop_dbs(controldriver)
+
+        controldriver.close()
 
     def assertIsSubset(self, required_values, actual_values):
         """Checks if a list is subset of another.
