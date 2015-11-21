@@ -6,6 +6,11 @@
         <meta charset='utf-8' />
         <link rel='stylesheet'  href='http://yui.yahooapis.com/pure/0.6.0/pure-nr-min.css' />
         <script type='text/javascript' src='http://code.jquery.com/jquery-2.1.4.min.js'></script>
+        <!--[if lte IE 9]>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.1.10/es5-shim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
+        <![endif]-->
+        <script src="https://rawgithub.com/kawanet/msgpack-lite/master/dist/msgpack.min.js"></script>
         <style>
         .pure-g > div {
             box-sizing: border-box;
@@ -39,28 +44,76 @@
         }
         </style>
         <script type='text/javascript'>
-        var socket = new WebSocket('ws://localhost:9000/');
-        var project = 'cf38008b72d04b89a505b9d66d1d5768';
+        // Parameters:
+        var server_url = 'ws://localhost:9000/';
+        var project_id = 'cf38008b72d04b89a505b9d66d1d5768';
         var client_id = '31209ff3-ba03-4cec-b4ca-655f4899f8f4';
-        socket.onopen = function(evt) {
+        var send_binary = true;
+
+        var socket = new WebSocket(server_url);
+        socket.binaryType = 'arraybuffer';
+
+        if (send_binary == true) {
+            // Use MessagePack(binary) for encoding messages
+            encode = function(data) {
+                return msgpack.encode(data);
+            }
+        } else {
+            // Use JSON(text) for encoding messages
+            encode = function(data) {
+                return JSON.stringify(data);
+            }
+        }
+        msgpack_decode = function(enc_data) {
+            return msgpack.decode(new Uint8Array(enc_data));
+        }
+        json_decode = function(enc_data) {
+            return JSON.parse(enc_data);
+        }
+        add_connection_info = function(msg) {
+            msg += ". Using parameters: Server URL: " + server_url;
+            msg += ". Project ID: " + project_id;
+            msg += ". Client ID: " + client_id;
+            msg += ". Binary communication: " + send_binary;
+            return msg
+        }
+        log_info = function(msg) {
             var node = document.createElement('div');
-            var msg = new Date().toUTCString();
-            msg += " Connection opened"
+            var date = new Date().toUTCString();
+            msg = date + " " + msg;
             node.appendChild(document.createTextNode(msg));
             $('#log').append(node);
         }
+        socket.onopen = function(evt) {
+            msg = "Connection opened";
+            msg = add_connection_info(msg);
+            log_info(msg);
+        }
+        socket.onclose = function(evt) {
+            msg = "Connection closed";
+            log_info(msg);
+        }
+        socket.onerror = function(evt) {
+            msg = "Connection error";
+            msg = add_connection_info(msg);
+            log_info(msg);
+        }
         socket.onmessage = function(evt) {
-            var node = document.createElement('div');
-            var msg = new Date().toUTCString();
-            var data = JSON.parse(evt.data);
+            if (evt.data instanceof ArrayBuffer) {
+                // Received payload in MessagePack(binary) format
+                var data = msgpack_decode(evt.data);
+            }
+            if (typeof evt.data === "string") {
+                // Received payload in JSON(text) format
+                var data = json_decode(evt.data);
+            }
             if ('request' in data && 'headers' in data) {
                 // Response received
                 var action = data["request"]["action"];
-                msg += " action: " + action;
+                msg = "action: " + action;
                 msg += " status: " + data["headers"]["status"];
                 msg += " body: " + JSON.stringify(data["body"]);
-                node.appendChild(document.createTextNode(msg));
-                $('#log').append(node);
+                log_info(msg);
                 if (action == 'queue_list') {
                     var queues = data['body']['queues'];
                     display_queues(queues);
@@ -75,12 +128,15 @@
                    list_messages();
                 }
             } else {
-                // Notification received
-                msg += " Got notification."
-                msg += " body: " + JSON.stringify(data["body"]);
-                node.appendChild(document.createTextNode(msg));
-                $('#log').append(node);
-                list_messages();
+                // Can be notification or unexpected data
+                if(data.hasOwnProperty('body')){
+                    msg = "notification: " + JSON.stringify(data);
+                    log_info(msg)
+                    list_messages();
+                } else {
+                    msg = "unexpected data: " + JSON.stringify(data);
+                    log_info(msg)
+                }
             }
         }
         login = function(frm) {
@@ -106,26 +162,43 @@
                 'dataType': 'json',
                 'success': function(data, code, response) {
                     var token = response.getResponseHeader('X-Subject-Token')
-                    var msg = {'action': 'authenticate',
-                               'headers': {'X-Auth-Token': token,
-                                           'Client-ID': client_id,
-                                           'X-Project-ID': project}}
-                    socket.send(JSON.stringify(msg));
+                    if (token == null){
+                        log_info("Connected to Keystone, but no 'X-Subject-Token' "
+                        + "header was provided. Keystone's CORS filter is probably "
+                        + "not configured to expose this header.");
+                    } else {
+                        log_info("Got token from Keystone. " +
+                        "Sending authentication request to Zaqar.");
+                        var msg = {'action': 'authenticate',
+                                   'headers': {'X-Auth-Token': token,
+                                               'Client-ID': client_id,
+                                               'X-Project-ID': project_id}}
+                        socket.send(encode(msg));
+                     };
+                },
+                'error': function(data, code, errorThrown) {
+                    if (errorThrown) {
+                        log_info("Keystone error: " + errorThrown);
+                    } else {
+                        log_info("Failed to connect to Keystone. Keystone is either" +
+                        " offline, or CORS is not enabled in Keystone.");
+                    }
+
                 }
             });
             return false;
         }
         send_message = function(action, body) {
             var msg = {'action': action,
-                       'headers': {'Client-ID': client_id, 'X-Project-ID': project}}
+                       'headers': {'Client-ID': client_id, 'X-Project-ID':
+                       project_id}};
             if (body) {
                 msg['body'] = body;
-            }
-
-            socket.send(JSON.stringify(msg));
+            };
+            socket.send(encode(msg));
         }
         list_queues = function() {
-            send_message('queue_list')
+            send_message('queue_list');
         }
         create_queue = function(frm) {
             send_message('queue_create', {'queue_name': frm['queue'].value});
@@ -153,19 +226,19 @@
             send_message('queue_delete', {'queue_name': get_selected_queue()});
         }
         list_messages = function() {
-            send_message('message_list', {'queue_name': get_selected_queue(), 'echo': true})
+            send_message('message_list', {'queue_name': get_selected_queue(), 'echo': true});
         }
         queue_message = function(frm) {
             var body = frm['body'].value;
             var ttl = parseInt(frm['ttl'].value);
-            send_message('message_post', {'queue_name': get_selected_queue(), 'messages': [{'body': body, 'ttl': ttl}]})
+            send_message('message_post', {'queue_name': get_selected_queue(), 'messages': [{'body': body, 'ttl': ttl}]});
             return false;
         }
         delete_message = function(message_id) {
             send_message('message_delete', {'queue_name': get_selected_queue(), 'message_id': message_id});
         }
         subscribe_queue = function() {
-            send_message('subscription_create', {'queue_name': get_selected_queue(), 'ttl': 3600})
+            send_message('subscription_create', {'queue_name': get_selected_queue(), 'ttl': 3600});
         }
         </script>
     </head>

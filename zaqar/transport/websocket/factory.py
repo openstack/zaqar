@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import uuid
 
 from autobahn.asyncio import websocket
+import msgpack
 
 from zaqar.transport.websocket import protocol
 
@@ -59,7 +61,11 @@ class NotificationFactory(object):
     def send_data(self, data, proto_id):
         instance = self.message_factory._protos.get(proto_id)
         if instance:
-            instance.sendMessage(data, False)
+            # NOTE(Eva-i): incoming data is encoded in JSON, let's convert it
+            # to MsgPack, if notification should be encoded in binary format.
+            if instance.notify_in_binary:
+                data = msgpack.packb(json.loads(data))
+            instance.sendMessage(data, instance.notify_in_binary)
 
     def __call__(self):
         return self.protocol(self)

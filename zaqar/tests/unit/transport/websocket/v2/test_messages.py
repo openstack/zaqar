@@ -69,7 +69,7 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
-    def _test_post(self, sample_messages):
+    def _test_post(self, sample_messages, in_binary=False):
         action = "message_post"
         body = {"queue_name": "kitkat",
                 "messages": sample_messages}
@@ -77,11 +77,13 @@ class MessagesBaseTest(base.V2Base):
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 
-        req = test_utils.create_request(action, body, self.headers)
+        dumps, loads, create_req = test_utils.get_pack_tools(binary=in_binary)
 
-        self.protocol.onMessage(req, False)
+        req = create_req(action, body, self.headers)
 
-        resp = json.loads(send_mock.call_args[0][0])
+        self.protocol.onMessage(req, in_binary)
+
+        resp = loads(send_mock.call_args[0][0])
         self.assertEqual(201, resp['headers']['status'])
         self.msg_ids = resp['body']['message_ids']
         self.assertEqual(len(sample_messages), len(self.msg_ids))
@@ -102,19 +104,19 @@ class MessagesBaseTest(base.V2Base):
                 body = {"queue_name": "kitkat",
                         "message_id": msg_id}
 
-                req = test_utils.create_request(action, body, headers)
+                req = create_req(action, body, headers)
 
-                self.protocol.onMessage(req, False)
+                self.protocol.onMessage(req, in_binary)
 
-                resp = json.loads(send_mock.call_args[0][0])
+                resp = loads(send_mock.call_args[0][0])
                 self.assertEqual(404, resp['headers']['status'])
 
                 # Correct project ID
-                req = test_utils.create_request(action, body, self.headers)
+                req = create_req(action, body, self.headers)
 
-                self.protocol.onMessage(req, False)
+                self.protocol.onMessage(req, in_binary)
 
-                resp = json.loads(send_mock.call_args[0][0])
+                resp = loads(send_mock.call_args[0][0])
                 self.assertEqual(200, resp['headers']['status'])
 
                 # Check message properties
@@ -132,11 +134,11 @@ class MessagesBaseTest(base.V2Base):
         action = "message_get_many"
         body = {"queue_name": "kitkat",
                 "message_ids": self.msg_ids}
-        req = test_utils.create_request(action, body, self.headers)
+        req = create_req(action, body, self.headers)
 
-        self.protocol.onMessage(req, False)
+        self.protocol.onMessage(req, in_binary)
 
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
         expected_ttls = set(m['ttl'] for m in sample_messages)
         actual_ttls = set(m['ttl'] for m in resp['body']['messages'])
@@ -181,21 +183,23 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
-    def test_post_single(self):
+    @ddt.data(True, False)
+    def test_post_single(self, in_binary):
         sample_messages = [
             {'body': {'key': 'value'}, 'ttl': 200},
         ]
 
-        self._test_post(sample_messages)
+        self._test_post(sample_messages, in_binary=in_binary)
 
-    def test_post_multiple(self):
+    @ddt.data(True, False)
+    def test_post_multiple(self, in_binary):
         sample_messages = [
             {'body': 239, 'ttl': 100},
             {'body': {'key': 'value'}, 'ttl': 200},
             {'body': [1, 3], 'ttl': 300},
         ]
 
-        self._test_post(sample_messages)
+        self._test_post(sample_messages, in_binary=in_binary)
 
     def test_post_optional_ttl(self):
         messages = [{'body': 239},

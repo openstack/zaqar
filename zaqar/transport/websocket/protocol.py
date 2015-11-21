@@ -16,8 +16,10 @@
 import datetime
 import io
 import json
+import sys
 
 from autobahn.asyncio import websocket
+import msgpack
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import pytz
@@ -34,6 +36,8 @@ try:
 except ImportError:
     from email.mime import message
     Message = message.MIMEMessage
+
+from zaqar.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -60,38 +64,46 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._loop = loop
         self._authentified = False
         self._auth_app = None
+        self._auth_in_binary = None
         self._deauth_handle = None
+        self.notify_in_binary = None
 
     def onConnect(self, request):
-        print("Client connecting: {0}".format(request.peer))
+        LOG.info(_LI("Client connecting: %s"), request.peer)
 
     def onOpen(self):
-        print("WebSocket connection open.")
+        LOG.info(_LI("WebSocket connection open."))
 
     def onMessage(self, payload, isBinary):
-        if isBinary:
-            # TODO(vkmc): Binary support will be added in the next cycle
-            # For now, we are returning an invalid request response
-            print("Binary message received: {0} bytes".format(len(payload)))
-            body = {'error': 'Schema validation failed.'}
-            resp = self._handler.create_response(400, body)
-            return self._send_response(resp)
+        # Deserialize the request
         try:
-            print("Text message received: {0}".format(payload))
-            payload = json.loads(payload)
-        except ValueError as ex:
-            LOG.exception(ex)
-            body = {'error': str(ex)}
+            if isBinary:
+                payload = msgpack.unpackb(payload, encoding='utf-8')
+            else:
+                payload = json.loads(payload)
+        except Exception:
+            if isBinary:
+                pack_name = 'binary (MessagePack)'
+            else:
+                pack_name = 'text (JSON)'
+            ex_type, ex_value = sys.exc_info()[:2]
+            ex_name = ex_type.__name__
+            msg = 'Can\'t decode {0} request. {1}: {2}'.format(
+                pack_name, ex_name, ex_value)
+            LOG.debug(msg)
+            body = {'error': msg}
             resp = self._handler.create_response(400, body)
-            return self._send_response(resp)
+            return self._send_response(resp, isBinary)
+        # Check if the request is dict
         if not isinstance(payload, dict):
             body = {
-                'error': "Unexpected body type. Expected dict or dict like"
+                'error': 'Unexpected body type. Expected dict or dict like.'
             }
             resp = self._handler.create_response(400, body)
-            return self._send_response(resp)
-
+            return self._send_response(resp, isBinary)
+        # Parse the request
         req = self._handler.create_request(payload)
+        # Validate and process the request
         resp = self._handler.validate_request(payload, req)
         if resp is None:
             if self._auth_strategy and not self._authentified:
@@ -108,17 +120,28 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                         body = {'error': 'Not authentified.'}
                         resp = self._handler.create_response(403, body, req)
                 else:
-                    return self._authenticate(payload)
+                    return self._authenticate(payload, isBinary)
             elif payload.get('action') == 'authenticate':
-                return self._authenticate(payload)
+                return self._authenticate(payload, isBinary)
             else:
                 resp = self._handler.process_request(req, self)
-        return self._send_response(resp)
+            if payload.get('action') == 'subscription_create':
+                # NOTE(Eva-i): this will make further websocket
+                # notifications encoded in the same format as the last
+                # successful websocket subscription create request.
+                if resp._headers['status'] == 201:
+                    subscriber = payload['body'].get('subscriber')
+                    # If there is no subscriber, the user has created websocket
+                    # subscription.
+                    if not subscriber:
+                        self.notify_in_binary = isBinary
+        return self._send_response(resp, isBinary)
 
     def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
+        LOG.info(_LI("WebSocket connection closed: %s"), reason)
 
-    def _authenticate(self, payload):
+    def _authenticate(self, payload, in_binary):
+        self._auth_in_binary = in_binary
         self._auth_app = self._auth_strategy(self._auth_start)
         env = self._fake_env.copy()
         env.update(
@@ -150,18 +173,33 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         if code != 200:
             body = {'error': 'Authentication failed.'}
             resp = self._handler.create_response(code, body, req)
-            self._send_response(resp)
+            self._send_response(resp, self._auth_in_binary)
         else:
             body = {'message': 'Authentified.'}
             resp = self._handler.create_response(200, body, req)
-            self._send_response(resp)
+            self._send_response(resp, self._auth_in_binary)
 
     def _header_to_env_var(self, key):
         return 'HTTP_%s' % key.replace('-', '_').upper()
 
-    def _send_response(self, resp):
-        resp_json = json.dumps(resp.get_response())
-        self.sendMessage(resp_json, False)
+    def _send_response(self, resp, in_binary):
+        if in_binary:
+            pack_name = 'bin'
+            self.sendMessage(msgpack.packb(resp.get_response()), True)
+        else:
+            pack_name = 'txt'
+            self.sendMessage(json.dumps(resp.get_response()), False)
+        if LOG.isEnabledFor(logging.INFO):
+            api = resp._request._api
+            status = resp._headers['status']
+            action = resp._request._action
+            # Dump to JSON to print body without unicode prefixes on Python 2
+            body = json.dumps(resp._request._body)
+            var_dict = {'api': api, 'pack_name': pack_name, 'status':
+                        status, 'action': action, 'body': body}
+            LOG.info(_LI('Response: API %(api)s %(pack_name)s, %(status)s. '
+                         'Request: action "%(action)s", body %(body)s.'),
+                     var_dict)
 
 
 class NotificationProtocol(asyncio.Protocol):

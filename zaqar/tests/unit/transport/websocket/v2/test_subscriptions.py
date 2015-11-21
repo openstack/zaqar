@@ -17,6 +17,7 @@ import json
 import uuid
 
 import mock
+import msgpack
 
 from zaqar.storage import errors as storage_errors
 from zaqar.tests.unit.transport.websocket import base
@@ -26,7 +27,7 @@ from zaqar.transport.websocket import factory
 
 class SubscriptionTest(base.V1_1Base):
 
-    config_file = 'websocket_mongodb.conf'
+    config_file = 'websocket_mongodb_subscriptions.conf'
 
     def setUp(self):
         super(SubscriptionTest, self).setUp()
@@ -221,6 +222,69 @@ class SubscriptionTest(base.V1_1Base):
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
+
+    def test_subscription_sustainable_notifications_format(self):
+        # NOTE(Eva-i): The websocket subscription's notifications must be
+        # sent in the same format, binary or text, as the format of the
+        # subscription creation request.
+        # This test checks that notifications keep their encoding format, even
+        # if the client suddenly starts sending requests in another format.
+
+        # Create a subscription in binary format
+        action = 'subscription_create'
+        body = {'queue_name': 'kitkat', 'ttl': 600}
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        sender = send_mock.start()
+
+        subscription_factory = factory.NotificationFactory(
+            self.transport.factory)
+        subscription_factory.set_subscription_url('http://localhost:1234/')
+        self.protocol._handler.set_subscription_factory(subscription_factory)
+
+        req = test_utils.create_binary_request(action, body, self.headers)
+        self.protocol.onMessage(req, True)
+        self.assertTrue(self.protocol.notify_in_binary)
+
+        [subscriber] = list(
+            next(
+                self.boot.storage.subscription_controller.list(
+                    'kitkat', self.project_id)))
+        self.addCleanup(
+            self.boot.storage.subscription_controller.delete, 'kitkat',
+            subscriber['id'], project=self.project_id)
+
+        # Send a message in text format
+        webhook_notification_send_mock = mock.patch('requests.post')
+        self.addCleanup(webhook_notification_send_mock.stop)
+        webhook_notification_sender = webhook_notification_send_mock.start()
+
+        action = "message_post"
+        body = {"queue_name": "kitkat",
+                "messages": [{'body': {'status': 'disco queen'}, 'ttl': 60}]}
+        req = test_utils.create_request(action, body, self.headers)
+        self.protocol.onMessage(req, False)
+        self.assertTrue(self.protocol.notify_in_binary)
+
+        # Check that the server responded in text format to the message
+        # creation request
+        message_create_response = json.loads(sender.call_args_list[1][0][0])
+        self.assertEqual(201, message_create_response['headers']['status'])
+
+        # Fetch webhook notification that was intended to arrive to
+        # notification protocol's listen address. Make subscription factory
+        # send it as websocket notification to the client
+        wh_notification = webhook_notification_sender.call_args[1]['data']
+        subscription_factory.send_data(wh_notification, self.protocol.proto_id)
+
+        # Check that the server sent the websocket notification in binary
+        # format
+        self.assertEqual(3, sender.call_count)
+        ws_notification = msgpack.unpackb(sender.call_args_list[2][0][0],
+                                          encoding='utf-8')
+        self.assertEqual({'body': {'status': 'disco queen'}, 'ttl': 60,
+                          'queue_name': 'kitkat'}, ws_notification)
 
     def test_list_returns_503_on_nopoolfound_exception(self):
         sub = self.boot.storage.subscription_controller.create(

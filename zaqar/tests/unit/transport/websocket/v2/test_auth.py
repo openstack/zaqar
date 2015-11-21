@@ -16,6 +16,7 @@
 import json
 import uuid
 
+import ddt
 from keystonemiddleware import auth_token
 import mock
 
@@ -24,8 +25,8 @@ from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
 
+@ddt.ddt
 class AuthTest(base.V2Base):
-
     config_file = "websocket_mongodb_keystone_auth.conf"
 
     def setUp(self):
@@ -87,6 +88,7 @@ class AuthTest(base.V2Base):
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(msg_mock.stop)
         msg_mock = msg_mock.start()
+        self.protocol._auth_in_binary = False
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
         resp = json.loads(msg_mock.call_args[0][0])
@@ -121,6 +123,25 @@ class AuthTest(base.V2Base):
         self.assertEqual(2, len(responses))
         self.assertIn('cancelled', repr(handle))
         self.assertNotIn('cancelled', repr(self.protocol._deauth_handle))
+
+    @ddt.data(True, False)
+    def test_auth_response_serialization_format(self, in_binary):
+        dumps, loads, create_req = test_utils.get_pack_tools(binary=in_binary)
+        headers = self.headers.copy()
+        headers['X-Auth-Token'] = 'mytoken1'
+        req = create_req("authenticate", {}, headers)
+
+        msg_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(msg_mock.stop)
+        msg_mock = msg_mock.start()
+        # Depending on onMessage method's second argument, auth response should
+        # be in binary or text format.
+        self.protocol.onMessage(req, in_binary)
+        self.assertEqual(in_binary, self.protocol._auth_in_binary)
+        self.protocol._auth_response('401 error', 'Failed')
+        self.assertEqual(1, msg_mock.call_count)
+        resp = loads(msg_mock.call_args[0][0])
+        self.assertEqual(401, resp['headers']['status'])
 
     def test_signed_url(self):
         send_mock = mock.Mock()
