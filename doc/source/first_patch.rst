@@ -89,7 +89,7 @@ Clone the Zaqar repository with the following git command::
   $ git clone git://git.openstack.org/openstack/zaqar.git
 
 For information on how to set up the Zaqar development environment
-see :doc:`development-environment`.
+see :doc:`devref/development.environment`.
 
 Before writing code, you will have to do some configurations
 to connect your local repository with Gerrit. You will only need to do this
