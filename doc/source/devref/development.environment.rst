@@ -15,10 +15,10 @@
 Setting up a development environment
 ====================================
 
-This section describes how to setup a working Python development
-environment that you can use in developing Zaqar on Ubuntu or Fedora.
-These instructions assume that you are familiar with
-Git. Refer to GettingTheCode_ for additional information.
+This section describes how to setup a working Python development environment
+that you can use in developing Zaqar on Ubuntu or Fedora. These instructions
+assume that you are familiar with Git. Refer to GettingTheCode_ for
+additional information.
 
 .. _GettingTheCode: http://wiki.openstack.org/GettingTheCode
 
@@ -26,20 +26,18 @@ Git. Refer to GettingTheCode_ for additional information.
 Virtual environments
 --------------------
 
-Use virtualenv_ to track and manage Python dependencies
-for developing and testing Zaqar.
-Using virtualenv_ enables you to install Python dependencies
-in an isolated virtual environment, instead of installing the
-packages at the system level.
+Use virtualenv_ to track and manage Python dependencies for developing and
+testing Zaqar.
+Using virtualenv_ enables you to install Python dependencies in an isolated
+virtual environment, instead of installing the packages at the system level.
 
 .. _virtualenv: http://pypi.python.org/pypi/virtualenv
 
 .. note::
 
-   Virtualenv is useful for development purposes, but is not
-   typically used for full integration testing or production usage.
-   If you want to learn about production best practices, check out
-   the `OpenStack Operations Guide`_.
+   Virtualenv is useful for development purposes, but is not typically used for
+   full integration testing or production usage. If you want to learn about
+   production best practices, check out the `OpenStack Operations Guide`_.
 
    .. _`OpenStack Operations Guide`: http://docs.openstack.org/ops/
 
@@ -48,21 +46,22 @@ Install GNU/Linux system dependencies
 
 .. note::
 
-  This section is tested for Zaqar on Ubuntu 14.04 (Trusty) and
-  Fedora-based (RHEL 6.1) distributions. Feel free to add notes
-  and change according to your experiences or operating system.
-  Learn more about contributing to Zaqar documentation in the
-  `Write the Docs!`_ wiki.
-
-  .. _`Write the Docs!`: https://wiki.openstack.org/wiki/Write_the_Docs!_(Zaqar)
+  This section is tested for Zaqar on Ubuntu 14.04 (Trusty) and Fedora-based
+  (RHEL 6.1) distributions. Feel free to add notes and change according to your
+  experiences or operating system. Learn more about contributing to Zaqar
+  documentation in the :doc:`../welcome` manual.
 
 Install the prerequisite packages.
 
-On Ubuntu::
+On Ubuntu:
+
+.. code-block:: console
 
   $ sudo apt-get install gcc python-pip libxml2-dev libxslt1-dev python-dev zlib1g-dev
 
-On Fedora-based distributions (e.g., Fedora/RHEL/CentOS)::
+On Fedora-based distributions (e.g., Fedora/RHEL/CentOS):
+
+.. code-block:: console
 
   $ sudo yum install gcc python-pip libxml2-devel libxslt-devel python-devel
 
@@ -73,7 +72,8 @@ You also need to have MongoDB_ installed and running.
 
 .. _MongoDB: http://www.mongodb.org
 
-On Ubuntu, follow the instructions in the `MongoDB on Ubuntu Installation Guide`_.
+On Ubuntu, follow the instructions in the
+`MongoDB on Ubuntu Installation Guide`_.
 
 .. _`MongoDB on Ubuntu installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
@@ -82,115 +82,217 @@ On Fedora-based distributions, follow the instructions in the
 
 .. _`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/
 
+.. note::
+
+  If you are Contributor and plan to run Unit tests on Zaqar, you may want to
+  add this line to mongodb configuration file (``etc/mongod.conf`` or
+  ``etc/mongodb.conf`` depending on distribution):
+
+  .. code-block:: ini
+
+    smallfiles = true
+
+  Many Zaqar's Unit tests do not clean up their testing databases after
+  executing. And database files consume much disk space even if they do not
+  contain any records. This behavior will be fixed soon.
+
 Getting the code
 ################
 
-Get the code from GitHub::
+Get the code from GitHub to create a local repository with Zaqar:
 
-    $ git clone https://github.com/openstack/zaqar.git
+.. code-block:: console
+
+  $ git clone https://github.com/openstack/zaqar.git
 
 Configuration
 #############
 
-1. From your home folder create the ~/.zaqar folder. This directory holds the configuration files for Zaqar::
+#. From your home folder create the ``~/.zaqar`` folder. This directory holds
+   the configuration files for Zaqar:
 
-    $ mkdir ~/.zaqar
+   .. code-block:: console
 
-2. Generate the sample configuration file zaqar/etc/zaqar.conf.sample::
+     $ mkdir ~/.zaqar
 
-    $ pip install tox
-    $ cd zaqar
-    $ tox -e genconfig
+#. Generate the sample configuration file ``zaqar/etc/zaqar.conf.sample``:
 
-3. Copy the Zaqar configuration samples to the directory ~/.zaqar/::
+   .. code-block:: console
 
-    $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
-    $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
+     $ pip install tox
+     $ cd zaqar
+     $ tox -e genconfig
 
-4. Find the [drivers] section in ~/.zaqar/zaqar.conf and specify mongodb as the message store::
+#. Copy the Zaqar configuration samples to the directory ``~/.zaqar/``:
 
-    message_store = mongodb
-    management_store = mongodb
+   .. code-block:: console
 
-5. Find the [drivers:message_store:mongodb] section and modify the URI to point to your local mongod instance::
+     $ cp etc/zaqar.conf.sample ~/.zaqar/zaqar.conf
+     $ cp etc/logging.conf.sample ~/.zaqar/logging.conf
 
-    uri = mongodb://$MONGODB_HOST:$MONGODB_PORT  # default = mongodb://localhost:27017
+#. Find the ``[drivers]`` section in ``~/.zaqar/zaqar.conf`` and specify
+   ``mongodb`` as the message store:
 
-6. For logging, find the [handler_file] section in ~/.zaqar/logging.conf and modify as desired::
+   .. code-block:: ini
 
-    args=('zaqar.log', 'w')
+     message_store = mongodb
+     management_store = mongodb
+
+#. Then find ``[drivers:message_store:mongodb]`` and
+   ``[drivers:management_store:mongodb]`` sections and specify the
+   :samp:`{URI}` to point to your local mongodb instance by adding this line
+   to both the sections:
+
+   .. code-block:: ini
+
+     uri = mongodb://$MONGODB_HOST:$MONGODB_PORT
+
+   By default you will have:
+
+   .. code-block:: ini
+
+     uri = mongodb://127.0.0.1:27017
+
+   This :samp:`{URI}` points to single mongodb node which of course is not
+   reliable, so you need to set in the ``[default]`` section of configuration
+   file:
+
+   .. code-block:: ini
+
+     unreliable = True
+
+   For your reference, you can omit this parameter or set it to False only
+   if the provided :samp:`{URI}` to your mongodb is actually the URI to mongodb
+   Replica Set or Mongos. Also it must have "Write concern" parameter set to
+   ``majority`` or to a number more than ``1``.
+
+   For example, :samp:`{URI}` to reliable mongodb can look like this:
+
+   .. code-block:: ini
+
+     uri = mongodb://mydb0,mydb1,mydb2:27017/?replicaSet=foo&w=2
+
+   Where ``mydb0``, ``mydb1``, ``mydb2`` are addresses of the configured
+   mongodb Replica Set nodes, ``replicaSet`` (Replica Set name) parameter is
+   set to ``foo``, ``w`` (Write concern) parameter is set to ``2``.
+
+#. For logging, find the ``[handler_file]`` section in
+   ``~/.zaqar/logging.conf`` and modify as desired:
+
+   .. code-block:: ini
+
+     args=('zaqar.log', 'w')
 
 Installing and using virtualenv
 ###############################
 
-1. Install virtualenv by running::
+#. Install virtualenv by running:
 
-    $ pip install virtualenv
+   .. code-block:: console
 
-2. Create and activate a virtual environment::
+     $ pip install virtualenv
 
-    $ virtualenv zaqarenv
-    $ source zaqarenv/bin/activate
+#. Create and activate a virtual environment:
 
-3. Install Zaqar::
+   .. code-block:: console
 
-    $ pip install -e .
+     $ virtualenv zaqarenv
+     $ source zaqarenv/bin/activate
 
-4. Install the required Python binding for MongoDB::
+#. Install Zaqar:
 
-    $ pip install pymongo
+   .. code-block:: console
 
-5. Start the Zaqar server::
+     $ pip install -e .
 
-    $ zaqar-server -v
+#. Install the required Python binding for MongoDB:
 
-6. Verify Zaqar is running by creating a queue::
+   .. code-block:: console
 
-    $ curl -i -X PUT http://localhost:8888/v1/queues/samplequeue -H "Content-type: application/json"
+     $ pip install pymongo
 
-7. Get ready to code!
+#. Start Zaqar server in ``info`` logging mode:
+
+   .. code-block:: console
+
+     $ zaqar-server -v
+
+   Or you can start Zaqar server in ``debug`` logging mode:
+
+   .. code-block:: console
+
+     $ zaqar-server -d
+
+#. Verify Zaqar is running by creating a queue via curl. In a separate
+   terminal run:
+
+   .. code-block:: console
+
+     $ curl -i -X PUT http://localhost:8888/v1/queues/samplequeue -H "Content-type: application/json"
+
+#. Get ready to code!
 
 .. note::
 
-  You can run the Zaqar server in the foreground by passing the
-  --nodaemon flag::
+  You can run the Zaqar server in the background by passing the
+  :option:`--daemon` flag:
 
-        $ zaqar-server -v --nodaemon
+  .. code-block:: console
 
-  With this method you get immediate visual feedback and it is
-  easier to kill and restart the process.
+    $ zaqar-server -v --daemon
 
-  If you do so, you have to run the cURL test (step 5) in a
-  separate terminal.
+  But with this method you will not get immediate visual feedback and it will
+  be harder to kill and restart the process.
+
+Troubleshooting
+^^^^^^^^^^^^^^^
+
+No handlers found for zaqar.client (...)
+""""""""""""""""""""""""""""""""""""""""
+
+This happens because the current user cannot create the log file (for the
+default configuration in ``/var/log/zaqar/server.log``). To solve it, create
+the folder:
+
+.. code-block:: console
+
+  $ sudo mkdir /var/log/zaqar
+
+Create the file:
+
+.. code-block:: console
+
+  $ sudo touch /var/log/zaqar/server.log
+
+And try running the server again.
 
 DevStack
 --------
 
-If you want to use Zaqar in an integrated OpenStack developing
-environment, you can add it to your DevStack_ deployment.
+If you want to use Zaqar in an integrated OpenStack developing environment, you
+can add it to your DevStack_ deployment.
 
-To do this, you first need to add the following setting
-to your local.conf::
+To do this, you first need to add the following setting to your ``local.conf``:
 
-    enable_plugin zaqar https://github.com/openstack/zaqar
+.. code-block:: ini
 
-Then run the stack.sh script as usual.
+  enable_plugin zaqar https://github.com/openstack/zaqar
 
-After running the DevStack_ script, you can start the Zaqar server
-and test it by following steps 5 and 6 from the previous section.
+Then run the ``stack.sh`` script as usual.
 
 .. _DevStack: http://docs.openstack.org/developer/devstack/
 
-Running unit tests
-------------------
+Running tests
+-------------
 
 See :doc:`../running_tests` for details.
+
+Running the benchmarking tool
+-----------------------------
+
+See :doc:`../running_benchmark` for details.
 
 Contributing your work
 ----------------------
 
-Once your work is complete, you may wish to contribute it to the project.
-Zaqar uses the Gerrit code review system. For information on how to submit
-your branch to Gerrit, see GerritWorkflow_.
-
-.. _GerritWorkflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+See :doc:`../welcome` and :doc:`../first_patch` for details.
