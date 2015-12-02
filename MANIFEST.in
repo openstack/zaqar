@@ -1,6 +1,0 @@
-recursive-include zaqar *.lua
-
-exclude .gitignore
-exclude .gitreview
-
-global-exclude *.pyc
