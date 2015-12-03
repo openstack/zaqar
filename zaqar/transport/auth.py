@@ -15,7 +15,6 @@
 
 """Middleware for handling authorization and authentication."""
 
-from keystoneclient import auth
 from keystonemiddleware import auth_token
 from keystonemiddleware import opts
 from oslo_log import log
@@ -59,7 +58,6 @@ class KeystoneAuth(object):
 
         if cls.OPT_GROUP_NAME not in conf:
             conf.register_opts(options, group=cls.OPT_GROUP_NAME)
-            auth.register_conf_options(conf, cls.OPT_GROUP_NAME)
             auth_token.CONF = conf
 
     @classmethod
