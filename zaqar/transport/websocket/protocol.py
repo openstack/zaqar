@@ -21,6 +21,7 @@ from autobahn.asyncio import websocket
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import pytz
+import txaio
 
 try:
     import asyncio
@@ -51,6 +52,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
     }
 
     def __init__(self, handler, proto_id, auth_strategy, loop):
+        txaio.use_asyncio()
         websocket.WebSocketServerProtocol.__init__(self)
         self._handler = handler
         self.proto_id = proto_id
