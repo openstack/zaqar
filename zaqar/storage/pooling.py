@@ -187,7 +187,10 @@ class QueueController(storage.Queue):
             return {}
 
     def _create(self, name, metadata=None, project=None):
-        flavor = metadata and metadata.get('_flavor', None)
+        flavor = None
+        if isinstance(metadata, dict):
+            flavor = metadata.get('_flavor', None)
+
         self._pool_catalog.register(name, project=project, flavor=flavor)
 
         # NOTE(cpp-cabrera): This should always succeed since we just

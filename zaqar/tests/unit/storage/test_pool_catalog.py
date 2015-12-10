@@ -119,3 +119,11 @@ class PoolCatalogTest(testing.TestBase):
             result = queue_controller.list(project=self.project)
             queue_list = list(next(result))
             self.assertEqual(1, len(queue_list))
+
+    def test_queue_create_with_empty_json_body(self):
+        queue_controller = pooling.QueueController(self.catalog)
+        with mock.patch('zaqar.storage.pooling.Catalog.register') as register:
+            queue_controller.create(self.queue, metadata={},
+                                    project=self.project)
+            register.assert_called_with(self.queue, project=self.project,
+                                        flavor=None)
