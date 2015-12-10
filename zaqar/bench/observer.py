@@ -25,10 +25,10 @@ curious_george.patch_all(thread=False, select=False)
 import gevent
 import marktime
 from six.moves import urllib
-from zaqarclient.queues import client
 from zaqarclient.transport import errors
 
 from zaqar.bench import config
+from zaqar.bench import helpers
 
 CONF = config.conf
 
@@ -99,7 +99,7 @@ def observer(queues, stats, test_duration, limit):
 def load_generator(stats, num_workers, num_queues,
                    test_duration, limit):
 
-    cli = client.Client(CONF.server_url)
+    cli = helpers.get_new_client()
     queues = [cli.queue(CONF.queue_prefix + '-' + str(i))
               for i in range(num_queues)]
 

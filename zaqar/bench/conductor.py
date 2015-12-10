@@ -17,10 +17,9 @@ from __future__ import print_function
 import json
 import multiprocessing as mp
 
-from zaqarclient.queues import client
-
 from zaqar.bench import config
 from zaqar.bench import consumer
+from zaqar.bench import helpers
 from zaqar.bench import observer
 from zaqar.bench import producer
 
@@ -39,7 +38,7 @@ def _print_verbose_stats(name, stats):
 
 
 def _reset_queues():
-    cli = client.Client(CONF.server_url, 1.1)
+    cli = helpers.get_new_client()
 
     for i in range(CONF.num_queues):
         # TODO(kgriffs): DRY up name generation so it is done
