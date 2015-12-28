@@ -13,8 +13,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import logging
-
 import sqlalchemy as sa
 
 from zaqar.common import decorators
@@ -22,9 +20,6 @@ from zaqar import storage
 from zaqar.storage.sqlalchemy import controllers
 from zaqar.storage.sqlalchemy import options
 from zaqar.storage.sqlalchemy import tables
-
-
-LOG = logging.getLogger(__name__)
 
 
 class ControlDriver(storage.ControlDriverBase):

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo_log import log as logging
 import redis
 import redis.sentinel
 from six.moves import urllib
@@ -24,7 +23,6 @@ from zaqar import storage
 from zaqar.storage.redis import controllers
 from zaqar.storage.redis import options
 
-LOG = logging.getLogger(__name__)
 REDIS_DEFAULT_PORT = 6379
 SENTINEL_DEFAULT_PORT = 26379
 DEFAULT_SOCKET_TIMEOUT = 0.1

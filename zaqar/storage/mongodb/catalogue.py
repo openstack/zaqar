@@ -25,14 +25,10 @@ Serves to construct an association between a project + queue -> pool.
     }
 """
 
-from oslo_log import log as logging
-
 from zaqar.storage import base
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
 
-
-LOG = logging.getLogger(__name__)
 
 PRIMARY_KEY = utils.PROJ_QUEUE_KEY
 
