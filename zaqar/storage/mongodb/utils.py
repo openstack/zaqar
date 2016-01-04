@@ -287,8 +287,8 @@ def retries_on_autoreconnect(func):
                 break
 
             except errors.AutoReconnect as ex:
-                LOG.warn(_(u'Caught AutoReconnect, retrying the '
-                           'call to {0}').format(func))
+                LOG.warning(_(u'Caught AutoReconnect, retrying the '
+                              'call to {0}').format(func))
 
                 last_ex = ex
                 time.sleep(sleep_sec * (2 ** attempt))
