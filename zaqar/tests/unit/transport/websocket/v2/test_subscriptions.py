@@ -102,7 +102,7 @@ class SubscriptionTest(base.V1_1Base):
             'headers': {'status': 201},
             'request': {'action': 'subscription_create',
                         'body': {'queue_name': 'kitkat', 'ttl': 600},
-                        'api': 'v1.1', 'headers': self.headers}}
+                        'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
@@ -129,12 +129,12 @@ class SubscriptionTest(base.V1_1Base):
         self.assertEqual([], data)
 
         response = {
-            'body': 'Subscription kitkat removed.',
+            'body': 'Subscription %s removed.' % str(sub),
             'headers': {'status': 204},
             'request': {'action': 'subscription_delete',
                         'body': {'queue_name': 'kitkat',
                                  'subscription_id': str(sub)},
-                        'api': 'v1.1', 'headers': self.headers}}
+                        'api': 'v2', 'headers': self.headers}}
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
 
@@ -184,7 +184,7 @@ class SubscriptionTest(base.V1_1Base):
             'request': {'action': 'subscription_get',
                         'body': {'queue_name': 'kitkat',
                                  'subscription_id': str(sub)},
-                        'api': 'v1.1', 'headers': self.headers}}
+                        'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
@@ -216,7 +216,7 @@ class SubscriptionTest(base.V1_1Base):
             'headers': {'status': 200},
             'request': {'action': 'subscription_list',
                         'body': {'queue_name': 'kitkat'},
-                        'api': 'v1.1', 'headers': self.headers}}
+                        'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
