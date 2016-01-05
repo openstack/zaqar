@@ -24,15 +24,11 @@ Field Mappings:
 import datetime
 
 from bson import objectid
-from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
-
-
-LOG = logging.getLogger(__name__)
 
 
 class ClaimController(storage.Claim):

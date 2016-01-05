@@ -15,7 +15,6 @@
 import functools
 
 import msgpack
-from oslo_log import log as logging
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 
@@ -25,8 +24,6 @@ from zaqar.storage import errors
 from zaqar.storage.redis import messages
 from zaqar.storage.redis import scripting
 from zaqar.storage.redis import utils
-
-LOG = logging.getLogger(__name__)
 
 QUEUE_CLAIMS_SUFFIX = 'claims'
 CLAIM_MESSAGES_SUFFIX = 'messages'

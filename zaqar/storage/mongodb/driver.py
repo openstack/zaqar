@@ -17,7 +17,6 @@
 
 import ssl
 
-from oslo_log import log as logging
 import pymongo
 import pymongo.errors
 
@@ -26,9 +25,6 @@ from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage.mongodb import controllers
 from zaqar.storage.mongodb import options
-
-
-LOG = logging.getLogger(__name__)
 
 
 def _connection(conf):
