@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+import datetime
 
 from oslo_utils import timeutils
 import pymongo.errors
@@ -27,6 +28,11 @@ SUBSCRIPTIONS_INDEX = [
     ('s', 1),
     ('u', 1),
     ('p', 1),
+]
+
+# For removing expired subscriptions
+TTL_INDEX_FIELDS = [
+    ('e', 1),
 ]
 
 
@@ -49,6 +55,14 @@ class SubscriptionController(base.Subscription):
         self._collection = self.driver.subscriptions_database.subscriptions
         self._queue_ctrl = self.driver.queue_controller
         self._collection.ensure_index(SUBSCRIPTIONS_INDEX, unique=True)
+        # NOTE(flwang): MongoDB will automatically delete the subscription
+        # from the subscriptions collection when the subscription's 'e' value
+        # is older than the number of seconds specified in expireAfterSeconds,
+        # i.e. 0 seconds older in this case. As such, the data expires at the
+        # specified 'e' value.
+        self._collection.ensure_index(TTL_INDEX_FIELDS, name='ttl',
+                                      expireAfterSeconds=0,
+                                      background=True)
 
     @utils.raises_conn_error
     def list(self, queue, project=None, marker=None,
@@ -92,8 +106,8 @@ class SubscriptionController(base.Subscription):
     def create(self, queue, subscriber, ttl, options, project=None):
         source = queue
         now = timeutils.utcnow_ts()
-        ttl = int(ttl)
-        expires = now + ttl
+        now_dt = datetime.datetime.utcfromtimestamp(now)
+        expires = now_dt + datetime.timedelta(seconds=ttl)
 
         if not self._queue_ctrl.exists(source, project):
             raise errors.QueueDoesNotExist(source, project)

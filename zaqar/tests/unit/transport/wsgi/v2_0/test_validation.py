@@ -97,4 +97,19 @@ class TestValidation(base.V2Base):
                           self.project_id,
                           body='{"timespace": "Shangri-la"}',
                           headers=empty_headers)
+
+    def test_subscription_ttl(self):
+        # Normal case
+        body = '{"subscriber": "http://trigger.she", "ttl": 100, "options":{}}'
+        self.simulate_post(self.queue_path + '/subscriptions',
+                           self.project_id, body=body,
+                           headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # Very big TTL
+        body = ('{"subscriber": "http://a.c", "ttl": 99999999999999999'
+                ', "options":{}}')
+        self.simulate_post(self.queue_path + '/subscriptions',
+                           self.project_id, body=body,
+                           headers=self.headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)

@@ -33,7 +33,9 @@ _RESOURCE_DEFAULTS = (
     cfg.IntOpt('default_claim_ttl', default=300,
                help=('Defines how long a message will be in claimed state.')),
     cfg.IntOpt('default_claim_grace', default=60,
-               help=('Defines the message grace period in seconds.'))
+               help=('Defines the message grace period in seconds.')),
+    cfg.IntOpt('default_subscription_ttl', default=3600,
+               help=('Defines how long a subscription will be available.')),
 )
 
 _TRANSPORT_GROUP = 'transport'
@@ -65,6 +67,10 @@ class ResourceDefaults(object):
     @property
     def claim_grace(self):
         return self._defaults.default_claim_grace
+
+    @property
+    def subscription_ttl(self):
+        return self._defaults.default_subscription_ttl
 
 
 @six.add_metaclass(abc.ABCMeta)

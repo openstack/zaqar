@@ -99,7 +99,8 @@ def public_endpoints(driver, conf):
         # Subscription Endpoints
         ('/queues/{queue_name}/subscriptions',
          subscriptions.CollectionResource(driver._validate,
-                                          subscription_controller)),
+                                          subscription_controller,
+                                          defaults.subscription_ttl)),
 
         ('/queues/{queue_name}/subscriptions/{subscription_id}',
          subscriptions.ItemResource(driver._validate,
