@@ -210,8 +210,8 @@ def retries_on_connection_error(func):
                 # MasterNotFoundError.
 
                 ex = sys.exc_info()[1]
-                LOG.warn(_(u'Caught ConnectionError, retrying the '
-                           'call to {0}').format(func))
+                LOG.warning(_(u'Caught ConnectionError, retrying the '
+                              'call to {0}').format(func))
 
                 time.sleep(sleep_sec * (2 ** attempt))
         else:
