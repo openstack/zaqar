@@ -184,7 +184,7 @@ and test it by following steps 5 and 6 from the previous section.
 Running unit tests
 ------------------
 
-See :doc:`running_tests` for details.
+See :doc:`../running_tests` for details.
 
 Contributing your work
 ----------------------
