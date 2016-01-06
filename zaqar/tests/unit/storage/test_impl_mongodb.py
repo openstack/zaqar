@@ -255,7 +255,7 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
                 wc = db.write_concern
 
                 self.assertEqual('majority', wc.document['w'])
-                self.assertEqual(False, wc.document['j'])
+                self.assertFalse(wc.document['j'])
 
 
 @testing.requires_mongodb
