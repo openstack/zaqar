@@ -53,25 +53,34 @@
             var node = document.createElement('div');
             var msg = new Date().toUTCString();
             var data = JSON.parse(evt.data);
-            var action = data["request"]["action"];
-            msg += " action: " + action;
-            msg += " status: " + data["headers"]["status"];
-            msg += " body: " + JSON.stringify(data["body"]);
-            node.appendChild(document.createTextNode(msg));
-            $('#log').append(node);
-
-            if (action == 'queue_list') {
-                var queues = data['body']['queues'];
-                display_queues(queues);
-            } else if (action == 'message_list') {
-                var messages = data['body']['messages'];
-                display_messages(messages);
-            } else if (action == 'queue_create' || action == 'queue_delete') {
-                list_queues();
-            } else if (action == 'authenticate' && data["headers"]["status"] == 200) {
-                list_queues();
-            } else if (action == 'message_post' || action == 'message_delete') {
-               list_messages();
+            if ('request' in data && 'headers' in data) {
+                // Response received
+                var action = data["request"]["action"];
+                msg += " action: " + action;
+                msg += " status: " + data["headers"]["status"];
+                msg += " body: " + JSON.stringify(data["body"]);
+                node.appendChild(document.createTextNode(msg));
+                $('#log').append(node);
+                if (action == 'queue_list') {
+                    var queues = data['body']['queues'];
+                    display_queues(queues);
+                } else if (action == 'message_list') {
+                    var messages = data['body']['messages'];
+                    display_messages(messages);
+                } else if (action == 'queue_create' || action == 'queue_delete') {
+                    list_queues();
+                } else if (action == 'authenticate' && data["headers"]["status"] == 200) {
+                    list_queues();
+                } else if (action == 'message_post' || action == 'message_delete') {
+                   list_messages();
+                }
+            } else {
+                // Notification received
+                msg += " Got notification."
+                msg += " body: " + JSON.stringify(data["body"]);
+                node.appendChild(document.createTextNode(msg));
+                $('#log').append(node);
+                list_messages();
             }
         }
         login = function(frm) {
