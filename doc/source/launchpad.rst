@@ -23,7 +23,7 @@ The developers mailing list address is ``openstack-dev@lists.openstack.org``.
 This is a common mailing list across all OpenStack projects.
 To participate in the mailing list:
 
-#. Subscribe at http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-dev
+   Subscribe at http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-dev
 
 The mailing list archives are at http://lists.openstack.org/pipermail/openstack-dev.
 
@@ -41,13 +41,14 @@ https://blueprints.launchpad.net/zaqar.
 Technical support (Answers)
 ---------------------------
 
-Zaqar uses Launchpad Answers to track Zaqar technical support questions. The Zaqar
-Answers page is at https://answers.launchpad.net/zaqar.
+Zaqar uses Launchpad Answers to track Zaqar technical support questions. The
+Zaqar Answers page is at https://answers.launchpad.net/zaqar.
 
-Note that `Ask OpenStack`_ (which are not hosted on Launchpad) can also
-be used for technical support requests.
+Note that `Ask OpenStack`_ (which is not hosted on Launchpad) can also be used
+for technical support requests.
 
-You can also reach us in #openstack-zaqar at irc.freenode.org.
+You can also reach us in ``#openstack-zaqar`` IRC channel at
+``irc.freenode.org``.
 
 .. _Launchpad: http://launchpad.net
 .. _Wiki: http://wiki.openstack.org
