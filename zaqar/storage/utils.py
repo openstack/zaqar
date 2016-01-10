@@ -61,11 +61,13 @@ def dynamic_conf(uri, options, conf=None):
         driver_opts = utils.dict_to_conf({'message_store': storage_type})
         conf.register_opts(driver_opts, group=u'drivers')
 
-    conf.set_override('message_store', storage_type, 'drivers')
+    conf.set_override('message_store', storage_type, 'drivers',
+                      enforce_type=True)
 
     for opt in options:
         if opt in conf[storage_group]:
-            conf.set_override(opt, options[opt], group=storage_group)
+            conf.set_override(opt, options[opt], group=storage_group,
+                              enforce_type=True)
     return conf
 
 
