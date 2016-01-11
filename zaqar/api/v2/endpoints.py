@@ -100,6 +100,7 @@ class Endpoints(object):
         try:
             self._validate.queue_identification(queue_name, project_id)
             self._validate.queue_metadata_length(len(str(metadata)))
+            self._validate.queue_metadata_putting(metadata)
             created = self._queue_controller.create(queue_name,
                                                     metadata=metadata,
                                                     project=project_id)
@@ -371,17 +372,40 @@ class Endpoints(object):
             return api_utils.error_response(req, ex, headers, error)
 
         try:
+            # NOTE(flwang): Replace 'exists' with 'get_metadata' won't impact
+            # the performance since both of them will call
+            # collection.find_one()
+            queue_meta = None
+            try:
+                queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                                 project_id)
+            except storage_errors.DoesNotExist as ex:
+                self._validate.queue_identification(queue_name, project_id)
+                self._queue_controller.create(queue_name, project=project_id)
+                # NOTE(flwang): Queue is created in lazy mode, so no metadata
+                # set.
+                queue_meta = {}
+
+            queue_max_msg_size = queue_meta.get('_max_messages_post_size',
+                                                None)
+            queue_default_ttl = queue_meta.get('_default_message_ttl', None)
+
+            # TODO(flwang): To avoid any unexpected regression issue, we just
+            # leave the _message_post_spec attribute of class as it's. It
+            # should be removed in Newton release.
+            if queue_default_ttl:
+                _message_post_spec = (('ttl', int, queue_default_ttl),
+                                      ('body', '*', None),)
+            else:
+                _message_post_spec = (('ttl', int, self._defaults.message_ttl),
+                                      ('body', '*', None),)
             # Place JSON size restriction before parsing
-            self._validate.message_length(len(str(messages)))
+            self._validate.message_length(len(str(messages)),
+                                          max_msg_post_size=queue_max_msg_size)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
-
-        _message_post_spec = (
-            ('ttl', int, self._defaults.message_ttl),
-            ('body', '*', None),
-        )
 
         try:
             messages = api_utils.sanitize(messages,
@@ -396,10 +420,6 @@ class Endpoints(object):
             client_uuid = api_utils.get_client_uuid(req)
 
             self._validate.message_posting(messages)
-
-            if not self._queue_controller.exists(queue_name, project_id):
-                self._validate.queue_identification(queue_name, project_id)
-                self._queue_controller.create(queue_name, project=project_id)
 
             message_ids = self._message_controller.post(
                 queue_name,
