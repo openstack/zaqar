@@ -16,7 +16,6 @@
 """Middleware for handling authorization and authentication."""
 
 from keystonemiddleware import auth_token
-from keystonemiddleware import opts
 from oslo_log import log
 
 
@@ -43,30 +42,14 @@ class SignedHeadersAuth(object):
 
 class KeystoneAuth(object):
 
-    OPT_GROUP_NAME = 'keystone_authtoken'
-
-    @classmethod
-    def _register_opts(cls, conf):
-        """Register keystonemiddleware options."""
-
-        options = []
-        keystone_opts = opts.list_auth_token_opts()
-        for n in keystone_opts:
-            if n[0] == cls.OPT_GROUP_NAME:
-                options = n[1]
-                break
-
-        if cls.OPT_GROUP_NAME not in conf:
-            conf.register_opts(options, group=cls.OPT_GROUP_NAME)
-            auth_token.CONF = conf
-
     @classmethod
     def install(cls, app, conf):
         """Install Auth check on application."""
         LOG.debug(u'Installing Keystone\'s auth protocol')
-        cls._register_opts(conf)
-        conf = dict(conf.get(cls.OPT_GROUP_NAME))
-        return auth_token.AuthProtocol(app, conf=conf)
+
+        return auth_token.AuthProtocol(app,
+                                       conf={"oslo-config-config": conf,
+                                             "oslo-config-project": "zaqar"})
 
 
 STRATEGIES['keystone'] = KeystoneAuth

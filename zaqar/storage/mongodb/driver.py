@@ -45,7 +45,7 @@ def _connection(conf):
         MongoClient = pymongo.MongoClient
 
     if conf.uri and 'ssl=true' in conf.uri.lower():
-        kwargs = {}
+        kwargs = {'connect': False}
 
         # Default to CERT_REQUIRED
         ssl_cert_reqs = ssl.CERT_REQUIRED
@@ -67,7 +67,7 @@ def _connection(conf):
 
         return MongoClient(uri, **kwargs)
 
-    return MongoClient(uri)
+    return MongoClient(uri, connect=False)
 
 
 class DataDriver(storage.DataDriverBase):

@@ -298,7 +298,7 @@ def _hmap_to_subenv_kwargs(hmap):
         'subscriber': hmap[b'u'],
         'ttl': int(hmap[b't']),
         'expires': int(hmap[b'e']),
-        'options': hmap[b'o']
+        'options': _unpack(hmap[b'o'])
     }
 
 
