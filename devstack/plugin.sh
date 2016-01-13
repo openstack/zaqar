@@ -142,6 +142,7 @@ function configure_zaqar {
     iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
     iniset $ZAQAR_UWSGI_CONF uwsgi callable app
     iniset $ZAQAR_UWSGI_CONF uwsgi master true
+    iniset $ZAQAR_UWSGI_CONF uwsgi add-header "Connection: close"
 
     cleanup_zaqar
 }
@@ -200,6 +201,7 @@ function install_zaqarclient {
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
+    cat $ZAQAR_UWSGI_CONF
     run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
     run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
 
