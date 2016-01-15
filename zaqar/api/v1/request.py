@@ -294,7 +294,7 @@ class RequestSchema(api.Api):
                         'message_ids': {'type': 'array'},
                         'pop': {'type': 'integer'}
                     },
-                    'required': ['queue_name', 'message_ids'],
+                    'required': ['queue_name'],
                 }
             },
             'required': ['action', 'headers', 'body']

@@ -514,6 +514,26 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
+    def test_pop_delete(self):
+        self._post_messages("kitkat", repeat=5)
+
+        action = "message_delete_many"
+        body = {"queue_name": "kitkat",
+                "pop_limit": 2}
+
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+
+        req = test_utils.create_request(action, body, self.headers)
+
+        self.protocol.onMessage(req, False)
+
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(200, resp['headers']['status'])
+        self.assertEqual(2, len(resp['body']['messages']))
+        self.assertEqual(239, resp['body']['messages'][0]['body'])
+        self.assertEqual(239, resp['body']['messages'][1]['body'])
+
     def test_get_nonexistent_message_404s(self):
         action = "message_get"
         body = {"queue_name": "notthere",
