@@ -67,7 +67,7 @@ def _get_credential_args():
 
 
 def _generate_client_conf():
-    auth_strategy = os.environ.get
+    auth_strategy = os.environ.get('OS_AUTH_STRATEGY', 'noauth')
     if auth_strategy == 'keystone':
         args = _get_credential_args()
         # FIXME(flwang): Now we're hardcode the keystone auth version, since
