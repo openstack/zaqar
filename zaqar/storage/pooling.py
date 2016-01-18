@@ -152,16 +152,14 @@ class QueueController(storage.Queue):
               limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         def all_pages():
-            cursor = self._pool_catalog._pools_ctrl.list(limit=0)
-            pools_list = list(next(cursor))
-            anypool = pools_list and pools_list[0]
-            if anypool:
-                yield next(self._pool_catalog.get_driver(anypool['name'])
-                           .queue_controller.list(
-                               project=project,
-                               marker=marker,
-                               limit=limit,
-                               detailed=detailed))
+            pool = self._pool_catalog.get_default_pool()
+            if pool is None:
+                raise errors.NoPoolFound()
+            yield next(pool.queue_controller.list(
+                project=project,
+                marker=marker,
+                limit=limit,
+                detailed=detailed))
 
         # make a heap compared with 'name'
         ls = heapq.merge(*[
@@ -589,27 +587,14 @@ class Catalog(object):
         target = self.lookup(queue, project)
         return target and target.subscription_controller
 
-    def lookup(self, queue, project=None):
-        """Lookup a pool driver for the given queue and project.
+    def get_default_pool(self, use_listing=True):
+        if use_listing:
+            cursor = self._pools_ctrl.list(limit=0)
+            pools_list = list(next(cursor))
+            if pools_list:
+                return self.get_driver(pools_list[0]['name'])
 
-        :param queue: Name of the queue for which to find a pool
-        :param project: Project to which the queue belongs, or
-            None to specify the "global" or "generic" project.
-
-        :returns: A storage driver instance for the appropriate pool. If
-            the driver does not exist yet, it is created and cached. If the
-            queue is not mapped, returns None.
-        :rtype: Maybe DataDriver
-        """
-
-        try:
-            pool_id = self._pool_id(queue, project)
-        except errors.QueueNotMapped as ex:
-            LOG.debug(ex)
-
-            if not self._catalog_conf.enable_virtual_pool:
-                return None
-
+        if self._catalog_conf.enable_virtual_pool:
             conf_section = ('drivers:message_store:%s' %
                             self._conf.drivers.message_store)
 
@@ -642,6 +627,26 @@ class Catalog(object):
             # default storage has been registered in the pool
             # store.
             return self.get_driver(None, pool_conf)
+
+    def lookup(self, queue, project=None):
+        """Lookup a pool driver for the given queue and project.
+
+        :param queue: Name of the queue for which to find a pool
+        :param project: Project to which the queue belongs, or
+            None to specify the "global" or "generic" project.
+
+        :returns: A storage driver instance for the appropriate pool. If
+            the driver does not exist yet, it is created and cached. If the
+            queue is not mapped, returns None.
+        :rtype: Maybe DataDriver
+        """
+
+        try:
+            pool_id = self._pool_id(queue, project)
+        except errors.QueueNotMapped as ex:
+            LOG.debug(ex)
+
+            return self.get_default_pool(use_listing=False)
 
         return self.get_driver(pool_id)
 
