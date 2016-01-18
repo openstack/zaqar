@@ -16,6 +16,10 @@ from __future__ import print_function
 
 import json
 import multiprocessing as mp
+import os
+# NOTE(Eva-i): See https://github.com/gevent/gevent/issues/349. Let's keep
+# it until the new stable version of gevent(>=1.1) will be released.
+os.environ["GEVENT_RESOLVER"] = "ares"
 
 from zaqar.bench import config
 from zaqar.bench import consumer
@@ -39,11 +43,8 @@ def _print_verbose_stats(name, stats):
 
 def _reset_queues():
     cli = helpers.get_new_client()
-
-    for i in range(CONF.num_queues):
-        # TODO(kgriffs): DRY up name generation so it is done
-        # in a helper, vs. being copy-pasted everywhere.
-        queue = cli.queue(CONF.queue_prefix + '-' + str(i))
+    for queue_name in helpers.queue_names:
+        queue = cli.queue(queue_name)
         queue.delete()
 
 

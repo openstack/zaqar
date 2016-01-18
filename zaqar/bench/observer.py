@@ -100,8 +100,9 @@ def load_generator(stats, num_workers, num_queues,
                    test_duration, limit):
 
     cli = helpers.get_new_client()
-    queues = [cli.queue(CONF.queue_prefix + '-' + str(i))
-              for i in range(num_queues)]
+    queues = []
+    for queue_name in helpers.queue_names:
+        queues.append(cli.queue(queue_name))
 
     gevent.joinall([
         gevent.spawn(observer,

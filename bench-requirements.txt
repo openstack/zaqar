@@ -2,3 +2,4 @@ argparse>=1.2.1
 gevent>=1.0.1
 marktime>=0.2.0
 python-zaqarclient>=0.0.2
+os-client-config!=1.6.2,>=1.4.0

@@ -49,11 +49,14 @@ _CLI_OPTIONS = (
         default=5,
         help='Number of Observer Workers'),
 
+    cfg.FloatOpt('api_version', short='api', default='2',
+                 help='Zaqar API version to use'),
+
     cfg.IntOpt('messages_per_claim', short='cno', default=5,
                help=('Number of messages the consumer will attempt to '
                      'claim at a time')),
     cfg.IntOpt('messages_per_list', short='lno', default=5,
-               help=('Number of messages the obserer will attempt to '
+               help=('Number of messages the observer will attempt to '
                      'list at a time')),
 
     cfg.IntOpt('time', short='t', default=5,
