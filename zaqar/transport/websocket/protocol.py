@@ -84,6 +84,12 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             body = {'error': str(ex)}
             resp = self._handler.create_response(400, body)
             return self._send_response(resp)
+        if not isinstance(payload, dict):
+            body = {
+                'error': "Unexpected body type. Expected dict or dict like"
+            }
+            resp = self._handler.create_response(400, body)
+            return self._send_response(resp)
 
         req = self._handler.create_request(payload)
         resp = self._handler.validate_request(payload, req)
