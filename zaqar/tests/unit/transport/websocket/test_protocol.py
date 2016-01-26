@@ -31,7 +31,7 @@ class TestMessagingProtocol(base.TestBase):
     def tearDown(self):
         super(TestMessagingProtocol, self).tearDown()
 
-    def test_on_mesage_with_invalid_input(self):
+    def test_on_message_with_invalid_input(self):
         payload = u'\ufeff'
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
