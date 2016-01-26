@@ -162,13 +162,14 @@ Reviewing
 
    reviewer_guide
 
-Running benchmark
-=================
+Tutorials
+=========
 
 .. toctree::
    :maxdepth: 1
 
    running_benchmark
+   writing_pipeline_stages
 
 Other resources
 ===============
