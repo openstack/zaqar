@@ -36,7 +36,7 @@ def fields(d, names, pred=lambda x: True,
     """
 
     return dict((key_transform(k), value_transform(v))
-                for k, v in six.iteritems(d)
+                for k, v in d.items()
                 if k in names and pred(v))
 
 
@@ -62,7 +62,7 @@ def dict_to_conf(options):
 
     opts = []
 
-    for k, v in six.iteritems(options):
+    for k, v in options.items():
         opt_type = _pytype_to_cfgtype[type(v)]
         opts.append(opt_type(name=k, default=v))
 
