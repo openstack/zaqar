@@ -490,7 +490,7 @@ class Catalog(object):
             if flavor is not None:
                 flavor = self._flavor_ctrl.get(flavor, project=project)
                 pools = self._pools_ctrl.get_pools_by_group(
-                    group=flavor['pool'],
+                    group=flavor['pool_group'],
                     detailed=True)
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None

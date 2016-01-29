@@ -24,7 +24,7 @@ from zaqar.tests.unit.transport.wsgi import base
 
 
 @contextlib.contextmanager
-def flavor(test, name, pool):
+def flavor(test, name, pool_group):
     """A context manager for constructing a flavor for use in testing.
 
     Deletes the flavor after exiting the context.
@@ -38,20 +38,20 @@ def flavor(test, name, pool):
 
     """
 
-    doc = {'pool': pool}
+    doc = {'pool_group': pool_group}
     path = test.url_prefix + '/flavors/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
-        yield name, pool
+        yield name, pool_group
 
     finally:
         test.simulate_delete(path)
 
 
 @contextlib.contextmanager
-def flavors(test, count, pool):
+def flavors(test, count, pool_group):
     """A context manager for constructing flavors for use in testing.
 
     Deletes the flavors after exiting the context.
@@ -59,7 +59,7 @@ def flavors(test, count, pool):
     :param test: Must expose simulate_* methods
     :param count: Number of pools to create
     :type count: int
-    :returns: (paths, pool, capabilities)
+    :returns: (paths, pool_group, capabilities)
     :rtype: ([six.text_type], [six.text_type], [dict])
 
     """
@@ -68,7 +68,7 @@ def flavors(test, count, pool):
     args = sorted([(base + str(i), str(i)) for i in range(count)],
                   key=lambda tup: tup[1])
     for path, _ in args:
-        doc = {'pool': pool}
+        doc = {'pool_group': pool_group}
         test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
@@ -98,7 +98,7 @@ class TestFlavorsMongoDB(base.V2Base):
         self.simulate_put(self.pool_path, body=jsonutils.dumps(self.pool_doc))
 
         self.flavor = 'test-flavor'
-        self.doc = {'capabilities': {}, 'pool': self.pool_group}
+        self.doc = {'capabilities': {}, 'pool_group': self.pool_group}
         self.flavor_path = self.url_prefix + '/flavors/' + self.flavor
         self.simulate_put(self.flavor_path, body=jsonutils.dumps(self.doc))
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
@@ -113,7 +113,7 @@ class TestFlavorsMongoDB(base.V2Base):
 
     def test_put_flavor_works(self):
         name = str(uuid.uuid1())
-        with flavor(self, name, self.doc['pool']):
+        with flavor(self, name, self.doc['pool_group']):
             self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_put_raises_if_missing_fields(self):
@@ -126,16 +126,16 @@ class TestFlavorsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(1, 2**32+1, [])
-    def test_put_raises_if_invalid_pool(self, pool):
+    def test_put_raises_if_invalid_pool(self, pool_group):
         path = self.url_prefix + '/flavors/' + str(uuid.uuid1())
         self.simulate_put(path,
-                          body=jsonutils.dumps({'pool': pool}))
+                          body=jsonutils.dumps({'pool_group': pool_group}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_capabilities(self, capabilities):
         path = self.url_prefix + '/flavors/' + str(uuid.uuid1())
-        doc = {'pool': 'a', 'capabilities': capabilities}
+        doc = {'pool_group': 'a', 'capabilities': capabilities}
         self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
@@ -149,9 +149,9 @@ class TestFlavorsMongoDB(base.V2Base):
         result = self.simulate_get(self.flavor_path)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         doc = jsonutils.loads(result[0])
-        self.assertEqual(expect['pool'], doc['pool'])
+        self.assertEqual(expect['pool_group'], doc['pool_group'])
 
-    def test_create_flavor_no_pool(self):
+    def test_create_flavor_no_pool_group(self):
         self.simulate_delete(self.flavor_path)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
@@ -163,7 +163,7 @@ class TestFlavorsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
         self.assertEqual(
             {'description': 'Flavor test-flavor could not be created. '
-                            'Pool mypool-group does not exist',
+                            'Pool group mypool-group does not exist',
              'title': 'Unable to create'},
             jsonutils.loads(resp[0]))
 
@@ -178,22 +178,22 @@ class TestFlavorsMongoDB(base.V2Base):
         self.simulate_get(self.url_prefix + '/flavors/nonexisting')
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
-    def _flavor_expect(self, flavor, xhref, xpool):
+    def _flavor_expect(self, flavor, xhref, xpool_group):
         self.assertIn('href', flavor)
         self.assertIn('name', flavor)
         self.assertEqual(xhref, flavor['href'])
-        self.assertIn('pool', flavor)
-        self.assertEqual(xpool, flavor['pool'])
+        self.assertIn('pool_group', flavor)
+        self.assertEqual(xpool_group, flavor['pool_group'])
 
     def test_get_works(self):
         result = self.simulate_get(self.flavor_path)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
-        pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor_path, self.doc['pool'])
+        flavor = jsonutils.loads(result[0])
+        self._flavor_expect(flavor, self.flavor_path, self.doc['pool_group'])
 
         store_caps = ['FIFO', 'CLAIMS', 'DURABILITY',
                       'AOD', 'HIGH_THROUGHPUT']
-        self.assertEqual(store_caps, pool['capabilities'])
+        self.assertEqual(store_caps, flavor['capabilities'])
 
     def test_patch_raises_if_missing_fields(self):
         self.simulate_patch(self.flavor_path,
@@ -205,28 +205,29 @@ class TestFlavorsMongoDB(base.V2Base):
                                      body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         updated_flavor = jsonutils.loads(result[0])
-        self._flavor_expect(updated_flavor, self.flavor_path, doc['pool'])
+        self._flavor_expect(updated_flavor, self.flavor_path,
+                            doc['pool_group'])
         self.assertEqual(doc['capabilities'], updated_flavor['capabilities'])
 
         result = self.simulate_get(self.flavor_path)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         flavor = jsonutils.loads(result[0])
-        self._flavor_expect(flavor, self.flavor_path, doc['pool'])
+        self._flavor_expect(flavor, self.flavor_path, doc['pool_group'])
         self.assertEqual(doc['capabilities'], flavor['capabilities'])
 
     def test_patch_works(self):
-        doc = {'pool': 'mypool', 'capabilities': []}
+        doc = {'pool_group': 'mypoolgroup', 'capabilities': []}
         self._patch_test(doc)
 
     def test_patch_works_with_extra_fields(self):
-        doc = {'pool': 'mypool', 'capabilities': [],
+        doc = {'pool_group': 'mypoolgroup', 'capabilities': [],
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)
 
     @ddt.data(-1, 2**32+1, [])
-    def test_patch_raises_400_on_invalid_pool(self, pool):
+    def test_patch_raises_400_on_invalid_pool_group(self, pool_group):
         self.simulate_patch(self.flavor_path,
-                            body=jsonutils.dumps({'pool': pool}))
+                            body=jsonutils.dumps({'pool_group': pool_group}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 'wee', [])
@@ -237,7 +238,7 @@ class TestFlavorsMongoDB(base.V2Base):
 
     def test_patch_raises_404_if_flavor_not_found(self):
         self.simulate_patch(self.url_prefix + '/flavors/notexists',
-                            body=jsonutils.dumps({'pool': 'test'}))
+                            body=jsonutils.dumps({'pool_group': 'test'}))
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_empty_listing(self):
@@ -257,7 +258,7 @@ class TestFlavorsMongoDB(base.V2Base):
         if marker:
             query += '&marker={2}'.format(marker)
 
-        with flavors(self, count, self.doc['pool']) as expected:
+        with flavors(self, count, self.doc['pool_group']) as expected:
             result = self.simulate_get(self.url_prefix + '/flavors',
                                        query_string=query)
             self.assertEqual(falcon.HTTP_200, self.srmock.status)
@@ -295,7 +296,7 @@ class TestFlavorsMongoDB(base.V2Base):
                 path = expect[0]
                 capabilities = ['FIFO', 'CLAIMS', 'DURABILITY',
                                 'AOD', 'HIGH_THROUGHPUT']
-                self._flavor_expect(s, path, self.doc['pool'])
+                self._flavor_expect(s, path, self.doc['pool_group'])
                 if detailed:
                     self.assertIn('capabilities', s)
                     self.assertEqual(s['capabilities'], capabilities)
@@ -315,14 +316,14 @@ class TestFlavorsMongoDB(base.V2Base):
     def test_listing_marker_is_respected(self):
         self.simulate_delete(self.flavor_path)
 
-        with flavors(self, 10, self.doc['pool']) as expected:
+        with flavors(self, 10, self.doc['pool_group']) as expected:
             result = self.simulate_get(self.url_prefix + '/flavors',
                                        query_string='marker=3')
             self.assertEqual(falcon.HTTP_200, self.srmock.status)
             flavor_list = jsonutils.loads(result[0])['flavors']
             self.assertEqual(6, len(flavor_list))
             path, capabilities = expected[4][:2]
-            self._flavor_expect(flavor_list[0], path, self.doc['pool'])
+            self._flavor_expect(flavor_list[0], path, self.doc['pool_group'])
 
     def test_queue_create_works(self):
         metadata = {'_flavor': self.flavor}

@@ -38,14 +38,26 @@ patch_pool = {
     }
 }
 
+patch_pool_group = {
+    'type': 'object',
+    'properties': {
+        'pool_group': {
+            'type': 'string'
+        },
+        'additionalProperties': False
+    }
+}
+
 create = {
     'type': 'object',
     'properties': {
+        'pool_group': patch_pool_group['properties']['pool_group'],
         'pool': patch_pool['properties']['pool'],
         'capabilities': patch_capabilities['properties']['capabilities']
     },
     # NOTE(flaper87): capabilities need not be present. Storage drivers
     # must provide reasonable defaults.
-    'required': ['pool'],
+    # NOTE(wanghao): remove pool in Newton release.
+    'oneOf': [{'required': ['pool_group']}, {'required': ['pool']}],
     'additionalProperties': False
 }

@@ -137,7 +137,7 @@ class PoolsController(base.PoolsBase):
             pool = self.get(name)
             pools_group = self.get_pools_by_group(pool['group'])
             flavor_ctl = self.driver.flavors_controller
-            res = list(flavor_ctl._list_by_pool(pool['group']))
+            res = list(flavor_ctl._list_by_pool_group(pool['group']))
 
             # NOTE(flaper87): If this is the only pool in the
             # group and it's being used by a flavor, don't allow
