@@ -89,3 +89,23 @@ class TestValidation(base.V1Base):
                                headers=self.headers)
 
             self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+    def test_request_without_client_id(self):
+        # Unlike newer APIs (v1.1 and v2), there will be no error 400, because
+        # of missing Client-ID in headers.
+        empty_headers = {}
+        self.simulate_put(self.queue_path,
+                          self.project_id,
+                          headers=empty_headers)
+        # Queue was already created by setUp, expecting 204 response code.
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+    def test_request_without_client_id_if_resource_name_contains_v2_text(self):
+        empty_headers = {}
+        queue_path_with_v2 = self.url_prefix + '/queues/my_name_is_v2'
+        self.simulate_put(queue_path_with_v2,
+                          self.project_id,
+                          headers=empty_headers)
+        self.addCleanup(self.simulate_delete, queue_path_with_v2,
+                        self.project_id)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)

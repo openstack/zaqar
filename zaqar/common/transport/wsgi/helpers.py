@@ -116,7 +116,7 @@ def require_client_id(req, resp, params):
     :rtype: None
     """
 
-    if 'v1.1' in req.path:
+    if req.path.startswith('/v1.1/') or req.path.startswith('/v2/'):
         # NOTE(flaper87): `get_client_uuid` already raises 400
         # it the header is missing.
         get_client_uuid(req)

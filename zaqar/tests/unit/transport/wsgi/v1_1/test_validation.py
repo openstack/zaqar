@@ -89,3 +89,11 @@ class TestValidation(base.V1_1Base):
                                headers=self.headers)
 
             self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+    def test_request_without_client_id(self):
+        # No Client-ID in headers, it will raise 400 error.
+        empty_headers = {}
+        self.simulate_put(self.queue_path,
+                          self.project_id,
+                          headers=empty_headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
