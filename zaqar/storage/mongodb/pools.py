@@ -23,6 +23,7 @@ Schema:
 """
 
 import functools
+from pymongo import errors as mongo_error
 
 from zaqar.common import utils as common_utils
 from zaqar.storage import base
@@ -97,13 +98,16 @@ class PoolsController(base.PoolsBase):
     @utils.raises_conn_error
     def _create(self, name, weight, uri, group=None, options=None):
         options = {} if options is None else options
-        self._col.update({'n': name},
-                         {'$set': {'n': name,
-                                   'w': weight,
-                                   'u': uri,
-                                   'g': group,
-                                   'o': options}},
-                         upsert=True)
+        try:
+            self._col.update({'n': name},
+                             {'$set': {'n': name,
+                                       'w': weight,
+                                       'u': uri,
+                                       'g': group,
+                                       'o': options}},
+                             upsert=True)
+        except mongo_error.DuplicateKeyError:
+            raise errors.PoolAlreadyExists()
 
     @utils.raises_conn_error
     def _exists(self, name):

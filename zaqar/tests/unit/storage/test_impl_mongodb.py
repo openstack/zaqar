@@ -528,6 +528,13 @@ class MongodbPoolsTests(base.PoolsControllerTest):
                                          group=self.pool_group,
                                          options={})
 
+    def test_duplicate_uri(self):
+        with testing.expect(errors.PoolAlreadyExists):
+            # The url 'localhost' is used in setUp(). So reusing the uri
+            # 'localhost' here will raise PoolAlreadyExists.
+            self.pools_controller.create(str(uuid.uuid1()), 100, 'localhost',
+                                         group=str(uuid.uuid1()), options={})
+
 
 @testing.requires_mongodb
 class MongodbCatalogueTests(base.CatalogueControllerTest):
