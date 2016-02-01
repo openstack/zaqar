@@ -187,12 +187,11 @@ class Resource(object):
 
     @acl.enforce("flavors:update")
     def on_patch(self, request, response, project_id, flavor):
-        """Allows one to update a flavors's pool and/or capabilities.
+        """Allows one to update a flavors's pool.
 
         This method expects the user to submit a JSON object
-        containing at least one of: 'pool', 'capabilities'. If
-        none are found, the request is flagged as bad. There is also
-        strict format checking through the use of
+        containing 'pool'. If none is found, the request is flagged as bad.
+        There is also strict format checking through the use of
         jsonschema. Appropriate errors are returned in each case for
         badly formatted input.
 
@@ -206,7 +205,7 @@ class Resource(object):
         if not any([(field in data) for field in EXPECT]):
             LOG.debug(u'PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                'One of `pool` needs to be specified'
+                '`pool` needs to be specified'
             )
 
         for field in EXPECT:
