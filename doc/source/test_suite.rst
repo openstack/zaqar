@@ -72,7 +72,7 @@ When you run tests via ``tox -e py27`` command in the root directory of Zaqar:
       ``tox.ini``
    #. In case of Zaqar it invokes Testr program in the environment.
 
-   You can find more information about Tox in `Openstack Tox testing manual`_
+   You can find more information about Tox in `OpenStack Tox testing manual`_
    and in official `Tox documentation`_.
 
 #. Testr (Test Repository) program executes:
@@ -84,13 +84,13 @@ When you run tests via ``tox -e py27`` command in the root directory of Zaqar:
    #. In case of Zaqar it invokes ``Subunit`` program which finds all tests and
       executes it.
 
-   You can find more information about Testr in `Openstack Testr manual`_.
+   You can find more information about Testr in `OpenStack Testr manual`_.
 
 .. rubric:: Footnotes
 
 .. [#f1] See http://docs.openstack.org/developer/tempest/overview.html
 
-.. _`Openstack Tox testing manual` : https://wiki.openstack.org/wiki/Testing#Unit_Testing_with_Tox
+.. _`OpenStack Tox testing manual` : https://wiki.openstack.org/wiki/Testing#Unit_Testing_with_Tox
 .. _`Tox documentation` : https://tox.readthedocs.org/en/latest/
-.. _`Openstack Testr manual` : https://wiki.openstack.org/wiki/Testr
+.. _`OpenStack Testr manual` : https://wiki.openstack.org/wiki/Testr
 .. _`Tempest repository` : https://github.com/openstack/tempest

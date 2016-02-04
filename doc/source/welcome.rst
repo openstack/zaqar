@@ -25,7 +25,7 @@ First of all, make sure you join Zaqar communication forums:
 * Subscribe to Zaqar `mailing lists`_.
 * Join Zaqar team on IRC. You can chat with us directly in the
   ``#openstack-zaqar`` channel on ``irc.freenode.org``. If you don't know
-  how to use IRC, you can find some directions in `Openstack IRC wiki`_.
+  how to use IRC, you can find some directions in `OpenStack IRC wiki`_.
 * Answer and ask questions on `Ask OpenStack`_.
 
 How can I contribute?
@@ -171,7 +171,7 @@ applications to get started.
 
 
 .. _`mailing lists` : https://wiki.openstack.org/wiki/MailingLists
-.. _`Openstack IRC wiki` : https://wiki.openstack.org/wiki/IRC
+.. _`OpenStack IRC wiki` : https://wiki.openstack.org/wiki/IRC
 .. _`Ask OpenStack` : https://ask.openstack.org/
 .. _`Zaqar's Confirmed and Triaged bugs` : https://bugs.launchpad.net/zaqar/+bugs?field.searchtext=&orderby=-importance&search=Search&field.status%3Alist=CONFIRMED&field.status%3Alist=TRIAGED&assignee_option=any&field.assignee=&field.bug_reporter=&field.bug_commenter=&field.subscriber=&field.structural_subscriber=&field.tag=&field.tags_combinator=ANY&field.has_cve.used=&field.omit_dupes.used=&field.omit_dupes=on&field.affects_me.used=&field.has_patch.used=&field.has_branches.used=&field.has_branches=on&field.has_no_branches.used=&field.has_no_branches=on&field.has_blueprints.used=&field.has_blueprints=on&field.has_no_blueprints.used=&field.has_no_blueprints=on
 .. _`Of Bugs and Statuses` : http://blog.launchpad.net/general/of-bugs-and-statuses
