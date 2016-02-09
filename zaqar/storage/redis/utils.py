@@ -23,7 +23,8 @@ from oslo_utils import encodeutils
 import redis
 import six
 
-from zaqar.i18n import _
+from zaqar.i18n import _LE
+from zaqar.i18n import _LW
 from zaqar.storage import errors
 
 LOG = logging.getLogger(__name__)
@@ -210,13 +211,13 @@ def retries_on_connection_error(func):
                 # MasterNotFoundError.
 
                 ex = sys.exc_info()[1]
-                LOG.warning(_(u'Caught ConnectionError, retrying the '
-                              'call to {0}').format(func))
+                LOG.warning(_LW(u'Caught ConnectionError, retrying the '
+                                'call to {0}').format(func))
 
                 time.sleep(sleep_sec * (2 ** attempt))
         else:
-            LOG.error(_(u'Caught ConnectionError, maximum attempts '
-                        'to {0} exceeded.').format(func))
+            LOG.error(_LE(u'Caught ConnectionError, maximum attempts '
+                          'to {0} exceeded.').format(func))
             raise ex
 
     return wrapper

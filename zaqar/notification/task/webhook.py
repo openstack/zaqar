@@ -17,6 +17,8 @@ import json
 from oslo_log import log as logging
 import requests
 
+from zaqar.i18n import _LE
+
 LOG = logging.getLogger(__name__)
 
 
@@ -29,4 +31,4 @@ class WebhookTask(object):
                               data=json.dumps(msg),
                               headers={'Content-Type': 'application/json'})
         except Exception as e:
-            LOG.error(e)
+            LOG.exception(_LE('webhook task got exception: %s.') % str(e))
