@@ -216,7 +216,6 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     def test_update_metadata(self):
-        self.skip("This should use patch instead")
         xyz_queue_path = self.url_prefix + '/queues/xyz'
         xyz_queue_path_metadata = xyz_queue_path
 
@@ -226,17 +225,17 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
         # Set meta
         doc1 = '{"messages": {"ttl": 600}}'
-        self.simulate_put(xyz_queue_path_metadata,
-                          headers=self.headers,
-                          body=doc1)
-        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=self.headers,
+                            body=doc1)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         # Update
         doc2 = '{"messages": {"ttl": 100}}'
-        self.simulate_put(xyz_queue_path_metadata,
-                          headers=self.headers,
-                          body=doc2)
-        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=self.headers,
+                            body=doc2)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         # Get
         result = self.simulate_get(xyz_queue_path_metadata,

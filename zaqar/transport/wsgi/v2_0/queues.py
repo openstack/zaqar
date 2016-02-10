@@ -109,6 +109,53 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_204
 
+    @acl.enforce("queues:update")
+    def on_patch(self, req, resp, project_id, queue_name):
+        """Allows one to update a queue's metadata.
+
+        This method expects the user to submit a JSON object. There is also
+        strict format checking through the use of
+        jsonschema. Appropriate errors are returned in each case for
+        badly formatted input.
+
+        :returns: HTTP | 200,400,503
+        """
+        LOG.debug(u'PATCH queue - name: %s', queue_name)
+        try:
+            # Place JSON size restriction before parsing
+            self._validate.queue_metadata_length(req.content_length)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+
+        # Deserialize queue metadata
+        metadata = None
+        if req.content_length:
+            document = wsgi_utils.deserialize(req.stream, req.content_length)
+            metadata = wsgi_utils.sanitize(document, spec=None)
+
+        try:
+            self._validate.queue_metadata_putting(metadata)
+            old_metadata = self._queue_controller.get(queue_name,
+                                                      project=project_id)
+            old_metadata.update(metadata)
+            self._queue_controller.set_metadata(queue_name,
+                                                old_metadata,
+                                                project_id)
+            resp_dict = self._queue_controller.get(queue_name,
+                                                   project=project_id)
+        except storage_errors.DoesNotExist as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPNotFound(ex)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _(u'Queue could not be updated.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)
+        resp.body = utils.to_json(resp_dict)
+
 
 class CollectionResource(object):
 
