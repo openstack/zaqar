@@ -141,14 +141,17 @@ class CollectionResource(object):
         # Got some. Prepare the response.
         kwargs['marker'] = next(results) or kwargs.get('marker', '')
 
-        response_body = {
-            'subscriptions': subscriptions,
-            'links': [
+        links = []
+        if results:
+            links = [
                 {
                     'rel': 'next',
                     'href': req.path + falcon.to_query_str(kwargs)
                 }
             ]
+        response_body = {
+            'subscriptions': subscriptions,
+            'links': links
         }
 
         resp.body = utils.to_json(response_body)
