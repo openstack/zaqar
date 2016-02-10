@@ -207,7 +207,7 @@ function start_zaqar {
 
     echo "Waiting for Zaqar to start..."
     token=$(openstack token issue -c id -f value)
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
 }
