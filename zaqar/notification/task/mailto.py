@@ -43,8 +43,7 @@ class MailtoTask(object):
                 msg["subject"] = params.get('subject', subject_opt)
                 p.communicate(msg.as_string())
         except OSError as err:
-            LOG.error(_LE('Failed to create process for sendmail, '
-                          'because %s') % str(err))
+            LOG.exception(_LE('Failed to create process for sendmail, '
+                              'because %s.') % str(err))
         except Exception as exc:
-            LOG.exception(_LE('Failed to send email'))
-            LOG.exception(exc)
+            LOG.exception(_LE('Failed to send email because %s.') % str(exc))

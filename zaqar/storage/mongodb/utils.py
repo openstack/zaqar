@@ -28,7 +28,8 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 from pymongo import errors
 
-from zaqar.i18n import _
+from zaqar.i18n import _LE
+from zaqar.i18n import _LW
 from zaqar.storage import errors as storage_errors
 
 
@@ -287,14 +288,14 @@ def retries_on_autoreconnect(func):
                 break
 
             except errors.AutoReconnect as ex:
-                LOG.warning(_(u'Caught AutoReconnect, retrying the '
-                              'call to {0}').format(func))
+                LOG.warning(_LW(u'Caught AutoReconnect, retrying the '
+                                'call to {0}').format(func))
 
                 last_ex = ex
                 time.sleep(sleep_sec * (2 ** attempt))
         else:
-            LOG.error(_(u'Caught AutoReconnect, maximum attempts '
-                        'to {0} exceeded.').format(func))
+            LOG.error(_LE(u'Caught AutoReconnect, maximum attempts '
+                          'to {0} exceeded.').format(func))
 
             raise last_ex
 

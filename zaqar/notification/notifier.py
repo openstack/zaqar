@@ -19,6 +19,7 @@ import futurist
 from oslo_log import log as logging
 from six.moves import urllib_parse
 
+from zaqar.i18n import _LE
 from zaqar.storage import pooling
 
 LOG = logging.getLogger(__name__)
@@ -51,4 +52,4 @@ class NotifierDriver(object):
                 self.executor.submit(mgr.driver.execute, sub, messages,
                                      conf=data_driver.conf)
         else:
-            LOG.error('Failed to get subscription controller.')
+            LOG.error(_LE('Failed to get subscription controller.'))
