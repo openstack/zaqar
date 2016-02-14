@@ -91,6 +91,9 @@ class ItemResource(object):
         except storage_errors.SubscriptionDoesNotExist as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+        except storage_errors.SubscriptionAlreadyExists as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPConflict(six.text_type(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))

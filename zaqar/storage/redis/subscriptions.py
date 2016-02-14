@@ -183,6 +183,24 @@ class SubscriptionController(base.Subscription):
                                      key_transform=key_transform)
         assert fields, ('`subscriber`, `ttl`, '
                         'or `options` not found in kwargs')
+
+        # Let's get our subscription by ID. If it does not exist,
+        # SubscriptionDoesNotExist error will be raised internally.
+        subscription_to_update = self.get(queue, subscription_id,
+                                          project=project)
+
+        new_subscriber = fields.get('u', None)
+
+        # Let's do some checks to prevent subscription duplication.
+        if new_subscriber:
+            # Check if 'new_subscriber' is really new for our subscription.
+            if subscription_to_update['subscriber'] != new_subscriber:
+                # It's new. We should raise error if this subscriber already
+                # exists for the queue and project.
+                if self._is_duplicated_subscriber(new_subscriber, queue,
+                                                  project):
+                    raise errors.SubscriptionAlreadyExists()
+
         # NOTE(Eva-i): if there are new options, we need to pack them before
         # sending to the database.
         new_options = fields.get('o', None)

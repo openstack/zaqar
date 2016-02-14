@@ -204,3 +204,9 @@ class PoolCapabilitiesMismatch(ExceptionBase):
 class PoolAlreadyExists(Conflict):
 
     msg_format = u'The database URI is in use by another pool.'
+
+
+class SubscriptionAlreadyExists(Conflict):
+
+    msg_format = (u'Such subscription already exists. Subscriptions '
+                  u'are unique by project + queue + subscriber URI.')

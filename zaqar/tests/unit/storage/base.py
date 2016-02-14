@@ -1095,6 +1095,47 @@ class SubscriptionControllerTest(ControllerBaseTest):
                           self.options,
                           self.project)
 
+    def test_update_raises_if_try_to_update_to_existing_subscription(self):
+        # create two subscriptions: fake_0 and fake_1
+        ids = []
+        for s in six.moves.xrange(2):
+            subscriber = 'http://fake_{0}'.format(s)
+            s_id = self.subscription_controller.create(
+                self.source,
+                subscriber,
+                self.ttl,
+                self.options,
+                project=self.project)
+            self.addCleanup(self.subscription_controller.delete, self.source,
+                            s_id, self.project)
+            ids.append(s_id)
+        # update fake_0 to fake_2, success
+        update_fields = {
+            'subscriber': 'http://fake_2'
+        }
+        self.subscription_controller.update(self.queue_name,
+                                            ids[0],
+                                            project=self.project,
+                                            **update_fields)
+        # update fake_1 to fake_2, raise error
+        self.assertRaises(errors.SubscriptionAlreadyExists,
+                          self.subscription_controller.update,
+                          self.queue_name,
+                          ids[1],
+                          project=self.project,
+                          **update_fields)
+
+    def test_update_raises_if_subscription_does_not_exist(self):
+        update_fields = {
+            'subscriber': 'http://fake'
+        }
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.update,
+                          self.queue_name,
+                          'notexists',
+                          project=self.project,
+                          **update_fields)
+
 
 class PoolsControllerTest(ControllerBaseTest):
     """Pools Controller base tests.

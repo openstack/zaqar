@@ -283,6 +283,18 @@ class TestSubscriptionsMongoDB(base.V2Base):
                             headers=self.headers)
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
+    def test_patch_to_duplicate_raise_409(self):
+        self._create_subscription()
+        toupdate = self._create_subscription(subscriber='http://update.me',
+                                             ttl=600,
+                                             options='{"a":1}')
+        toupdate_sid = jsonutils.loads(toupdate[0])['subscription_id']
+        doc = {'subscriber': 'http://triger.me'}
+        self.simulate_patch(self.subscription_path + '/' + toupdate_sid,
+                            body=jsonutils.dumps(doc),
+                            headers=self.headers)
+        self.assertEqual(falcon.HTTP_409, self.srmock.status)
+
     def test_patch_no_body(self):
         self._create_subscription()
         resp = self.simulate_get(self.subscription_path,

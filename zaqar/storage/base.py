@@ -665,6 +665,8 @@ class Subscription(ControllerBase):
         :param kwargs: one of: `source`, `subscriber`, `ttl`, `options`
         :type kwargs: dict
         :raises: SubscriptionDoesNotExist if not found
+        :raises: SubscriptionAlreadyExists on attempt to update in a way to
+            create duplicate subscription
         """
 
         raise NotImplementedError
