@@ -27,6 +27,10 @@ class WebhookTask(object):
     def execute(self, subscription, messages, **kwargs):
         try:
             for msg in messages:
+                # NOTE(Eva-i): Unfortunately this will add 'queue_name' key to
+                # our original messages(dicts) which will be later consumed in
+                # the storage controller. It seems safe though.
+                msg['queue_name'] = subscription['source']
                 requests.post(subscription['subscriber'],
                               data=json.dumps(msg),
                               headers={'Content-Type': 'application/json'})

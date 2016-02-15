@@ -36,6 +36,10 @@ class MailtoTask(object):
             for message in messages:
                 p = subprocess.Popen(conf.notification.smtp_command.split(' '),
                                      stdin=subprocess.PIPE)
+                # NOTE(Eva-i): Unfortunately this will add 'queue_name' key to
+                # our original messages(dicts) which will be later consumed in
+                # the storage controller. It seems safe though.
+                message['queue_name'] = subscription['source']
                 msg = text.MIMEText(json.dumps(message))
                 msg["to"] = subscriber.path
                 msg["from"] = subscription['options'].get('from', '')
