@@ -108,7 +108,10 @@ class QueueController(storage.Queue):
 
     def _get(self, name, project=None):
         """Obtain the metadata from the queue."""
-        return self.get_metadata(name, project)
+        try:
+            return self.get_metadata(name, project)
+        except errors.QueueDoesNotExist:
+            return {}
 
     @utils.raises_conn_error
     def _create(self, name, metadata=None, project=None):
