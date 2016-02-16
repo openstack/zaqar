@@ -77,7 +77,7 @@ class SubscriptionController(base.Subscription):
                 'id': sid,
                 'source': record[0],
                 'subscriber': record[1],
-                'ttl': record[2],
+                'ttl': int(record[2]),
                 'options': self._unpacker(record[3]),
             }
             marker_next['next'] = sid
