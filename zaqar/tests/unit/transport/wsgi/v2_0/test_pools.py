@@ -212,9 +212,12 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def _patch_test(self, doc):
-        self.simulate_patch(self.pool,
-                            body=jsonutils.dumps(doc))
+        result = self.simulate_patch(self.pool,
+                                     body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        updated_pool = jsonutils.loads(result[0])
+        self._pool_expect(updated_pool, self.pool, doc['weight'],
+                          doc['uri'])
 
         result = self.simulate_get(self.pool,
                                    query_string='detailed=True')

@@ -201,15 +201,18 @@ class TestFlavorsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def _patch_test(self, doc):
-        self.simulate_patch(self.flavor_path,
-                            body=jsonutils.dumps(doc))
+        result = self.simulate_patch(self.flavor_path,
+                                     body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        updated_flavor = jsonutils.loads(result[0])
+        self._flavor_expect(updated_flavor, self.flavor_path, doc['pool'])
+        self.assertEqual(doc['capabilities'], updated_flavor['capabilities'])
 
         result = self.simulate_get(self.flavor_path)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
-        pool = jsonutils.loads(result[0])
-        self._flavor_expect(pool, self.flavor_path, doc['pool'])
-        self.assertEqual(doc['capabilities'], pool['capabilities'])
+        flavor = jsonutils.loads(result[0])
+        self._flavor_expect(flavor, self.flavor_path, doc['pool'])
+        self.assertEqual(doc['capabilities'], flavor['capabilities'])
 
     def test_patch_works(self):
         doc = {'pool': 'mypool', 'capabilities': []}

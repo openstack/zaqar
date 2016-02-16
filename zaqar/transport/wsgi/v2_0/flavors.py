@@ -213,9 +213,16 @@ class Resource(object):
 
         fields = common_utils.fields(data, EXPECT,
                                      pred=lambda v: v is not None)
-
+        resp_data = None
         try:
             self._ctrl.update(flavor, project=project_id, **fields)
+            resp_data = self._ctrl.get(flavor, project=project_id)
+            capabilities = self._pools_ctrl.capabilities(
+                group=resp_data['pool'])
+            resp_data['capabilities'] = [str(cap).split('.')[-1]
+                                         for cap in capabilities]
         except errors.FlavorDoesNotExist as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()
+        resp_data['href'] = request.path
+        response.body = transport_utils.to_json(resp_data)

@@ -252,9 +252,13 @@ class Resource(object):
             )
         fields = common_utils.fields(data, EXPECT,
                                      pred=lambda v: v is not None)
-
+        resp_data = None
         try:
             self._ctrl.update(pool, **fields)
+            resp_data = self._ctrl.get(pool, False)
         except errors.PoolDoesNotExist as ex:
             LOG.exception(ex)
             raise falcon.HTTPNotFound()
+
+        resp_data['href'] = request.path
+        response.body = transport_utils.to_json(resp_data)
