@@ -38,9 +38,11 @@ registered, there is an optional field::
 import falcon
 import jsonschema
 from oslo_log import log
+import six
 
 from zaqar.common.api.schemas import pools as schema
 from zaqar.common import utils as common_utils
+from zaqar.i18n import _
 from zaqar.storage import errors
 from zaqar.storage import utils as storage_utils
 from zaqar.transport import utils as transport_utils
@@ -171,11 +173,16 @@ class Resource(object):
             raise wsgi_errors.HTTPBadRequestBody(
                 'cannot connect to %s' % data['uri']
             )
-        self._ctrl.create(pool, weight=data['weight'],
-                          uri=data['uri'],
-                          options=data.get('options', {}))
-        response.status = falcon.HTTP_201
-        response.location = request.path
+        try:
+            self._ctrl.create(pool, weight=data['weight'],
+                              uri=data['uri'],
+                              options=data.get('options', {}))
+            response.status = falcon.HTTP_201
+            response.location = request.path
+        except errors.PoolAlreadyExists as e:
+            LOG.exception(e)
+            title = _(u'Unable to create pool')
+            raise falcon.HTTPConflict(title, six.text_type(e))
 
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.

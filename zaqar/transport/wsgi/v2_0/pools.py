@@ -190,6 +190,10 @@ class Resource(object):
             LOG.exception(e)
             title = _(u'Unable to create pool')
             raise falcon.HTTPBadRequest(title, six.text_type(e))
+        except errors.PoolAlreadyExists as e:
+            LOG.exception(e)
+            title = _(u'Unable to create pool')
+            raise falcon.HTTPConflict(title, six.text_type(e))
 
     @acl.enforce("pools:delete")
     def on_delete(self, request, response, project_id, pool):

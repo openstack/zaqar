@@ -191,3 +191,8 @@ class PoolCapabilitiesMismatch(ExceptionBase):
 
     msg_format = (u'The pool being added does not '
                   u'support the minimum set of capabilities')
+
+
+class PoolAlreadyExists(Conflict):
+
+    msg_format = u'The database URI is in use by another pool.'
