@@ -142,7 +142,7 @@ class CollectionResource(object):
         kwargs['marker'] = next(results) or kwargs.get('marker', '')
 
         links = []
-        if results:
+        if subscriptions:
             links = [
                 {
                     'rel': 'next',

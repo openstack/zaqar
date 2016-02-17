@@ -176,6 +176,19 @@ class TestSubscriptionsMongoDB(base.V2Base):
     def test_list_works(self):
         self._list_subscription()
 
+    def test_list_empty(self):
+        resp = self.simulate_get(self.subscription_path,
+                                 headers=self.headers)
+
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        resp_doc = jsonutils.loads(resp[0])
+        self.assertIsInstance(resp_doc, dict)
+        self.assertIn('subscriptions', resp_doc)
+        self.assertIn('links', resp_doc)
+        self.assertEqual([], resp_doc['subscriptions'])
+        self.assertEqual([], resp_doc['links'])
+
     @ddt.data(1, 5, 10, 15)
     def test_listing_works_with_limit(self, limit):
         self._list_subscription(count=15, limit=limit)
