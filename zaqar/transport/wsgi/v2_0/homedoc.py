@@ -41,7 +41,7 @@ JSON_HOME = {
                 'queue_name': 'param/queue_name',
             },
             'hints': {
-                'allow': ['PUT', 'DELETE'],
+                'allow': ['GET', 'PUT', 'DELETE'],
                 'formats': {
                     'application/json': {},
                 },
@@ -57,6 +57,19 @@ JSON_HOME = {
                 'formats': {
                     'application/json': {},
                 },
+            },
+        },
+        'rel/queue_share': {
+            'href-template': '/v2/queues/{queue_name}/share',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+            },
+            'hints': {
+                'allow': ['POST'],
+                'formats': {
+                    'application/json': {},
+                },
+                'accept-post': ['application/json'],
             },
         },
 
@@ -125,6 +138,21 @@ JSON_HOME = {
                 }
             }
         },
+        'rel/message_get': {
+            'href-template': '/v2/queues/{queue_name}/messages/{message_id}',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'message_id': 'param/message_id'
+            },
+            'hints': {
+                'allow': [
+                    'GET'
+                ],
+                'formats': {
+                    'application/json': {}
+                }
+            }
+        },
 
         # -----------------------------------------------------------------
         # Claims
@@ -184,6 +212,76 @@ JSON_HOME = {
             },
         },
 
+        # -----------------------------------------------------------------
+        # Subscriptions
+        # -----------------------------------------------------------------
+        'rel/subscriptions_get': {
+            'href-template': '/v2/queues/{queue_name}/subscriptions{?marker,limit}',  # noqa
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'marker': 'param/marker',
+                'limit': 'param/subscription_limit',
+            },
+            'hints': {
+                'allow': ['GET'],
+                'formats': {
+                    'application/json': {},
+                }
+            }
+        },
+        'rel/subscriptions_post': {
+            'href-template': '/v2/queues/{queue_name}/subscriptions',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'limit': 'param/claim_limit',
+            },
+            'hints': {
+                'allow': ['POST'],
+                'formats': {
+                    'application/json': {},
+                },
+                'accept-post': ['application/json']
+            }
+        },
+        'rel/subscription': {
+            'href-template': '/v2/queues/{queue_name}/subscriptions/{subscriptions_id}',  # noqa
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'subscriptions_id': 'param/subscriptions_id',
+            },
+            'hints': {
+                'allow': ['GET', 'DELETE'],
+                'formats': {
+                    'application/json': {},
+                }
+            }
+        },
+        'rel/subscription_patch': {
+            'href-template': '/v2/queues/{queue_name}/subscriptions/{subscriptions_id}',  # noqa
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+                'subscriptions_id': 'param/subscriptions_id',
+            },
+            'hints': {
+                'allow': ['PATCH'],
+                'formats': {
+                    'application/json': {},
+                },
+                'accept-post': ['application/json']
+            }
+        },
+        # -----------------------------------------------------------------
+        # Ping
+        # -----------------------------------------------------------------
+        'rel/ping': {
+            'href-template': '/v2/ping',
+            'hints': {
+                'allow': ['GET'],
+                'formats': {
+                    'application/json': {},
+                }
+            }
+        }
     }
 }
 
