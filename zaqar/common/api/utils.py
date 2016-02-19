@@ -179,8 +179,8 @@ def get_headers(req):
     return kwargs
 
 
-def raises_conn_error(func):
-    """Handles generic Exceptions
+def on_exception_sends_500(func):
+    """Handles generic Exceptions in API endpoints
 
     This decorator catches generic Exceptions and returns a generic
     Response.
@@ -194,7 +194,8 @@ def raises_conn_error(func):
             LOG.exception(ex)
             error = _("Unexpected error.")
             headers = {'status': 500}
-            req = kwargs.get('req')
+            # args[0] - Endpoints object, args[1] - Request object.
+            req = args[1]
             return error_response(req, ex, headers, error)
 
     return wrapper

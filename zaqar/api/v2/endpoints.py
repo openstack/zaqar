@@ -42,7 +42,7 @@ class Endpoints(object):
         self._subscription_url = None
 
     # Queues
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def queue_list(self, req):
         """Gets a list of queues
 
@@ -81,7 +81,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def queue_create(self, req):
         """Creates a queue
 
@@ -118,7 +118,7 @@ class Endpoints(object):
             headers = {'status': 201} if created else {'status': 204}
             return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def queue_delete(self, req):
         """Deletes a queue
 
@@ -144,7 +144,7 @@ class Endpoints(object):
             headers = {'status': 204}
             return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def queue_get(self, req):
         """Gets a queue
 
@@ -178,7 +178,7 @@ class Endpoints(object):
             headers = {'status': 200}
             return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def queue_get_stats(self, req):
         """Gets queue stats
 
@@ -220,7 +220,7 @@ class Endpoints(object):
             return response.Response(req, body, headers)
 
     # Messages
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_list(self, req):
         """Gets a list of messages on a queue
 
@@ -272,7 +272,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_get(self, req):
         """Gets a message from a queue
 
@@ -309,7 +309,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_get_many(self, req):
         """Gets a set of messages from a queue
 
@@ -347,7 +347,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_post(self, req):
         """Post a set of messages to a queue
 
@@ -427,7 +427,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_delete(self, req):
         """Delete a message from a queue
 
@@ -478,7 +478,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def message_delete_many(self, req):
         """Deletes a set of messages from a queue
 
@@ -511,7 +511,7 @@ class Endpoints(object):
         elif pop_limit:
             return self._pop_messages(req, queue_name, project_id, pop_limit)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def _delete_messages_by_id(self, req, queue_name, ids, project_id):
         self._message_controller.bulk_delete(queue_name, message_ids=ids,
                                              project=project_id)
@@ -521,7 +521,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def _pop_messages(self, req, queue_name, project_id, pop_limit):
 
         LOG.debug(u'Pop messages - queue: %(queue)s, project: %(project)s',
@@ -542,7 +542,7 @@ class Endpoints(object):
         return response.Response(req, body, headers)
 
     # Claims
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def claim_create(self, req):
         """Creates a claim
 
@@ -608,7 +608,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def claim_get(self, req):
         """Gets a claim
 
@@ -653,7 +653,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def claim_update(self, req):
         """Updates a claim
 
@@ -700,7 +700,7 @@ class Endpoints(object):
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers, error)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def claim_delete(self, req):
         """Deletes a claim
 
@@ -729,7 +729,7 @@ class Endpoints(object):
         return response.Response(req, body, headers)
 
     # Subscriptions
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def subscription_list(self, req):
         """List all subscriptions for a queue.
 
@@ -769,7 +769,7 @@ class Endpoints(object):
 
         return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def subscription_create(self, req, subscriber):
         """Create a subscription for a queue.
 
@@ -820,7 +820,7 @@ class Endpoints(object):
                 headers = {'status': 409}
             return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def subscription_delete(self, req):
         """Delete a specific subscription by ID.
 
@@ -852,7 +852,7 @@ class Endpoints(object):
             headers = {'status': 204}
             return response.Response(req, body, headers)
 
-    @api_utils.raises_conn_error
+    @api_utils.on_exception_sends_500
     def subscription_get(self, req):
         """Retrieve details about an existing subscription.
 
