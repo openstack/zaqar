@@ -233,7 +233,7 @@ JSON_HOME = {
             'href-template': '/v2/queues/{queue_name}/subscriptions',
             'href-vars': {
                 'queue_name': 'param/queue_name',
-                'limit': 'param/claim_limit',
+                'limit': 'param/subscription_limit',
             },
             'hints': {
                 'allow': ['POST'],
