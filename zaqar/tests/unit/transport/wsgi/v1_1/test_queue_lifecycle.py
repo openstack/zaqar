@@ -16,9 +16,11 @@ import uuid
 
 import ddt
 import falcon
+import mock
 from oslo_serialization import jsonutils
 import six
 
+from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -324,6 +326,31 @@ class TestQueueLifecycleMongoDB(base.V1_1Base):
         # List manually-constructed tail
         self.simulate_get(target, headers=header, query_string='marker=zzz')
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+    def test_list_returns_503_on_nopoolfound_exception(self):
+        arbitrary_number = 644079696574693
+        project_id = str(arbitrary_number)
+        client_id = str(uuid.uuid4())
+        header = {
+            'X-Project-ID': project_id,
+            'Client-ID': client_id
+        }
+
+        queue_controller = self.boot.storage.queue_controller
+
+        with mock.patch.object(queue_controller, 'list') as mock_queue_list:
+
+            def queue_generator():
+                raise storage_errors.NoPoolFound()
+
+            # This generator tries to be like queue controller list generator
+            # in some ways.
+            def fake_generator():
+                yield queue_generator()
+                yield {}
+            mock_queue_list.return_value = fake_generator()
+            self.simulate_get(self.queue_path, headers=header)
+            self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
 
 class TestQueueLifecycleFaultyDriver(base.V1_1BaseFaulty):

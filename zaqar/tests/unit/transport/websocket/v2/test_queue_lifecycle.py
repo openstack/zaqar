@@ -18,6 +18,7 @@ import uuid
 import ddt
 import mock
 
+from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
@@ -565,6 +566,41 @@ class QueueLifecycleBaseTest(base.V2Base):
         body = {'marker': "zzz"}
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
+
+    def test_list_returns_503_on_nopoolfound_exception(self):
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+            'X-Project-ID': 'test-project'
+        }
+        action = "queue_list"
+        body = {}
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        sender = send_mock.start()
+
+        req = test_utils.create_request(action, body, headers)
+
+        def validator(resp, isBinary):
+            resp = json.loads(resp)
+            self.assertEqual(503, resp['headers']['status'])
+
+        sender.side_effect = validator
+
+        queue_controller = self.boot.storage.queue_controller
+
+        with mock.patch.object(queue_controller, 'list') as mock_queue_list:
+
+            def queue_generator():
+                raise storage_errors.NoPoolFound()
+
+            # This generator tries to be like queue controller list generator
+            # in some ways.
+            def fake_generator():
+                yield queue_generator()
+                yield {}
+            mock_queue_list.return_value = fake_generator()
+            self.protocol.onMessage(req, False)
 
 
 class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):

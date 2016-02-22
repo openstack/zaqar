@@ -62,6 +62,8 @@ class Endpoints(object):
             self._validate.queue_listing(**kwargs)
             results = self._queue_controller.list(
                 project=project_id, **kwargs)
+            # Buffer list of queues. Can raise NoPoolFound error.
+            queues = list(next(results))
         except (ValueError, validation.ValidationFailed) as ex:
             LOG.debug(ex)
             headers = {'status': 400}
@@ -71,9 +73,6 @@ class Endpoints(object):
             error = 'Queues could not be listed.'
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers, error)
-
-        # Buffer list of queues
-        queues = list(next(results))
 
         # Got some. Prepare the response.
         body = {'queues': queues}
@@ -750,6 +749,8 @@ class Endpoints(object):
             self._validate.subscription_listing(**kwargs)
             results = self._subscription_controller.list(
                 queue_name, project=project_id, **kwargs)
+            # Buffer list of subscriptions. Can raise NoPoolFound error.
+            subscriptions = list(next(results))
         except (ValueError, validation.ValidationFailed) as ex:
             LOG.debug(ex)
             headers = {'status': 400}
@@ -759,9 +760,6 @@ class Endpoints(object):
             error = 'Subscriptions could not be listed.'
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers, error)
-
-        # Buffer list of queues
-        subscriptions = list(next(results))
 
         # Got some. Prepare the response.
         body = {'subscriptions': subscriptions}
