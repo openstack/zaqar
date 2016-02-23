@@ -43,7 +43,7 @@ class TestMessages(base.BaseMessagingTest):
         resp, _ = self._post_messages()
 
         # Get on the posted messages
-        message_uri = resp['location']
+        message_uri = resp['location'][resp['location'].find('/v1'):]
         resp, _ = self.client.show_multiple_messages(message_uri)
         # The test has an assertion here, because the response cannot be 204
         # in this case (the client allows 200 or 204 for this API call).
@@ -76,7 +76,7 @@ class TestMessages(base.BaseMessagingTest):
     def test_get_multiple_messages(self):
         # Post Messages
         resp, _ = self._post_messages()
-        message_uri = resp['location']
+        message_uri = resp['location'][resp['location'].find('/v1'):]
 
         # Get posted messages
         resp, _ = self.client.show_multiple_messages(message_uri)
@@ -103,7 +103,7 @@ class TestMessages(base.BaseMessagingTest):
     def test_delete_multiple_messages(self):
         # Post Messages
         resp, _ = self._post_messages()
-        message_uri = resp['location']
+        message_uri = resp['location'][resp['location'].find('/v1'):]
 
         # Delete multiple messages
         self.client.delete_messages(message_uri)
