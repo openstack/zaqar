@@ -70,7 +70,7 @@ class Endpoints(object):
             LOG.exception(ex)
             error = 'Queues could not be listed.'
             headers = {'status': 503}
-            return api_utils.error_response(req, ex, error, headers)
+            return api_utils.error_response(req, ex, headers, error)
 
         # Buffer list of queues
         queues = list(next(results))
@@ -758,7 +758,7 @@ class Endpoints(object):
             LOG.exception(ex)
             error = 'Subscriptions could not be listed.'
             headers = {'status': 503}
-            return api_utils.error_response(req, ex, error, headers)
+            return api_utils.error_response(req, ex, headers, error)
 
         # Buffer list of queues
         subscriptions = list(next(results))
