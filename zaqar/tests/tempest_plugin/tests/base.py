@@ -195,3 +195,59 @@ class BaseV11MessagingTest(BaseMessagingTest):
         body = ([{'body': message_body, 'ttl': message_ttl}] * repeat)
         rbody = {'messages': body}
         return rbody
+
+
+class BaseV2MessagingTest(BaseV11MessagingTest):
+    """Base class for the Messaging (Zaqar) v1.1 tests."""
+    @classmethod
+    def setup_clients(cls):
+        super(BaseV2MessagingTest, cls).setup_clients()
+        cls.client = messaging_client.V2MessagingClient(
+            cls.os.auth_provider,
+            CONF.messaging.catalog_type,
+            CONF.identity.region,
+            **cls.os.default_params_with_timeout_values)
+
+    @classmethod
+    def create_subscription(cls, queue_name, rbody):
+        resp, body = cls.client.create_subscription(
+            queue_name, rbody)
+        return resp, body
+
+    @classmethod
+    def delete_subscription(cls, queue_name, subscription_id):
+        resp, body = cls.client.delete_subscription(queue_name,
+                                                    subscription_id)
+        return resp, body
+
+    @classmethod
+    def list_subscription(cls, queue_name):
+        resp, body = cls.client.list_subscription(queue_name)
+        return resp, body
+
+    @classmethod
+    def show_subscription(cls, queue_name, subscription_id):
+        resp, body = cls.client.show_subscription(queue_name, subscription_id)
+        return resp, body
+
+    @classmethod
+    def update_subscription(cls, queue_name, subscription_id, rbody):
+        resp, body = cls.client.update_subscription(queue_name,
+                                                    subscription_id,
+                                                    rbody)
+        return resp, body
+
+    @classmethod
+    def generate_subscription_body(cls):
+        message_ttl = data_utils.\
+            rand_int_id(start=60, end=CONF.messaging.max_message_ttl)
+
+        key = data_utils.arbitrary_string(size=20, base_text='MessagingKey')
+        value = data_utils.arbitrary_string(size=20,
+                                            base_text='MessagingValue')
+        option_body = {key: value}
+        subscribers = ['http://fake:8080', 'https://fake:8080',
+                       'mailto:fake@123.com']
+        rbody = [{'options': option_body, 'ttl': message_ttl,
+                  'subscriber': subscriber} for subscriber in subscribers]
+        return rbody
