@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Rackspace, Inc.
+# Copyright (c) 2016 HuaWei, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,15 +41,6 @@ class BaseMessagingTest(test.BaseTestCase):
             raise cls.skipException("Zaqar support is required")
 
     @classmethod
-    def setup_clients(cls):
-        super(BaseMessagingTest, cls).setup_clients()
-        cls.client = messaging_client.MessagingClient(
-            cls.os.auth_provider,
-            CONF.messaging.catalog_type,
-            CONF.identity.region,
-            **cls.os.default_params_with_timeout_values)
-
-    @classmethod
     def resource_setup(cls):
         super(BaseMessagingTest, cls).resource_setup()
         cls.messaging_cfg = CONF.messaging
@@ -64,18 +55,6 @@ class BaseMessagingTest(test.BaseTestCase):
     def delete_queue(cls, queue_name):
         """Wrapper utility that deletes a test queue."""
         resp, body = cls.client.delete_queue(queue_name)
-        return resp, body
-
-    @classmethod
-    def check_queue_exists(cls, queue_name):
-        """Wrapper utility that checks the existence of a test queue."""
-        resp, body = cls.client.show_queue(queue_name)
-        return resp, body
-
-    @classmethod
-    def check_queue_exists_head(cls, queue_name):
-        """Wrapper utility checks the head of a queue via http HEAD."""
-        resp, body = cls.client.head_queue(queue_name)
         return resp, body
 
     @classmethod
@@ -164,4 +143,55 @@ class BaseMessagingTest(test.BaseTestCase):
         message_body = {key: value}
 
         rbody = ([{'body': message_body, 'ttl': message_ttl}] * repeat)
+        return rbody
+
+
+class BaseV1MessagingTest(BaseMessagingTest):
+    """Base class for the Messaging (Zaqar) v1.0 tests."""
+    @classmethod
+    def setup_clients(cls):
+        super(BaseV1MessagingTest, cls).setup_clients()
+        cls.client = messaging_client.V1MessagingClient(
+            cls.os.auth_provider,
+            CONF.messaging.catalog_type,
+            CONF.identity.region,
+            **cls.os.default_params_with_timeout_values)
+
+    @classmethod
+    def check_queue_exists(cls, queue_name):
+        """Wrapper utility that checks the existence of a test queue."""
+        resp, body = cls.client.show_queue(queue_name)
+        return resp, body
+
+    @classmethod
+    def check_queue_exists_head(cls, queue_name):
+        """Wrapper utility checks the head of a queue via http HEAD."""
+        resp, body = cls.client.head_queue(queue_name)
+        return resp, body
+
+
+class BaseV11MessagingTest(BaseMessagingTest):
+    """Base class for the Messaging (Zaqar) v1.1 tests."""
+    @classmethod
+    def setup_clients(cls):
+        super(BaseV11MessagingTest, cls).setup_clients()
+        cls.client = messaging_client.V11MessagingClient(
+            cls.os.auth_provider,
+            CONF.messaging.catalog_type,
+            CONF.identity.region,
+            **cls.os.default_params_with_timeout_values)
+
+    @classmethod
+    def generate_message_body(cls, repeat=1):
+        """Wrapper utility that sets the metadata of a queue."""
+        message_ttl = data_utils.\
+            rand_int_id(start=60, end=CONF.messaging.max_message_ttl)
+
+        key = data_utils.arbitrary_string(size=20, base_text='MessagingKey')
+        value = data_utils.arbitrary_string(size=20,
+                                            base_text='MessagingValue')
+        message_body = {key: value}
+
+        body = ([{'body': message_body, 'ttl': message_ttl}] * repeat)
+        rbody = {'messages': body}
         return rbody
