@@ -45,7 +45,7 @@ class Resource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -78,8 +78,8 @@ class Resource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except storage_errors.QueueDoesNotExist:
-            raise falcon.HTTPNotFound()
+        except storage_errors.QueueDoesNotExist as ex:
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)

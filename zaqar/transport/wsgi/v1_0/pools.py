@@ -42,7 +42,6 @@ import six
 
 from zaqar.common.api.schemas import pools as schema
 from zaqar.common import utils as common_utils
-from zaqar.i18n import _
 from zaqar.storage import errors
 from zaqar.storage import utils as storage_utils
 from zaqar.transport import utils as transport_utils
@@ -145,7 +144,7 @@ class Resource(object):
 
         except errors.PoolDoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         data['href'] = request.path
 
@@ -181,8 +180,7 @@ class Resource(object):
             response.location = request.path
         except errors.PoolAlreadyExists as e:
             LOG.exception(e)
-            title = _(u'Unable to create pool')
-            raise falcon.HTTPConflict(title, six.text_type(e))
+            raise wsgi_errors.HTTPConflict(six.text_type(e))
 
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.
@@ -234,4 +232,4 @@ class Resource(object):
             self._ctrl.update(pool, **fields)
         except errors.PoolDoesNotExist as ex:
             LOG.exception(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
