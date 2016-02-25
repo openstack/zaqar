@@ -17,6 +17,7 @@ import uuid
 
 import falcon
 from falcon import testing
+from oslo_serialization import jsonutils
 
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -25,7 +26,7 @@ class TestMediaType(base.V2Base):
 
     config_file = 'wsgi_mongodb.conf'
 
-    def test_json_only_endpoints(self):
+    def test_json_only_endpoints_with_wrong_accept_header(self):
         endpoints = (
             ('GET', self.url_prefix + '/queues'),
             ('GET', self.url_prefix + '/queues/nonexistent/stats'),
@@ -48,3 +49,33 @@ class TestMediaType(base.V2Base):
 
             self.app(env, self.srmock)
             self.assertEqual(falcon.HTTP_406, self.srmock.status)
+
+    def test_request_with_body_and_urlencoded_contenttype_header_fails(self):
+        # NOTE(Eva-i): this test case makes sure wsgi 'before' hook
+        # "require_content_type_be_non_urlencoded" works to prevent
+        # bug/1547100.
+        eww_queue_path = self.url_prefix + '/queues/eww'
+        eww_queue_messages_path = eww_queue_path + '/messages'
+        sample_message = jsonutils.dumps({'messages': [{'body': {'eww!'},
+                                                        'ttl': 200}]})
+        bad_headers = {
+            'Client-ID': str(uuid.uuid4()),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        # Create queue request with bad headers. Should still work, because it
+        # has no body.
+        self.simulate_put(eww_queue_path, headers=bad_headers)
+        self.addCleanup(self.simulate_delete, eww_queue_path,
+                        headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # Post message request with good headers. Should work.
+        self.simulate_post(eww_queue_messages_path, body=sample_message,
+                           headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # Post message request with bad headers. Should not work.
+        self.simulate_post(eww_queue_messages_path, body=sample_message,
+                           headers=bad_headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)

@@ -75,6 +75,7 @@ class Driver(transport.DriverBase):
         """Exposed to facilitate unit testing."""
         return [
             self._verify_pre_signed_url,
+            helpers.require_content_type_be_non_urlencoded,
             helpers.require_accepts_json,
             helpers.require_client_id,
             helpers.extract_project_id,

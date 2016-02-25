@@ -186,6 +186,41 @@ media type support with the "Accept" header.''',
             href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
 
 
+def require_content_type_be_non_urlencoded(req, resp, params):
+    """Raises an exception on "x-www-form-urlencoded" content type of request.
+
+    If request has body and "Content-Type" header has
+    "application/x-www-form-urlencoded" value (case-insensitive), this function
+    raises falcon.HTTPBadRequest exception.
+
+    This strange function exists only to prevent bug/1547100 in a backward
+    compatible way.
+
+    Meant to be used as a `before` hook.
+
+    :param req: request sent
+    :type req: falcon.request.Request
+    :param resp: response object to return
+    :type resp: falcon.response.Response
+    :param params: additional parameters passed to responders
+    :type params: dict
+    :rtype: None
+    :raises: falcon.HTTPBadRequest
+
+    """
+    if req.content_length is None:
+        return
+    if req.content_type and (req.content_type.lower() ==
+                             'application/x-www-form-urlencoded'):
+        title = _(u'Invalid Content-Type')
+        description = _(u'Endpoint does not accept '
+                        u'`application/x-www-form-urlencoded` content; '
+                        u'currently supported media type is '
+                        u'`application/json`; specify proper client-side '
+                        u'media type with the "Content-Type" header.')
+        raise falcon.HTTPBadRequest(title, description)
+
+
 def inject_context(req, resp, params):
     """Inject context value into request environment.
 
