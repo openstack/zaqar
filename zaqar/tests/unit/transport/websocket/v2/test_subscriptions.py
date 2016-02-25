@@ -18,6 +18,7 @@ import uuid
 
 import mock
 
+from zaqar.storage import errors as storage_errors
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 from zaqar.transport.websocket import factory
@@ -220,3 +221,40 @@ class SubscriptionTest(base.V1_1Base):
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
+
+    def test_list_returns_503_on_nopoolfound_exception(self):
+        sub = self.boot.storage.subscription_controller.create(
+            'kitkat', '', 600, {}, project=self.project_id)
+        self.addCleanup(
+            self.boot.storage.subscription_controller.delete, 'kitkat', sub,
+            project=self.project_id)
+        action = 'subscription_list'
+        body = {'queue_name': 'kitkat'}
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        sender = send_mock.start()
+
+        req = test_utils.create_request(action, body, self.headers)
+
+        def validator(resp, isBinary):
+            resp = json.loads(resp)
+            self.assertEqual(503, resp['headers']['status'])
+
+        sender.side_effect = validator
+
+        subscription_controller = self.boot.storage.subscription_controller
+
+        with mock.patch.object(subscription_controller, 'list') as \
+                mock_subscription_list:
+
+            def subscription_generator():
+                raise storage_errors.NoPoolFound()
+
+            # This generator tries to be like subscription controller list
+            # generator in some ways.
+            def fake_generator():
+                yield subscription_generator()
+                yield {}
+            mock_subscription_list.return_value = fake_generator()
+            self.protocol.onMessage(req, False)

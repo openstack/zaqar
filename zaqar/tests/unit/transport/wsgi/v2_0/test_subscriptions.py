@@ -16,8 +16,10 @@ import uuid
 
 import ddt
 import falcon
+import mock
 from oslo_serialization import jsonutils
 
+from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -175,6 +177,32 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
     def test_list_works(self):
         self._list_subscription()
+
+    def test_list_returns_503_on_nopoolfound_exception(self):
+        arbitrary_number = 644079696574693
+        project_id = str(arbitrary_number)
+        client_id = str(uuid.uuid4())
+        header = {
+            'X-Project-ID': project_id,
+            'Client-ID': client_id
+        }
+
+        subscription_controller = self.boot.storage.subscription_controller
+
+        with mock.patch.object(subscription_controller, 'list') as \
+                mock_subscription_list:
+
+            def subscription_generator():
+                raise storage_errors.NoPoolFound()
+
+            # This generator tries to be like subscription controller list
+            # generator in some ways.
+            def fake_generator():
+                yield subscription_generator()
+                yield {}
+            mock_subscription_list.return_value = fake_generator()
+            self.simulate_get(self.subscription_path, headers=header)
+            self.assertEqual(falcon.HTTP_503, self.srmock.status)
 
     def test_list_empty(self):
         resp = self.simulate_get(self.subscription_path,
