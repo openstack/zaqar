@@ -98,7 +98,7 @@ class CollectionResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -159,7 +159,7 @@ class CollectionResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
@@ -247,7 +247,7 @@ class ItemResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)

@@ -65,3 +65,22 @@ class HTTPForbidden(falcon.HTTPForbidden):
 
     def __init__(self):
         super(HTTPForbidden, self).__init__(self.TITLE, self.DESCRIPTION)
+
+
+class HTTPConflict(falcon.HTTPConflict):
+    """Wraps falcon.HTTPConflict with contextual title."""
+
+    TITLE = _(u'Resource conflict')
+
+    def __init__(self, description, **kwargs):
+        super(HTTPConflict, self).__init__(self.TITLE, description, **kwargs)
+
+
+class HTTPNotFound(falcon.HTTPNotFound):
+    """Wraps falcon.HTTPConflict with contextual title."""
+
+    TITLE = _(u'Not found')
+
+    def __init__(self, description):
+        super(HTTPNotFound, self).__init__(title=self.TITLE,
+                                           description=description)

@@ -190,7 +190,7 @@ class CollectionResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except storage_errors.MessageConflict as ex:
             LOG.exception(ex)
@@ -226,7 +226,11 @@ class CollectionResource(object):
             # NOTE(TheSriram): Trying to get a message by id, should
             # return the message if its present, otherwise a 404 since
             # the message might have been deleted.
-            resp.status = falcon.HTTP_404
+            msg = _(u'No messages with IDs: {ids} found in the queue {queue} '
+                    u'for project {project}.')
+            description = msg.format(queue=queue_name, project=project_id,
+                                     ids=ids)
+            raise wsgi_errors.HTTPNotFound(description)
 
         else:
             resp.body = utils.to_json(response)
@@ -308,7 +312,7 @@ class ItemResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)

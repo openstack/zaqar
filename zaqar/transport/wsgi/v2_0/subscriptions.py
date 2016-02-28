@@ -48,7 +48,7 @@ class ItemResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
@@ -90,7 +90,7 @@ class ItemResource(object):
             resp.location = req.path
         except storage_errors.SubscriptionDoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -186,8 +186,13 @@ class CollectionResource(object):
             description = _(u'Subscription could not be created.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        resp.status = falcon.HTTP_201 if created else falcon.HTTP_409
-        resp.location = req.path
         if created:
+            resp.location = req.path
+            resp.status = falcon.HTTP_201
             resp.body = utils.to_json(
                 {'subscription_id': six.text_type(created)})
+        else:
+            description = _(u'Such subscription already exists. Subscriptions '
+                            u'are unique by project + queue + subscriber URI.')
+            raise wsgi_errors.HTTPConflict(description, headers={'location':
+                                                                 req.path})

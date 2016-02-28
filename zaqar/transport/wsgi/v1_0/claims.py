@@ -110,7 +110,7 @@ class ItemResource(Resource):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Claim could not be queried.')
@@ -151,7 +151,7 @@ class ItemResource(Resource):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise falcon.HTTPNotFound()
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
         except Exception as ex:
             LOG.exception(ex)
