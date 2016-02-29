@@ -65,7 +65,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -73,7 +73,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(404, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Create
@@ -92,7 +92,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(201, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Fetch metadata
@@ -108,9 +108,9 @@ class QueueLifecycleBaseTest(base.V2Base):
         def validator(resp, isBinary):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
-            self.assertEqual(json.dumps(meta), json.dumps(resp['body']))
+            self.assertEqual(meta, resp['body'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Stats empty queue
@@ -122,7 +122,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Delete
@@ -134,7 +134,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(204, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Get non-existent stats
@@ -146,7 +146,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(404, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_name_restrictions(self):
@@ -166,7 +166,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -174,7 +174,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(201, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         body["queue_name"] = "m@rsb@r"
@@ -184,7 +184,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         body["queue_name"] = "marsbar" * 10
@@ -201,7 +201,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -209,7 +209,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         headers['X-Project-ID'] = 'test-project'
@@ -219,7 +219,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(201, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_non_ascii_name(self):
@@ -235,7 +235,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -243,7 +243,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         body = {"queue_name": test_params[1]}
@@ -261,7 +261,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -269,14 +269,14 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(201, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
             self.assertEqual(204, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     @ddt.data('{', '[]', '.', '  ')
@@ -291,7 +291,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -299,7 +299,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_too_much_metadata(self):
@@ -318,7 +318,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -326,7 +326,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_way_too_much_metadata(self):
@@ -345,7 +345,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, headers)
 
@@ -353,7 +353,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_update_metadata(self):
@@ -367,7 +367,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         # Create
         req = test_utils.create_request(action, body, headers)
@@ -376,7 +376,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(201, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Set meta
@@ -389,7 +389,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(204, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Get
@@ -401,9 +401,9 @@ class QueueLifecycleBaseTest(base.V2Base):
         def validator(resp, isBinary):
             resp = json.loads(resp)
             self.assertEqual(204, resp['headers']['status'])
-            self.assertEqual(json.dumps(meta1), json.dumps(resp['body']))
+            self.assertEqual(meta1, resp['body'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Update
@@ -417,7 +417,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(204, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Get again
@@ -429,9 +429,9 @@ class QueueLifecycleBaseTest(base.V2Base):
         def validator(resp, isBinary):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
-            self.assertEqual(json.dumps(meta2), json.dumps(resp['body']))
+            self.assertEqual(meta2, resp['body'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_list(self):
@@ -445,7 +445,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         # NOTE(kgriffs): It's important that this one sort after the one
         # above. This is in order to prove that bug/1236605 is fixed, and
@@ -464,7 +464,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             self.assertEqual(200, resp['headers']['status'])
             self.assertEqual([], resp['body']['queues'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Payload exceeded
@@ -475,7 +475,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(400, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # Create some
@@ -493,7 +493,7 @@ class QueueLifecycleBaseTest(base.V2Base):
                 resp = json.loads(resp)
                 self.assertEqual(201, resp['headers']['status'])
 
-            send_mock.side_effect = validator
+            sender.side_effect = validator
             self.protocol.onMessage(req, False)
 
         create_queue(project_id, 'q1', {"node": 31})
@@ -510,7 +510,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(2, len(resp['body']['queues']))
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # List (no metadata, get all)
@@ -523,7 +523,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             # Ensure we didn't pick up the queue from the alt project.
             self.assertEqual(3, len(resp['body']['queues']))
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # List with metadata
@@ -534,7 +534,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         action = "queue_get"
@@ -544,10 +544,9 @@ class QueueLifecycleBaseTest(base.V2Base):
         def validator(resp, isBinary):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
-            self.assertEqual(json.dumps({"node": 31}),
-                             json.dumps(resp['body']))
+            self.assertEqual({"node": 31}, resp['body'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # List tail
@@ -559,7 +558,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             resp = json.loads(resp)
             self.assertEqual(200, resp['headers']['status'])
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         # List manually-constructed tail

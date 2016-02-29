@@ -58,7 +58,7 @@ class SubscriptionTest(base.V1_1Base):
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
-        send_mock.start()
+        sender = send_mock.start()
 
         req = test_utils.create_request(action, body, self.headers)
 
@@ -66,7 +66,7 @@ class SubscriptionTest(base.V1_1Base):
             resp = json.loads(resp)
             self.assertEqual(resp['headers']['status'], 204)
 
-        send_mock.side_effect = validator
+        sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
     def test_subscription_create(self):
