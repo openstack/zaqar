@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Rackspace, Inc.
+# Copyright (c) 2016 HuaWei, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@
 from six import moves
 from tempest.common.utils import data_utils
 from tempest_lib import decorators
-from tempest_lib import exceptions as lib_exc
 from testtools import matchers
 
-from zaqar.tests.tempest_plugin.tests.api import base
+from zaqar.tests.tempest_plugin.tests import base
 
 
-class TestQueues(base.BaseMessagingTest):
+class TestQueues(base.BaseV11MessagingTest):
 
-    @decorators.idempotent_id('9f1c4c72-80c5-4dac-acf3-188cef42e36c')
+    @decorators.idempotent_id('16a8a53e-e9f0-4c84-bc74-4e4e89abae75')
     def test_create_delete_queue(self):
         # Create & Delete Queue
         queue_name = data_utils.rand_name('test')
@@ -38,12 +37,11 @@ class TestQueues(base.BaseMessagingTest):
         self.assertEqual('', body)
 
         self.delete_queue(queue_name)
-        self.assertRaises(lib_exc.NotFound,
-                          self.client.show_queue,
-                          queue_name)
+        # lazy queue
+        self.client.show_queue(queue_name)
 
 
-class TestManageQueue(base.BaseMessagingTest):
+class TestManageQueue(base.BaseV11MessagingTest):
 
     @classmethod
     def resource_setup(cls):
@@ -55,19 +53,7 @@ class TestManageQueue(base.BaseMessagingTest):
             # Create Queue
             cls.client.create_queue(queue_name)
 
-    @decorators.idempotent_id('ccd3d69e-f156-4c5f-8a12-b4f24bee44e1')
-    def test_check_queue_existence(self):
-        # Checking Queue Existence
-        for queue_name in self.queues:
-            self.check_queue_exists(queue_name)
-
-    @decorators.idempotent_id('e27634d8-9c8f-47d8-a677-655c47658d3e')
-    def test_check_queue_head(self):
-        # Checking Queue Existence by calling HEAD
-        for queue_name in self.queues:
-            self.check_queue_exists_head(queue_name)
-
-    @decorators.idempotent_id('0a0feeca-7768-4303-806d-82bbbb796ad3')
+    @decorators.idempotent_id('a27e9c2f-66ba-400e-b175-7b2e3f0f2ef9')
     def test_list_queues(self):
         # Listing queues
         _, body = self.list_queues()
@@ -75,7 +61,7 @@ class TestManageQueue(base.BaseMessagingTest):
         for item in body['queues']:
             self.assertIn(item['name'], self.queues)
 
-    @decorators.idempotent_id('8fb66602-077d-49d6-ae1a-5f2091739178')
+    @decorators.idempotent_id('fe1a0655-08f9-4366-b1c6-b4bc4d30396b')
     def test_get_queue_stats(self):
         # Retrieve random queue
         queue_name = self.queues[data_utils.rand_int_id(0,
@@ -88,7 +74,8 @@ class TestManageQueue(base.BaseMessagingTest):
         for element in ('oldest', 'newest'):
             self.assertNotIn(element, msgs)
 
-    @decorators.idempotent_id('0e2441e6-6593-4bdb-a3c0-20e66eeb3fff')
+    @decorators.skip_because(bug='1543900')
+    @decorators.idempotent_id('883a5fba-fb87-4663-b941-cf4a25e64607')
     def test_set_and_get_queue_metadata(self):
         # Retrieve random queue
         queue_name = self.queues[data_utils.rand_int_id(0,

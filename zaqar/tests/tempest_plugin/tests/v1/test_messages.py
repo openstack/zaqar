@@ -17,12 +17,12 @@ from tempest import config
 from tempest_lib.common.utils import data_utils
 from tempest_lib import decorators
 
-from zaqar.tests.tempest_plugin.tests.api import base
+from zaqar.tests.tempest_plugin.tests import base
 
 CONF = config.CONF
 
 
-class TestMessages(base.BaseMessagingTest):
+class TestMessages(base.BaseV1MessagingTest):
 
     @classmethod
     def resource_setup(cls):
