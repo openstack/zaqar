@@ -16,7 +16,7 @@
 from oslo_config import cfg
 
 service_option = cfg.BoolOpt('zaqar',
-                             default=False,
+                             default=True,
                              help="Whether or not Zaqar is expected to be "
                                   "available"),
 

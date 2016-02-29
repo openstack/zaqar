@@ -25,9 +25,9 @@ from zaqar.tests.tempest_plugin.api_schema.response.v1 import queues as schema
 class MessagingClient(rest_client.RestClient):
 
     def __init__(self, auth_provider, service, region,
-                 endpoint_type=None, build_interval=None, build_timeout=None,
-                 disable_ssl_certificate_validation=None, ca_certs=None,
-                 trace_requests=None):
+                 endpoint_type='publicURL', build_interval=1, build_timeout=60,
+                 disable_ssl_certificate_validation=False, ca_certs=None,
+                 trace_requests=''):
         dscv = disable_ssl_certificate_validation
         super(MessagingClient, self).__init__(
             auth_provider, service, region,

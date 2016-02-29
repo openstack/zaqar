@@ -62,27 +62,25 @@ class TestClaims(base.BaseMessagingTest):
         # Delete Claimed message
         self.client.delete_messages(claimed_message_uri)
 
-    @decorators.skip_because(bug="1331517")
     @decorators.idempotent_id('84e491f4-68c6-451f-9846-b8f868eb27c5')
     def test_query_claim(self):
         # Post a Claim
         resp, body = self._post_and_claim_messages(queue_name=self.queue_name)
 
         # Query Claim
-        claim_uri = resp['location']
+        claim_uri = resp['location'][resp['location'].find('/v1'):]
         self.client.query_claim(claim_uri)
 
         # Delete Claimed message
         claimed_message_uri = body[0]['href']
         self.delete_messages(claimed_message_uri)
 
-    @decorators.skip_because(bug="1328111")
     @decorators.idempotent_id('420ef0c5-9bd6-4b82-b06d-d9da330fefd3')
     def test_update_claim(self):
         # Post a Claim
         resp, body = self._post_and_claim_messages(queue_name=self.queue_name)
 
-        claim_uri = resp['location']
+        claim_uri = resp['location'][resp['location'].find('/v1'):]
         claimed_message_uri = body[0]['href']
 
         # Update Claim
@@ -104,7 +102,7 @@ class TestClaims(base.BaseMessagingTest):
     def test_release_claim(self):
         # Post a Claim
         resp, body = self._post_and_claim_messages(queue_name=self.queue_name)
-        claim_uri = resp['location']
+        claim_uri = resp['location'][resp['location'].find('/v1'):]
 
         # Release Claim
         self.client.delete_claim(claim_uri)
