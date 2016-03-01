@@ -74,6 +74,8 @@ class Listing(object):
 
             for entry in flavors:
                 entry['href'] = request.path + '/' + entry['name']
+                # NOTE(wanghao): remove this in Newton.
+                entry['pool'] = entry['pool_group']
 
             results['links'] = [
                 {
@@ -99,6 +101,8 @@ class Resource(object):
         validator_type = jsonschema.Draft4Validator
         self._validators = {
             'create': validator_type(schema.create),
+            'pool_group': validator_type(schema.patch_pool_group),
+            # NOTE(wanghao): Remove this in Newton.
             'pool': validator_type(schema.patch_pool),
             'capabilities': validator_type(schema.patch_capabilities),
         }
@@ -108,7 +112,7 @@ class Resource(object):
 
         ::
 
-            {"pool": "", capabilities: {...}}
+            {"pool_group": "", capabilities: {...}}
 
         :returns: HTTP | [200, 404]
         """
@@ -121,7 +125,8 @@ class Resource(object):
             data = self._ctrl.get(flavor,
                                   project=project_id,
                                   detailed=detailed)
-
+            # NOTE(wanghao): remove this in Newton.
+            data['pool'] = data['pool_group']
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
@@ -135,7 +140,7 @@ class Resource(object):
 
         ::
 
-            {"pool": "my-pool", "capabilities": {}}
+            {"pool_group": "my-pool-group", "capabilities": {}}
 
         A capabilities object may also be provided.
 
@@ -146,19 +151,19 @@ class Resource(object):
 
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
-
+        pool_group = data.get('pool_group') or data.get('pool')
         try:
             self._ctrl.create(flavor,
-                              pool=data['pool'],
+                              pool_group=pool_group,
                               project=project_id,
                               capabilities=data['capabilities'])
             response.status = falcon.HTTP_201
             response.location = request.path
-        except errors.PoolDoesNotExist as ex:
+        except errors.PoolGroupDoesNotExist as ex:
             LOG.exception(ex)
             description = (_(u'Flavor %(flavor)s could not be created. '
-                             u'Pool %(pool)s does not exist') %
-                           dict(flavor=flavor, pool=data['pool']))
+                             u'Pool group %(pool_group)s does not exist') %
+                           dict(flavor=flavor, pool_group=pool_group))
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
     def on_delete(self, request, response, project_id, flavor):
@@ -175,7 +180,7 @@ class Resource(object):
         """Allows one to update a flavors's pool and/or capabilities.
 
         This method expects the user to submit a JSON object
-        containing at least one of: 'pool', 'capabilities'. If
+        containing at least one of: 'pool_group', 'capabilities'. If
         none are found, the request is flagged as bad. There is also
         strict format checking through the use of
         jsonschema. Appropriate errors are returned in each case for
@@ -187,11 +192,11 @@ class Resource(object):
         LOG.debug(u'PATCH flavor - name: %s', flavor)
         data = wsgi_utils.load(request)
 
-        EXPECT = ('pool', 'capabilities')
+        EXPECT = ('pool_group', 'capabilities', 'pool')
         if not any([(field in data) for field in EXPECT]):
             LOG.debug(u'PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                'One of `pool` or `capabilities` needs '
+                'One of `pool_group` or `capabilities`  or `pool` needs '
                 'to be specified'
             )
 
@@ -200,6 +205,10 @@ class Resource(object):
 
         fields = common_utils.fields(data, EXPECT,
                                      pred=lambda v: v is not None)
+        # NOTE(wanghao): remove this in Newton.
+        if fields.get('pool') and fields.get('pool_group') is None:
+            fields['pool_group'] = fields.get('pool')
+            fields.pop('pool')
 
         try:
             self._ctrl.update(flavor, project=project_id, **fields)

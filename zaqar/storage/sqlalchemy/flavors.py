@@ -71,21 +71,22 @@ class FlavorsController(base.FlavorsBase):
         return _normalize(flavor, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, pool, project=None, capabilities=None):
+    def create(self, name, pool_group, project=None, capabilities=None):
         cap = None if capabilities is None else utils.json_encode(capabilities)
 
         try:
             stmt = sa.sql.expression.insert(tables.Flavors).values(
-                name=name, pool=pool, project=project, capabilities=cap
+                name=name, pool_group=pool_group, project=project,
+                capabilities=cap
             )
             self.driver.connection.execute(stmt)
         except sa.exc.IntegrityError:
-            if not self._pools_ctrl.get_pools_by_group(pool):
-                raise errors.PoolDoesNotExist(pool)
+            if not self._pools_ctrl.get_pools_by_group(pool_group):
+                raise errors.PoolGroupDoesNotExist(pool_group)
 
             # TODO(flaper87): merge update/create into a single
             # method with introduction of upsert
-            self.update(name, pool=pool,
+            self.update(name, pool_group=pool_group,
                         project=project,
                         capabilities=cap)
 
@@ -98,16 +99,16 @@ class FlavorsController(base.FlavorsBase):
         return self.driver.connection.execute(stmt).fetchone() is not None
 
     @utils.raises_conn_error
-    def update(self, name, project=None, pool=None, capabilities=None):
+    def update(self, name, project=None, pool_group=None, capabilities=None):
         fields = {}
 
         if capabilities is not None:
             fields['capabilities'] = capabilities
 
-        if pool is not None:
-            fields['pool'] = pool
+        if pool_group is not None:
+            fields['pool_group'] = pool_group
 
-        assert fields, '`pool` or `capabilities` not found in kwargs'
+        assert fields, '`pool_group` or `capabilities` not found in kwargs'
         if 'capabilities' in fields:
             fields['capabilities'] = utils.json_encode(fields['capabilities'])
 
@@ -136,7 +137,7 @@ class FlavorsController(base.FlavorsBase):
 def _normalize(flavor, detailed=False):
     ret = {
         'name': flavor[0],
-        'pool': flavor[2],
+        'pool_group': flavor[2],
     }
 
     if detailed:

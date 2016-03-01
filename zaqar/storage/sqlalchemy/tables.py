@@ -46,8 +46,8 @@ Pools = sa.Table('Pools', metadata,
 Flavors = sa.Table('Flavors', metadata,
                    sa.Column('name', sa.String(64), primary_key=True),
                    sa.Column('project', sa.String(64)),
-                   sa.Column('pool', sa.ForeignKey('PoolGroup.name',
-                                                   ondelete='CASCADE'),
+                   sa.Column('pool_group', sa.ForeignKey('PoolGroup.name',
+                                                         ondelete='CASCADE'),
                              nullable=False),
                    sa.Column('capabilities', sa.Text()))
 

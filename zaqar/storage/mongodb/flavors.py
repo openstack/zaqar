@@ -16,7 +16,7 @@
 Schema:
   'n': name :: six.text_type
   'p': project :: six.text_type
-  's': storage pool :: six.text_type
+  's': storage pool_group :: six.text_type
   'c': capabilities :: dict
 """
 
@@ -56,13 +56,13 @@ class FlavorsController(base.FlavorsBase):
                                unique=True)
         self._col.ensure_index(FLAVORS_STORAGE_POOL_INDEX,
                                background=True,
-                               name='flavors_storage_pool_name')
+                               name='flavors_storage_pool_group_name')
 
         self._pools_ctrl = self.driver.pools_controller
 
     @utils.raises_conn_error
-    def _list_by_pool(self, pool, limit=10, detailed=False):
-        query = {'s': pool}
+    def _list_by_pool_group(self, pool_group, limit=10, detailed=False):
+        query = {'s': pool_group}
         cursor = self._col.find(query, projection=_field_spec(detailed),
                                 limit=limit).sort('n', 1)
 
@@ -97,16 +97,18 @@ class FlavorsController(base.FlavorsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, pool, project=None, capabilities=None):
+    def create(self, name, pool_group, project=None, capabilities=None):
 
         # NOTE(flaper87): Check if there are pools in this group.
         # Should there be a `group_exists` method?
-        if not list(self._pools_ctrl.get_pools_by_group(pool)):
-            raise errors.PoolDoesNotExist(pool)
+        # NOTE(wanghao): Since we didn't pass the group name just pool name,
+        # so we don't need to get the pool by group.
+        if not list(self._pools_ctrl.get_pools_by_group(pool_group)):
+            raise errors.PoolGroupDoesNotExist(pool_group)
 
         capabilities = {} if capabilities is None else capabilities
         self._col.update({'n': name, 'p': project},
-                         {'$set': {'s': pool, 'c': capabilities}},
+                         {'$set': {'s': pool_group, 'c': capabilities}},
                          upsert=True)
 
     @utils.raises_conn_error
@@ -114,16 +116,16 @@ class FlavorsController(base.FlavorsBase):
         return self._col.find_one({'n': name, 'p': project}) is not None
 
     @utils.raises_conn_error
-    def update(self, name, project=None, pool=None, capabilities=None):
+    def update(self, name, project=None, pool_group=None, capabilities=None):
         fields = {}
 
         if capabilities is not None:
             fields['c'] = capabilities
 
-        if pool is not None:
-            fields['s'] = pool
+        if pool_group is not None:
+            fields['s'] = pool_group
 
-        assert fields, '`pool` or `capabilities` not found in kwargs'
+        assert fields, '`pool_group` or `capabilities` not found in kwargs'
         res = self._col.update({'n': name, 'p': project},
                                {'$set': fields},
                                upsert=False)
@@ -144,7 +146,7 @@ class FlavorsController(base.FlavorsBase):
 def _normalize(flavor, detailed=False):
     ret = {
         'name': flavor['n'],
-        'pool': flavor['s'],
+        'pool_group': flavor['s'],
     }
 
     if detailed:

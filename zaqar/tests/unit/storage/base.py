@@ -1424,8 +1424,8 @@ class FlavorsControllerTest(ControllerBaseTest):
         self.assertIn('name', flavor)
         self.assertEqual(xname, flavor['name'])
         self.assertNotIn('project', flavor)
-        self.assertIn('pool', flavor)
-        self.assertEqual(xpool, flavor['pool'])
+        self.assertIn('pool_group', flavor)
+        self.assertEqual(xpool, flavor['pool_group'])
 
     def test_create_replaces_on_duplicate_insert(self):
         name = str(uuid.uuid1())
@@ -1493,18 +1493,18 @@ class FlavorsControllerTest(ControllerBaseTest):
                                           detailed=True)
 
         p = 'olympic'
-        group = 'sports'
+        pool_group = 'sports'
         self.pools_controller.create(p, 100, 'localhost2',
-                                     group=group, options={})
+                                     group=pool_group, options={})
         self.addCleanup(self.pools_controller.delete, p)
 
         new_capabilities = {'fifo': False}
         self.flavors_controller.update(name, project=self.project,
-                                       pool=group,
+                                       pool_group=pool_group,
                                        capabilities={'fifo': False})
         res = self.flavors_controller.get(name, project=self.project,
                                           detailed=True)
-        self._flavors_expects(res, name, self.project, group)
+        self._flavors_expects(res, name, self.project, pool_group)
         self.assertEqual(new_capabilities, res['capabilities'])
 
     def test_delete_works(self):
@@ -1529,13 +1529,15 @@ class FlavorsControllerTest(ControllerBaseTest):
         name_gen = lambda i: chr(ord('A') + i)
         for i in range(15):
             pool = str(i)
+            pool_group = pool
             uri = 'localhost:2701' + pool
             self.pools_controller.create(pool, 100, uri,
-                                         group=pool, options={})
+                                         group=pool_group, options={})
             self.addCleanup(self.pools_controller.delete, pool)
 
             self.flavors_controller.create(name_gen(i), project=self.project,
-                                           pool=pool, capabilities={})
+                                           pool_group=pool_group,
+                                           capabilities={})
 
         def get_res(**kwargs):
             cursor = self.flavors_controller.list(project=self.project,
