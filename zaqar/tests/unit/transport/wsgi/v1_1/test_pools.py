@@ -266,7 +266,7 @@ class TestPoolsMongoDB(base.V1_1Base):
         result = self.simulate_get(self.url_prefix + '/pools')
         results = jsonutils.loads(result[0])
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
-        self.assertTrue(len(results['pools']) == 0)
+        self.assertEqual(0, len(results['pools']))
         self.assertIn('links', results)
 
     def _listing_test(self, count=10, limit=10,
@@ -311,7 +311,7 @@ class TestPoolsMongoDB(base.V1_1Base):
             else:
                 # NOTE(jeffrey4l): when limit >= count, there will be no
                 # pools in the 2nd page.
-                self.assertTrue(len(next_pool_list) == 0)
+                self.assertEqual(0, len(next_pool_list))
 
             self.assertEqual(min(limit, count), len(pool_list))
             for s in pool_list + next_pool_list:
