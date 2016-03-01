@@ -554,3 +554,10 @@ class Validator(object):
 
             raise ValidationFailed(
                 msg, self._limits_conf.max_subscriptions_per_page)
+
+    def get_limit_conf_value(self, limit_conf_name=None):
+        """Return the value of limit configuration.
+
+        :param limit_conf_name: configuration name
+        """
+        return self._limits_conf[limit_conf_name]

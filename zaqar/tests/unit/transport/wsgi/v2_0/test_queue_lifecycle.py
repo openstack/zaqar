@@ -93,7 +93,10 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
-        self.assertEqual(jsonutils.loads(doc), result_doc)
+        ref_doc = jsonutils.loads(doc)
+        ref_doc['_default_message_ttl'] = 1209600
+        ref_doc['_max_messages_post_size'] = 262144
+        self.assertEqual(ref_doc, result_doc)
 
         # Stats empty queue
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
@@ -159,6 +162,14 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           headers=self.headers)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
+        result = self.simulate_get(self.fizbat_queue_path,
+                                   headers=self.headers)
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(256 * 1024,
+                         result_doc.get('_max_messages_post_size'))
+        self.assertEqual(1209600,
+                         result_doc.get('_default_message_ttl'))
+
     @ddt.data('{', '[]', '.', '  ')
     def test_bad_metadata(self, document):
         self.simulate_put(self.fizbat_queue_path,
@@ -212,7 +223,10 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result = self.simulate_get(self.fizbat_queue_path,
                                    headers=self.headers)
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual(jsonutils.loads(doc), result_doc)
+        ref_doc = jsonutils.loads(doc)
+        ref_doc['_default_message_ttl'] = 1209600
+        ref_doc['_max_messages_post_size'] = 262144
+        self.assertEqual(ref_doc, result_doc)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
     def test_update_metadata(self):
@@ -247,7 +261,9 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result = self.simulate_get(xyz_queue_path_metadata,
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual({'key1': 2, 'key2': 1}, result_doc)
+        self.assertEqual({'key1': 2, 'key2': 1,
+                          '_default_message_ttl': 1209600,
+                          '_max_messages_post_size': 262144}, result_doc)
 
         # remove metadata
         doc3 = '[{"op":"remove", "path": "/metadata/key1"}]'
@@ -259,7 +275,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result = self.simulate_get(xyz_queue_path_metadata,
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
-        self.assertEqual({'key2': 1}, result_doc)
+        self.assertEqual({'key2': 1, '_default_message_ttl': 1209600,
+                          '_max_messages_post_size': 262144}, result_doc)
 
         # replace non-existent metadata
         doc4 = '[{"op":"replace", "path": "/metadata/key3", "value":2}]'
@@ -371,8 +388,11 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         queue = result_doc['queues'][0]
         result = self.simulate_get(queue['href'], headers=header)
         result_doc = jsonutils.loads(result[0])
+        queue['metadata']['_default_message_ttl'] = 1209600
+        queue['metadata']['_max_messages_post_size'] = 262144
         self.assertEqual(queue['metadata'], result_doc)
-        self.assertEqual({'node': 31}, result_doc)
+        self.assertEqual({'node': 31, '_default_message_ttl': 1209600,
+                          '_max_messages_post_size': 262144},  result_doc)
 
         # List tail
         self.simulate_get(target, headers=header, query_string=params)
