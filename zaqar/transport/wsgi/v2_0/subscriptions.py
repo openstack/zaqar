@@ -105,11 +105,14 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('_subscription_controller', '_validate')
+    __slots__ = ('_subscription_controller', '_validate',
+                 '_default_subscription_ttl')
 
-    def __init__(self, validate, subscription_controller):
+    def __init__(self, validate, subscription_controller,
+                 default_subscription_ttl):
         self._subscription_controller = subscription_controller
         self._validate = validate
+        self._default_subscription_ttl = default_subscription_ttl
 
     @decorators.TransportLog("Subscription collection")
     @acl.enforce("subscription:get_all")
@@ -167,8 +170,8 @@ class CollectionResource(object):
         try:
             self._validate.subscription_posting(document)
             subscriber = document['subscriber']
-            ttl = int(document['ttl'])
-            options = document['options']
+            ttl = document.get('ttl', self._default_subscription_ttl)
+            options = document.get('options', {})
             created = self._subscription_controller.create(queue_name,
                                                            subscriber,
                                                            ttl,

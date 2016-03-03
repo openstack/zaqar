@@ -58,7 +58,7 @@ class RequestSchema(v1_1.RequestSchema):
                         'ttl': {'type': 'integer'},
                         'options': {'type': 'object'},
                     },
-                    'required': ['queue_name', 'ttl'],
+                    'required': ['queue_name', ],
                 }
             },
             'required': ['action', 'headers', 'body']

@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import re
 
 from oslo_config import cfg
+from oslo_utils import timeutils
 import six
 
 from zaqar.i18n import _
@@ -24,6 +26,7 @@ from zaqar.i18n import _
 MIN_MESSAGE_TTL = 60
 MIN_CLAIM_TTL = 60
 MIN_CLAIM_GRACE = 60
+MIN_SUBSCRIPTION_TTL = 60
 
 _TRANSPORT_LIMITS_OPTIONS = (
     cfg.IntOpt('max_queues_per_page', default=20,
@@ -295,7 +298,7 @@ class Validator(object):
         :param subscription: dict of subscription
         :raises: ValidationFailed if the subscription is invalid.
         """
-        for p in ('subscriber', 'ttl', 'options'):
+        for p in ('subscriber',):
             if p not in subscription.keys():
                 raise ValidationFailed(_(u'Missing parameter %s in body.') % p)
 
@@ -329,9 +332,29 @@ class Validator(object):
             raise ValidationFailed(msg)
 
         ttl = subscription.get('ttl', None)
-        if ttl and not isinstance(ttl, int):
-            msg = _(u'TTL must be an integer.')
-            raise ValidationFailed(msg)
+        if ttl:
+            if not isinstance(ttl, int):
+                msg = _(u'TTL must be an integer.')
+                raise ValidationFailed(msg)
+
+            if ttl < MIN_SUBSCRIPTION_TTL:
+                msg = _(u'The TTL for a subscription '
+                        'must be at least {0} seconds long.')
+                raise ValidationFailed(msg, MIN_SUBSCRIPTION_TTL)
+
+            # NOTE(flwang): By this change, technically, user can set a very
+            # big TTL so as to get a very long subscription.
+            now = timeutils.utcnow_ts()
+            now_dt = datetime.datetime.utcfromtimestamp(now)
+            msg = _(u'The TTL seconds for a subscription plus current time'
+                    ' must be less than {0}.')
+            try:
+                # NOTE(flwang): If below expression works, then we believe the
+                # ttl is acceptable otherwise it exceeds the max time of
+                # python.
+                now_dt + datetime.timedelta(seconds=ttl)
+            except OverflowError:
+                raise ValidationFailed(msg, datetime.datetime.max)
 
     def subscription_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of subscriptions.
