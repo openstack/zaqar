@@ -1000,6 +1000,8 @@ class SubscriptionControllerTest(ControllerBaseTest):
             self.addCleanup(self.subscription_controller.delete, self.source,
                             s_id, self.project)
 
+        added_age = 1
+        time.sleep(added_age)
         interaction = self.subscription_controller.list(self.source,
                                                         project=self.project)
         subscriptions = list(next(interaction))
@@ -1008,6 +1010,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                 'source' in s and 'subscriber' in s,
                                 subscriptions)))
         self.assertEqual(10, len(subscriptions))
+        self.assertLessEqual(added_age, subscriptions[2]['age'])
 
         interaction = (self.subscription_controller.list(self.source,
                                                          project=self.project,
@@ -1032,15 +1035,17 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                    self.ttl,
                                                    self.options,
                                                    project=self.project)
-
+        added_age = 2
+        time.sleep(added_age)
         subscription = self.subscription_controller.get(self.queue_name,
                                                         s_id,
                                                         self.project)
 
-        self.assertEqual(self.source,
-                         subscription['source'])
-        self.assertEqual(self.subscriber,
-                         subscription['subscriber'])
+        self.assertEqual(self.source, subscription['source'])
+        self.assertEqual(self.subscriber, subscription['subscriber'])
+        self.assertEqual(self.ttl, subscription['ttl'])
+        self.assertEqual(self.options, subscription['options'])
+        self.assertLessEqual(added_age, subscription['age'])
 
         exist = self.subscription_controller.exists(self.queue_name,
                                                     s_id,
