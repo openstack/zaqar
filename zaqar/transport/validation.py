@@ -156,6 +156,42 @@ class Validator(object):
             msg = _(u'Queue metadata is too large. Max size: {0}')
             raise ValidationFailed(msg, self._limits_conf.max_queue_metadata)
 
+    def queue_metadata_putting(self, queue_metadata):
+        """Checking if the reserved attributes of the queue are valid.
+
+        :param queue_metadata: Queue's metadata.
+        :raises: ValidationFailed if any reserved attribute is invalid.
+        """
+        if not queue_metadata:
+            return
+
+        queue_default_ttl = queue_metadata.get('_default_message_ttl', None)
+        if queue_default_ttl and not isinstance(queue_default_ttl, int):
+            msg = _(u'_default_message_ttl must be integer.')
+            raise ValidationFailed(msg)
+
+        if queue_default_ttl:
+            if not (MIN_MESSAGE_TTL <= queue_default_ttl <=
+                    self._limits_conf.max_message_ttl):
+                msg = _(u'_default_message_ttl can not exceed {0} '
+                        'seconds, and must be at least {1} seconds long.')
+                raise ValidationFailed(
+                    msg, self._limits_conf.max_message_ttl, MIN_MESSAGE_TTL)
+
+        queue_max_msg_size = queue_metadata.get('_max_messages_post_size',
+                                                None)
+        if queue_max_msg_size and not isinstance(queue_max_msg_size, int):
+            msg = _(u'_max_messages_post_size must be integer.')
+            raise ValidationFailed(msg)
+
+        if queue_max_msg_size:
+            if not (0 < queue_max_msg_size <=
+                    self._limits_conf.max_messages_post_size):
+                raise ValidationFailed(
+                    _(u'_max_messages_post_size can not exceed {0}, '
+                      ' and must be at least greater than 0.'),
+                    self._limits_conf.max_messages_post_size)
+
     def message_posting(self, messages):
         """Restrictions on a list of messages.
 
@@ -170,7 +206,7 @@ class Validator(object):
         for msg in messages:
             self.message_content(msg)
 
-    def message_length(self, content_length):
+    def message_length(self, content_length, max_msg_post_size=None):
         """Restrictions on message post length.
 
         :param content_length: Queue request's length.
@@ -178,6 +214,26 @@ class Validator(object):
         """
         if content_length is None:
             return
+
+        if max_msg_post_size:
+            try:
+                min_max_size = min(max_msg_post_size,
+                                   self._limits_conf.max_messages_post_size)
+                if content_length > min_max_size:
+                    raise ValidationFailed(
+                        _(u'Message collection size is too large. The max '
+                          'size for current queue is {0}. It is calculated '
+                          'by max size = min(max_messages_post_size_config: '
+                          '{1}, max_messages_post_size_queue: {2}).'),
+                        min_max_size,
+                        self._limits_conf.max_messages_post_size,
+                        max_msg_post_size)
+            except TypeError:
+                # NOTE(flwang): If there is a type error when using min(),
+                # it only happens in py3.x, it will be skipped and compare
+                # the message length with the size defined in config file.
+                pass
+
         if content_length > self._limits_conf.max_messages_post_size:
             raise ValidationFailed(
                 _(u'Message collection size is too large. Max size {0}'),

@@ -265,6 +265,45 @@ class TestMessagesMongoDB(base.V2Base):
         self._post_messages(self.url_prefix + '/queues/nonexistent/messages')
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
+    def test_post_using_queue_default_message_ttl(self):
+        queue_path = self.url_prefix + '/queues/test_queue1'
+        messages_path = queue_path + '/messages'
+        doc = '{"_default_message_ttl": 999}'
+        self.simulate_put(queue_path, body=doc, headers=self.headers)
+        self.addCleanup(self.simulate_delete, queue_path, headers=self.headers)
+        sample_messages = {
+            'messages': [
+                {'body': {'key': 'value'}},
+            ],
+        }
+
+        sample_doc = jsonutils.dumps(sample_messages)
+        result = self.simulate_post(messages_path,
+                                    body=sample_doc, headers=self.headers)
+        result_doc = jsonutils.loads(result[0])
+        href = result_doc['resources'][0]
+        result = self.simulate_get(href, headers=self.headers)
+        message = jsonutils.loads(result[0])
+
+        self.assertEqual(999, message['ttl'])
+
+    def test_post_using_queue_max_messages_post_size(self):
+        queue_path = self.url_prefix + '/queues/test_queue2'
+        messages_path = queue_path + '/messages'
+        doc = '{"_max_messages_post_size": 1023}'
+        self.simulate_put(queue_path, body=doc, headers=self.headers)
+        self.addCleanup(self.simulate_delete, queue_path, headers=self.headers)
+        sample_messages = {
+            'messages': [
+                {'body': {'key': 'a' * 1204}},
+            ],
+        }
+
+        sample_doc = jsonutils.dumps(sample_messages)
+        self.simulate_post(messages_path,
+                           body=sample_doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
     def test_get_from_missing_queue(self):
         body = self.simulate_get(self.url_prefix +
                                  '/queues/nonexistent/messages',
@@ -633,7 +672,7 @@ class TestMessagesFaultyDriver(base.V2BaseFaulty):
         self.simulate_post(path,
                            body=body,
                            headers=headers)
-        self.assertEqual(falcon.HTTP_503, self.srmock.status)
+        self.assertEqual(falcon.HTTP_500, self.srmock.status)
 
         self.simulate_get(path,
                           headers=headers)

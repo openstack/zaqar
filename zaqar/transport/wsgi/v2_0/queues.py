@@ -74,6 +74,7 @@ class ItemResource(object):
             metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
+            self._validate.queue_metadata_putting(metadata)
             created = self._queue_controller.create(queue_name,
                                                     metadata=metadata,
                                                     project=project_id)
@@ -81,7 +82,9 @@ class ItemResource(object):
         except storage_errors.FlavorDoesNotExist as ex:
             LOG.exception(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Queue could not be created.')

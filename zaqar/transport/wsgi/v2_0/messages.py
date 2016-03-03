@@ -38,6 +38,7 @@ class CollectionResource(object):
         '_wsgi_conf',
         '_validate',
         '_message_post_spec',
+        '_default_message_ttl'
     )
 
     def __init__(self, wsgi_conf, validate,
@@ -48,9 +49,10 @@ class CollectionResource(object):
         self._validate = validate
         self._message_controller = message_controller
         self._queue_controller = queue_controller
+        self._default_message_ttl = default_message_ttl
 
         self._message_post_spec = (
-            ('ttl', int, default_message_ttl),
+            ('ttl', int, self._default_message_ttl),
             ('body', '*', None),
         )
 
@@ -155,10 +157,37 @@ class CollectionResource(object):
     @acl.enforce("messages:create")
     def on_post(self, req, resp, project_id, queue_name):
         client_uuid = wsgi_helpers.get_client_uuid(req)
-
         try:
+            # NOTE(flwang): Replace 'exists' with 'get_metadata' won't impact
+            # the performance since both of them will call
+            # collection.find_one()
+            queue_meta = None
+            try:
+                queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                                 project_id)
+            except storage_errors.DoesNotExist as ex:
+                self._validate.queue_identification(queue_name, project_id)
+                self._queue_controller.create(queue_name, project=project_id)
+                # NOTE(flwang): Queue is created in lazy mode, so no metadata
+                # set.
+                queue_meta = {}
+
+            queue_max_msg_size = queue_meta.get('_max_messages_post_size',
+                                                None)
+            queue_default_ttl = queue_meta.get('_default_message_ttl', None)
+
+            # TODO(flwang): To avoid any unexpected regression issue, we just
+            # leave the _message_post_spec attribute of class as it's. It
+            # should be removed in Newton release.
+            if queue_default_ttl:
+                message_post_spec = (('ttl', int, queue_default_ttl),
+                                     ('body', '*', None),)
+            else:
+                message_post_spec = (('ttl', int, self._default_message_ttl),
+                                     ('body', '*', None),)
             # Place JSON size restriction before parsing
-            self._validate.message_length(req.content_length)
+            self._validate.message_length(req.content_length,
+                                          max_msg_post_size=queue_max_msg_size)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -171,14 +200,11 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(description)
 
         messages = wsgi_utils.sanitize(document['messages'],
-                                       self._message_post_spec,
+                                       message_post_spec,
                                        doctype=wsgi_utils.JSONArray)
 
         try:
             self._validate.message_posting(messages)
-
-            if not self._queue_controller.exists(queue_name, project_id):
-                self._queue_controller.create(queue_name, project=project_id)
 
             message_ids = self._message_controller.post(
                 queue_name,
