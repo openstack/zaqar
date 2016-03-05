@@ -72,12 +72,17 @@ class SubscriptionController(base.Subscription):
         marker_next = {}
 
         def denormalizer(record, sid):
+            now = timeutils.utcnow_ts()
+            ttl = int(record[2])
+            expires = int(record[3])
+            created = expires - ttl
             ret = {
                 'id': sid,
                 'source': record[0],
                 'subscriber': record[1],
-                'ttl': int(record[2]),
-                'options': self._unpacker(record[3]),
+                'ttl': ttl,
+                'age': now - created,
+                'options': self._unpacker(record[4]),
             }
             marker_next['next'] = sid
 
@@ -89,11 +94,11 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def get(self, queue, subscription_id, project=None):
-
         subscription = SubscriptionEnvelope.from_redis(subscription_id,
                                                        self._client)
         if subscription:
-            return subscription.to_basic()
+            now = timeutils.utcnow_ts()
+            return subscription.to_basic(now)
         else:
             raise errors.SubscriptionDoesNotExist(subscription_id)
 

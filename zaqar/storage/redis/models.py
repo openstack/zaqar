@@ -147,13 +147,14 @@ class SubscriptionEnvelope(object):
         pipe.hmset(self.id, hmap)
         pipe.expire(self.id, self.ttl)
 
-    def to_basic(self):
+    def to_basic(self, now):
+        created = self.expires - self.ttl
         basic_msg = {
             'id': self.id,
             'source': self.source,
             'subscriber': self.subscriber,
             'ttl': self.ttl,
-            'expires': self.expires,
+            'age': now - created,
             'options': self.options,
         }
 
