@@ -29,6 +29,7 @@ class TestClaims(base.V1_1FunctionalTestBase):
 
     def setUp(self):
         super(TestClaims, self).setUp()
+        assert False, 'hehe'
 
         self.headers = helpers.create_zaqar_headers(self.cfg)
         self.client.headers = self.headers

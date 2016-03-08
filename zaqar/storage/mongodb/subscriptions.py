@@ -136,6 +136,14 @@ class SubscriptionController(base.Subscription):
                                      key_transform=key_transform)
         assert fields, ('`subscriber`, `ttl`, '
                         'or `options` not found in kwargs')
+
+        new_ttl = fields.get('t', None)
+        if new_ttl is not None:
+            now = timeutils.utcnow_ts()
+            now_dt = datetime.datetime.utcfromtimestamp(now)
+            expires = now_dt + datetime.timedelta(seconds=new_ttl)
+            fields['e'] = expires
+
         try:
             res = self._collection.update(
                 {'_id': utils.to_oid(subscription_id),

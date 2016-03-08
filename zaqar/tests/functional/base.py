@@ -24,8 +24,10 @@ import six
 
 from zaqar.api.v1 import response as response_v1
 from zaqar.api.v1_1 import response as response_v1_1
+from zaqar.api.v2 import response as response_v2
 from zaqar import bootstrap
 from zaqar.storage import mongodb
+from zaqar.storage.redis import driver as redis
 from zaqar import tests as testing
 from zaqar.tests.functional import config
 from zaqar.tests.functional import helpers
@@ -52,6 +54,9 @@ class FunctionalTestBase(testing.TestBase):
     server_class = None
     config_file = None
     class_bootstrap = None
+    # NOTE(Eva-i): ttl_gc_interval is the known maximum time interval between
+    # automatic resource TTL expirations. Depends on message store back end.
+    class_ttl_gc_interval = None
     wipe_dbs_projects = set([])
 
     def setUp(self):
@@ -81,6 +86,13 @@ class FunctionalTestBase(testing.TestBase):
         # Always register options
         self.__class__.class_bootstrap = bootstrap.Bootstrap(self.mconf)
         self.class_bootstrap.transport
+
+        datadriver = self.class_bootstrap.storage._storage
+        if isinstance(datadriver, redis.DataDriver):
+            self.__class__.class_ttl_gc_interval = 1
+        if isinstance(datadriver, mongodb.DataDriver):
+            # NOTE(kgriffs): MongoDB's TTL scavenger only runs once a minute
+            self.__class__.class_ttl_gc_interval = 60
 
         if _TEST_INTEGRATION:
             # TODO(kgriffs): This code should be replaced to use
@@ -396,3 +408,9 @@ class V1_1FunctionalTestBase(FunctionalTestBase):
     def setUp(self):
         super(V1_1FunctionalTestBase, self).setUp()
         self.response = response_v1_1.ResponseSchema(self.limits)
+
+
+class V2FunctionalTestBase(FunctionalTestBase):
+    def setUp(self):
+        super(V2FunctionalTestBase, self).setUp()
+        self.response = response_v2.ResponseSchema(self.limits)

@@ -207,9 +207,17 @@ class SubscriptionController(base.Subscription):
         if new_options is not None:
             fields['o'] = self._packer(new_options)
 
+        new_ttl = fields.get('t', None)
+        if new_ttl is not None:
+            now = timeutils.utcnow_ts()
+            expires = now + new_ttl
+            fields['e'] = expires
+
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
             pipe.hmset(subscription_id, fields)
+            if new_ttl is not None:
+                pipe.expire(subscription_id, new_ttl)
             pipe.execute()
 
     @utils.raises_conn_error

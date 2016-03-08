@@ -129,3 +129,9 @@ def create_pool_body(**kwargs):
     }
 
     return pool_body
+
+
+def create_subscription_body(subscriber='http://fake:8080', ttl=600,
+                             options_key='funny', options_value='no'):
+    options = {options_key: options_value}
+    return {'subscriber': subscriber, 'options': options, 'ttl': ttl}
