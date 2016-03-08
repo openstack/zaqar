@@ -1051,7 +1051,8 @@ class SubscriptionControllerTest(ControllerBaseTest):
         self.subscription_controller.update(self.queue_name,
                                             s_id,
                                             project=self.project,
-                                            subscriber='http://a.com'
+                                            subscriber='http://a.com',
+                                            options={'funny': 'no'}
                                             )
 
         updated = self.subscription_controller.get(self.queue_name,
@@ -1059,6 +1060,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                    self.project)
 
         self.assertEqual('http://a.com', updated['subscriber'])
+        self.assertEqual({'funny': 'no'}, updated['options'])
 
         self.subscription_controller.delete(self.queue_name,
                                             s_id, project=self.project)

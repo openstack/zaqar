@@ -183,6 +183,11 @@ class SubscriptionController(base.Subscription):
                                      key_transform=key_transform)
         assert fields, ('`subscriber`, `ttl`, '
                         'or `options` not found in kwargs')
+        # NOTE(Eva-i): if there are new options, we need to pack them before
+        # sending to the database.
+        new_options = fields.get('o', None)
+        if new_options is not None:
+            fields['o'] = self._packer(new_options)
 
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
