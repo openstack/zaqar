@@ -121,7 +121,8 @@ class TestValidation(base.V2Base):
         self.simulate_put(queue_1,
                           self.project_id,
                           body='{"_default_message_ttl": 60}')
-        self.addCleanup(self.simulate_delete, queue_1, headers=self.headers)
+        self.addCleanup(self.simulate_delete, queue_1, self.project_id,
+                        headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # TTL under min
@@ -142,7 +143,8 @@ class TestValidation(base.V2Base):
         self.simulate_put(queue_2,
                           self.project_id,
                           body='{"_max_messages_post_size": 255}')
-        self.addCleanup(self.simulate_delete, queue_2, headers=self.headers)
+        self.addCleanup(self.simulate_delete, queue_2, self.project_id,
+                        headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         # Size over max
