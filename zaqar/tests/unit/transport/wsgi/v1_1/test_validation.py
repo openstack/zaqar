@@ -97,3 +97,42 @@ class TestValidation(base.V1_1Base):
                           self.project_id,
                           headers=empty_headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+    def test_queue_metadata_putting(self):
+        # Test _default_message_ttl
+        # TTL normal case
+        queue_1 = self.url_prefix + '/queues/queue1'
+        self.simulate_put(queue_1,
+                          self.project_id,
+                          body='{"_default_message_ttl": 60}')
+        self.addCleanup(self.simulate_delete, queue_1, self.project_id,
+                        headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # TTL under min
+        self.simulate_put(queue_1,
+                          self.project_id,
+                          body='{"_default_message_ttl": 59}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # TTL over max
+        self.simulate_put(queue_1,
+                          self.project_id,
+                          body='{"_default_message_ttl": 1209601}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # Test _max_messages_post_size
+        # Size normal case
+        queue_2 = self.url_prefix + '/queues/queue2'
+        self.simulate_put(queue_2,
+                          self.project_id,
+                          body='{"_max_messages_post_size": 255}')
+        self.addCleanup(self.simulate_delete, queue_2, self.project_id,
+                        headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # Size over max
+        self.simulate_put(queue_2,
+                          self.project_id,
+                          body='{"_max_messages_post_size": 257}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
