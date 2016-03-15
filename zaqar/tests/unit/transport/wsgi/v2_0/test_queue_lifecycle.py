@@ -218,31 +218,86 @@ class TestQueueLifecycleMongoDB(base.V2Base):
     def test_update_metadata(self):
         xyz_queue_path = self.url_prefix + '/queues/xyz'
         xyz_queue_path_metadata = xyz_queue_path
-
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+            'X-Project-ID': str(uuid.uuid4())
+        }
         # Create
-        self.simulate_put(xyz_queue_path, headers=self.headers)
+        self.simulate_put(xyz_queue_path, headers=headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
-        # Set meta
-        doc1 = '{"messages": {"ttl": 600}}'
+        headers.update({'Content-Type':
+                        "application/openstack-messaging-v2.0-json-patch"})
+        # add metadata
+        doc1 = ('[{"op":"add", "path": "/metadata/key1", "value": 1},'
+                '{"op":"add", "path": "/metadata/key2", "value": 1}]')
         self.simulate_patch(xyz_queue_path_metadata,
-                            headers=self.headers,
+                            headers=headers,
                             body=doc1)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
-        # Update
-        doc2 = '{"messages": {"ttl": 100}}'
+        # replace metadata
+        doc2 = '[{"op":"replace", "path": "/metadata/key1", "value": 2}]'
         self.simulate_patch(xyz_queue_path_metadata,
-                            headers=self.headers,
+                            headers=headers,
                             body=doc2)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         # Get
         result = self.simulate_get(xyz_queue_path_metadata,
-                                   headers=self.headers)
+                                   headers=headers)
         result_doc = jsonutils.loads(result[0])
+        self.assertEqual({'key1': 2, 'key2': 1}, result_doc)
 
-        self.assertEqual(jsonutils.loads(doc2), result_doc)
+        # remove metadata
+        doc3 = '[{"op":"remove", "path": "/metadata/key1"}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc3)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        # Get
+        result = self.simulate_get(xyz_queue_path_metadata,
+                                   headers=headers)
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual({'key2': 1}, result_doc)
+
+        # replace non-existent metadata
+        doc4 = '[{"op":"replace", "path": "/metadata/key3", "value":2}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc4)
+        self.assertEqual(falcon.HTTP_409, self.srmock.status)
+
+        # remove non-existent metadata
+        doc5 = '[{"op":"remove", "path": "/metadata/key3"}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc5)
+        self.assertEqual(falcon.HTTP_409, self.srmock.status)
+
+        self.simulate_delete(xyz_queue_path, headers=headers)
+
+        # add metadata to non-existent queue
+        doc1 = ('[{"op":"add", "path": "/metadata/key1", "value": 1},'
+                '{"op":"add", "path": "/metadata/key2", "value": 1}]')
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc1)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+        # replace metadata in non-existent queue
+        doc4 = '[{"op":"replace", "path": "/metadata/key3", "value":2}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc4)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+        # remove metadata from non-existent queue
+        doc5 = '[{"op":"remove", "path": "/metadata/key3"}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc5)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_list(self):
         arbitrary_number = 644079696574693

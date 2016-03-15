@@ -106,6 +106,7 @@ class Validator(object):
         self._conf.register_opts(_TRANSPORT_LIMITS_OPTIONS,
                                  group=_TRANSPORT_LIMITS_GROUP)
         self._limits_conf = self._conf[_TRANSPORT_LIMITS_GROUP]
+        self._supported_operations = ('add', 'remove', 'replace')
 
     def queue_identification(self, queue, project):
         """Restrictions on a project id & queue name pair.
@@ -130,6 +131,132 @@ class Validator(object):
             raise ValidationFailed(
                 _(u'Queue names may only contain ASCII letters, digits, '
                   'underscores, and dashes.'))
+
+    def _get_change_operation_d10(self, raw_change):
+        op = raw_change.get('op')
+        if op is None:
+            msg = (_('Unable to find `op` in JSON Schema change. '
+                     'It must be one of the following: %(available)s.') %
+                   {'available': ', '.join(self._supported_operations)})
+            raise ValidationFailed(msg)
+        if op not in self._supported_operations:
+            msg = (_('Invalid operation: `%(op)s`. '
+                     'It must be one of the following: %(available)s.') %
+                   {'op': op,
+                    'available': ', '.join(self._supported_operations)})
+            raise ValidationFailed(msg)
+        return op
+
+    def _get_change_path_d10(self, raw_change):
+        try:
+            return raw_change['path']
+        except KeyError:
+            msg = _("Unable to find '%s' in JSON Schema change") % 'path'
+            raise ValidationFailed(msg)
+
+    def _decode_json_pointer(self, pointer):
+        """Parse a json pointer.
+
+        Json Pointers are defined in
+        http://tools.ietf.org/html/draft-pbryan-zyp-json-pointer .
+        The pointers use '/' for separation between object attributes, such
+        that '/A/B' would evaluate to C in {"A": {"B": "C"}}. A '/' character
+        in an attribute name is encoded as "~1" and a '~' character is encoded
+        as "~0".
+        """
+        self._validate_json_pointer(pointer)
+        ret = []
+        for part in pointer.lstrip('/').split('/'):
+            ret.append(part.replace('~1', '/').replace('~0', '~').strip())
+        return ret
+
+    def _validate_json_pointer(self, pointer):
+        """Validate a json pointer.
+
+        We only accept a limited form of json pointers.
+        """
+        if not pointer.startswith('/'):
+            msg = _('Pointer `%s` does not start with "/".') % pointer
+            raise ValidationFailed(msg)
+        if re.search('/\s*?/', pointer[1:]):
+            msg = _('Pointer `%s` contains adjacent "/".') % pointer
+            raise ValidationFailed(msg)
+        if len(pointer) > 1 and pointer.endswith('/'):
+            msg = _('Pointer `%s` end with "/".') % pointer
+            raise ValidationFailed(msg)
+        if pointer[1:].strip() == '/':
+            msg = _('Pointer `%s` does not contains valid token.') % pointer
+            raise ValidationFailed(msg)
+        if re.search('~[^01]', pointer) or pointer.endswith('~'):
+            msg = _('Pointer `%s` contains "~" not part of'
+                    ' a recognized escape sequence.') % pointer
+            raise ValidationFailed(msg)
+
+    def _get_change_value(self, raw_change, op):
+        if 'value' not in raw_change:
+            msg = _('Operation "{0}" requires a member named "value".')
+            raise ValidationFailed(msg, op)
+        return raw_change['value']
+
+    def _validate_change(self, change):
+        if change['op'] == 'remove':
+            return
+        path_root = change['path'][0]
+        if len(change['path']) >= 1 and path_root.lower() != 'metadata':
+            msg = _("The root of path must be metadata, e.g /metadata/key.")
+            raise ValidationFailed(msg)
+
+    def _validate_path(self, op, path):
+        limits = {'add': 2, 'remove': 2, 'replace': 2}
+        if len(path) != limits.get(op, 2):
+            msg = _("Invalid JSON pointer for this resource: "
+                    "'/%s, e.g /metadata/key'") % '/'.join(path)
+            raise ValidationFailed(msg)
+
+    def _parse_json_schema_change(self, raw_change, draft_version):
+        if draft_version == 10:
+            op = self._get_change_operation_d10(raw_change)
+            path = self._get_change_path_d10(raw_change)
+        else:
+            msg = _('Unrecognized JSON Schema draft version')
+            raise ValidationFailed(msg)
+
+        path_list = self._decode_json_pointer(path)
+        return op, path_list
+
+    def queue_patching(self, request, changes):
+        washed_changes = []
+        content_types = {
+            'application/openstack-messaging-v2.0-json-patch': 10,
+        }
+
+        json_schema_version = content_types[request.content_type]
+
+        if not isinstance(changes, list):
+            msg = _('Request body must be a JSON array of operation objects.')
+            raise ValidationFailed(msg)
+
+        for raw_change in changes:
+            if not isinstance(raw_change, dict):
+                msg = _('Operations must be JSON objects.')
+                raise ValidationFailed(msg)
+
+            (op, path) = self._parse_json_schema_change(raw_change,
+                                                        json_schema_version)
+
+            # NOTE(flwang): Now the 'path' is a list.
+            self._validate_path(op, path)
+            change = {'op': op, 'path': path,
+                      'json_schema_version': json_schema_version}
+
+            if not op == 'remove':
+                change['value'] = self._get_change_value(raw_change, op)
+
+            self._validate_change(change)
+
+            washed_changes.append(change)
+
+        return washed_changes
 
     def queue_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of queues.

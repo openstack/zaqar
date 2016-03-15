@@ -150,3 +150,30 @@ class TestValidation(base.V2Base):
                           self.project_id,
                           body='{"_max_messages_post_size": 257}')
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+    def test_queue_patching(self):
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+            'Content-Type': "application/openstack-messaging-v2.0-json-patch"
+        }
+
+        # Wrong JSON pointer
+        self.simulate_patch(self.queue_path,
+                            self.project_id,
+                            headers=headers,
+                            body='[{"op":"add","path":"/a","value":2}]')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # Wrong op
+        self.simulate_patch(self.queue_path,
+                            self.project_id,
+                            headers=headers,
+                            body='[{"op":"a","path":"/metadata/a","value":2}]')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        self.simulate_patch(self.queue_path,
+                            self.project_id,
+                            headers=headers,
+                            body='[{"op":"add","path":"/metadata/a",'
+                            '"value":2}]')
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
