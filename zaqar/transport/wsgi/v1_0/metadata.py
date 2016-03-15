@@ -61,13 +61,19 @@ class Resource(object):
         try:
             # Place JSON size restriction before parsing
             self._validate.queue_metadata_length(req.content_length)
+            # Deserialize queue metadata
+            document = wsgi_utils.deserialize(req.stream, req.content_length)
+            metadata = wsgi_utils.sanitize(document, spec=None)
+            # Restrict setting any reserved queue attributes
+            for key in metadata:
+                if key.startswith('_'):
+                    description = _(u'Reserved queue attributes in metadata '
+                                    u'(which names start with "_") can not be '
+                                    u'set in API v1.')
+                    raise validation.ValidationFailed(description)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
-        # Deserialize queue metadata
-        document = wsgi_utils.deserialize(req.stream, req.content_length)
-        metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
             self._queue_ctrl.set_metadata(queue_name,
