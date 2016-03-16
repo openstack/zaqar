@@ -26,10 +26,10 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
 
     protocol = protocol.MessagingProtocol
 
-    def __init__(self, uri, debug, handler, external_port, auth_strategy,
+    def __init__(self, uri, handler, external_port, auth_strategy,
                  loop, secret_key):
         websocket.WebSocketServerFactory.__init__(
-            self, url=uri, debug=debug, externalPort=external_port)
+            self, url=uri, externalPort=external_port)
         self._handler = handler
         self._auth_strategy = auth_strategy
         self._loop = loop

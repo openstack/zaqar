@@ -72,10 +72,8 @@ class Driver(base.DriverBase):
     @decorators.lazy_property(write=False)
     def factory(self):
         uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
-        debug_enabled = LOG.isEnabledFor(logging.DEBUG)
         return factory.ProtocolFactory(
             uri,
-            debug=debug_enabled,
             handler=self._api,
             external_port=self._ws_conf.external_port,
             auth_strategy=self._auth_strategy,
