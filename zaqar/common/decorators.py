@@ -20,6 +20,9 @@ from oslo_cache import core
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
+from zaqar.i18n import _LW
+
+
 LOG = logging.getLogger(__name__)
 
 
@@ -182,4 +185,36 @@ def lazy_property(write=False, delete=True):
                         fset=write and setter,
                         fdel=delete and deleter,
                         doc=fn.__doc__)
+    return wrapper
+
+
+def api_version_manager(version_info):
+    """Manage API versions based on their status
+
+    This decorator disables `DEPRECATED` APIs by default unless the user
+    explicitly enables it by adding it to the `enable_deprecated_api_versions`
+    configuration option.
+
+    :param version_info: Dictionary containing the API version info.
+    """
+    api_version = version_info['id']
+    api_updated = version_info['updated']
+    deprecated = version_info['status'] == 'DEPRECATED'
+
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def register_api(driver, conf):
+            if (deprecated and
+                    [api_version] not in conf.enable_deprecated_api_versions):
+                return None
+
+            if deprecated:
+                LOG.warning(_LW('Enabling API version %(version)s. '
+                                'This version was marked as deprecated in '
+                                '%(updated)s. Using it may expose security '
+                                'issues, unexpected behavior or damage your '
+                                'data.') % {'version': api_version,
+                                            'updated': api_updated})
+            return fn(driver, conf)
+        return register_api
     return wrapper

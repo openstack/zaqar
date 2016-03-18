@@ -14,6 +14,7 @@
 
 from oslo_log import log as logging
 
+from zaqar.common import decorators
 from zaqar.transport.wsgi.v1_1 import claims
 from zaqar.transport.wsgi.v1_1 import flavors
 from zaqar.transport.wsgi.v1_1 import health
@@ -47,6 +48,7 @@ VERSION = {
 }
 
 
+@decorators.api_version_manager(VERSION)
 def public_endpoints(driver, conf):
     LOG.warning('Zaqar\'s API version 1.1 will enter deprecation during the '
                 'Newton cycle. As part of that, it will be marked as '
@@ -104,6 +106,7 @@ def public_endpoints(driver, conf):
     ]
 
 
+@decorators.api_version_manager(VERSION)
 def private_endpoints(driver, conf):
 
     catalogue = [

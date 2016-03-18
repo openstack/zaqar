@@ -14,6 +14,7 @@
 
 from oslo_log import log as logging
 
+from zaqar.common import decorators
 from zaqar.transport.wsgi.v1_0 import claims
 from zaqar.transport.wsgi.v1_0 import health
 from zaqar.transport.wsgi.v1_0 import homedoc
@@ -46,10 +47,8 @@ VERSION = {
 }
 
 
+@decorators.api_version_manager(VERSION)
 def public_endpoints(driver, conf):
-    LOG.warning('Zaqar\'s API version 1.0 will be turned off by default '
-                'during the Newton cycle')
-
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
@@ -96,6 +95,7 @@ def public_endpoints(driver, conf):
     ]
 
 
+@decorators.api_version_manager(VERSION)
 def private_endpoints(driver, conf):
     if not conf.pooling:
         return []

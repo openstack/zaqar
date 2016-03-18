@@ -131,8 +131,9 @@ class Driver(transport.DriverBase):
         self.app.add_error_handler(Exception, self._error_handler)
 
         for version_path, endpoints in catalog:
-            for route, resource in endpoints:
-                self.app.add_route(version_path + route, resource)
+            if endpoints:
+                for route, resource in endpoints:
+                    self.app.add_route(version_path + route, resource)
 
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""

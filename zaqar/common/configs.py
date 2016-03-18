@@ -31,6 +31,10 @@ _GENERAL_OPTIONS = (
                 deprecated_opts=[cfg.DeprecatedOpt('sharding')]),
     cfg.BoolOpt('unreliable', default=False,
                 help='Disable all reliability constraints.'),
+    cfg.ListOpt('enable_deprecated_api_versions', default=[],
+                item_type=cfg.types.List(item_type=cfg.types.String(
+                    choices=('1', '1.1'))),
+                help='List of deprecated API versions to enable.'),
 )
 
 _DRIVER_OPTIONS = (

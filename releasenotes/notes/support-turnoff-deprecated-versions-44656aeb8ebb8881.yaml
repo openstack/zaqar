@@ -1,0 +1,7 @@
+---
+features:
+  - Currently, the v1 API is still accessible though it has been deprecated
+    for a while. And we're going to deprecate v1.1 soon. To keep the backward
+    compatibility, a new config option - ``enable_deprecated_api_versions``
+    is added so that operator can totally turn off an API version or still
+    support it by adding the API version to the list of the new config option.

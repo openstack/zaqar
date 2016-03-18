@@ -18,11 +18,16 @@ from oslo_cache import core
 from oslo_config import cfg
 
 from zaqar.common import cache as oslo_cache
+from zaqar.common import configs
 from zaqar.common import decorators
 from zaqar.tests import base
 
 
 class TestDecorators(base.TestBase):
+
+    def setUp(self):
+        super(TestDecorators, self).setUp()
+        self.conf.register_opts(configs._GENERAL_OPTIONS)
 
     def test_memoized_getattr(self):
 
@@ -141,3 +146,40 @@ class TestDecorators(base.TestBase):
 
             self.assertEqual(name, user)
             self.assertEqual(2 + i, instance.user_gets)
+
+    def test_api_version_manager(self):
+        self.config(enable_deprecated_api_versions=[])
+        # 1. Test accessing current API version
+        VERSION = {
+            'id': '1',
+            'status': 'CURRENT',
+            'updated': 'Just yesterday'
+        }
+
+        @decorators.api_version_manager(VERSION)
+        def public_endpoint_1(driver, conf):
+            return True
+
+        self.assertTrue(public_endpoint_1(None, self.conf))
+
+        # 2. Test accessing deprecated API version
+        VERSION = {
+            'id': '1',
+            'status': 'DEPRECATED',
+            'updated': 'A long time ago'
+        }
+
+        @decorators.api_version_manager(VERSION)
+        def public_endpoint_2(driver, conf):
+            self.fail('Deprecated API enabled')
+
+        public_endpoint_2(None, self.conf)
+
+        # 3. Test enabling deprecated API version
+        self.config(enable_deprecated_api_versions=[['1']])
+
+        @decorators.api_version_manager(VERSION)
+        def public_endpoint_3(driver, conf):
+            return True
+
+        self.assertTrue(public_endpoint_3(None, self.conf))
