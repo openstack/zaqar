@@ -118,43 +118,111 @@ class ItemResource(object):
         jsonschema. Appropriate errors are returned in each case for
         badly formatted input.
 
-        :returns: HTTP | 200,400,503
+        :returns: HTTP | 200,400,409,503
         """
         LOG.debug(u'PATCH queue - name: %s', queue_name)
+
         try:
             # Place JSON size restriction before parsing
             self._validate.queue_metadata_length(req.content_length)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
 
-        # Deserialize queue metadata
-        metadata = None
+        # NOTE(flwang): See below link to get more details about draft 10,
+        # tools.ietf.org/html/draft-ietf-appsawg-json-patch-10
+        content_types = {
+            'application/openstack-messaging-v2.0-json-patch': 10,
+        }
+
+        if req.content_type not in content_types:
+            headers = {'Accept-Patch':
+                       ', '.join(sorted(content_types.keys()))}
+            msg = _("Accepted media type for PATCH: %s.")
+            LOG.debug(msg % headers)
+            raise wsgi_errors.HTTPUnsupportedMediaType(msg % headers)
+
         if req.content_length:
-            document = wsgi_utils.deserialize(req.stream, req.content_length)
-            metadata = wsgi_utils.sanitize(document, spec=None)
+            try:
+                changes = utils.read_json(req.stream, req.content_length)
+                changes = wsgi_utils.sanitize(changes,
+                                              spec=None, doctype=list)
+            except utils.MalformedJSON as ex:
+                LOG.debug(ex)
+                description = _(u'Request body could not be parsed.')
+                raise wsgi_errors.HTTPBadRequestBody(description)
+
+            except utils.OverflowedJSONInteger as ex:
+                LOG.debug(ex)
+                description = _(u'JSON contains integer that is too large.')
+                raise wsgi_errors.HTTPBadRequestBody(description)
+
+            except Exception as ex:
+                # Error while reading from the network/server
+                LOG.exception(ex)
+                description = _(u'Request body could not be read.')
+                raise wsgi_errors.HTTPServiceUnavailable(description)
+        else:
+            msg = _("PATCH body could not be empty for update.")
+            LOG.debug(msg)
+            raise wsgi_errors.HTTPBadRequestBody(msg)
 
         try:
+            changes = self._validate.queue_patching(req, changes)
+
+            # NOTE(Eva-i): using 'get_metadata' instead of 'get', so
+            # QueueDoesNotExist error will be thrown in case of non-existent
+            # queue.
+            metadata = self._queue_controller.get_metadata(queue_name,
+                                                           project=project_id)
+            for change in changes:
+                change_method_name = '_do_%s' % change['op']
+                change_method = getattr(self, change_method_name)
+                change_method(req, metadata, change)
+
             self._validate.queue_metadata_putting(metadata)
-            old_metadata = self._queue_controller.get(queue_name,
-                                                      project=project_id)
-            old_metadata.update(metadata)
+
             self._queue_controller.set_metadata(queue_name,
-                                                old_metadata,
+                                                metadata,
                                                 project_id)
-            resp_dict = self._queue_controller.get(queue_name,
-                                                   project=project_id)
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(ex)
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
+        except wsgi_errors.HTTPConflict as ex:
+            raise ex
         except Exception as ex:
             LOG.exception(ex)
             description = _(u'Queue could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
-        resp.body = utils.to_json(resp_dict)
+        resp.body = utils.to_json(metadata)
+
+    def _do_replace(self, req, metadata, change):
+        path = change['path']
+        path_child = path[1]
+        value = change['value']
+        if path_child in metadata:
+            metadata[path_child] = value
+        else:
+            msg = _("Can't replace non-existent object %s.")
+            raise wsgi_errors.HTTPConflict(msg % path_child)
+
+    def _do_add(self, req, metadata, change):
+        path = change['path']
+        path_child = path[1]
+        value = change['value']
+        metadata[path_child] = value
+
+    def _do_remove(self, req, metadata, change):
+        path = change['path']
+        path_child = path[1]
+        if path_child in metadata:
+            metadata.pop(path_child)
+        else:
+            msg = _("Can't remove non-existent object %s.")
+            raise wsgi_errors.HTTPConflict(msg % path_child)
 
 
 class CollectionResource(object):

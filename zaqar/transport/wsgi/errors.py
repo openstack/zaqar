@@ -84,3 +84,10 @@ class HTTPNotFound(falcon.HTTPNotFound):
     def __init__(self, description):
         super(HTTPNotFound, self).__init__(title=self.TITLE,
                                            description=description)
+
+
+class HTTPUnsupportedMediaType(falcon.HTTPUnsupportedMediaType):
+    """Wraps falcon.HTTPUnsupportedMediaType with contextual title."""
+
+    def __init__(self, description):
+        super(HTTPUnsupportedMediaType, self).__init__(description)
