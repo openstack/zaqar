@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from oslo_log import log as logging
+
 from zaqar.transport.wsgi.v1_0 import claims
 from zaqar.transport.wsgi.v1_0 import health
 from zaqar.transport.wsgi.v1_0 import homedoc
@@ -20,6 +22,10 @@ from zaqar.transport.wsgi.v1_0 import metadata
 from zaqar.transport.wsgi.v1_0 import pools
 from zaqar.transport.wsgi.v1_0 import queues
 from zaqar.transport.wsgi.v1_0 import stats
+
+
+LOG = logging.getLogger(__name__)
+
 
 VERSION = {
     'id': '1',
@@ -41,6 +47,9 @@ VERSION = {
 
 
 def public_endpoints(driver, conf):
+    LOG.warning('Zaqar\'s API version 1.0 will be turned off by default '
+                'during the Newton cycle')
+
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller

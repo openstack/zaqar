@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from oslo_log import log as logging
+
 from zaqar.transport.wsgi.v1_1 import claims
 from zaqar.transport.wsgi.v1_1 import flavors
 from zaqar.transport.wsgi.v1_1 import health
@@ -21,6 +23,10 @@ from zaqar.transport.wsgi.v1_1 import ping
 from zaqar.transport.wsgi.v1_1 import pools
 from zaqar.transport.wsgi.v1_1 import queues
 from zaqar.transport.wsgi.v1_1 import stats
+
+
+LOG = logging.getLogger(__name__)
+
 
 VERSION = {
     'id': '1.1',
@@ -42,6 +48,10 @@ VERSION = {
 
 
 def public_endpoints(driver, conf):
+    LOG.warning('Zaqar\'s API version 1.1 will enter deprecation during the '
+                'Newton cycle. As part of that, it will be marked as '
+                'deprecated and it will be turned off by default')
+
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
