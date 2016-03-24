@@ -103,3 +103,5 @@ class TestURLs(base.TestBase):
         self.assertRaises(ValueError, urls.create_signed_url, 'test', '/test')
         self.assertRaises(ValueError, urls.create_signed_url, 'test',
                           ['/test'], expires='wrong date format')
+        self.assertRaises(ValueError, urls.create_signed_url, 'test',
+                          ['/test'], expires='3600')
