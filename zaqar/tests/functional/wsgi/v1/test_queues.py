@@ -208,7 +208,7 @@ class TestQueueMetaData(base.V1FunctionalTestBase):
         self.client.set_base_url(self.queue_metadata_url)
 
     @ddt.data({},
-              {'_queue': 'Top Level field with _'},
+              {'@queue': 'Top Level field with @'},
               annotated('test_insert_queue_metadata_unicode', {
                   u'\u6c49\u5b57': u'Unicode: \u6c49\u5b57'
               }),

@@ -61,15 +61,19 @@ class ItemResource(object):
         try:
             # Place JSON size restriction before parsing
             self._validate.queue_metadata_length(req.content_length)
+            # Deserialize queue metadata
+            metadata = None
+            if req.content_length:
+                document = wsgi_utils.deserialize(req.stream,
+                                                  req.content_length)
+                metadata = wsgi_utils.sanitize(document, spec=None)
+            # NOTE(Eva-i): reserved queue attributes is Zaqar's feature since
+            # API v2. But we have to ensure the bad data will not come from
+            # older APIs, so we validate metadata here.
+            self._validate.queue_metadata_putting(metadata)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
-        # Deserialize queue metadata
-        metadata = None
-        if req.content_length:
-            document = wsgi_utils.deserialize(req.stream, req.content_length)
-            metadata = wsgi_utils.sanitize(document, spec=None)
 
         try:
             created = self._queue_controller.create(queue_name,
