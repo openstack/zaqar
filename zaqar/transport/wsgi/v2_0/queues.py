@@ -63,27 +63,24 @@ class ItemResource(object):
         try:
             # Place JSON size restriction before parsing
             self._validate.queue_metadata_length(req.content_length)
+            # Deserialize queue metadata
+            metadata = None
+            if req.content_length:
+                document = wsgi_utils.deserialize(req.stream,
+                                                  req.content_length)
+                metadata = wsgi_utils.sanitize(document, spec=None)
+            self._validate.queue_metadata_putting(metadata)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        # Deserialize queue metadata
-        metadata = None
-        if req.content_length:
-            document = wsgi_utils.deserialize(req.stream, req.content_length)
-            metadata = wsgi_utils.sanitize(document, spec=None)
-
         try:
-            self._validate.queue_metadata_putting(metadata)
             created = self._queue_controller.create(queue_name,
                                                     metadata=metadata,
                                                     project=project_id)
 
         except storage_errors.FlavorDoesNotExist as ex:
             LOG.exception(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-        except validation.ValidationFailed as ex:
-            LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
         except Exception as ex:
             LOG.exception(ex)

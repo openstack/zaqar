@@ -109,3 +109,19 @@ class TestValidation(base.V1Base):
         self.addCleanup(self.simulate_delete, queue_path_with_v2,
                         self.project_id)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+    def test_queue_metadata_putting(self):
+        # Ensure setting reserved queue attributes (which names start with
+        # '_') is not allowed in API v1.
+
+        # Try set real _default_message_ttl queue attribute.
+        self.simulate_put(self.queue_path + '/metadata',
+                          self.project_id,
+                          body='{"_default_message_ttl": 60}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # Try set a fictional queue attribute.
+        self.simulate_put(self.queue_path + '/metadata',
+                          self.project_id,
+                          body='{"_min_message_niceness": 9000}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
