@@ -32,8 +32,8 @@ class ZaqarTempestPlugin(plugins.TempestPlugin):
     def register_opts(self, conf):
         conf.register_group(zaqar_config.messaging_group)
         conf.register_opts(zaqar_config.MessagingGroup, group='messaging')
-        conf.register_opts(zaqar_config.service_option,
-                           group='service_available')
+        conf.register_opt(zaqar_config.service_option,
+                          group='service_available')
 
     def get_opt_lists(self):
         return [('messaging', zaqar_config.MessagingGroup),
