@@ -27,5 +27,5 @@ openstack-doc-tools>=0.23 # Apache-2.0
 oslotest>=1.10.0 # Apache-2.0
 reno>=1.6.2 # Apache2
 
-# Tempest Plugin
-tempest-lib>=0.14.0 # Apache-2.0
+# Tempest
+tempest>=11.0.0 # Apache-2.0

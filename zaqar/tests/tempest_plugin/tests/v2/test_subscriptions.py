@@ -15,7 +15,7 @@
 
 
 from tempest.common.utils import data_utils
-from tempest_lib import decorators
+from tempest.lib import decorators
 
 from zaqar.tests.tempest_plugin.tests import base
 

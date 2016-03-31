@@ -16,8 +16,8 @@
 
 from six import moves
 from tempest.common.utils import data_utils
-from tempest_lib import decorators
-from tempest_lib import exceptions as lib_exc
+from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 from testtools import matchers
 
 from zaqar.tests.tempest_plugin.tests import base

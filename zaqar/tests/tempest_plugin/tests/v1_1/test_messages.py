@@ -14,9 +14,9 @@
 # limitations under the License.
 
 from tempest import config
-from tempest_lib.common.utils import data_utils
-from tempest_lib import decorators
-from tempest_lib import exceptions as lib_exc
+from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from zaqar.tests.tempest_plugin.tests import base
 

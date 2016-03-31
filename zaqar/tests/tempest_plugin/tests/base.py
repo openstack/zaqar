@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from tempest import config
+from tempest.lib.common.utils import data_utils
 from tempest import test
-from tempest_lib.common.utils import data_utils
 
 from zaqar.tests.tempest_plugin.services.messaging.json import messaging_client
 

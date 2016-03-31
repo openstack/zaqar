@@ -17,7 +17,7 @@ import uuid
 
 from oslo_serialization import jsonutils as json
 from six.moves.urllib import parse as urllib
-from tempest_lib.common import rest_client
+from tempest.lib.common import rest_client
 
 from zaqar.tests.tempest_plugin.api_schema.response.v1 \
     import queues as v1schema
