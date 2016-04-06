@@ -39,6 +39,10 @@ function run_devstack_gate() {
 function run_tempest_tests() {
     export DEVSTACK_GATE_TEMPEST=1
     run_devstack_gate
+
+    cd $BASE/new/tempest/
+    sudo -E testr init
+    sudo -E tox -eall-plugin zaqar
 }
 
 function run_zaqarclient_tests() {
@@ -52,14 +56,14 @@ function run_zaqarclient_tests() {
 
 case "$DEVSTACK_GATE_ZAQAR_TEST_SUITE" in
     tempest)
-	run_tempest_tests
-	;;
+        run_tempest_tests
+        ;;
     zaqarclient)
-	run_zaqarclient_tests
-	;;
+        run_zaqarclient_tests
+        ;;
     *)
-	# NOTE(flaper87): Eventually, this will error
-	run_zaqarclient_tests
-	;;
+        # NOTE(flaper87): Eventually, this will error
+        run_zaqarclient_tests
+        ;;
 esac
 
