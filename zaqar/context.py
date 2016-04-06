@@ -36,10 +36,10 @@ class RequestContext(context.RequestContext):
                                              is_admin=is_admin,
                                              read_only=read_only,
                                              show_deleted=False,
-                                             request_id=request_id)
+                                             request_id=request_id,
+                                             roles=roles)
         self.project_id = project_id
         self.client_id = client_id
-        self.roles = roles
         if overwrite or not hasattr(context._request_store, 'context'):
             self.update_store()
 
@@ -50,8 +50,6 @@ class RequestContext(context.RequestContext):
         ctx = super(RequestContext, self).to_dict()
         ctx.update({
             'project_id': self.project_id,
-            'client_id': self.client_id,
-            'tenant': self.tenant,
-            'roles': self.roles
+            'client_id': self.client_id
         })
         return ctx
