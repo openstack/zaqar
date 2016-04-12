@@ -32,6 +32,11 @@ class SignedHeadersAuth(object):
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO')
+        # NOTE(flwang): The root path of Zaqar service shouldn't require any
+        # auth.
+        if path == '/':
+            return self._app(environ, start_response)
+
         signature = environ.get('HTTP_URL_SIGNATURE')
 
         if signature is None or path.startswith('/v1'):
