@@ -62,6 +62,15 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
     if expires is not None:
         # NOTE(flaper87): Verify if the format is correct
         # and normalize the value to UTC.
+        check_expires = None
+        try:
+            check_expires = int(expires)
+        except ValueError:
+            pass
+        if check_expires:
+            raise ValueError(_LE('`expires` should be date format, '
+                                 'for example 2016-01-01T00:00:00, '
+                                 'not integer value: %s') % check_expires)
         parsed = timeutils.parse_isotime(expires)
         expires = timeutils.normalize_time(parsed)
     else:
