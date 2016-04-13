@@ -15,6 +15,7 @@
 
 """wsgi transport helpers."""
 
+from distutils.version import LooseVersion
 import uuid
 
 import falcon
@@ -93,12 +94,12 @@ def extract_project_id(req, resp, params):
     params['project_id'] = req.get_header('X-PROJECT-ID')
     if params['project_id'] == "":
         raise falcon.HTTPBadRequest('Empty project header not allowed',
-                                    _(u'''
-X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-ID
-and retry.'''))
+                                    _(u'X-PROJECT-ID cannot be an empty '
+                                      u'string. Specify the right header '
+                                      u'X-PROJECT-ID and retry.'))
 
-    # TODO(flaper87): Make version comparison smarter to support v2_0.
-    if not params['project_id'] and 'v1.1' in req.path:
+    api_version = LooseVersion(req.path.split('/')[1])
+    if not params['project_id'] and api_version >= LooseVersion('v1.1'):
         raise falcon.HTTPBadRequest('Project-Id Missing',
                                     _(u'The header X-PROJECT-ID was missing'))
 
