@@ -43,14 +43,14 @@ class CatalogueController(base.CatalogueBase):
         stmt = sa.sql.select([tables.Catalogue]).where(
             tables.Catalogue.c.project == project
         )
-        cursor = self.driver.connection.execute(stmt)
+        cursor = self.driver.run(stmt)
         return (_normalize(v) for v in cursor)
 
     def get(self, project, queue):
         stmt = sa.sql.select([tables.Catalogue]).where(
             _match(project, queue)
         )
-        entry = self.driver.connection.execute(stmt).fetchone()
+        entry = self.driver.run(stmt).fetchone()
 
         if entry is None:
             raise errors.QueueNotMapped(queue, project)
@@ -68,7 +68,7 @@ class CatalogueController(base.CatalogueBase):
             stmt = sa.sql.insert(tables.Catalogue).values(
                 project=project, queue=queue, pool=pool
             )
-            self.driver.connection.execute(stmt)
+            self.driver.run(stmt)
 
         except sa.exc.IntegrityError:
             self._update(project, queue, pool)
@@ -77,13 +77,13 @@ class CatalogueController(base.CatalogueBase):
         stmt = sa.sql.delete(tables.Catalogue).where(
             _match(project, queue)
         )
-        self.driver.connection.execute(stmt)
+        self.driver.run(stmt)
 
     def _update(self, project, queue, pool):
         stmt = sa.sql.update(tables.Catalogue).where(
             _match(project, queue)
         ).values(pool=pool)
-        self.driver.connection.execute(stmt)
+        self.driver.run(stmt)
 
     def update(self, project, queue, pool=None):
         if pool is None:
@@ -96,7 +96,7 @@ class CatalogueController(base.CatalogueBase):
 
     def drop_all(self):
         stmt = sa.sql.expression.delete(tables.Catalogue)
-        self.driver.connection.execute(stmt)
+        self.driver.run(stmt)
 
 
 def _normalize(entry):

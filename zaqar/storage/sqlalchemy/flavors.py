@@ -45,7 +45,7 @@ class FlavorsController(base.FlavorsBase):
 
         if limit > 0:
             stmt = stmt.limit(limit)
-        cursor = self.driver.connection.execute(stmt)
+        cursor = self.driver.run(stmt)
 
         marker_name = {}
 
@@ -64,7 +64,7 @@ class FlavorsController(base.FlavorsBase):
                     tables.Flavors.c.project == project)
         )
 
-        flavor = self.driver.connection.execute(stmt).fetchone()
+        flavor = self.driver.run(stmt).fetchone()
         if flavor is None:
             raise errors.FlavorDoesNotExist(name)
 
@@ -79,7 +79,7 @@ class FlavorsController(base.FlavorsBase):
                 name=name, pool_group=pool_group, project=project,
                 capabilities=cap
             )
-            self.driver.connection.execute(stmt)
+            self.driver.run(stmt)
         except sa.exc.IntegrityError:
             if not self._pools_ctrl.get_pools_by_group(pool_group):
                 raise errors.PoolGroupDoesNotExist(pool_group)
@@ -96,7 +96,7 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         ).limit(1)
-        return self.driver.connection.execute(stmt).fetchone() is not None
+        return self.driver.run(stmt).fetchone() is not None
 
     @utils.raises_conn_error
     def update(self, name, project=None, pool_group=None, capabilities=None):
@@ -116,7 +116,7 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)).values(**fields)
 
-        res = self.driver.connection.execute(stmt)
+        res = self.driver.run(stmt)
         if res.rowcount == 0:
             raise errors.FlavorDoesNotExist(name)
 
@@ -126,12 +126,12 @@ class FlavorsController(base.FlavorsBase):
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         )
-        self.driver.connection.execute(stmt)
+        self.driver.run(stmt)
 
     @utils.raises_conn_error
     def drop_all(self):
         stmt = sa.sql.expression.delete(tables.Flavors)
-        self.driver.connection.execute(stmt)
+        self.driver.run(stmt)
 
 
 def _normalize(flavor, detailed=False):
