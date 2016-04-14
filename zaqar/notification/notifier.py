@@ -32,8 +32,8 @@ class NotifierDriver(object):
 
     def __init__(self, *args, **kwargs):
         self.subscription_controller = kwargs.get('subscription_controller')
-        # TODO(flwang): Make the max_workers configurable
-        self.executor = futurist.ThreadPoolExecutor(max_workers=10)
+        max_workers = kwargs.get('max_notifier_workers', 10)
+        self.executor = futurist.ThreadPoolExecutor(max_workers=max_workers)
 
     def post(self, queue_name, messages, client_uuid, project=None):
         """Send messages to the subscribers."""

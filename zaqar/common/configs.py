@@ -58,6 +58,8 @@ _NOTIFICATION_OPTIONS = (
     cfg.StrOpt('smtp_command', default='/usr/sbin/sendmail -t -oi',
                help=('The command of smtp to send email. The format is '
                      '"command_name arg1 arg2".')),
+    cfg.IntOpt('max_notifier_workers', default=10,
+               help='The max amount of the notification workers.')
 )
 
 _NOTIFICATION_GROUP = 'notification'

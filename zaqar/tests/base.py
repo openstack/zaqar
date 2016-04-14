@@ -56,6 +56,8 @@ class TestBase(testtools.TestCase):
         self.conf.register_opts(configs._GENERAL_OPTIONS)
         self.conf.register_opts(configs._DRIVER_OPTIONS,
                                 group=configs._DRIVER_GROUP)
+        self.conf.register_opts(configs._NOTIFICATION_OPTIONS,
+                                group=configs._NOTIFICATION_GROUP)
 
         self.mongodb_url = os.environ.get('ZAQAR_TEST_MONGODB_URL',
                                           'mongodb://127.0.0.1:27017')
