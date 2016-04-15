@@ -16,9 +16,11 @@
 from wsgiref import simple_server
 
 import falcon
+import netaddr
 from oslo_config import cfg
 from oslo_log import log as logging
 import six
+import socket
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
@@ -133,14 +135,27 @@ class Driver(transport.DriverBase):
         raise falcon.HTTPInternalServerError('Internal server error',
                                              six.text_type(exc))
 
+    def _get_server_cls(self, host):
+        """Return an appropriate WSGI server class base on provided host
+
+        :param host: The listen host for the zaqar API server.
+        """
+        server_cls = simple_server.WSGIServer
+        if netaddr.valid_ipv6(host):
+            if getattr(server_cls, 'address_family') == socket.AF_INET:
+                class server_cls(server_cls):
+                    address_family = socket.AF_INET6
+        return server_cls
+
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
 
         msgtmpl = _(u'Serving on host %(bind)s:%(port)s')
         LOG.info(msgtmpl,
                  {'bind': self._wsgi_conf.bind, 'port': self._wsgi_conf.port})
-
+        server_cls = self._get_server_cls(self._wsgi_conf.bind)
         httpd = simple_server.make_server(self._wsgi_conf.bind,
                                           self._wsgi_conf.port,
-                                          self.app)
+                                          self.app,
+                                          server_cls)
         httpd.serve_forever()
