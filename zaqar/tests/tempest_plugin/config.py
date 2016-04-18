@@ -18,7 +18,7 @@ from oslo_config import cfg
 service_option = cfg.BoolOpt('zaqar',
                              default=True,
                              help="Whether or not Zaqar is expected to be "
-                                  "available"),
+                                  "available")
 
 messaging_group = cfg.OptGroup(name='messaging',
                                title='Messaging Service')
