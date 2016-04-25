@@ -37,19 +37,18 @@ class NotifierDriver(object):
 
     def post(self, queue_name, messages, client_uuid, project=None):
         """Send messages to the subscribers."""
-        if (self.subscription_controller and
-            not isinstance(self.subscription_controller,
-                           pooling.SubscriptionController)):
-            subscribers = self.subscription_controller.list(queue_name,
-                                                            project)
-
-            for sub in next(subscribers):
-                s_type = urllib_parse.urlparse(sub['subscriber']).scheme
-                data_driver = self.subscription_controller.driver
-                mgr = driver.DriverManager('zaqar.notification.tasks',
-                                           s_type,
-                                           invoke_on_load=True)
-                self.executor.submit(mgr.driver.execute, sub, messages,
-                                     conf=data_driver.conf)
+        if self.subscription_controller:
+            if not isinstance(self.subscription_controller,
+                              pooling.SubscriptionController):
+                subscribers = self.subscription_controller.list(queue_name,
+                                                                project)
+                for sub in next(subscribers):
+                    s_type = urllib_parse.urlparse(sub['subscriber']).scheme
+                    data_driver = self.subscription_controller.driver
+                    mgr = driver.DriverManager('zaqar.notification.tasks',
+                                               s_type,
+                                               invoke_on_load=True)
+                    self.executor.submit(mgr.driver.execute, sub, messages,
+                                         conf=data_driver.conf)
         else:
             LOG.error(_LE('Failed to get subscription controller.'))
