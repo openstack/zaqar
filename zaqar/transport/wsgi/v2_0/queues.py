@@ -49,7 +49,7 @@ class ItemResource(object):
             queue_max_msg_size = resp_dict.get('_max_messages_post_size', tmp)
             resp_dict['_max_messages_post_size'] = queue_max_msg_size
 
-            tmp = self._validate.get_limit_conf_value('max_message_ttl')
+            tmp = self._validate.get_limit_conf_value('default_message_ttl')
             queue_default_ttl = resp_dict.get('_default_message_ttl', tmp)
             resp_dict['_default_message_ttl'] = queue_default_ttl
 
