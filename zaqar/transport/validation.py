@@ -473,7 +473,7 @@ class Validator(object):
                     'must be at least {1} seconds long.')
 
             raise ValidationFailed(
-                msg, self._limits_conf.max_message_ttl, MIN_CLAIM_TTL)
+                msg, self._limits_conf.max_claim_ttl, MIN_CLAIM_TTL)
 
     def subscription_posting(self, subscription):
         """Restrictions on a creation of subscription.
