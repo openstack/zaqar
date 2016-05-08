@@ -32,6 +32,7 @@ local BATCH_SIZE = 100
 
 local start = 0
 local claimed_msgs = {}
+local msg_ids_to_cleanup = {}
 
 local found_unclaimed = false
 
@@ -55,34 +56,46 @@ while (#claimed_msgs < limit) do
 
         if not found_unclaimed then
             local msg = redis.call('HMGET', mid, 'c', 'c.e')
-
-            if msg[1] == '' or tonumber(msg[2]) <= now then
+            if msg[1] == false and msg[2] == false then
+                -- NOTE(Eva-i): It means the message expired and does not
+                -- actually exist anymore, we must later garbage collect it's
+                -- ID from the set and move on.
+                msg_ids_to_cleanup[#msg_ids_to_cleanup + 1] = mid
+            elseif msg[1] == '' or tonumber(msg[2]) <= now then
                 found_unclaimed = true
             end
         end
 
         if found_unclaimed then
+            -- Found an unclaimed message, so claim it.
             local msg_expires_prev = redis.call('HGET', mid, 'e')
-
-            -- Found an unclaimed message, so claim it
-            redis.call('HMSET', mid,
-                       'c', claim_id,
-                       'c.e', claim_expires)
-
-            -- Will the message expire early?
-            if tonumber(msg_expires_prev) < claim_expires then
+            if msg_expires_prev ~= false then
+                -- NOTE(Eva-i): Condition above means the message is not
+                -- expired and we really can claim it.
                 redis.call('HMSET', mid,
-                           't', msg_ttl,
-                           'e', msg_expires)
-            end
+                           'c', claim_id,
+                           'c.e', claim_expires)
 
-            claimed_msgs[#claimed_msgs + 1] = mid
+                -- Will the message expire early?
+                if tonumber(msg_expires_prev) < claim_expires then
+                    redis.call('HMSET', mid,
+                               't', msg_ttl,
+                               'e', msg_expires)
+                end
 
-            if (#claimed_msgs == limit) then
-                break
+                claimed_msgs[#claimed_msgs + 1] = mid
+
+                if (#claimed_msgs == limit) then
+                    break
+                end
             end
         end
     end
+end
+
+if (#msg_ids_to_cleanup ~= 0) then
+    -- Garbage collect expired message IDs stored in msgset_key.
+    redis.call('ZREM', msgset_key, unpack(msg_ids_to_cleanup))
 end
 
 return claimed_msgs
