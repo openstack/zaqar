@@ -41,6 +41,7 @@ class TestDecorators(base.TestBase):
         conf = cfg.ConfigOpts()
         oslo_cache.register_config(conf)
         conf.cache.backend = 'dogpile.cache.memory'
+        conf.cache.enabled = True
         cache = oslo_cache.get_cache(conf)
 
         sample_project = {
@@ -99,6 +100,7 @@ class TestDecorators(base.TestBase):
         conf = cfg.ConfigOpts()
         oslo_cache.register_config(conf)
         conf.cache.backend = 'dogpile.cache.memory'
+        conf.cache.enabled = True
         cache = oslo_cache.get_cache(conf)
 
         class TestClass(object):
