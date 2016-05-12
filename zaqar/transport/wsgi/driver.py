@@ -51,6 +51,15 @@ def _config_options():
     return [(_WSGI_GROUP, _WSGI_OPTIONS)]
 
 
+class FuncMiddleware(object):
+
+    def __init__(self, func):
+        self.func = func
+
+    def process_resource(self, req, resp, resource, params):
+        return self.func(req, resp, params)
+
+
 class Driver(transport.DriverBase):
 
     def __init__(self, conf, storage, cache, control):
@@ -106,8 +115,8 @@ class Driver(transport.DriverBase):
                 ('/v1.1', v1_1.private_endpoints(self, self._conf)),
                 ('/v2', v2_0.private_endpoints(self, self._conf)),
             ])
-
-        self.app = falcon.API(before=self.before_hooks)
+        middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
+        self.app = falcon.API(middleware=middleware)
         self.app.add_error_handler(Exception, self._error_handler)
 
         for version_path, endpoints in catalog:

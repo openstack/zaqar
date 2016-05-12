@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import six
 import uuid
 
+import falcon
 from falcon import testing as ftest
 from oslo_serialization import jsonutils
 
@@ -88,6 +90,12 @@ class TestBase(testing.TestBase):
                       is None else project_id)
         headers['X-Project-ID'] = headers.get('X-Project-ID', project_id)
         kwargs['headers'] = headers
+        try:
+            if six.PY3:
+                path.encode('latin1').decode('utf-8', 'replace')
+        except UnicodeEncodeError:
+            self.srmock.status = falcon.HTTP_400
+            return
 
         return self.app(ftest.create_environ(path=path, **kwargs),
                         self.srmock)
