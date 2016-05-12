@@ -179,7 +179,7 @@ class RedisDriverTest(testing.TestBase):
                                          driver.ControlDriver
                                          (self.conf, cache))
 
-        self.assertTrue(isinstance(redis_driver.connection, redis.StrictRedis))
+        self.assertIsInstance(redis_driver.connection, redis.StrictRedis)
 
     def test_version_match(self):
         oslo_cache.register_config(self.conf)
