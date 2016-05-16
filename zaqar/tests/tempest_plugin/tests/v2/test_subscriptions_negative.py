@@ -17,6 +17,7 @@ import uuid
 
 from tempest import config
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 from tempest import test
 
@@ -45,6 +46,10 @@ class TestSubscriptionsNegative(base.BaseV2MessagingTest):
 
     # Create Subscriptions
 
+    # TODO(wangxiyuan): Now the subscription confirmation feature only support
+    # mongoDB backend. Skip this test until the feature support the redis
+    # backend. Then rewrite it.
+    @decorators.skip_because(bug='1609596')
     @test.attr(type=['negative'])
     @test.idempotent_id('fe0d8ec1-1a64-4490-8869-e821b2252e74')
     def test_create_subscriptions_with_duplicate_subscriber(self):

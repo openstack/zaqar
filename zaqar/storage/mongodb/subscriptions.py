@@ -48,6 +48,7 @@ class SubscriptionController(base.Subscription):
       'e': expires: datetime.datetime
       'o': options :: dict
       'p': project :: six.text_type
+      'c': confirmed :: boolean
     """
 
     def __init__(self, *args, **kwargs):
@@ -70,7 +71,7 @@ class SubscriptionController(base.Subscription):
         if marker is not None:
             query['_id'] = {'$gt': utils.to_oid(marker)}
 
-        projection = {'s': 1, 'u': 1, 't': 1, 'p': 1, 'o': 1, '_id': 1}
+        projection = {'s': 1, 'u': 1, 't': 1, 'p': 1, 'o': 1, '_id': 1, 'c': 1}
 
         cursor = self._collection.find(query, projection=projection)
         cursor = cursor.limit(limit).sort('_id')
@@ -103,6 +104,7 @@ class SubscriptionController(base.Subscription):
         now = timeutils.utcnow_ts()
         now_dt = datetime.datetime.utcfromtimestamp(now)
         expires = now_dt + datetime.timedelta(seconds=ttl)
+        confirmed = False
 
         try:
             subscription_id = self._collection.insert({'s': source,
@@ -110,7 +112,8 @@ class SubscriptionController(base.Subscription):
                                                        't': ttl,
                                                        'e': expires,
                                                        'o': options,
-                                                       'p': project})
+                                                       'p': project,
+                                                       'c': confirmed})
             return subscription_id
         except pymongo.errors.DuplicateKeyError:
             return None
@@ -153,6 +156,22 @@ class SubscriptionController(base.Subscription):
         self._collection.remove({'_id': utils.to_oid(subscription_id),
                                  'p': project}, w=0)
 
+    @utils.raises_conn_error
+    def get_with_subscriber(self, queue, subscriber, project=None):
+        res = self._collection.find_one({'u': subscriber,
+                                         'p': project})
+        now = timeutils.utcnow_ts()
+        return _basic_subscription(res, now)
+
+    @utils.raises_conn_error
+    def confirm(self, queue, subscription_id, project=None, confirm=True):
+
+        res = self._collection.update({'_id': utils.to_oid(subscription_id),
+                                       'p': project}, {'$set': {'c': confirm}},
+                                      upsert=False)
+        if not res['updatedExisting']:
+            raise errors.SubscriptionDoesNotExist(subscription_id)
+
 
 def _basic_subscription(record, now):
     # NOTE(Eva-i): unused here record's field 'e' (expires) has changed it's
@@ -161,11 +180,13 @@ def _basic_subscription(record, now):
     # starting using 'e' field should make sure support both of the formats.
     oid = record['_id']
     age = now - utils.oid_ts(oid)
+    confirmed = record.get('c', True)
     return {
         'id': str(oid),
         'source': record['s'],
         'subscriber': record['u'],
         'ttl': record['t'],
         'age': int(age),
-        'options': record['o']
+        'options': record['o'],
+        'confirmed': confirmed,
     }

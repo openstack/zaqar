@@ -409,6 +409,17 @@ class SubscriptionController(storage.Subscription):
             return control.exists(queue, subscription_id,
                                   project=project)
 
+    def confirm(self, queue, subscription_id, project=None, confirm=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.confirm(queue, subscription_id,
+                                   project=project, confirm=confirm)
+
+    def get_with_subscriber(self, queue, subscriber, project=None):
+        control = self._get_controller(queue, project)
+        if control:
+            return control.get_with_subscriber(queue, subscriber, project)
+
 
 class Catalog(object):
     """Represents the mapping between queues and pool drivers."""

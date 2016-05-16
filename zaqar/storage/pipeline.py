@@ -150,7 +150,9 @@ class DataDriver(base.DataDriverBase):
         kwargs = {'subscription_controller':
                   self._storage.subscription_controller,
                   'max_notifier_workers':
-                  self.conf.notification.max_notifier_workers}
+                  self.conf.notification.max_notifier_workers,
+                  'require_confirmation':
+                  self.conf.notification.require_confirmation}
         stages.extend(_get_storage_pipeline('message', self.conf, **kwargs))
         stages.append(self._storage.message_controller)
         return common.Pipeline(stages)
