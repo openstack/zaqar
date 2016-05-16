@@ -22,6 +22,7 @@ from stevedore import driver
 from zaqar.common import errors
 from zaqar.common import utils
 from zaqar.i18n import _LE
+from zaqar.storage import configuration
 
 LOG = log.getLogger(__name__)
 
@@ -47,20 +48,31 @@ def dynamic_conf(uri, options, conf=None):
     storage_opts = utils.dict_to_conf(options)
     storage_group = u'drivers:message_store:%s' % storage_type
 
+    dynamic = False
     # NOTE(cpp-cabrera): register those options!
     if conf is None:
         conf = cfg.ConfigOpts()
     else:
-        conf = copy.copy(conf)
+        conf_wrap = configuration.Configuration(conf)
+        conf = copy.copy(conf_wrap)
+        dynamic = True
 
-    if storage_group not in conf:
-        conf.register_opts(storage_opts,
-                           group=storage_group)
-
-    if 'drivers' not in conf:
-        # NOTE(cpp-cabrera): parse general opts: 'drivers'
-        driver_opts = utils.dict_to_conf({'message_store': storage_type})
-        conf.register_opts(driver_opts, group=u'drivers')
+    if dynamic:
+        if not conf.safe_get(storage_group):
+            conf.register_opts(storage_opts,
+                               group=storage_group)
+        if not conf.safe_get('drivers'):
+            # NOTE(cpp-cabrera): parse general opts: 'drivers'
+            driver_opts = utils.dict_to_conf({'message_store': storage_type})
+            conf.register_opts(driver_opts, group=u'drivers')
+    else:
+        if storage_group not in conf:
+            conf.register_opts(storage_opts,
+                               group=storage_group)
+        if 'drivers' not in conf:
+            # NOTE(cpp-cabrera): parse general opts: 'drivers'
+            driver_opts = utils.dict_to_conf({'message_store': storage_type})
+            conf.register_opts(driver_opts, group=u'drivers')
 
     conf.set_override('message_store', storage_type, 'drivers',
                       enforce_type=True)
