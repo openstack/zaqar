@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from distutils.version import LooseVersion
 from wsgiref import simple_server
 
 import falcon
@@ -115,8 +116,17 @@ class Driver(transport.DriverBase):
                 ('/v1.1', v1_1.private_endpoints(self, self._conf)),
                 ('/v2', v2_0.private_endpoints(self, self._conf)),
             ])
-        middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
-        self.app = falcon.API(middleware=middleware)
+
+        # NOTE(wanghao): Since hook feature has removed after 1.0.0, using
+        # middleware instead of it, but for the compatibility with old version,
+        # we support them both now. Hook way can be removed after falcon
+        # version must be bigger than 1.0.0 in requirements.
+        if LooseVersion(falcon.__version__) >= LooseVersion("1.0.0"):
+            middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
+            self.app = falcon.API(middleware=middleware)
+        else:
+            self.app = falcon.API(before=self.before_hooks)
+
         self.app.add_error_handler(Exception, self._error_handler)
 
         for version_path, endpoints in catalog:
