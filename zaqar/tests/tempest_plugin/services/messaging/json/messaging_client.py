@@ -329,10 +329,12 @@ class V2MessagingClient(MessagingClient):
         client_id = uuid.uuid4().hex
         self.headers = {'Client-ID': client_id}
 
-    def list_queues(self):
+    def list_queues(self, url_params=False):
         uri = '{0}/queues'.format(self.uri_prefix)
-        resp, body = self.get(uri, headers=self.headers)
+        if url_params:
+            uri += '?%s' % urllib.urlencode(url_params)
 
+        resp, body = self.get(uri, headers=self.headers)
         if resp['status'] != '204':
             body = json.loads(body)
             self.validate_response(v2schema.list_queues, resp, body)
