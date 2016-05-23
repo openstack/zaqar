@@ -82,7 +82,6 @@ function configure_zaqar {
     sudo chown $USER $ZAQAR_API_LOG_DIR
 
     iniset $ZAQAR_CONF DEFAULT debug True
-    iniset $ZAQAR_CONF DEFAULT verbose True
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
     iniset $ZAQAR_CONF signed_url secret_key notreallysecret
