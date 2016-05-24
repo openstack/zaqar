@@ -48,31 +48,20 @@ def dynamic_conf(uri, options, conf=None):
     storage_opts = utils.dict_to_conf(options)
     storage_group = u'drivers:message_store:%s' % storage_type
 
-    dynamic = False
     # NOTE(cpp-cabrera): register those options!
     if conf is None:
         conf = cfg.ConfigOpts()
     else:
         conf_wrap = configuration.Configuration(conf)
         conf = copy.copy(conf_wrap)
-        dynamic = True
 
-    if dynamic:
-        if not conf.safe_get(storage_group):
-            conf.register_opts(storage_opts,
-                               group=storage_group)
-        if not conf.safe_get('drivers'):
-            # NOTE(cpp-cabrera): parse general opts: 'drivers'
-            driver_opts = utils.dict_to_conf({'message_store': storage_type})
-            conf.register_opts(driver_opts, group=u'drivers')
-    else:
-        if storage_group not in conf:
-            conf.register_opts(storage_opts,
-                               group=storage_group)
-        if 'drivers' not in conf:
-            # NOTE(cpp-cabrera): parse general opts: 'drivers'
-            driver_opts = utils.dict_to_conf({'message_store': storage_type})
-            conf.register_opts(driver_opts, group=u'drivers')
+    if storage_group not in conf:
+        conf.register_opts(storage_opts, group=storage_group)
+
+    if 'drivers' not in conf:
+        # NOTE(cpp-cabrera): parse general opts: 'drivers'
+        driver_opts = utils.dict_to_conf({'message_store': storage_type})
+        conf.register_opts(driver_opts, group=u'drivers')
 
     conf.set_override('message_store', storage_type, 'drivers',
                       enforce_type=True)

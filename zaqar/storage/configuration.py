@@ -34,6 +34,10 @@ class Configuration(object):
         except cfg.NoSuchOptError:
             return None
 
+    def __contains__(self, key):
+        """Return True if key is in local_conf."""
+        return key in self.local_conf
+
     def __getattr__(self, value):
         # Don't use self.local_conf to avoid reentrant call to __getattr__()
         local_conf = object.__getattribute__(self, 'local_conf')
