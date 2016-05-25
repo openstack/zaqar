@@ -109,13 +109,14 @@ class ItemResource(object):
 class CollectionResource(object):
 
     __slots__ = ('_subscription_controller', '_validate',
-                 '_default_subscription_ttl')
+                 '_default_subscription_ttl', '_queue_controller')
 
     def __init__(self, validate, subscription_controller,
-                 default_subscription_ttl):
+                 default_subscription_ttl, queue_controller):
         self._subscription_controller = subscription_controller
         self._validate = validate
         self._default_subscription_ttl = default_subscription_ttl
+        self._queue_controller = queue_controller
 
     @decorators.TransportLog("Subscription collection")
     @acl.enforce("subscription:get_all")
@@ -171,6 +172,8 @@ class CollectionResource(object):
             document = {}
 
         try:
+            if not self._queue_controller.exists(queue_name, project_id):
+                self._queue_controller.create(queue_name, project=project_id)
             self._validate.subscription_posting(document)
             subscriber = document['subscriber']
             ttl = document.get('ttl', self._default_subscription_ttl)
@@ -181,9 +184,6 @@ class CollectionResource(object):
                                                            options,
                                                            project=project_id)
 
-        except storage_errors.QueueDoesNotExist as ex:
-            LOG.exception(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))

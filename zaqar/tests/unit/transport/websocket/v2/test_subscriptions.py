@@ -155,10 +155,24 @@ class SubscriptionTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
+        [subscriber] = list(
+            next(
+                self.boot.storage.subscription_controller.list(
+                    'shuffle', self.project_id)))
+        self.addCleanup(
+            self.boot.storage.subscription_controller.delete, 'shuffle',
+            subscriber['id'], project=self.project_id)
+
+        response = {
+            'body': {'message': 'Subscription shuffle created.',
+                     'subscription_id': subscriber['id']},
+            'headers': {'status': 201},
+            'request': {'action': 'subscription_create',
+                        'body': {'queue_name': 'shuffle', 'ttl': 600},
+                        'api': 'v2', 'headers': self.headers}}
+
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(
-            'Queue shuffle does not exist.',
-            json.loads(sender.call_args[0][0])['body']['error'])
+        self.assertEqual(response, json.loads(sender.call_args[0][0]))
 
     def test_subscription_get(self):
         sub = self.boot.storage.subscription_controller.create(

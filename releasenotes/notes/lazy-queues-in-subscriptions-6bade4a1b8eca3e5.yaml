@@ -1,0 +1,8 @@
+---
+features:
+  - Queues now behave lazy in subscriptions also. So there is no need for
+    the user to pre-create a queue before creating a subscription for this
+    queue. Zaqar will create the queue automatically on the subscription
+    creation request. As before, all subscriptions will continue to stay
+    active even if the corresponding queue was deleted.
+

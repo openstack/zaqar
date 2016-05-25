@@ -809,6 +809,9 @@ class Endpoints(object):
                     'options': req._body.get('options'),
                     'ttl': req._body.get('ttl')}
             self._validate.subscription_posting(data)
+            self._validate.queue_identification(queue_name, project_id)
+            if not self._queue_controller.exists(queue_name, project_id):
+                self._queue_controller.create(queue_name, project=project_id)
             created = self._subscription_controller.create(queue_name,
                                                            subscriber,
                                                            data['ttl'],
@@ -818,11 +821,6 @@ class Endpoints(object):
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
-        except storage_errors.DoesNotExist as ex:
-            LOG.debug(ex)
-            error = _('Queue %s does not exist.') % queue_name
-            headers = {'status': 404}
-            return api_utils.error_response(req, ex, headers, error)
         except storage_errors.ExceptionBase as ex:
             LOG.exception(ex)
             error = _('Subscription %s could not be created.') % queue_name

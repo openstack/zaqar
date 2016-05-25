@@ -53,7 +53,6 @@ class SubscriptionController(base.Subscription):
     def __init__(self, *args, **kwargs):
         super(SubscriptionController, self).__init__(*args, **kwargs)
         self._collection = self.driver.subscriptions_database.subscriptions
-        self._queue_ctrl = self.driver.queue_controller
         self._collection.ensure_index(SUBSCRIPTIONS_INDEX, unique=True)
         # NOTE(flwang): MongoDB will automatically delete the subscription
         # from the subscriptions collection when the subscription's 'e' value
@@ -109,8 +108,6 @@ class SubscriptionController(base.Subscription):
         now_dt = datetime.datetime.utcfromtimestamp(now)
         expires = now_dt + datetime.timedelta(seconds=ttl)
 
-        if not self._queue_ctrl.exists(source, project):
-            raise errors.QueueDoesNotExist(source, project)
         try:
             subscription_id = self._collection.insert({'s': source,
                                                        'u': subscriber,

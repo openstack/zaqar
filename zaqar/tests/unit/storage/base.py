@@ -964,6 +964,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                    project=self.project)
 
 
+@ddt.ddt
 class SubscriptionControllerTest(ControllerBaseTest):
     """Subscriptions Controller base tests.
 
@@ -974,10 +975,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
     def setUp(self):
         super(SubscriptionControllerTest, self).setUp()
         self.subscription_controller = self.driver.subscription_controller
-
-        # Lets create a queue as the source of subscription
         self.queue_controller = self.driver.queue_controller
-        self.queue_controller.create(self.queue_name, project=self.project)
 
         self.source = self.queue_name
         self.subscriber = 'http://trigger.me'
@@ -988,7 +986,16 @@ class SubscriptionControllerTest(ControllerBaseTest):
         self.queue_controller.delete(self.queue_name, project=self.project)
         super(SubscriptionControllerTest, self).tearDown()
 
-    def test_list(self):
+    # NOTE(Eva-i): this method helps to test cases when the queue is
+    # pre-created and when it's not.
+    def _precreate_queue(self, precreate_queue):
+        if precreate_queue:
+            # Let's create a queue as the source of subscription
+            self.queue_controller.create(self.queue_name, project=self.project)
+
+    @ddt.data(True, False)
+    def test_list(self, precreate_queue):
+        self._precreate_queue(precreate_queue)
         for s in six.moves.xrange(15):
             subscriber = 'http://fake_{0}'.format(s)
             s_id = self.subscription_controller.create(
@@ -1019,14 +1026,18 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                 subscriptions)))
         self.assertEqual(5, len(subscriptions))
 
-    def test_get_raises_if_subscription_does_not_exist(self):
+    @ddt.data(True, False)
+    def test_get_raises_if_subscription_does_not_exist(self, precreate_queue):
+        self._precreate_queue(precreate_queue)
         self.assertRaises(errors.SubscriptionDoesNotExist,
                           self.subscription_controller.get,
                           self.queue_name,
                           'notexists',
                           project=self.project)
 
-    def test_lifecycle(self):
+    @ddt.data(True, False)
+    def test_lifecycle(self, precreate_queue):
+        self._precreate_queue(precreate_queue)
         s_id = self.subscription_controller.create(self.source,
                                                    self.subscriber,
                                                    self.ttl,
@@ -1068,7 +1079,9 @@ class SubscriptionControllerTest(ControllerBaseTest):
                           self.subscription_controller.get,
                           self.queue_name, s_id)
 
-    def test_create_existed(self):
+    @ddt.data(True, False)
+    def test_create_existed(self, precreate_queue):
+        self._precreate_queue(precreate_queue)
         s_id = self.subscription_controller.create(
             self.source,
             self.subscriber,
@@ -1087,15 +1100,23 @@ class SubscriptionControllerTest(ControllerBaseTest):
         self.assertIsNone(s_id)
 
     def test_nonexist_source(self):
-        self.assertRaises(errors.QueueDoesNotExist,
-                          self.subscription_controller.create,
-                          'fake_queue_name',
-                          self.subscriber,
-                          self.ttl,
-                          self.options,
-                          self.project)
+        try:
+            s_id = self.subscription_controller.create('fake_queue_name',
+                                                       self.subscriber,
+                                                       self.ttl,
+                                                       self.options,
+                                                       self.project)
+        except Exception:
+            self.fail("Subscription controller should not raise an exception "
+                      "in case of non-existing queue.")
+        self.addCleanup(self.subscription_controller.delete, self.source, s_id,
+                        self.project)
 
-    def test_update_raises_if_try_to_update_to_existing_subscription(self):
+    @ddt.data(True, False)
+    def test_update_raises_if_try_to_update_to_existing_subscription(
+            self,
+            precreate_queue):
+        self._precreate_queue(precreate_queue)
         # create two subscriptions: fake_0 and fake_1
         ids = []
         for s in six.moves.xrange(2):
@@ -1125,7 +1146,10 @@ class SubscriptionControllerTest(ControllerBaseTest):
                           project=self.project,
                           **update_fields)
 
-    def test_update_raises_if_subscription_does_not_exist(self):
+    @ddt.data(True, False)
+    def test_update_raises_if_subscription_does_not_exist(self,
+                                                          precreate_queue):
+        self._precreate_queue(precreate_queue)
         update_fields = {
             'subscriber': 'http://fake'
         }
@@ -1612,7 +1636,6 @@ class FlavorsControllerTest(ControllerBaseTest):
 
 def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
-
     def messages():
         for n in six.moves.xrange(num):
             yield {
