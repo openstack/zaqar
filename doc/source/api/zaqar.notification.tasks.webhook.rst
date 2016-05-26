@@ -1,7 +1,7 @@
-The :mod:`zaqar.notification.task.webhook` module
+The :mod:`zaqar.notification.tasks.webhook` module
 ==================================================
 
-.. automodule:: zaqar.notification.task.webhook
+.. automodule:: zaqar.notification.tasks.webhook
   :members:
   :undoc-members:
   :show-inheritance:
