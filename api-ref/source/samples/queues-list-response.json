@@ -1,0 +1,22 @@
+{
+   "queues":[
+      {
+         "href":"/v2/queues/beijing",
+         "name":"beijing"
+      },
+      {
+         "href":"/v2/queues/london",
+         "name":"london"
+      },
+      {
+         "href":"/v2/queues/wellington",
+         "name":"wellington"
+      }
+   ],
+   "links":[
+      {
+         "href":"/v2/queues?marker=wellington",
+         "rel":"next"
+      }
+   ]
+}
