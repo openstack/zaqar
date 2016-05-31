@@ -1,0 +1,16 @@
+#### variables in header######################################################
+
+client_id:
+  type: UUID
+  in: header
+  description: |
+    A unique ID for indicating where the request come from.
+
+#### variables in path #######################################################
+
+queue_name:
+  type: string
+  in: path
+  required: True
+  description: |
+    The name of the queue.
