@@ -14,6 +14,8 @@
 # the License.
 
 import sqlalchemy as sa
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 
 from zaqar.common import decorators
 from zaqar import storage
@@ -63,9 +65,13 @@ class ControlDriver(storage.ControlDriverBase):
     # TODO(cpp-cabrera): expose connect/close as a context manager
     # that acquires the connection to the DB for the desired scope and
     # closes it once the operations are completed
+    # TODO(wangxiyuan): we should migrate to oslo.db asap.
     @decorators.lazy_property(write=False)
     def connection(self):
-        return self.engine.connect()
+        # use scoped_session to avoid multi-threading problem.
+        session = scoped_session(sessionmaker(bind=self.engine,
+                                              autocommit=True))
+        return session()
 
     def run(self, *args, **kwargs):
         return self.connection.execute(*args, **kwargs)
