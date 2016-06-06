@@ -31,12 +31,23 @@ LOG = logging.getLogger(__name__)
 
 class ItemResource(object):
 
-    __slots__ = ('_validate', '_queue_controller', '_message_controller')
+    __slots__ = ('_validate', '_queue_controller', '_message_controller',
+                 '_reserved_metadata')
 
     def __init__(self, validate, queue_controller, message_controller):
         self._validate = validate
         self._queue_controller = queue_controller
         self._message_controller = message_controller
+        self._reserved_metadata = ['max_messages_post_size',
+                                   'default_message_ttl']
+
+    def _get_reserved_metadata(self):
+        reserved_metadata = {
+            '_%s' % meta:
+                self._validate.get_limit_conf_value(meta)
+            for meta in self._reserved_metadata
+        }
+        return reserved_metadata
 
     @decorators.TransportLog("Queue metadata")
     @acl.enforce("queues:get")
@@ -44,15 +55,9 @@ class ItemResource(object):
         try:
             resp_dict = self._queue_controller.get(queue_name,
                                                    project=project_id)
-
-            tmp = self._validate.get_limit_conf_value('max_messages_post_size')
-            queue_max_msg_size = resp_dict.get('_max_messages_post_size', tmp)
-            resp_dict['_max_messages_post_size'] = queue_max_msg_size
-
-            tmp = self._validate.get_limit_conf_value('default_message_ttl')
-            queue_default_ttl = resp_dict.get('_default_message_ttl', tmp)
-            resp_dict['_default_message_ttl'] = queue_default_ttl
-
+            for meta, value in self._get_reserved_metadata().items():
+                if not resp_dict.get(meta, None):
+                    resp_dict[meta] = value
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
@@ -180,10 +185,11 @@ class ItemResource(object):
             # queue.
             metadata = self._queue_controller.get_metadata(queue_name,
                                                            project=project_id)
+            reserved_metadata = self._get_reserved_metadata()
             for change in changes:
                 change_method_name = '_do_%s' % change['op']
                 change_method = getattr(self, change_method_name)
-                change_method(req, metadata, change)
+                change_method(req, metadata, reserved_metadata, change)
 
             self._validate.queue_metadata_putting(metadata)
 
@@ -202,30 +208,33 @@ class ItemResource(object):
             LOG.exception(ex)
             description = _(u'Queue could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
+        for meta, value in self._get_reserved_metadata().items():
+            if not metadata.get(meta, None):
+                metadata[meta] = value
         resp.body = utils.to_json(metadata)
 
-    def _do_replace(self, req, metadata, change):
+    def _do_replace(self, req, metadata, reserved_metadata, change):
         path = change['path']
         path_child = path[1]
         value = change['value']
-        if path_child in metadata:
+        if path_child in metadata or path_child in reserved_metadata:
             metadata[path_child] = value
         else:
             msg = _("Can't replace non-existent object %s.")
             raise wsgi_errors.HTTPConflict(msg % path_child)
 
-    def _do_add(self, req, metadata, change):
+    def _do_add(self, req, metadata, reserved_metadata, change):
         path = change['path']
         path_child = path[1]
         value = change['value']
         metadata[path_child] = value
 
-    def _do_remove(self, req, metadata, change):
+    def _do_remove(self, req, metadata, reserved_metadata, change):
         path = change['path']
         path_child = path[1]
         if path_child in metadata:
             metadata.pop(path_child)
-        else:
+        elif path_child not in reserved_metadata:
             msg = _("Can't remove non-existent object %s.")
             raise wsgi_errors.HTTPConflict(msg % path_child)
 

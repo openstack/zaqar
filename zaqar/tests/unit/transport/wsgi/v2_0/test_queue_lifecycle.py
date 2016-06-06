@@ -250,8 +250,24 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                             body=doc1)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
+        # remove reserved metadata, zaqar will do nothing and return 200,
+        # because
+        doc3 = '[{"op":"remove", "path": "/metadata/_default_message_ttl"}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc3)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
         # replace metadata
         doc2 = '[{"op":"replace", "path": "/metadata/key1", "value": 2}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc2)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        # replace reserved metadata, zaqar will store the reserved metadata
+        doc2 = ('[{"op":"replace", "path": "/metadata/_default_message_ttl",'
+                '"value": 300}]')
         self.simulate_patch(xyz_queue_path_metadata,
                             headers=headers,
                             body=doc2)
@@ -262,7 +278,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual({'key1': 2, 'key2': 1,
-                          '_default_message_ttl': 3600,
+                          '_default_message_ttl': 300,
                           '_max_messages_post_size': 262144}, result_doc)
 
         # remove metadata
@@ -271,6 +287,14 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                             headers=headers,
                             body=doc3)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        # remove reserved metadata
+        doc3 = '[{"op":"remove", "path": "/metadata/_default_message_ttl"}]'
+        self.simulate_patch(xyz_queue_path_metadata,
+                            headers=headers,
+                            body=doc3)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
         # Get
         result = self.simulate_get(xyz_queue_path_metadata,
                                    headers=headers)
