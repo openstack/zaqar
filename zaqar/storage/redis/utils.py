@@ -266,7 +266,7 @@ class SubscriptionListCursor(object):
     @raises_conn_error
     def next(self):
         curr = next(self.subscription_iter)
-        subscription = self.client.hmget(curr, ['s', 'u', 't', 'o'])
+        subscription = self.client.hmget(curr, ['s', 'u', 't', 'e', 'o'])
         # NOTE(flwang): The expired subscription will be removed
         # automatically, but the key can't be deleted automatically as well.
         # Though we clean up those expired ids when create new subscription,
