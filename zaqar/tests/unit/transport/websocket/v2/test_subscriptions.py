@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import time
 import uuid
 
 import mock
@@ -83,6 +84,8 @@ class SubscriptionTest(base.V1_1Base):
 
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
+        added_age = 1
+        time.sleep(added_age)
         [subscriber] = list(
             next(
                 self.boot.storage.subscription_controller.list(
@@ -94,6 +97,7 @@ class SubscriptionTest(base.V1_1Base):
         self.assertEqual(600, subscriber['ttl'])
         self.assertEqual('http://localhost:1234/%s' % self.protocol.proto_id,
                          subscriber['subscriber'])
+        self.assertLessEqual(added_age, subscriber['age'])
 
         self.boot.storage.subscription_controller.delete(
             'kitkat', subscriber['id'], project=self.project_id)
@@ -176,7 +180,7 @@ class SubscriptionTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
-        response = {
+        expected_response_without_age = {
             'body': {'subscriber': '',
                      'source': 'kitkat',
                      'options': {},
@@ -189,7 +193,11 @@ class SubscriptionTest(base.V1_1Base):
                         'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(response, json.loads(sender.call_args[0][0]))
+        response = json.loads(sender.call_args[0][0])
+        # Get and remove age from the actual response.
+        actual_sub_age = response['body'].pop('age')
+        self.assertLessEqual(0, actual_sub_age)
+        self.assertEqual(expected_response_without_age, response)
 
     def test_subscription_list(self):
         sub = self.boot.storage.subscription_controller.create(
@@ -207,7 +215,7 @@ class SubscriptionTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
-        response = {
+        expected_response_without_age = {
             'body': {
                 'subscriptions': [{
                     'subscriber': '',
@@ -219,9 +227,12 @@ class SubscriptionTest(base.V1_1Base):
             'request': {'action': 'subscription_list',
                         'body': {'queue_name': 'kitkat'},
                         'api': 'v2', 'headers': self.headers}}
-
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(response, json.loads(sender.call_args[0][0]))
+        response = json.loads(sender.call_args[0][0])
+        # Get and remove age from the actual response.
+        actual_sub_age = response['body']['subscriptions'][0].pop('age')
+        self.assertLessEqual(0, actual_sub_age)
+        self.assertEqual(expected_response_without_age, response)
 
     def test_subscription_sustainable_notifications_format(self):
         # NOTE(Eva-i): The websocket subscription's notifications must be
