@@ -124,6 +124,34 @@ class AuthTest(base.V2Base):
         self.assertIn('cancelled', repr(handle))
         self.assertNotIn('cancelled', repr(self.protocol._deauth_handle))
 
+    def test_reauth_after_auth_failure(self):
+        headers = self.headers.copy()
+        headers['X-Auth-Token'] = 'wrong_token'
+        req = json.dumps({'action': 'authenticate', 'headers': headers})
+
+        msg_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(msg_mock.stop)
+        msg_mock = msg_mock.start()
+        # after authenticate failure, the _auth_app will be  None and the
+        # request will raise 401 error.
+        self.protocol.onMessage(req, False)
+        self.protocol._auth_response('401 error', 'Failed')
+        resp = json.loads(msg_mock.call_args[0][0])
+
+        self.assertEqual(401, resp['headers']['status'])
+        self.assertEqual('authenticate', resp['request']['action'])
+        self.assertIsNone(self.protocol._auth_app)
+
+        # try to authenticate again, "onMessage" should not return 403 because
+        # that the _auth_app was cleaned after auth failure.
+        headers['X-Auth-Token'] = 'mytoken'
+        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        self.protocol.onMessage(req, False)
+
+        self.protocol._auth_response('200 OK', 'authenticate success')
+        resp = json.loads(msg_mock.call_args[0][0])
+        self.assertEqual(200, resp['headers']['status'])
+
     @ddt.data(True, False)
     def test_auth_response_serialization_format(self, in_binary):
         dumps, loads, create_req = test_utils.get_pack_tools(binary=in_binary)

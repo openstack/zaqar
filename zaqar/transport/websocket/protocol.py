@@ -175,6 +175,10 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         code = int(status.split()[0])
         req = self._handler.create_request({'action': 'authenticate'})
         if code != 200:
+            # NOTE(wangxiyuan): _auth_app should be cleaned up the after the
+            # authentication failure so that the client can be authenticated
+            # again.
+            self._auth_app = None
             body = {'error': 'Authentication failed.'}
             resp = self._handler.create_response(code, body, req)
             self._send_response(resp, self._auth_in_binary)
