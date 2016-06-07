@@ -1,0 +1,7 @@
+---
+fixes:
+  - In IPv6 management network environment, starting Zaqar server will
+    run into 'Address family for hostname not support' error when use WSGI
+    simple server. The root cause is that Python's TCPServer implementation
+    is hard-coded to use IPv4, even in IPv6 environments. Now this issue has
+    been fixed.

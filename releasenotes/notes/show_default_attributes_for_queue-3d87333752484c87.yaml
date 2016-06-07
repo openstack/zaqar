@@ -1,0 +1,8 @@
+---
+features:
+  - Currently Zaqar can support more built-in/reserved attributes in queue.
+    For now there are two important attributes 'max_messages_post_size' and
+    'max_message_ttl'. With this feature, when user query queues Zaqar will show
+    those two attributes (read from config file if there is no customized value
+    from user) in queue metadata so that user can know what value it is.
+

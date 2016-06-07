@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    When access the root path of Zaqar service, for example:
+    curl GET http://127.0.0.1:8888/, user will see 401 error. Which
+    will cause some front end proxy (like HAProxy) to complain. Now this issue
+    has been fixed.
