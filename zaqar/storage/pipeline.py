@@ -148,7 +148,9 @@ class DataDriver(base.DataDriverBase):
         stages = _get_builtin_entry_points('message', self._storage,
                                            self.control_driver)
         kwargs = {'subscription_controller':
-                  self._storage.subscription_controller}
+                  self._storage.subscription_controller,
+                  'max_notifier_workers':
+                  self.conf.notification.max_notifier_workers}
         stages.extend(_get_storage_pipeline('message', self.conf, **kwargs))
         stages.append(self._storage.message_controller)
         return common.Pipeline(stages)
