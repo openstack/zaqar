@@ -67,6 +67,18 @@ class AuthTest(base.V2Base):
         self.assertEqual(1, len(responses))
         self.assertEqual('200 OK', responses[0])
 
+        # Check that the env is available to future requests
+        req = json.dumps({'action': 'message_list',
+                          'body': {'queue_name': 'myqueue'},
+                          'headers': self.headers})
+        process_request = mock.patch.object(self.protocol._handler,
+                                            'process_request').start()
+        process_request.return_value = self.protocol._handler.create_response(
+            200, {})
+        self.protocol.onMessage(req, False)
+        self.assertEqual(1, process_request.call_count)
+        self.assertEqual(self.env, process_request.call_args[0][0]._env)
+
     def test_post_between_auth(self):
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'mytoken1'

@@ -19,6 +19,7 @@ import falcon
 import mock
 from oslo_serialization import jsonutils
 
+from zaqar.common import auth
 from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
@@ -333,3 +334,22 @@ class TestSubscriptionsMongoDB(base.V2Base):
         resp = self.simulate_get(self.subscription_path + '/' + sid,
                                  headers=self.headers)
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+    @mock.patch.object(auth, 'create_trust_id')
+    def test_create_with_trust(self, create_trust):
+        create_trust.return_value = 'trust_id'
+        self.headers['X-USER-ID'] = 'user-id'
+        self.headers['X-ROLES'] = 'my-roles'
+        self._create_subscription('trust+http://example.com')
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        self.assertEqual('user-id', create_trust.call_args[0][1])
+        self.assertEqual(self.project_id, create_trust.call_args[0][2])
+        self.assertEqual(['my-roles'], create_trust.call_args[0][3])
+
+        resp_list = self.simulate_get(self.subscription_path,
+                                      headers=self.headers)
+        resp_list_doc = jsonutils.loads(resp_list[0])
+        options = resp_list_doc['subscriptions'][0]['options']
+
+        self.assertEqual({'a': 1, 'trust_id': 'trust_id'}, options)

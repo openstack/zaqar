@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import uuid
 
 from tempest.common.utils import data_utils
 from tempest.lib import decorators
+from tempest import test
 
 from zaqar.tests.tempest_plugin.tests import base
 
@@ -90,6 +93,32 @@ class TestSubscriptions(base.BaseV2MessagingTest):
         for result in results:
             subscription_id = result[1]["subscription_id"]
             self.delete_subscription(self.queue_name, subscription_id)
+
+    @decorators.idempotent_id('ff4344b4-ba78-44c5-9ffc-44e53e484f76')
+    def test_trust_subscription(self):
+        sub_queue = data_utils.rand_name('Queues-Test')
+        self.addCleanup(self.client.delete_queue, sub_queue)
+        subscriber = 'trust+{0}/{1}/queues/{2}/messages'.format(
+            self.client.base_url, self.client.uri_prefix, sub_queue)
+        post_body = json.dumps(
+            {'messages': [{'body': '$zaqar_message$', 'ttl': 60}]})
+        post_headers = {'X-Project-ID': self.client.tenant_id,
+                        'Client-ID': str(uuid.uuid4())}
+        sub_body = {'ttl': 1200, 'subscriber': subscriber,
+                    'options': {'post_data': post_body,
+                                'post_headers': post_headers}}
+
+        self.create_subscription(queue_name=self.queue_name, rbody=sub_body)
+        message_body = self.generate_message_body()
+        self.post_messages(queue_name=self.queue_name, rbody=message_body)
+
+        if not test.call_until_true(
+                lambda: self.list_messages(sub_queue)[1]['messages'], 10, 1):
+            self.fail("Couldn't get messages")
+        messages = self.list_messages(sub_queue)
+        expected = message_body['messages'][0]
+        expected['queue_name'] = self.queue_name
+        self.assertEqual(expected, messages[1]['messages'][0]['body'])
 
     @classmethod
     def resource_cleanup(cls):

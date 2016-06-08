@@ -51,3 +51,6 @@ class MailtoTask(object):
                               'because %s.') % str(err))
         except Exception as exc:
             LOG.exception(_LE('Failed to send email because %s.') % str(exc))
+
+    def register(self, subscriber, options, ttl, project_id, request_data):
+        pass

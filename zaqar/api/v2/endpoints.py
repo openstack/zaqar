@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from stevedore import driver
+
 from oslo_log import log as logging
+from oslo_utils import netutils
 
 from zaqar.common.api import errors as api_errors
 from zaqar.common.api import response
@@ -798,6 +801,8 @@ class Endpoints(object):
         """
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
+        options = req._body.get('options', {})
+        ttl = req._body.get('ttl', self._defaults.subscription_ttl)
 
         LOG.debug(
             u'Subscription create - queue: %(queue)s, project: %(project)s',
@@ -805,9 +810,15 @@ class Endpoints(object):
              'project': project_id})
 
         try:
+            url = netutils.urlsplit(subscriber)
+            mgr = driver.DriverManager('zaqar.notification.tasks', url.scheme,
+                                       invoke_on_load=True)
+            req_data = req._env.copy()
+            mgr.driver.register(subscriber, options, ttl, project_id, req_data)
+
             data = {'subscriber': subscriber,
-                    'options': req._body.get('options'),
-                    'ttl': req._body.get('ttl')}
+                    'options': options,
+                    'ttl': ttl}
             self._validate.subscription_posting(data)
             self._validate.queue_identification(queue_name, project_id)
             if not self._queue_controller.exists(queue_name, project_id):

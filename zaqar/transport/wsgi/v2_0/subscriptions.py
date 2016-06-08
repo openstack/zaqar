@@ -15,7 +15,9 @@
 
 import falcon
 from oslo_log import log as logging
+from oslo_utils import netutils
 import six
+from stevedore import driver
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -176,8 +178,15 @@ class CollectionResource(object):
                 self._queue_controller.create(queue_name, project=project_id)
             self._validate.subscription_posting(document)
             subscriber = document['subscriber']
-            ttl = document.get('ttl', self._default_subscription_ttl)
             options = document.get('options', {})
+            url = netutils.urlsplit(subscriber)
+            ttl = document.get('ttl', self._default_subscription_ttl)
+            mgr = driver.DriverManager('zaqar.notification.tasks', url.scheme,
+                                       invoke_on_load=True)
+            req_data = req.headers.copy()
+            req_data.update(req.env)
+            mgr.driver.register(subscriber, options, ttl, project_id, req_data)
+
             created = self._subscription_controller.create(queue_name,
                                                            subscriber,
                                                            ttl,
