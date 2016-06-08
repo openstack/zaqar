@@ -99,9 +99,6 @@ class SubscriptionTest(base.V1_1Base):
                          subscriber['subscriber'])
         self.assertLessEqual(added_age, subscriber['age'])
 
-        self.boot.storage.subscription_controller.delete(
-            'kitkat', subscriber['id'], project=self.project_id)
-
         response = {
             'body': {'message': 'Subscription kitkat created.',
                      'subscription_id': subscriber['id']},
@@ -112,6 +109,14 @@ class SubscriptionTest(base.V1_1Base):
 
         self.assertEqual(1, sender.call_count)
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
+
+        # Trigger protocol close
+        self.protocol.onClose(True, 100, None)
+        subscribers = list(
+            next(
+                self.boot.storage.subscription_controller.list(
+                    'kitkat', self.project_id)))
+        self.assertEqual([], subscribers)
 
     def test_subscription_delete(self):
         sub = self.boot.storage.subscription_controller.create(

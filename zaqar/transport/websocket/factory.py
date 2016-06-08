@@ -44,6 +44,9 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
         proto.factory = self
         return proto
 
+    def unregister(self, proto_id):
+        self._protos.pop(proto_id)
+
 
 class NotificationFactory(object):
 
