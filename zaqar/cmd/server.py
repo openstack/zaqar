@@ -15,9 +15,18 @@
 import os
 
 from oslo_config import cfg
+from oslo_log import log
 
 from zaqar import bootstrap
 from zaqar.common import cli
+from zaqar.common import configs
+
+# NOTE(eggmaster): define command line options for zaqar-server
+_CLI_OPTIONS = (
+    configs._ADMIN_MODE_OPT,
+    cfg.BoolOpt('daemon', default=False,
+                help='Run Zaqar server in the background.'),
+)
 
 
 @cli.runnable
@@ -26,13 +35,18 @@ def run():
     # to pick up common options from openstack.common.log, since
     # that module uses the global CONF instance exclusively.
     conf = cfg.CONF
+    # NOTE(eggmaster): register command line options for zaqar-server
+    conf.register_cli_opts(_CLI_OPTIONS)
+    log.register_options(conf)
+
     # NOTE(jeffrey4l): Overwrite the default vaule for
     # logging_context_format_string. Add project_id into it.
     conf.set_default('logging_context_format_string',
                      '%(asctime)s.%(msecs)03d %(process)d %(levelname)s'
                      ' %(name)s [%(request_id)s %(user_identity)s]'
                      ' [project_id:%(project_id)s] %(message)s')
-    conf(project='zaqar', prog='zaqar-queues')
+    conf(project='zaqar', prog='zaqar-server')
+    log.setup(conf, 'zaqar')
 
     server = bootstrap.Bootstrap(conf)
 
