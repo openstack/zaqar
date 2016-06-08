@@ -239,7 +239,7 @@ class FunctionalTestBase(testing.TestBase):
         """
         msg = ('More Messages returned than allowed: expected count = {0}'
                ', actual count = {1}'.format(expectedCount, actualCount))
-        self.assertTrue(actualCount <= expectedCount, msg)
+        self.assertLessEqual(actualCount, expectedCount, msg)
 
     def assertQueueStats(self, result_json, claimed):
         """Checks the Queue Stats results
@@ -289,8 +289,9 @@ class FunctionalTestBase(testing.TestBase):
 
         # Verify that age has valid values
         age = message['age']
-        self.assertTrue(0 <= age <= self.limits.max_message_ttl,
-                        msg='Invalid Age {0}'.format(age))
+        msg = 'Invalid Age {0}'.format(age)
+        self.assertLessEqual(0, age, msg)
+        self.assertLessEqual(age, self.limits.max_message_ttl, msg)
 
         # Verify that GET on href returns 200
         path = message['href']
@@ -312,7 +313,8 @@ class FunctionalTestBase(testing.TestBase):
 
         msg = ('Invalid Time Delta {0}, Created time {1}, Now {2}'
                .format(delta, created_time, now))
-        self.assertTrue(0 <= delta <= 6000, msg)
+        self.assertLessEqual(0, delta, msg)
+        self.assertLessEqual(delta, 6000, msg)
 
 
 @six.add_metaclass(abc.ABCMeta)

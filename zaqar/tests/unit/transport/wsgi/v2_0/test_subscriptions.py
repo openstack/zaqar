@@ -171,7 +171,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
             self.assertEqual(min(limit, count-limit),
                              len(next_subscriptions_list))
         else:
-            self.assertTrue(len(next_subscriptions_list) == 0)
+            self.assertEqual(0, len(next_subscriptions_list))
 
         self.assertEqual(min(limit, count), len(subscriptions_list))
 

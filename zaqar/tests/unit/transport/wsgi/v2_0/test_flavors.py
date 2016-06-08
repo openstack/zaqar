@@ -246,7 +246,7 @@ class TestFlavorsMongoDB(base.V2Base):
         result = self.simulate_get(self.url_prefix + '/flavors')
         results = jsonutils.loads(result[0])
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
-        self.assertTrue(len(results['flavors']) == 0)
+        self.assertEqual(0, len(results['flavors']))
         self.assertIn('links', results)
 
     def _listing_test(self, count=10, limit=10,
@@ -288,7 +288,7 @@ class TestFlavorsMongoDB(base.V2Base):
                 self.assertEqual(min(limit, count-limit),
                                  len(next_flavors_list))
             else:
-                self.assertTrue(len(next_flavors_list) == 0)
+                self.assertEqual(0, len(next_flavors_list))
 
             self.assertEqual(min(limit, count), len(flavors_list))
             for i, s in enumerate(flavors_list + next_flavors_list):
