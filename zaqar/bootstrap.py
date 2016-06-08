@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo_config import cfg
 from oslo_log import log
 from stevedore import driver
 
@@ -33,19 +32,6 @@ from zaqar.i18n import _LE
 LOG = log.getLogger(__name__)
 
 
-_CLI_OPTIONS = (
-    configs._ADMIN_MODE_OPT,
-    cfg.BoolOpt('daemon', default=False,
-                help='Run Zaqar server in the background.'),
-)
-
-# NOTE (Obulpathi): Register daemon command line option for
-# zaqar-server
-CONF = cfg.CONF
-CONF.register_cli_opts(_CLI_OPTIONS)
-log.register_options(CONF)
-
-
 class Bootstrap(object):
     """Defines the Zaqar bootstrapper.
 
@@ -60,8 +46,6 @@ class Bootstrap(object):
             self.conf.register_opts(opts, group=group)
 
         self.driver_conf = self.conf[configs._DRIVER_GROUP]
-
-        log.setup(conf, 'zaqar')
 
     @decorators.lazy_property(write=False)
     def api(self):
