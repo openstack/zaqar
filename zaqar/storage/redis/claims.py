@@ -98,7 +98,10 @@ class ClaimController(storage.Claim, scripting.Mixin):
         """Get one or more fields from the claim Info."""
 
         values = self._client.hmget(claim_id, fields)
-        return [transform(v) for v in values] if transform else values
+        if values == [None]:
+            return values
+        else:
+            return [transform(v) for v in values] if transform else values
 
     def _claim_messages(self, msgset_key, now, limit,
                         claim_id, claim_expires, msg_ttl, msg_expires):
