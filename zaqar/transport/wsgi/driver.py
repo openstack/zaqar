@@ -17,9 +17,9 @@ from distutils.version import LooseVersion
 from wsgiref import simple_server
 
 import falcon
-import netaddr
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import netutils
 import six
 import socket
 
@@ -160,7 +160,7 @@ class Driver(transport.DriverBase):
         :param host: The listen host for the zaqar API server.
         """
         server_cls = simple_server.WSGIServer
-        if netaddr.valid_ipv6(host):
+        if netutils.is_valid_ipv6(host):
             if getattr(server_cls, 'address_family') == socket.AF_INET:
                 class server_cls(server_cls):
                     address_family = socket.AF_INET6
