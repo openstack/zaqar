@@ -91,7 +91,7 @@ class Pipeline(object):
                     sstage = six.text_type(stage)
                     msgtmpl = _(u"Stage %(stage)s does not "
                                 "implement %(method)s")
-                    LOG.warning(msgtmpl, {'stage': sstage, 'method': method})
+                    LOG.debug(msgtmpl, {'stage': sstage, 'method': method})
                     continue
 
                 tmp = target(*args, **kwargs)
