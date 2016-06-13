@@ -74,7 +74,7 @@ class ClaimController(storage.Claim):
         now = timeutils.utcnow_ts()
         cid = utils.to_oid(claim_id)
         if cid is None:
-            raise errors.ClaimDoesNotExist(queue, project, claim_id)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         try:
             # Lets get claim's data
