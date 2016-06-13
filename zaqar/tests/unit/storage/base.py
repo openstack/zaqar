@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import datetime
 import random
 import time
@@ -738,6 +739,29 @@ class MessageControllerTest(ControllerBaseTest):
                                               project=self.project)
 
         self.assertEqual(1, len(popped_messages))
+
+    def test_delete_message_from_nonexistent_queue(self):
+        queue_name = 'fake_name'
+        message_id = 'fake_id'
+        res = self.controller.delete(queue_name, message_id,
+                                     project=self.project)
+        self.assertIsNone(res)
+
+    def test_delete_messages_with_ids_from__nonexistent_queue(self):
+        queue_name = 'fake_name'
+        message_ids = ['fake_id1', 'fake_id2']
+        res = self.controller.bulk_delete(queue_name, message_ids,
+                                          project=self.project)
+        self.assertIsNone(res)
+
+    def test_get_messages_with_ids_from__nonexistent_queue(self):
+        queue_name = 'fake_name'
+        message_ids = ['fake_id1', 'fake_id2']
+        res = self.controller.bulk_get(queue_name, message_ids,
+                                       project=self.project)
+
+        self.assertTrue(isinstance(res, collections.Iterable))
+        self.assertEqual([], list(res))
 
 
 class ClaimControllerTest(ControllerBaseTest):

@@ -386,7 +386,7 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.retries_on_connection_error
     def bulk_get(self, queue, message_ids, project=None):
         if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue, project)
+            return iter([])
 
         # NOTE(prashanthr_): Pipelining is used here purely
         # for performance.
@@ -440,7 +440,7 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.retries_on_connection_error
     def delete(self, queue, message_id, project=None, claim=None):
         if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue, project)
+            return
 
         # NOTE(kgriffs): The message does not exist, so
         # it is essentially "already" deleted.
@@ -490,8 +490,7 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.retries_on_connection_error
     def bulk_delete(self, queue, message_ids, project=None):
         if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue,
-                                           project)
+            return
 
         msgset_key = utils.msgset_key(queue, project)
 
