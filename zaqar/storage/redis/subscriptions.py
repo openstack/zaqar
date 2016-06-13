@@ -19,7 +19,6 @@ import msgpack
 from oslo_utils import timeutils
 import redis
 
-from zaqar.common import decorators
 from zaqar.common import utils as common_utils
 from zaqar.storage import base
 from zaqar.storage import errors
@@ -52,10 +51,6 @@ class SubscriptionController(base.Subscription):
         self._packer = msgpack.Packer(encoding='utf-8',
                                       use_bin_type=True).pack
         self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
-
-    @decorators.lazy_property(write=False)
-    def _queue_ctrl(self):
-        return self.driver.queue_controller
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -122,8 +117,6 @@ class SubscriptionController(base.Subscription):
                         'o': self._packer(options),
                         'p': project}
 
-        if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue, project)
         try:
             # Pipeline ensures atomic inserts.
             with self._client.pipeline() as pipe:
