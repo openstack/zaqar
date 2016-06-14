@@ -400,6 +400,20 @@ class RedisClaimsTest(base.ClaimControllerTest):
                           self.controller.update, queue_name,
                           claim_id, {}, project=None)
 
+        # create a claim and then delete the queue
+        claim_id, messages = self.controller.create(queue_name, {'ttl': 100,
+                                                    'grace': 0},
+                                                    project=None)
+        self.queue_controller.delete(queue_name)
+
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
+                          self.controller.get, queue_name,
+                          claim_id, project=None)
+
+        self.assertRaises(storage.errors.ClaimDoesNotExist,
+                          self.controller.update, queue_name,
+                          claim_id, {}, project=None)
+
     def test_get_claim_after_expires(self):
         queue_name = 'no-such-claim'
         self.queue_controller.create(queue_name, project='fake_project')
