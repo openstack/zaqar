@@ -1,0 +1,90 @@
+#### variables in header #####################################################
+
+client_id:
+  type: UUID
+  in: header
+  description: |
+    A unique ID for indicating where the request come from.
+
+#### variables in path #######################################################
+
+queue_name:
+  type: string
+  in: path
+  required: True
+  description: |
+    The name of the queue.
+
+#### variables in query ######################################################
+
+limit:
+  type: integer
+  in: query
+  required: false
+  description: |
+    Requests a page size of items. Returns a number of items up to a limit
+    value. Use the ``limit`` parameter to make an initial limited request and
+    use the ID of the last-seen item from the response as the ``marker``
+    parameter value in a subsequent limited request.
+
+marker:
+  type: string
+  in: query
+  required: false
+  description: |
+    The ID of the last-seen item. Use the ``limit`` parameter to make an
+    initial limited request and use the ID of the last-seen item from the
+    response as the ``marker`` parameter value in a subsequent limited request.
+
+#### variables in response ###################################################
+
+versions:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of supported major API versions.
+
+queues:
+  type: list
+  in: body
+  description: |
+    A list of the queues.
+
+links:
+  type: array
+  in: body
+  required: true
+  description: |
+    Links related to the queues. This is a list of dictionaries, each including
+    keys ``href`` and ``rel``.
+
+queue_metadata:
+  type: dict
+  in: body
+  description: |
+    Metadata of queue.
+
+_max_messages_post_size:
+  type: integer
+  in: body
+  required: True
+  description: |
+    The max post size of messages defined for a queue, which will effect for
+    any messages posted to the queue. So user can define a queue's level
+    cap for post size which can't bigger than the max_messages_post_size
+    defined in zaqar.conf. It is one of the ``reserved attributes`` of Zaqar
+    queues. The value will be reverted to the default value after deleting it
+    explicitly.
+
+_default_message_ttl:
+  type: integer
+  in: body
+  required: True
+  description: |
+    The default TTL of messages defined for a queue, which will effect for
+    any messages posted to the queue. So when there is no TTL defined for a
+    message, the queue's _default_message_ttl will be used. By default, the
+    value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
+    one of the ``reserved attributes`` of Zaqar queues. The value will be
+    reverted to the default value after deleting it explicitly.
