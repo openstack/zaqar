@@ -22,6 +22,13 @@ claim_id:
   description: |
     The id of the claim.
 
+subscription_id_path:
+  type: string
+  in: path
+  required: True
+  description: |
+    The id of the subscription.
+
 #### variables in query ######################################################
 
 limit:
@@ -78,6 +85,35 @@ claim_grace:
     the specified grace period. If a claimed message would normally live longer
     than the grace period, its expiration is not adjusted.
 
+subscriber:
+  type: string
+  in: body
+  required: True
+  description: |
+    The ``subscriber`` attribute specifies the destination where the message
+    notify to. It has been designed to match the Internet RFC on Relative
+    Uniform Resource Locators. Zaqar now support two kinds of subscribers:
+    http/https and email. The http/https subscriber should start with
+    ``http/https``. The email subscriber should start with ``mailto``.
+
+subscription_ttl:
+  type: integer
+  in: body
+  required: false
+  description: |
+    The ``ttl`` attribute specifies how long the subscription be alive. The ttl
+    value must be great than 60 seconds. The default value is 3600 seconds.
+
+subscription_options:
+  type: dict
+  in: body
+  required: false
+  description: |
+    The ``options`` attribute specifies the extra metadata for the subscription
+    . The value must be a dict and could contain any key-value. If the
+    subscriber is "mailto". The ``options`` can contain ``from`` and
+    ``subject`` to indicate the email's author and title.
+
 #### variables in response ###################################################
 
 versions:
@@ -130,3 +166,27 @@ _default_message_ttl:
     value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
     one of the ``reserved attributes`` of Zaqar queues. The value will be
     reverted to the default value after deleting it explicitly.
+
+subscriptions:
+  type: list
+  in: body
+  description: |
+    A list of the subscriptions.
+
+subscription_id:
+  type: string
+  in: body
+  description: |
+    The id of the subscription.
+
+subscription_age:
+  type: integer
+  in: body
+  description: |
+    How long the subscription has be existed.
+
+subscription_source:
+  type: string
+  in: body
+  description: |
+    The queue name which the subscription is registered on.

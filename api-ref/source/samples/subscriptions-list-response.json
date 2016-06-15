@@ -1,0 +1,26 @@
+{
+  "links": [
+    {
+      "href": "/v2/queues/test/subscriptions?marker=57692ab13990b48c644bb7e6",
+      "rel": "next"
+    }
+  ],
+  "subscriptions": [
+    {
+      "age": 13,
+      "id": "57692aa63990b48c644bb7e5",
+      "subscriber": "http://10.229.49.117:5678",
+      "source": "test",
+      "ttl": 360,
+      "options": {}
+    },
+    {
+      "age": 2,
+      "id": "57692ab13990b48c644bb7e6",
+      "subscriber": "http://10.229.49.117:5679",
+      "source": "test",
+      "ttl": 360,
+      "options": {}
+    }
+  ]
+}
