@@ -667,7 +667,7 @@ class MessageController(storage.Message):
 
         cid = utils.to_oid(claim)
         if cid is None:
-            raise errors.ClaimDoesNotExist(queue_name, project, claim)
+            raise errors.ClaimDoesNotExist(claim, queue_name, project)
 
         now = timeutils.utcnow_ts()
         cursor = collection.find(query).hint(ID_INDEX_FIELDS)

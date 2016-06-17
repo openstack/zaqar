@@ -454,7 +454,7 @@ class MessageController(storage.Message, scripting.Mixin):
             try:
                 uuid.UUID(claim)
             except ValueError:
-                raise errors.ClaimDoesNotExist(queue, project, claim)
+                raise errors.ClaimDoesNotExist(claim, queue, project)
 
         msg_claim = self._get_claim(message_id)
         is_claimed = (msg_claim is not None)
@@ -469,7 +469,7 @@ class MessageController(storage.Message, scripting.Mixin):
 
         elif msg_claim['id'] != claim:
             if not self._claim_ctrl._exists(queue, claim, project):
-                raise errors.ClaimDoesNotExist(queue, project, claim)
+                raise errors.ClaimDoesNotExist(claim, queue, project)
 
             raise errors.MessageNotClaimedBy(message_id, claim)
 

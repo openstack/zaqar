@@ -218,7 +218,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
     @utils.retries_on_connection_error
     def get(self, queue, claim_id, project=None):
         if not self._exists(queue, claim_id, project):
-            raise errors.ClaimDoesNotExist(queue, project, claim_id)
+            raise errors.ClaimDoesNotExist(claim_id, queue, project)
 
         claim_msgs_key = utils.scope_claim_messages(claim_id,
                                                     CLAIM_MESSAGES_SUFFIX)
