@@ -1,0 +1,5 @@
+---
+fixes:
+  - Query for all subscriptions on a given queue by taking into account the
+    returned marker, if any. Without this fix, only 10 subscriptions can be
+    extracted from database to send notification.
