@@ -35,7 +35,6 @@ def run():
     # to pick up common options from openstack.common.log, since
     # that module uses the global CONF instance exclusively.
     conf = cfg.CONF
-    conf(project='zaqar', prog='zaqar-server')
     # NOTE(eggmaster): register command line options for zaqar-server
     conf.register_cli_opts(_CLI_OPTIONS)
     log.register_options(conf)
@@ -47,6 +46,7 @@ def run():
                      '%(asctime)s.%(msecs)03d %(process)d %(levelname)s'
                      ' %(name)s [%(request_id)s %(user_identity)s]'
                      ' [project_id:%(project_id)s] %(message)s')
+    conf(project='zaqar', prog='zaqar-server')
 
     server = bootstrap.Bootstrap(conf)
 
