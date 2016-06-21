@@ -38,7 +38,6 @@ def run():
     # NOTE(eggmaster): register command line options for zaqar-server
     conf.register_cli_opts(_CLI_OPTIONS)
     log.register_options(conf)
-    log.setup(conf, 'zaqar')
 
     # NOTE(jeffrey4l): Overwrite the default vaule for
     # logging_context_format_string. Add project_id into it.
@@ -47,6 +46,7 @@ def run():
                      ' %(name)s [%(request_id)s %(user_identity)s]'
                      ' [project_id:%(project_id)s] %(message)s')
     conf(project='zaqar', prog='zaqar-server')
+    log.setup(conf, 'zaqar')
 
     server = bootstrap.Bootstrap(conf)
 
