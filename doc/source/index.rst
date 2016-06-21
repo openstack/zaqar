@@ -126,8 +126,8 @@ In order to keep these layers decoupled, we have established that
 transport drivers must guarantee that the incoming data is well-formed and
 storage drivers must enforce their data model stays consistent.
 
-Setting up a development environment
-====================================
+Setting up Zaqar in development environment
+===========================================
 
 .. toctree::
    :maxdepth: 1
@@ -143,7 +143,6 @@ Welcome new contributors
    welcome
    first_patch
    first_review
-
 
 Running and writing tests
 =========================
