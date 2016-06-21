@@ -44,6 +44,14 @@ class Handler(object):
     def set_subscription_factory(self, factory):
         self._subscription_factory = factory
 
+    def clean_subscriptions(self, subscriptions):
+        for resp in subscriptions:
+            body = {'queue_name': resp._request._body.get('queue_name'),
+                    'subscription_id': resp._body.get('subscription_id')}
+            payload = {'body': body, 'headers': resp._request._headers}
+            req = self.create_request(payload)
+            self.v2_endpoints.subscription_delete(req)
+
     def process_request(self, req, protocol):
         # FIXME(vkmc): Control API version
         if req._action == 'subscription_create':

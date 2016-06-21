@@ -67,6 +67,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._auth_in_binary = None
         self._deauth_handle = None
         self.notify_in_binary = None
+        self._subscriptions = []
 
     def onConnect(self, request):
         LOG.info(_LI("Client connecting: %s"), request.peer)
@@ -135,9 +136,12 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                     # subscription.
                     if not subscriber:
                         self.notify_in_binary = isBinary
+                        self._subscriptions.append(resp)
         return self._send_response(resp, isBinary)
 
     def onClose(self, wasClean, code, reason):
+        self._handler.clean_subscriptions(self._subscriptions)
+        self.factory.unregister(self.proto_id)
         LOG.info(_LI("WebSocket connection closed: %s"), reason)
 
     def _authenticate(self, payload, in_binary):
