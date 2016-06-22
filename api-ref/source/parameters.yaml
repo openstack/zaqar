@@ -167,6 +167,7 @@ _default_message_ttl:
     one of the ``reserved attributes`` of Zaqar queues. The value will be
     reverted to the default value after deleting it explicitly.
 
+
 subscriptions:
   type: list
   in: body
@@ -219,3 +220,44 @@ operation_status:
     indicate if the actions was successful or not. Ref may contain the
     information if the succeeded is False, otherwise it's null.
 
+project_id:
+  type: string
+  in: body
+  required: True
+  description: |
+    The ID of current project/tenant.
+
+pre_signed_queue_paths:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of paths the pre-signed queue can support. It could be a set of
+    ``messages``, ``subscriptions``, ``claims``.
+
+pre_signed_queue_methods:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of HTTP methods. The HTTP method(s) this URL was created for. By
+    selecting the HTTP method, it’s possible to give either read or read/write
+    access to a specific resource.
+
+pre_signed_queue_expires:
+  type: string
+  in: body
+  required: True
+  description: |
+    The time to indicate when the pre-signed will be expired.
+
+pre_signed_queue_signature:
+  type: list
+  in: body
+  required: True
+  description: |
+    The signature is generated after create the pre-signed URL. It can be
+    consumed by adding below to HTTP headers:
+
+    URL-Signature: 6a63d63242ebd18c3518871dda6fdcb6273db2672c599bf985469241e9a1c799
+    URL-Expires: 2015-05-31T19:00:17Z

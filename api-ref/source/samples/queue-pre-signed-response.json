@@ -1,0 +1,16 @@
+{
+    "project": "2887aabf368046a3bb0070f1c0413470",
+    "paths": [
+        "/v2/queues/test/messages",
+        "/v2/queues/test/claims"
+        "/v2/queues/test/subscriptions"
+    ],
+    "expires": "2016-09-01T00:00:00",
+    "methods": [
+        "GET",
+        "PATCH",
+        "POST",
+        "PUT"
+    ],
+    "signature": "6a63d63242ebd18c3518871dda6fdcb6273db2672c599bf985469241e9a1c799"
+}
