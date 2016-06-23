@@ -1,10 +1,10 @@
-.. _install-rdo:
+.. _install-ubuntu:
 
-Install and configure for Red Hat Enterprise Linux and CentOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install and configure for Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This section describes how to install and configure the Messaging service,
-code-named ``zaqar`` for Red Hat Enterprise Linux 7 and CentOS 7.
+This section describes how to install and configure the Messaging service
+for Ubuntu 14.04 (LTS).
 
 This section assumes that you already have a working OpenStack environment with
 at least Identity service installed.
@@ -101,13 +101,7 @@ credentials and API endpoints in Identity.
 
       .. code-block:: console
 
-         # systemctl start mongod
-
-      Make ``MongoDB`` service start automatically after reboot:
-
-      .. code-block:: console
-
-         # systemctl enable mongod
+         # service mongodb start
 
    #. Configure ``MongoDB`` Replica Set on the database servers:
 
@@ -244,25 +238,19 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
 
    .. code-block:: console
 
-      # yum install memcached
+      # apt-get install memcached
 
    Start ``memcached`` service:
 
    .. code-block:: console
 
-      # systemctl start memcached
-
-   Make ``memcached`` service start automatically after reboot:
-
-   .. code-block:: console
-
-      # systemctl enable memcached
+      # service memcached start
 
 #. Install Messaging service and ``uWSGI``:
 
    .. code-block:: console
 
-      # yum -y install python-pip
+      # apt-get install python-pip
       # git clone https://git.openstack.org/openstack/zaqar.git
       # cd zaqar
       # pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
@@ -460,32 +448,28 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
 
    Edit any options as needed, especially the options with capitalized values.
 
-#. Create a service file for Messaging service
-   ``/etc/systemd/system/zaqaruwsgi.service``:
+#. Create an upstart config, it could be named as ``/etc/init/zaqar.conf``:
 
-   .. code-block:: ini
+   .. code-block:: bash
 
-      [Unit]
-      Description=uWSGI Zaqar
-      After=syslog.target
+      description "Zaqar api server"
+      author "Your Name <yourname@example.com>"
 
-      [Service]
-      ExecStart=/usr/bin/uwsgi --ini /srv/zaqar/uwsgi.ini
-      # Requires systemd version 211 or newer
-      RuntimeDirectory=uwsgi
-      Restart=always
-      KillSignal=SIGQUIT
-      Type=notify
-      StandardError=syslog
-      NotifyAccess=all
-      User=ZAQARUSER
-      Group=ZAQARUSER
+      start on runlevel [2345]
+      stop on runlevel [!2345]
 
-      [Install]
-      WantedBy=multi-user.target
+      chdir /var/run
 
-   Replace ``ZAQARUSER`` with the name of the user in system under which the
-   Messaging service will run.
+      pre-start script
+          mkdir -p /var/run/zaqar
+          chown zaqar:zaqar /var/run/zaqar
+
+          mkdir -p /var/lock/zaqar
+          chown zaqar:root /var/lock/zaqar
+      end script
+
+      exec /usr/bin/uwsgi --master --emperor /etc/zaqar/uwsgi
+
 
 Finalize installation
 ---------------------
@@ -539,7 +523,7 @@ replica-set as Messaging's pool.
    the management store databases and the message store databases (pools)
    should be on different ``MongoDB`` replica-sets.
 
-.. _`MongoDB installation instructions`: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/
+.. _`MongoDB installation instructions`: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 .. _`MongoDB configuration reference`: https://docs.mongodb.org/v3.0/reference/configuration-options/
 .. _`MongoDB security reference`: https://docs.mongodb.org/manual/security/
 .. _`uWSGI configuration reference`: http://uwsgi-docs.readthedocs.io/en/latest/
