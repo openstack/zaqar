@@ -23,16 +23,8 @@ _DEFAULT = (
     cfg.BoolOpt("run_tests", default=True),
 )
 
-_AUTH_OPTIONS = (
-    cfg.BoolOpt("auth_on", default=False),
-    cfg.StrOpt("url", default="https://127.0.0.1:5000/v2.0/tokens"),
-    cfg.StrOpt("username"),
-    cfg.StrOpt("password"),
-)
-
 
 _ZAQAR_OPTIONS = (
-    cfg.BoolOpt("run_server", default=True),
     cfg.StrOpt("url", default="http://127.0.0.1:8888"),
     cfg.StrOpt("config", default="functional-zaqar.conf"),
 )
@@ -47,7 +39,6 @@ _HEADERS_OPTIONS = (
 def load_config():
     conf = cfg.ConfigOpts()
     conf.register_opts(_DEFAULT)
-    conf.register_opts(_AUTH_OPTIONS, group="auth")
     conf.register_opts(_ZAQAR_OPTIONS, group="zaqar")
     conf.register_opts(_HEADERS_OPTIONS, group="headers")
 
