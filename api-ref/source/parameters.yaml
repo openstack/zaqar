@@ -15,6 +15,13 @@ queue_name:
   description: |
     The name of the queue.
 
+claim_id:
+  type: string
+  in: path
+  required: True
+  description: |
+    The id of the claim.
+
 #### variables in query ######################################################
 
 limit:
@@ -35,6 +42,41 @@ marker:
     The ID of the last-seen item. Use the ``limit`` parameter to make an
     initial limited request and use the ID of the last-seen item from the
     response as the ``marker`` parameter value in a subsequent limited request.
+
+claim_limit:
+  type: integer
+  in: query
+  required: false
+  description: |
+    The ``limit`` specifies up to 20 messages (configurable) to claim. If not
+    specified, limit defaults to 10. Note that claim creation is best-effort,
+    meaning the server may claim and return less than the requested number of
+    messages.
+
+#### variables in request ####################################################
+
+claim_ttl:
+  type: integer
+  in: body
+  required: false
+  description: |
+    The ``ttl`` attribute specifies how long the server waits before releasing
+    the claim. The ttl value must be between 60 and 43200 seconds (12 hours).
+    You must include a value for this attribute in your request.
+
+claim_grace:
+  type: integer
+  in: body
+  required: false
+  description: |
+    The ``grace`` attribute specifies the message grace period in seconds. The
+    value of ``grace`` value must be between 60 and 43200 seconds (12 hours).
+    You must include a value for this attribute in your request. To deal with
+    workers that have stopped responding (for up to 1209600 seconds or 14 days,
+    including claim lifetime), the server extends the lifetime of claimed
+    messages to be at least as long as the lifetime of the claim itself, plus
+    the specified grace period. If a claimed message would normally live longer
+    than the grace period, its expiration is not adjusted.
 
 #### variables in response ###################################################
 
