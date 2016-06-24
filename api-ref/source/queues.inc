@@ -72,6 +72,10 @@ The body of the request is empty.
 exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
+When create queue, user can specify metadata for the queue. Currently, Zaqar
+supports below metadata: _flavor, _max_claim_count, _dead_letter_queue and
+_dead_letter_queue_messages_ttl.
+
 
 Normal response codes: 201, 204
 
@@ -88,6 +92,12 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
   - queue_name: queue_name
+  - _dead_letter_queue: _dead_letter_queue
+  - _dead_letter_queue_messages_ttl: _dead_letter_queue_messages_ttl
+  - _default_message_ttl: _default_message_ttl
+  - _flavor: _flavor
+  - _max_claim_count: _max_claim_count
+  - _max_messages_post_size: _max_messages_post_size
 
 Request Example
 ---------------

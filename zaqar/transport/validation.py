@@ -327,6 +327,21 @@ class Validator(object):
                       ' and must be at least greater than 0.'),
                     self._limits_conf.max_messages_post_size)
 
+        max_claim_count = queue_metadata.get('_max_claim_count', None)
+        if max_claim_count and not isinstance(max_claim_count, int):
+            msg = _(u'_max_claim_count must be integer.')
+            raise ValidationFailed(msg)
+
+        dlq_ttl = queue_metadata.get('_dead_letter_queue_messages_ttl', None)
+        if dlq_ttl and not isinstance(dlq_ttl, int):
+            msg = _(u'_dead_letter_queue_messages_ttl must be integer.')
+            raise ValidationFailed(msg)
+
+            if not (MIN_MESSAGE_TTL <= dlq_ttl <=
+                    self._limits_conf.max_message_ttl):
+                msg = _(u'The TTL for a message may not exceed {0} seconds, '
+                        'and must be at least {1} seconds long.')
+
     def queue_purging(self, document):
         """Restrictions the resource types to be purged for a queue.
 
