@@ -1053,6 +1053,31 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                 subscriptions)))
         self.assertEqual(5, len(subscriptions))
 
+    def test_small_list(self):
+        subscriber = 'http://fake'
+        s_id = self.subscription_controller.create(
+            self.source,
+            subscriber,
+            self.ttl,
+            self.options,
+            project=self.project)
+        self.addCleanup(self.subscription_controller.delete, self.source,
+                        s_id, self.project)
+
+        interaction = self.subscription_controller.list(self.source,
+                                                        project=self.project)
+        subscriptions = list(next(interaction))
+        marker = next(interaction)
+
+        self.assertEqual(1, len(subscriptions))
+
+        interaction = (self.subscription_controller.list(self.source,
+                                                         project=self.project,
+                       marker=marker))
+        subscriptions = list(next(interaction))
+
+        self.assertEqual([], subscriptions)
+
     @ddt.data(True, False)
     def test_get_raises_if_subscription_does_not_exist(self, precreate_queue):
         self._precreate_queue(precreate_queue)
