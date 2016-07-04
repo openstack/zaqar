@@ -37,7 +37,7 @@ _WS_OPTIONS = (
     cfg.PortOpt('port', default=9000,
                 help='Port on which the self-hosting server will listen.'),
 
-    cfg.PortOpt('external-port', default=None,
+    cfg.PortOpt('external-port',
                 help='Port on which the service is provided to the user.'),
 
 )

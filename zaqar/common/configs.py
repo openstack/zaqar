@@ -47,7 +47,7 @@ _DRIVER_GROUP = 'drivers'
 
 
 _SIGNED_URL_OPTIONS = (
-    cfg.StrOpt('secret_key', default=None,
+    cfg.StrOpt('secret_key',
                help=('Secret key used to encrypt pre-signed URLs.')),
 )
 
