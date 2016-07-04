@@ -1,0 +1,8 @@
+{
+    "weight": 100,
+    "uri": "mongodb://127.0.0.1:27017",
+    "options":{
+        "max_retry_sleep": 1
+    },
+    "group": "poolgroup"
+}

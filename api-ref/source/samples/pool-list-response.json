@@ -1,0 +1,24 @@
+{
+  "pools": [
+    {
+      "href": "/v2/pools/test_pool1",
+      "group": "poolgroup",
+      "name": "test_pool1",
+      "weight": 60,
+      "uri": "mongodb://192.168.1.10:27017"
+    },
+    {
+      "href": "/v2/pools/test_pool2",
+      "group": "poolgroup",
+      "name": "test_pool2",
+      "weight": 40,
+      "uri": "mongodb://192.168.1.20:27017"
+    }
+  ],
+  "links": [
+    {
+      "href": "/v2/pools?marker=test_pool2",
+      "rel": "next"
+    }
+  ]
+}

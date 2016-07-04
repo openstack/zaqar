@@ -1,0 +1,7 @@
+{
+  "href": "/v2/pools/test_pool",
+  "group": "newpoolgroup",
+  "name": "test_pool",
+  "weight": 60,
+  "uri": "mongodb://127.0.0.1:27017"
+}

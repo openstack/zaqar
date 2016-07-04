@@ -29,6 +29,13 @@ subscription_id_path:
   description: |
     The id of the subscription.
 
+pool_name_path:
+  type: string
+  in: path
+  required: True
+  description:
+    The name of the pool.
+
 #### variables in query ######################################################
 
 limit:
@@ -114,6 +121,41 @@ subscription_options:
     subscriber is "mailto". The ``options`` can contain ``from`` and
     ``subject`` to indicate the email's author and title.
 
+pool_weight:
+  type: integer
+  in: body
+  required: true
+  description: |
+    The ``weight`` attribute specifies the likelihood that this pool will be
+    selected for the next queue allocation. The value must be an integer
+    greater than -1.
+
+pool_uri:
+  type: string
+  in: body
+  required: true
+  description: |
+    The ``uri`` attribute specifies a connection string compatible with a
+    storage client (e.g., pymongo) attempting to connect to that pool.
+
+pool_group:
+  type: string
+  in: body
+  required: false
+  description: |
+    The ``group`` attribute specifies a tag to given to more than one pool
+    so that it keeps user remind the purpose/capabilities of all pools that
+    falls under that group.
+
+pool_options:
+  type: dict
+  in: body
+  required: false
+  description: |
+    The ``options`` attribute gives storage-specific options used by storage
+    driver implementations. The value must be a dict and valid key-value come
+    from the registered options for a given storage backend.
+
 #### variables in response ###################################################
 
 versions:
@@ -166,7 +208,6 @@ _default_message_ttl:
     value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
     one of the ``reserved attributes`` of Zaqar queues. The value will be
     reverted to the default value after deleting it explicitly.
-
 
 subscriptions:
   type: list
@@ -261,3 +302,29 @@ pre_signed_queue_signature:
 
     URL-Signature: 6a63d63242ebd18c3518871dda6fdcb6273db2672c599bf985469241e9a1c799
     URL-Expires: 2015-05-31T19:00:17Z
+
+pools:
+  type: list
+  in: body
+  description: |
+    A list of the pools.
+
+pool_href:
+  type: string
+  in: body
+  description: |
+    The url of the pool.
+
+pool_name:
+  type: string
+  in: body
+  description: |
+    The name of the pool.
+
+pool_links:
+  type: array
+  in: body
+  required: true
+  description: |
+    Links related to the pools. This is a list of dictionaries, each including
+    keys ``href`` and ``rel``.
