@@ -55,6 +55,19 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
         super(TestQueueLifecycleMongoDB, self).tearDown()
 
+    def test_without_project_id(self):
+        headers = {
+            'Client-ID': str(uuid.uuid4()),
+        }
+
+        self.simulate_put(self.gumshoe_queue_path, headers=headers,
+                          need_project_id=False)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        self.simulate_delete(self.gumshoe_queue_path, headers=headers,
+                             need_project_id=False)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
     def test_empty_project_id(self):
         headers = {
             'Client-ID': str(uuid.uuid4()),

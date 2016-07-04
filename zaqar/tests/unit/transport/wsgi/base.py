@@ -88,7 +88,9 @@ class TestBase(testing.TestBase):
         headers = kwargs.get('headers', self.headers).copy()
         project_id = ('518b51ea133c4facadae42c328d6b77b' if project_id
                       is None else project_id)
-        headers['X-Project-ID'] = headers.get('X-Project-ID', project_id)
+        if kwargs.get('need_project_id', True):
+            headers['X-Project-ID'] = headers.get('X-Project-ID', project_id)
+        kwargs.pop('need_project_id', None)
         kwargs['headers'] = headers
         try:
             if six.PY3:
