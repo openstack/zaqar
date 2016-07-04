@@ -38,6 +38,7 @@ function run_devstack_gate() {
 
 function run_tempest_tests() {
     export DEVSTACK_GATE_TEMPEST=1
+    export DEVSTACK_GATE_TEMPEST_NOTESTS=1
     run_devstack_gate
 
     cd $BASE/new/tempest/
