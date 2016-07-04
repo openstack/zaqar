@@ -60,7 +60,7 @@ class SubscriptionController(base.Subscription):
                                                       project,
                                                       SUBSCRIPTION_IDS_SUFFIX)
         rank = client.zrank(subset_key, marker)
-        start = rank + 1 if rank else 0
+        start = rank + 1 if rank is not None else 0
 
         cursor = (q for q in client.zrange(subset_key, start,
                                            start + limit - 1))
