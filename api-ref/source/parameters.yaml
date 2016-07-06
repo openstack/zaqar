@@ -190,3 +190,32 @@ subscription_source:
   in: body
   description: |
     The queue name which the subscription is registered on.
+
+catalog_reachable:
+  type: boolean
+  in: body
+  required: True
+  description: |
+    A boolean value to indicate if the management(catalog) datatabse is
+    reachable or not.
+
+storage_reachable:
+  type: boolean
+  in: body
+  required: False
+  description: |
+    A boolean value to indicate if the messages(pool) datatabse is
+    reachable or not.
+
+operation_status:
+  type: dict
+  in: body
+  required: False
+  description: |
+    A dict which will contain the status for many different actions/operations.
+    For example, post_messages, delete_messages, delete queue, etc. And each
+    status is a dict which contains three items: ``seconds``, ``ref`` and
+    ``succeeded``. Seconds means how long the operation took and succeeded will
+    indicate if the actions was successful or not. Ref may contain the
+    information if the succeeded is False, otherwise it's null.
+

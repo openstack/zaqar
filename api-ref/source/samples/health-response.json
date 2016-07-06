@@ -1,0 +1,48 @@
+{
+    "catalog_reachable": true,
+    "redis": {
+        "storage_reachable": true,
+        "operation_status": {
+            "post_messages": {
+                "seconds": 0.027673959732055664,
+                "ref": null,
+                "succeeded": true
+            },
+            "delete_messages": {
+                "seconds": 0.0028481483459472656,
+                "ref": null,
+                "succeeded": true
+            },
+            "delete_queue": {
+                "seconds": 0.017709016799926758,
+                "ref": null,
+                "succeeded": true
+            },
+            "bulk_delete_messages": {
+                "seconds": 0.03959178924560547,
+                "ref": null,
+                "succeeded": true
+            },
+            "create_queue": {
+                "seconds": 0.021075963973999023,
+                "ref": null,
+                "succeeded": true
+            },
+            "list_messages": {
+                "seconds": 0.00003504753112792969,
+                "ref": null,
+                "succeeded": true
+            },
+            "delete_claim": {
+                "seconds": 0.0006170272827148438,
+                "ref": null,
+                "succeeded": true
+            },
+            "claim_messages": {
+                "seconds": 0.008388042449951172,
+                "ref": null,
+                "succeeded": true
+            }
+        }
+    }
+}
