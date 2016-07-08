@@ -160,7 +160,7 @@ function configure_redis {
 
 function configure_mongodb {
     # Set nssize to 2GB. This increases the number of namespaces supported
-    # # per database.
+    # per database.
     pip_install pymongo
     if is_ubuntu; then
         install_package mongodb-server
@@ -192,7 +192,7 @@ function install_zaqar {
 # install_zaqarclient() - Collect source and prepare
 function install_zaqarclient {
     git_clone $ZAQARCLIENT_REPO $ZAQARCLIENT_DIR $ZAQARCLIENT_BRANCH
-    # NOTE(flaper87): Ideally, this should be develop but apparently
+    # NOTE(flaper87): Ideally, this should be developed, but apparently
     # there's a bug in devstack that skips test-requirements when using
     # setup_develop
     setup_install $ZAQARCLIENT_DIR
