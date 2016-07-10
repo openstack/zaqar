@@ -192,7 +192,7 @@ class Resource(object):
             raise falcon.HTTPBadRequest(title, six.text_type(e))
         except errors.PoolAlreadyExists as e:
             LOG.exception(e)
-            raise falcon.HTTPConflict(six.text_type(e))
+            raise wsgi_errors.HTTPConflict(six.text_type(e))
 
     @acl.enforce("pools:delete")
     def on_delete(self, request, response, project_id, pool):

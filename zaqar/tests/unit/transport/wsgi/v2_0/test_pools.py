@@ -139,6 +139,13 @@ class TestPoolsMongoDB(base.V2Base):
         self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+    def test_put_same_database_uri(self):
+        # NOTE(cabrera): setUp creates default pool
+        expect = self.doc
+        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        self.simulate_put(path, body=jsonutils.dumps(expect))
+        self.assertEqual(falcon.HTTP_409, self.srmock.status)
+
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default pool
         expect = self.doc
