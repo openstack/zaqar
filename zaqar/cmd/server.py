@@ -31,9 +31,7 @@ _CLI_OPTIONS = (
 
 @cli.runnable
 def run():
-    # TODO(kgriffs): For now, we have to use the global config
-    # to pick up common options from openstack.common.log, since
-    # that module uses the global CONF instance exclusively.
+    # Use the global CONF instance
     conf = cfg.CONF
     # NOTE(eggmaster): register command line options for zaqar-server
     conf.register_cli_opts(_CLI_OPTIONS)
