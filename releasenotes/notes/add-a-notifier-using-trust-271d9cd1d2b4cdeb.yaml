@@ -1,0 +1,10 @@
+---
+features:
+  - Add a new webhook notifier using trust authentication. When using the
+    'trust+' URL prefix, Zaqar will create a Keystone trust for the user, and
+    then use it when a notification happens to authenticate against Keystone
+    and send the token to the endpoint.
+  - Support 'post_data' and 'post_headers' options on subscribers, allowing
+    customization of the payload when having a webhook subscriber. The
+    'post_data' option supports the '$zaqar_message$' string template, which
+    will be replaced by the serialized JSON message if specified.

@@ -91,7 +91,7 @@ class Handler(object):
         return response.Response(req, body, headers)
 
     @staticmethod
-    def create_request(payload=None):
+    def create_request(payload=None, env=None):
         if payload is None:
             payload = {}
         action = payload.get('action')
@@ -99,7 +99,7 @@ class Handler(object):
         headers = payload.get('headers')
 
         return request.Request(action=action, body=body,
-                               headers=headers, api="v2")
+                               headers=headers, api="v2", env=env)
 
     def get_defaults(self):
         return self.v2_endpoints._defaults

@@ -130,7 +130,7 @@ message_ttl = {
 list_messages_links = {
     'type': 'array',
     'maxItems': 1,
-    'minItems': 1,
+    'minItems': 0,
     'items': {
         'type': 'object',
         'properties': {
@@ -143,7 +143,7 @@ list_messages_links = {
 
 list_messages_response = {
     'type': 'array',
-    'minItems': 1,
+    'minItems': 0,
     'items': {
         'type': 'object',
         'properties': {

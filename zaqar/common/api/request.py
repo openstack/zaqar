@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
-from zaqar.common import decorators
-
 
 class Request(object):
     """General data for a Zaqar request
@@ -33,20 +29,17 @@ class Request(object):
     :type headers: dict
     :param api: Api entry point. i.e: 'queues.v1'
     :type api: `six.text_type`.
+    :param env: Request environment. Default: None
+    :type env: dict
     """
 
     def __init__(self, action,
-                 body=None, headers=None, api=None):
+                 body=None, headers=None, api=None, env=None):
         self._action = action
         self._body = body
         self._headers = headers or {}
         self._api = api
-
-    @decorators.lazy_property()
-    def deserialized_content(self):
-        if self._body is not None:
-            return json.loads(self._body)
-        return None
+        self._env = env or {}
 
     def get_request(self):
         return {'action': self._action,

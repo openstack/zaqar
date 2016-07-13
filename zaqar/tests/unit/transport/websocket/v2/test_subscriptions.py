@@ -20,6 +20,7 @@ import uuid
 import mock
 import msgpack
 
+from zaqar.common import auth
 from zaqar.storage import errors as storage_errors
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
@@ -117,6 +118,37 @@ class SubscriptionTest(base.V1_1Base):
                 self.boot.storage.subscription_controller.list(
                     'kitkat', self.project_id)))
         self.assertEqual([], subscribers)
+
+    @mock.patch.object(auth, 'create_trust_id')
+    def test_subscription_create_trust(self, create_trust):
+        create_trust.return_value = 'trust_id'
+        action = 'subscription_create'
+        body = {'queue_name': 'kitkat', 'ttl': 600,
+                'subscriber': 'trust+http://example.com'}
+        self.protocol._auth_env = {}
+        self.protocol._auth_env['X-USER-ID'] = 'user-id'
+        self.protocol._auth_env['X-ROLES'] = 'my-roles'
+
+        send_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(send_mock.stop)
+        send_mock.start()
+
+        req = test_utils.create_request(action, body, self.headers)
+        self.protocol.onMessage(req, False)
+        [subscriber] = list(
+            next(
+                self.boot.storage.subscription_controller.list(
+                    'kitkat', self.project_id)))
+        self.addCleanup(
+            self.boot.storage.subscription_controller.delete, 'kitkat',
+            subscriber['id'], project=self.project_id)
+        self.assertEqual('trust+http://example.com',
+                         subscriber['subscriber'])
+        self.assertEqual({'trust_id': 'trust_id'}, subscriber['options'])
+
+        self.assertEqual('user-id', create_trust.call_args[0][1])
+        self.assertEqual(self.project_id, create_trust.call_args[0][2])
+        self.assertEqual(['my-roles'], create_trust.call_args[0][3])
 
     def test_subscription_delete(self):
         sub = self.boot.storage.subscription_controller.create(
