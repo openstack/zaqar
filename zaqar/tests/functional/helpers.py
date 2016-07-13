@@ -18,28 +18,6 @@ import string
 import uuid
 
 
-def get_keystone_token(conf, client):
-    """Gets Keystone Auth token."""
-    body = {
-        'auth': {
-            'passwordCredentials': {
-                'username': conf.auth.username,
-                'password': conf.auth.password
-            },
-        },
-    }
-
-    header = {"Content-Type": "application/json",
-              "Accept": "application/json"}
-
-    response = client.post(url=conf.auth.url,
-                           headers=header,
-                           data=body)
-
-    response_body = response.json()
-    return response_body['access']['token']['id']
-
-
 def create_zaqar_headers(conf):
     """Returns headers to be used for all Zaqar requests."""
 

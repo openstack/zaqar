@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 import uuid
 
 import ddt
@@ -115,26 +114,6 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
         self.assertEqual(400, result.status_code)
 
     test_insert_queue_invalid_name.tags = ['negative']
-
-    def test_insert_queue_invalid_authtoken(self):
-        """Insert Queue with invalid authtoken."""
-
-        # NOTE(flaper87): Currently, tearDown
-        # depends on this attribute. Needs to
-        # be fixed.
-        self.url = self.base_url + '/queues/invalidauthtoken'
-        self.addCleanup(self.client.delete, self.url)
-
-        if not self.cfg.auth.auth_on:
-            self.skipTest("Auth is not on!")
-
-        header = copy.copy(self.header)
-        header['X-Auth-Token'] = 'invalid'
-
-        result = self.client.put(self.url, headers=header)
-        self.assertEqual(401, result.status_code)
-
-    test_insert_queue_invalid_authtoken.tags = ['negative']
 
     def test_insert_queue_header_plaintext(self):
         """Insert Queue with 'Accept': 'plain/text'."""
