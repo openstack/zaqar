@@ -1,0 +1,6 @@
+{
+  "resources": [
+    "/v2/queues/demoqueue/messages/51db6f78c508f17ddc924357",
+    "/v2/queues/demoqueue/messages/51db6f78c508f17ddc924358"
+  ]
+}
