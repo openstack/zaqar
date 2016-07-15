@@ -8,7 +8,7 @@ The Zaqar API only supports ''major versions'' expressed in request URLs.
 List major versions
 ===================
 
-.. rest_method::  GET /
+.. rest_method:: GET /
 
 Gets the home document.
 

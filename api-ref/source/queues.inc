@@ -5,7 +5,7 @@ Queues (queues)
 List queues
 ===========
 
-.. rest_method::  GET /v2/queues
+.. rest_method:: GET /v2/queues
 
 Lists queues.
 
@@ -51,7 +51,7 @@ Response Example
 Create queue
 ============
 
-.. rest_method::  PUT /v2/queues/{queue_name}
+.. rest_method:: PUT /v2/queues/{queue_name}
 
 Creates a queue.
 
@@ -93,7 +93,7 @@ This operation does not return a response body.
 Update queue
 ============
 
-.. rest_method::  PATCH /v2/queues/{queue_name}
+.. rest_method:: PATCH /v2/queues/{queue_name}
 
 Updates a queue.
 
@@ -145,7 +145,7 @@ Response Example
 Show queue details
 ==================
 
-.. rest_method::  GET /v2/queues/{queue_name}
+.. rest_method:: GET /v2/queues/{queue_name}
 
 Shows details for a queue.
 
@@ -182,7 +182,7 @@ Response Example
 Delete queue
 ===============
 
-.. rest_method::  DELETE /v2/queues/{queue_name}
+.. rest_method:: DELETE /v2/queues/{queue_name}
 
 Deletes the specified queue.
 
@@ -252,7 +252,7 @@ Response Example
 Pre-signed queue
 ================
 
-.. rest_method::  POST /v2/queues/{queue_name}/share
+.. rest_method:: POST /v2/queues/{queue_name}/share
 
 Create a pre-signed URL for a given queue.
 

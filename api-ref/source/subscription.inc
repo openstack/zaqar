@@ -5,7 +5,7 @@ Subscriptions(subscriptions)
 List Subscriptions
 ==================
 
-.. rest_method::  GET /v2/queues/{queue_name}/subscriptions
+.. rest_method:: GET /v2/queues/{queue_name}/subscriptions
 
 Lists a queue's subscriptions.
 
@@ -58,7 +58,7 @@ Response Example
 Create Subscription
 ===================
 
-.. rest_method::  POST /v2/queues/{queue_name}/subscriptions
+.. rest_method:: POST /v2/queues/{queue_name}/subscriptions
 
 Creates a subscription.
 
@@ -113,7 +113,7 @@ Response Example
 Update Subscription
 ===================
 
-.. rest_method::  PATCH /v2/queues/{queue_name}/subscriptions/{subscription_id}
+.. rest_method:: PATCH /v2/queues/{queue_name}/subscriptions/{subscription_id}
 
 Updates a subscription.
 
@@ -153,7 +153,7 @@ This operation does not return a response body.
 Show Subscription Details
 =========================
 
-.. rest_method::  GET /v2/queues/{queue_name}/subscriptions/{subscription_id}
+.. rest_method:: GET /v2/queues/{queue_name}/subscriptions/{subscription_id}
 
 Shows details for a subscription.
 
@@ -198,7 +198,7 @@ Response Example
 Delete Subscription
 ===================
 
-.. rest_method::  DELETE /v2/queues/{queue_name}/subscriptions/{subscription_id}
+.. rest_method:: DELETE /v2/queues/{queue_name}/subscriptions/{subscription_id}
 
 Deletes the specified subscription.
 

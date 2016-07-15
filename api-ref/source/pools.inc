@@ -5,7 +5,7 @@ Pools (pools)
 List pools
 ===========
 
-.. rest_method::  GET /v2/pools
+.. rest_method:: GET /v2/pools
 
 Lists pools.
 
@@ -47,7 +47,7 @@ Response Example
 Create pool
 ============
 
-.. rest_method::  PUT /v2/pools/{pool_name}
+.. rest_method:: PUT /v2/pools/{pool_name}
 
 Creates a pool.
 
@@ -91,7 +91,7 @@ This operation does not return a response body.
 Update pool
 ============
 
-.. rest_method::  PATCH /v2/pools/{pool_name}
+.. rest_method:: PATCH /v2/pools/{pool_name}
 
 Updates a pool.
 
@@ -134,7 +134,7 @@ Response Example
 Show pool details
 ==================
 
-.. rest_method::  GET /v2/pools/{pool_name}
+.. rest_method:: GET /v2/pools/{pool_name}
 
 Shows details for a pool.
 
@@ -174,7 +174,7 @@ Response Example
 Delete pool
 ===============
 
-.. rest_method::  DELETE /v2/pools/{pool_name}
+.. rest_method:: DELETE /v2/pools/{pool_name}
 
 Deletes the specified pool.
 
