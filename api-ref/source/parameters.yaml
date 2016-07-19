@@ -36,6 +36,13 @@ pool_name_path:
   description:
     The name of the pool.
 
+flavor_name_path:
+  type: string
+  in: path
+  required: True
+  description:
+    The name of the flavor.
+
 #### variables in query ######################################################
 
 limit:
@@ -155,6 +162,14 @@ pool_options:
     The ``options`` attribute gives storage-specific options used by storage
     driver implementations. The value must be a dict and valid key-value come
     from the registered options for a given storage backend.
+
+flavor_pool_group:
+  type: string
+  in: body
+  required: true
+  description: |
+    The ``pool_group`` attribute specifies the name of the pool group
+    this flavor sits on top of.
 
 #### variables in response ###################################################
 
@@ -328,3 +343,37 @@ pool_links:
   description: |
     Links related to the pools. This is a list of dictionaries, each including
     keys ``href`` and ``rel``.
+
+flavors:
+  type: list
+  in: body
+  description: |
+    A list of the flaovrs.
+
+flavor_links:
+  type: array
+  in: body
+  required: true
+  description: |
+    Links related to the flavors. This is a list of dictionaries, each including
+    keys ``href`` and ``rel``.
+
+flavor_name:
+  type: string
+  in: body
+  required: true
+  description: |
+    The name of the flavor.
+
+flavor_href:
+  type: string
+  in: body
+  description: |
+    The url of the flavor.
+
+capabilities:
+  type: list
+  in: body
+  description: |
+    Capabilities describe what this flavor is capable of base on the storage
+    capabilities. They are used to inform the final user such capabilities.

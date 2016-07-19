@@ -1,0 +1,12 @@
+{
+  "href": "/v2/flavors/testflavor",
+  "pool_group": "testgroup",
+  "name": "testflavor",
+  "capabilities": [
+    "FIFO",
+    "CLAIMS",
+    "DURABILITY",
+    "AOD",
+    "HIGH_THROUGHPUT"
+  ]
+}

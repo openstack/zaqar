@@ -23,3 +23,4 @@ Messaging Service API v2 (CURRENT)
 .. include:: subscription.inc
 .. include:: health.inc
 .. include:: pools.inc
+.. include:: flavors.inc

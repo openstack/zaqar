@@ -1,0 +1,22 @@
+{
+  "flavors": [
+    {
+      "href": "/v2/flavors/test_flavor1",
+      "pool_group": "testgroup",
+      "name": "test_flavor1",
+      "pool": "testgroup"
+    },
+    {
+      "href": "/v2/flavors/test_flavor2",
+      "pool_group": "testgroup",
+      "name": "test_flavor2",
+      "pool": "testgroup"
+    }
+  ],
+  "links": [
+    {
+      "href": "/v2/flavors?marker=test_flavor2",
+      "rel": "next"
+    }
+  ]
+}
