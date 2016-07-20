@@ -118,6 +118,14 @@ class ClaimController(storage.Claim, scripting.Mixin):
         client = self._client
         claims_set_key = utils.scope_claims_set(queue, project,
                                                 QUEUE_CLAIMS_SUFFIX)
+        # In some cases, the queue maybe doesn't exist. So we should check
+        # whether the queue exists. Return False if no such queue exists.
+
+        # Todo(flwang): We should delete all related data after the queue is
+        # deleted. See the blueprint for more detail:
+        # https://blueprints.launchpad.net/zaqar/+spec/clear-resources-after-delete-queue
+        if not self._queue_ctrl._exists(queue, project):
+            return False
 
         # Return False if no such claim exists
         # TODO(prashanthr_): Discuss the feasibility of a bloom filter.
