@@ -20,10 +20,7 @@ import hmac
 from oslo_utils import timeutils
 import six
 
-from zaqar import i18n
-
-
-_LE = i18n._LE
+from zaqar.i18n import _LE
 
 _DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
