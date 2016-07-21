@@ -30,9 +30,7 @@ from oslo_config import cfg
 
 from zaqar import bootstrap
 
-# TODO(kgriffs): For now, we have to use the global config
-# to pick up common options from openstack.common.log, since
-# that module uses the global CONF instance exclusively.
+# Use the global CONF instance
 conf = cfg.CONF
 conf(project='zaqar', prog='zaqar-queues', args=[])
 
