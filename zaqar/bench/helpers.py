@@ -17,7 +17,6 @@ import os
 import sys
 
 import os_client_config
-from six.moves import urllib_parse
 from zaqarclient.queues import client
 
 from zaqar.bench import config
@@ -46,6 +45,10 @@ def _get_credential_args():
     cloud = os_cfg.get_one_cloud()
     cred_args = cloud.get_auth_args()
 
+    cred_args['insecure'] = cloud.auth.get('insecure')
+    cred_args['cacert'] = cloud.auth.get('cacert')
+    cred_args['token'] = cloud.auth.get('token')
+
     required_options = ['username', 'password', 'auth_url', 'project_name']
     if not all(arg in cred_args for arg in required_options):
         try:
@@ -68,24 +71,20 @@ def _get_credential_args():
 
 def _generate_client_conf():
     auth_strategy = os.environ.get('OS_AUTH_STRATEGY', 'noauth')
+
     if auth_strategy == 'keystone':
         args = _get_credential_args()
-        # FIXME(flwang): Now we're hardcode the keystone auth version, since
-        # there is a 'bug' with the osc-config which is returning the auth_url
-        # without version. This should be fixed as long as the bug is fixed.
-        parsed_url = urllib_parse.urlparse(args['auth_url'])
-        auth_url = args['auth_url']
-        if not parsed_url.path or parsed_url.path == '/':
-            auth_url = urllib_parse.urljoin(args['auth_url'], 'v2.0')
         conf = {
             'auth_opts': {
                 'backend': 'keystone',
                 'options': {
-                    'os_username': args['username'],
-                    'os_password': args['password'],
+                    'os_username': args.get('username'),
+                    'os_password': args.get('password'),
                     'os_project_name': args['project_name'],
-                    'os_auth_url': auth_url,
-                    'insecure': '',
+                    'os_auth_url': args['auth_url'],
+                    'insecure': args.get('insecure'),
+                    'cacert': args.get('cacert'),
+                    'auth_token': args.get('token')
                 },
             },
         }

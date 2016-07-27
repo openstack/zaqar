@@ -49,6 +49,9 @@ _CLI_OPTIONS = (
         default=5,
         help='Number of Observer Workers'),
 
+    cfg.BoolOpt('debug', default=True,
+                help=('Tag to indicate if print the details of running.')),
+
     cfg.FloatOpt('api_version', short='api', default='2',
                  help='Zaqar API version to use'),
 

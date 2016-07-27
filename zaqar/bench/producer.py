@@ -158,7 +158,7 @@ def run(upstream_queue):
             for _ in range(num_procs)
         ]
 
-        if CONF.verbose:
+        if CONF.debug:
             print('\nStarting producer (pp={0}, pw={1})...'.format(
                   num_procs, num_workers))
 

@@ -152,7 +152,7 @@ def run(upstream_queue):
         procs = [mp.Process(target=load_generator, args=args)
                  for _ in range(num_procs)]
 
-        if CONF.verbose:
+        if CONF.debug:
             print('\nStarting consumers (cp={0}, cw={1})...'.format(
                   num_procs, num_workers))
 
