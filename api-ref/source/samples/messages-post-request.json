@@ -1,0 +1,18 @@
+{
+  "messages": [
+    {
+      "ttl": 300,
+      "body": {
+        "event": "BackupStarted",
+        "backup_id": "c378813c-3f0b-11e2-ad92-7823d2b0f3ce"
+      }
+    },
+    {
+      "body": {
+        "event": "BackupProgress",
+        "current_bytes": "0",
+        "total_bytes": "99614720"
+      }
+    }
+  ]
+}

@@ -19,6 +19,7 @@ Messaging Service API v2 (CURRENT)
 
 .. include:: versions.inc
 .. include:: queues.inc
+.. include:: messages.inc
 .. include:: claims.inc
 .. include:: subscription.inc
 .. include:: health.inc

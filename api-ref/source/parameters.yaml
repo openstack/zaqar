@@ -4,7 +4,13 @@ client_id:
   type: UUID
   in: header
   description: |
-    A unique ID for indicating where the request come from.
+    A UUID for each client instance. The UUID must be submitted in its
+    canonical form (for example, 3381af92-2b9e-11e3-b191-71861300734c). The
+    client generates the Client-ID once. Client-ID persists between restarts
+    of the client so the client should reuse that same Client-ID. Note: All
+    message-related operations require the use of ``Client-ID`` in the headers
+    to ensure that messages are not echoed back to the client that posted
+    them, unless the client explicitly requests this.
 
 #### variables in path #######################################################
 
@@ -66,6 +72,42 @@ claim_limit:
     specified, limit defaults to 10. Note that claim creation is best-effort,
     meaning the server may claim and return less than the requested number of
     messages.
+
+echo:
+   type: boolean
+   in: query
+   required: false
+   description:
+     Indicate if the messages can be echoed back to the client that posted
+     them.
+
+include_claimed:
+   type: boolean
+   in: query
+   required: false
+   description:
+     Indicate if the messages list should include the claimed messages.
+
+ids:
+  type: list
+  in: query
+  required: false
+  description: |
+    A list of the messages ids. ``pop`` & ``ids`` parameters are mutually
+    exclusive. Using them together in a request will result in HTTP 400.
+
+    NOTE: Actually, it's not a real list, it's string combined with many
+    message ids separated with comma, for example:
+    /messages?ids=578f0055508f153f256f717e,578f0055508f153f256f717f
+
+pop:
+  type: integer
+  in: query
+  required: false
+  description: |
+    The ``pop`` specifies how many messages will be popped up from the queue.
+    ``pop`` & ``ids`` parameters are mutually exclusive. Using them together
+    in a request will result in HTTP 400.
 
 #### variables in request ####################################################
 
@@ -208,6 +250,19 @@ _default_message_ttl:
     value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
     one of the ``reserved attributes`` of Zaqar queues. The value will be
     reverted to the default value after deleting it explicitly.
+
+messages:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of the messages.
+
+messages_resources:
+  type: list
+  in: body
+  description: |
+    A list of the URL to messages.
 
 subscriptions:
   type: list
