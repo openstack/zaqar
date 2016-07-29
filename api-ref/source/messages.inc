@@ -67,7 +67,7 @@ Request Parameters
 Request Example
 ---------------
 
-.. literalinclude:: samples/message-post-request.json
+.. literalinclude:: samples/messages-post-request.json
    :language: javascript
 
 
@@ -81,7 +81,7 @@ Response Parameters
 Response Example
 ---------------
 
-.. literalinclude:: samples/message-post-response.json
+.. literalinclude:: samples/messages-post-response.json
    :language: javascript
 
 
