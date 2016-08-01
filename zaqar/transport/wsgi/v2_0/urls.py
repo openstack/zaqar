@@ -18,13 +18,11 @@ from oslo_log import log as logging
 import six
 
 from zaqar.common import urls
-from zaqar import i18n
+from zaqar.i18n import _LE
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
 
-_ = i18n._
-_LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
 _KNOWN_KEYS = {'methods', 'expires', 'paths'}
