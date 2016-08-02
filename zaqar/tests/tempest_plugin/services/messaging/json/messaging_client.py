@@ -29,19 +29,9 @@ from zaqar.tests.tempest_plugin.api_schema.response.v2 \
 
 class MessagingClient(rest_client.RestClient):
 
-    def __init__(self, auth_provider, service, region,
-                 endpoint_type='publicURL', build_interval=1, build_timeout=60,
-                 disable_ssl_certificate_validation=False, ca_certs=None,
-                 trace_requests=''):
-        dscv = disable_ssl_certificate_validation
+    def __init__(self, auth_provider, service, region, **kwargs):
         super(MessagingClient, self).__init__(
-            auth_provider, service, region,
-            endpoint_type=endpoint_type,
-            build_interval=build_interval,
-            build_timeout=build_timeout,
-            disable_ssl_certificate_validation=dscv,
-            ca_certs=ca_certs,
-            trace_requests=trace_requests)
+            auth_provider, service, region, **kwargs)
 
         self.version = '1'
         self.uri_prefix = 'v{0}'.format(self.version)
@@ -51,19 +41,9 @@ class MessagingClient(rest_client.RestClient):
 
 
 class V1MessagingClient(MessagingClient):
-    def __init__(self, auth_provider, service, region,
-                 endpoint_type='publicURL', build_interval=1, build_timeout=60,
-                 disable_ssl_certificate_validation=False, ca_certs=None,
-                 trace_requests=''):
-        dscv = disable_ssl_certificate_validation
+    def __init__(self, auth_provider, service, region, **kwargs):
         super(V1MessagingClient, self).__init__(
-            auth_provider, service, region,
-            endpoint_type=endpoint_type,
-            build_interval=build_interval,
-            build_timeout=build_timeout,
-            disable_ssl_certificate_validation=dscv,
-            ca_certs=ca_certs,
-            trace_requests=trace_requests)
+            auth_provider, service, region, **kwargs)
 
         self.version = '1'
 
@@ -200,19 +180,9 @@ class V1MessagingClient(MessagingClient):
 
 
 class V11MessagingClient(MessagingClient):
-    def __init__(self, auth_provider, service, region,
-                 endpoint_type='publicURL', build_interval=1, build_timeout=60,
-                 disable_ssl_certificate_validation=False, ca_certs=None,
-                 trace_requests=''):
-        dscv = disable_ssl_certificate_validation
+    def __init__(self, auth_provider, service, region, **kwargs):
         super(V11MessagingClient, self).__init__(
-            auth_provider, service, region,
-            endpoint_type=endpoint_type,
-            build_interval=build_interval,
-            build_timeout=build_timeout,
-            disable_ssl_certificate_validation=dscv,
-            ca_certs=ca_certs,
-            trace_requests=trace_requests)
+            auth_provider, service, region, **kwargs)
 
         self.version = '1.1'
         self.uri_prefix = 'v{0}'.format(self.version)
@@ -349,19 +319,9 @@ class V11MessagingClient(MessagingClient):
 
 
 class V2MessagingClient(MessagingClient):
-    def __init__(self, auth_provider, service, region,
-                 endpoint_type='publicURL', build_interval=1, build_timeout=60,
-                 disable_ssl_certificate_validation=False, ca_certs=None,
-                 trace_requests=''):
-        dscv = disable_ssl_certificate_validation
+    def __init__(self, auth_provider, service, region, **kwargs):
         super(V2MessagingClient, self).__init__(
-            auth_provider, service, region,
-            endpoint_type=endpoint_type,
-            build_interval=build_interval,
-            build_timeout=build_timeout,
-            disable_ssl_certificate_validation=dscv,
-            ca_certs=ca_certs,
-            trace_requests=trace_requests)
+            auth_provider, service, region, **kwargs)
 
         self.version = '2'
         self.uri_prefix = 'v{0}'.format(self.version)
