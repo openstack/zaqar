@@ -91,14 +91,19 @@ def extract_project_id(req, resp, params):
     :type params: dict
     :rtype: None
     """
+    api_version_string = req.path.split('/')[1]
     params['project_id'] = req.get_header('X-PROJECT-ID')
+    if not api_version_string:
+        # NOTE(jaosorior): The versions resource is public and shouldn't need
+        # a check for the project-id.
+        return
     if params['project_id'] == "":
         raise falcon.HTTPBadRequest('Empty project header not allowed',
                                     _(u'X-PROJECT-ID cannot be an empty '
                                       u'string. Specify the right header '
                                       u'X-PROJECT-ID and retry.'))
 
-    api_version = LooseVersion(req.path.split('/')[1])
+    api_version = LooseVersion(api_version_string)
     if not params['project_id'] and api_version >= LooseVersion('v1.1'):
         raise falcon.HTTPBadRequest('Project-Id Missing',
                                     _(u'The header X-PROJECT-ID was missing'))
