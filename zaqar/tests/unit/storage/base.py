@@ -1214,6 +1214,35 @@ class SubscriptionControllerTest(ControllerBaseTest):
                           project=self.project,
                           **update_fields)
 
+    def test_confirm(self):
+        s_id = self.subscription_controller.create(self.source,
+                                                   self.subscriber,
+                                                   self.ttl,
+                                                   self.options,
+                                                   project=self.project)
+        self.addCleanup(self.subscription_controller.delete, self.source,
+                        s_id, self.project)
+        subscription = self.subscription_controller.get(self.source, s_id,
+                                                        project=self.project)
+
+        self.assertEqual(False, subscription['confirmed'])
+
+        self.subscription_controller.confirm(self.source, s_id,
+                                             project=self.project,
+                                             confirmed=True)
+        subscription = self.subscription_controller.get(self.source, s_id,
+                                                        project=self.project)
+
+        self.assertEqual(True, subscription['confirmed'])
+
+    def test_confirm_with_nonexist_subscription(self):
+        s_id = 'fake-id'
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.confirm,
+                          self.source, s_id, project=self.project,
+                          confirmed=True
+                          )
+
 
 class PoolsControllerTest(ControllerBaseTest):
     """Pools Controller base tests.

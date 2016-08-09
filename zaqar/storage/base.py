@@ -699,6 +699,37 @@ class Subscription(ControllerBase):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def get_with_subscriber(self, queue, subscriber, project=None):
+        """Base method for get a subscription with the subscriber.
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param subscriber: link of the subscription to be notified.
+        :type subscriber: six.text_type
+        :param project: Project id
+        :type project: six.text_type
+        :returns: Dictionary containing subscription data
+        :rtype: dict
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def confirm(self, queue, subscription_id, project=None, confirmed=True):
+        """Base method for confirming a subscription.
+
+        :param queue: Name of the queue subscription belongs to.
+        :type queue: six.text_type
+        :param subscription_id: ID of the subscription to be deleted.
+        :type subscription_id: six.text_type
+        :param project: Project id
+        :type project: six.text_type
+        :param confirmed: Confirm a subscription or cancel the confirmation of
+        a subscription.
+        :type confirmed: boolean
+        """
+        raise NotImplementedError
+
 
 @six.add_metaclass(abc.ABCMeta)
 class PoolsBase(ControllerBase):

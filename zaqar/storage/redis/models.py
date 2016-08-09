@@ -22,7 +22,7 @@ from oslo_utils import encodeutils
 from oslo_utils import timeutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e')
-SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p')
+SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p', b'c')
 
 
 # TODO(kgriffs): Make similar classes for claims and queues
@@ -115,6 +115,7 @@ class SubscriptionEnvelope(object):
         'expires',
         'options',
         'project',
+        'confirmed',
     ]
 
     def __init__(self, **kwargs):
@@ -124,6 +125,7 @@ class SubscriptionEnvelope(object):
         self.ttl = kwargs['ttl']
         self.expires = kwargs.get('expires', float('inf'))
         self.options = kwargs['options']
+        self.confirmed = kwargs.get('confirmed', 'True')
 
     @staticmethod
     def from_redis(sid, client):
@@ -144,6 +146,7 @@ class SubscriptionEnvelope(object):
 
     def to_basic(self, now):
         created = self.expires - self.ttl
+        is_confirmed = self.confirmed == str(True)
         basic_msg = {
             'id': self.id,
             'source': self.source,
@@ -151,6 +154,7 @@ class SubscriptionEnvelope(object):
             'ttl': self.ttl,
             'age': now - created,
             'options': self.options,
+            'confirmed': is_confirmed,
         }
 
         return basic_msg
@@ -294,7 +298,8 @@ def _hmap_to_subenv_kwargs(hmap):
         'subscriber': hmap[b'u'],
         'ttl': int(hmap[b't']),
         'expires': int(hmap[b'e']),
-        'options': _unpack(hmap[b'o'])
+        'options': _unpack(hmap[b'o']),
+        'confirmed': hmap[b'c']
     }
 
 

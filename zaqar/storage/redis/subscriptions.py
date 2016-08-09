@@ -71,6 +71,9 @@ class SubscriptionController(base.Subscription):
             ttl = int(record[2])
             expires = int(record[3])
             created = expires - ttl
+            is_confirmed = True
+            if len(record) == 6:
+                is_confirmed = record[5] == str(True)
             ret = {
                 'id': sid,
                 'source': record[0],
@@ -78,6 +81,7 @@ class SubscriptionController(base.Subscription):
                 'ttl': ttl,
                 'age': now - created,
                 'options': self._unpacker(record[4]),
+                'confirmed': is_confirmed,
             }
             marker_next['next'] = sid
 
@@ -108,6 +112,7 @@ class SubscriptionController(base.Subscription):
         source = queue
         now = timeutils.utcnow_ts()
         expires = now + ttl
+        confirmed = False
 
         subscription = {'id': subscription_id,
                         's': source,
@@ -115,7 +120,8 @@ class SubscriptionController(base.Subscription):
                         't': ttl,
                         'e': expires,
                         'o': self._packer(options),
-                        'p': project}
+                        'p': project,
+                        'c': confirmed}
 
         try:
             # Pipeline ensures atomic inserts.
@@ -150,8 +156,9 @@ class SubscriptionController(base.Subscription):
         try:
             sub_ids = (q for q in self._client.zrange(subset_key, 0, -1))
             for s_id in sub_ids:
-                subscription = self._client.hmget(s_id, ['s', 'u', 't', 'o'])
-                if subscription == [None, None, None, None]:
+                subscription = self._client.hmget(s_id,
+                                                  ['s', 'u', 't', 'o', 'c'])
+                if subscription == [None, None, None, None, None]:
                     # NOTE(flwang): Under this check, that means the
                     # subscription has been expired. So redis can't get
                     # the subscription but the id is still there. So let's
@@ -227,4 +234,32 @@ class SubscriptionController(base.Subscription):
         with self._client.pipeline() as pipe:
             pipe.zrem(subset_key, subscription_id)
             pipe.delete(subscription_id)
+            pipe.execute()
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def get_with_subscriber(self, queue, subscriber, project=None):
+        subset_key = utils.scope_subscription_ids_set(queue,
+                                                      project,
+                                                      SUBSCRIPTION_IDS_SUFFIX)
+        sub_ids = (q for q in self._client.zrange(subset_key, 0, -1))
+        for s_id in sub_ids:
+            subscription = self._client.hmget(s_id,
+                                              ['s', 'u', 't', 'o', 'c'])
+            if subscription[1] == subscriber:
+                subscription = SubscriptionEnvelope.from_redis(s_id,
+                                                               self._client)
+                now = timeutils.utcnow_ts()
+                return subscription.to_basic(now)
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def confirm(self, queue, subscription_id, project=None, confirmed=True):
+        # Let's get our subscription by ID. If it does not exist,
+        # SubscriptionDoesNotExist error will be raised internally.
+        self.get(queue, subscription_id, project=project)
+
+        fields = {'c': confirmed}
+        with self._client.pipeline() as pipe:
+            pipe.hmset(subscription_id, fields)
             pipe.execute()

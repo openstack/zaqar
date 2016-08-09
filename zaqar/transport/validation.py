@@ -540,9 +540,9 @@ class Validator(object):
             except OverflowError:
                 raise ValidationFailed(msg, datetime.datetime.max)
 
-    def subscription_confirming(self, confirm):
-        confirm = confirm.get('confirmed', None)
-        if not isinstance(confirm, bool):
+    def subscription_confirming(self, confirmed):
+        confirmed = confirmed.get('confirmed', None)
+        if not isinstance(confirmed, bool):
             msg = _(u"The 'confirmed' should be boolean.")
             raise ValidationFailed(msg)
 

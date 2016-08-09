@@ -409,11 +409,11 @@ class SubscriptionController(storage.Subscription):
             return control.exists(queue, subscription_id,
                                   project=project)
 
-    def confirm(self, queue, subscription_id, project=None, confirm=None):
+    def confirm(self, queue, subscription_id, project=None, confirmed=None):
         control = self._get_controller(queue, project)
         if control:
             return control.confirm(queue, subscription_id,
-                                   project=project, confirm=confirm)
+                                   project=project, confirmed=confirmed)
 
     def get_with_subscriber(self, queue, subscriber, project=None):
         control = self._get_controller(queue, project)
