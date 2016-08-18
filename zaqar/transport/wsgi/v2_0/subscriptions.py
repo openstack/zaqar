@@ -12,15 +12,18 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 
 import falcon
 from oslo_log import log as logging
 from oslo_utils import netutils
+from oslo_utils import timeutils
 import six
 from stevedore import driver
 
 from zaqar.common import decorators
 from zaqar.i18n import _
+from zaqar.notification import notifier
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import acl
 from zaqar.transport import utils
@@ -111,14 +114,17 @@ class ItemResource(object):
 class CollectionResource(object):
 
     __slots__ = ('_subscription_controller', '_validate',
-                 '_default_subscription_ttl', '_queue_controller')
+                 '_default_subscription_ttl', '_queue_controller',
+                 '_conf', '_notification')
 
     def __init__(self, validate, subscription_controller,
-                 default_subscription_ttl, queue_controller):
+                 default_subscription_ttl, queue_controller, conf):
         self._subscription_controller = subscription_controller
         self._validate = validate
         self._default_subscription_ttl = default_subscription_ttl
         self._queue_controller = queue_controller
+        self._conf = conf
+        self._notification = notifier.NotifierDriver()
 
     @decorators.TransportLog("Subscription collection")
     @acl.enforce("subscription:get_all")
@@ -192,7 +198,6 @@ class CollectionResource(object):
                                                            ttl,
                                                            options,
                                                            project=project_id)
-
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -201,13 +206,80 @@ class CollectionResource(object):
             description = _(u'Subscription could not be created.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
+        now = timeutils.utcnow_ts()
+        now_dt = datetime.datetime.utcfromtimestamp(now)
+        expires = now_dt + datetime.timedelta(seconds=ttl)
+        api_version = req.path.split('/')[1]
         if created:
+            subscription = self._subscription_controller.get(queue_name,
+                                                             created,
+                                                             project_id)
+            # send confirm notification
+            self._notification.send_confirm_notification(
+                queue_name, subscription, self._conf, project_id,
+                str(expires), api_version)
+
             resp.location = req.path
             resp.status = falcon.HTTP_201
             resp.body = utils.to_json(
                 {'subscription_id': six.text_type(created)})
         else:
-            description = _(u'Such subscription already exists. Subscriptions '
-                            u'are unique by project + queue + subscriber URI.')
-            raise wsgi_errors.HTTPConflict(description, headers={'location':
-                                                                 req.path})
+            subscription = self._subscription_controller.get_with_subscriber(
+                queue_name, subscriber, project_id)
+            confirmed = subscription.get('confirmed', True)
+            if confirmed:
+                description = _(u'Such subscription already exists.'
+                                u'Subscriptions are unique by project + queue '
+                                u'+ subscriber URI.')
+                raise wsgi_errors.HTTPConflict(description,
+                                               headers={'location': req.path})
+            else:
+                # The subscription is not confirmed, re-send confirm
+                # notification
+                self._notification.send_confirm_notification(
+                    queue_name, subscription, self._conf, project_id,
+                    str(expires), api_version)
+
+                resp.location = req.path
+                resp.status = falcon.HTTP_201
+                resp.body = utils.to_json(
+                    {'subscription_id': six.text_type(subscription['id'])})
+
+
+class ConfirmResource(object):
+
+    __slots__ = ('_subscription_controller', '_validate')
+
+    def __init__(self, validate, subscription_controller):
+        self._subscription_controller = subscription_controller
+        self._validate = validate
+
+    @decorators.TransportLog("Confirm Subscription")
+    @acl.enforce("subscription:confirm")
+    def on_put(self, req, resp, project_id, queue_name, subscription_id):
+        if req.content_length:
+            document = wsgi_utils.deserialize(req.stream, req.content_length)
+        else:
+            document = {}
+
+        try:
+            self._validate.subscription_confirming(document)
+            confirm = document.get('confirmed', None)
+            self._subscription_controller.confirm(queue_name, subscription_id,
+                                                  project=project_id,
+                                                  confirm=confirm)
+            resp.status = falcon.HTTP_204
+            resp.location = req.path
+        except storage_errors.SubscriptionDoesNotExist as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+        except Exception as ex:
+            LOG.exception(ex)
+            description = (_(u'Subscription %(subscription_id)s could not be'
+                             ' confirmed.') %
+                           dict(subscription_id=subscription_id))
+            raise falcon.HTTPBadRequest(_('Unable to confirm subscription'),
+                                        description)

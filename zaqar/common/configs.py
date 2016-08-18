@@ -59,7 +59,10 @@ _NOTIFICATION_OPTIONS = (
                help=('The command of smtp to send email. The format is '
                      '"command_name arg1 arg2".')),
     cfg.IntOpt('max_notifier_workers', default=10,
-               help='The max amount of the notification workers.')
+               help='The max amount of the notification workers.'),
+    cfg.BoolOpt('require_confirmation', default=False,
+                help='Whether the http/https/email subscription need to be '
+                     'confirmed before notification.'),
 )
 
 _NOTIFICATION_GROUP = 'notification'

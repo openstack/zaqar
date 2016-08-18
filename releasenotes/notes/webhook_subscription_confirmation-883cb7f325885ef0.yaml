@@ -1,0 +1,9 @@
+---
+features:
+  - Now before users send messages to subscribers through a queue, the
+    subscribers should be confirmed first. Zaqar only sends messages to the
+    confirmed subscribers. This feature supports "webhook" and "mailto"
+    subscribers with mongoDB or redis backend. The "mailto" part will be done
+    in O cycle. Set "require_confirmation = True" to enable this feature. The
+    default value is "False" now and we will enable it by default after one or
+    two cycles.

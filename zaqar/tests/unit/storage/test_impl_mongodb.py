@@ -495,6 +495,34 @@ class MongodbSubscriptionTests(MongodbSetupMixin,
     controller_class = controllers.SubscriptionController
     control_driver_class = mongodb.ControlDriver
 
+    def test_confirm(self):
+        s_id = self.subscription_controller.create(self.source,
+                                                   self.subscriber,
+                                                   self.ttl,
+                                                   self.options,
+                                                   project=self.project)
+        self.addCleanup(self.subscription_controller.delete, self.source,
+                        s_id, self.project)
+        subscription = self.subscription_controller.get(self.source, s_id,
+                                                        project=self.project)
+
+        self.assertEqual(False, subscription['confirmed'])
+
+        self.subscription_controller.confirm(self.source, s_id,
+                                             project=self.project,
+                                             confirm=True)
+        subscription = self.subscription_controller.get(self.source, s_id,
+                                                        project=self.project)
+
+        self.assertEqual(True, subscription['confirmed'])
+
+    def test_confirm_with_nonexist_subscription(self):
+        s_id = 'fake-id'
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.confirm,
+                          self.source, s_id, project=self.project, confirm=True
+                          )
+
 
 #
 # TODO(kgriffs): Do these need database purges as well as those above?

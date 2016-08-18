@@ -20,6 +20,7 @@ import mock
 from oslo_serialization import jsonutils
 
 from zaqar.common import auth
+from zaqar.notification import notifier
 from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
@@ -57,6 +58,11 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         self.subscription_path = (self.url_prefix + '/queues/' + self.queue +
                                   '/subscriptions')
+        self.subscription = 'fake-id'
+        self.confirm_path = (self.url_prefix + '/queues/' + self.queue +
+                             '/subscriptions/' + self.subscription +
+                             '/confirm')
+        self.conf.signed_url.secret_key = 'test_key'
 
     def tearDown(self):
         resp = self.simulate_get(self.subscription_path,
@@ -94,6 +100,44 @@ class TestSubscriptionsMongoDB(base.V2Base):
     def test_create_duplicate_409(self):
         self._create_subscription(subscriber='http://CCC.com')
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        # the subscription is not confirmed, So the second request will
+        # retry confirm and return 201 again.
+        self._create_subscription(subscriber='http://CCC.com')
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+    @mock.patch.object(notifier.NotifierDriver, 'send_confirm_notification')
+    def test_create_and_send_notification(self, mock_send_confirm):
+        self._create_subscription(subscriber='http://CCC.com')
+        self.assertEqual(1, mock_send_confirm.call_count)
+
+    @mock.patch.object(notifier.NotifierDriver, 'send_confirm_notification')
+    def test_recreate(self, mock_send_confirm):
+        resp = self._create_subscription(subscriber='http://CCC.com')
+        resp_doc = jsonutils.loads(resp[0])
+        s_id1 = resp_doc['subscription_id']
+        self.assertEqual(1, mock_send_confirm.call_count)
+
+        resp = self._create_subscription(subscriber='http://CCC.com')
+        resp_doc = jsonutils.loads(resp[0])
+        s_id2 = resp_doc['subscription_id']
+        self.assertEqual(2, mock_send_confirm.call_count)
+
+        self.assertEqual(s_id1, s_id2)
+
+    @mock.patch.object(notifier.NotifierDriver, 'send_confirm_notification')
+    def test_recreate_after_confirmed(self, mock_send_confirm):
+        resp = self._create_subscription(subscriber='http://CCC.com')
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        doc = '{"confirmed": true}'
+        resp_doc = jsonutils.loads(resp[0])
+        confirm_path = (self.url_prefix + '/queues/' + self.queue +
+                        '/subscriptions/' + resp_doc['subscription_id'] +
+                        '/confirm')
+        self.simulate_put(confirm_path, body=doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+        self.assertEqual(1, mock_send_confirm.call_count)
 
         self._create_subscription(subscriber='http://CCC.com')
         self.assertEqual(falcon.HTTP_409, self.srmock.status)
@@ -353,3 +397,35 @@ class TestSubscriptionsMongoDB(base.V2Base):
         options = resp_list_doc['subscriptions'][0]['options']
 
         self.assertEqual({'a': 1, 'trust_id': 'trust_id'}, options)
+
+    def test_confirm(self):
+        doc = '{"confirmed": true}'
+        resp = self._create_subscription()
+        resp_doc = jsonutils.loads(resp[0])
+        confirm_path = (self.url_prefix + '/queues/' + self.queue +
+                        '/subscriptions/' + resp_doc['subscription_id'] +
+                        '/confirm')
+        self.simulate_put(confirm_path, body=doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+    def test_confirm_with_invalid_body(self):
+        doc = '{confirmed:123}'
+        resp = self.simulate_put(self.confirm_path, body=doc,
+                                 headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+        resp_doc = jsonutils.loads(resp[0])
+        self.assertIn('body could not be parsed', resp_doc['description'])
+
+    def test_confirm_without_boolean_body(self):
+        doc = '{"confirmed":123}'
+        resp = self.simulate_put(self.confirm_path, body=doc,
+                                 headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+        resp_doc = jsonutils.loads(resp[0])
+        self.assertEqual("The 'confirmed' should be boolean.",
+                         resp_doc['description'])
+
+    def test_confirm_with_non_subscription(self):
+        doc = '{"confirmed": true}'
+        self.simulate_put(self.confirm_path, body=doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)

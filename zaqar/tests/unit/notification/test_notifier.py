@@ -43,14 +43,17 @@ class NotifierTest(testing.TestBase):
                                "body": {"event": "BackupStarted",
                                         "backup_id":
                                             "c378813c-3f0b-11e2-ad92"},
-                               "queue_name": "fake_queue"
+                               "queue_name": "fake_queue",
+                               "Message_Type": "Notification"
                                },
                               {"body": {"event": "BackupProgress",
                                         "current_bytes": "0",
                                         "total_bytes": "99614720"},
-                               "queue_name": "fake_queue"
+                               "queue_name": "fake_queue",
+                               "Message_Type": "Notification"
                                }
                               ]
+        self.api_version = 'v2'
 
     def test_webhook(self):
         subscription = [{'subscriber': 'http://trigger_me',
@@ -257,3 +260,41 @@ class NotifierTest(testing.TestBase):
             self.assertEqual(2, mock_post.call_count)
             self.assertEqual(self.notifications[1],
                              json.loads(mock_post.call_args[1]['data']))
+
+    @mock.patch('requests.post')
+    def test_send_confirm_notification(self, mock_request):
+        subscription = {'id': '5760c9fb3990b42e8b7c20bd',
+                        'subscriber': 'http://trigger_me',
+                        'source': 'fake_queue',
+                        'options': {}}
+        ctlr = mock.MagicMock()
+        ctlr.list = mock.Mock(return_value=subscription)
+        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        self.conf.signed_url.secret_key = 'test_key'
+        driver.send_confirm_notification('test_queue', subscription, self.conf,
+                                         str(self.project),
+                                         api_version=self.api_version)
+        driver.executor.shutdown()
+
+        self.assertEqual(1, mock_request.call_count)
+        expect_args = ['SubscribeBody', 'queue_name', 'URL-Methods',
+                       'X-Project-ID', 'URL-Signature', 'URL-Paths', 'Message',
+                       'URL-Expires', 'Message_Type', 'WSGISubscribeURL',
+                       'WebSocketSubscribeURL' 'UnsubscribeBody']
+        actual_args = json.loads(mock_request.call_args[1]['data']).keys()
+        self.assertEqual(expect_args.sort(),
+                         list(actual_args).sort())
+
+    @mock.patch('requests.post')
+    def test_send_confirm_notification_without_signed_url(self, mock_request):
+        subscription = [{'subscriber': 'http://trigger_me',
+                         'source': 'fake_queue', 'options': {}}]
+        ctlr = mock.MagicMock()
+        ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
+        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+
+        driver.send_confirm_notification('test_queue', subscription, self.conf,
+                                         str(self.project), self.api_version)
+        driver.executor.shutdown()
+
+        self.assertEqual(0, mock_request.call_count)

@@ -21,7 +21,10 @@ from oslo_config import cfg
 
 PASSWORD_PLUGIN = 'password'
 TRUSTEE_CONF_GROUP = 'trustee'
+KEYSTONE_AUTHTOKEN_GROUP = 'keystone_authtoken'
 loading.register_auth_conf_options(cfg.CONF, TRUSTEE_CONF_GROUP)
+loading.register_auth_conf_options(cfg.CONF, KEYSTONE_AUTHTOKEN_GROUP)
+_ZAQAR_ENDPOINTS = {}
 
 
 def _config_options():
@@ -39,9 +42,9 @@ def get_trusted_token(trust_id):
     return trust_session.auth.get_access(trust_session).auth_token
 
 
-def _get_admin_session():
+def _get_admin_session(conf_group):
     auth_plugin = loading.load_auth_from_conf_options(
-        cfg.CONF, TRUSTEE_CONF_GROUP)
+        cfg.CONF, conf_group)
     return session.Session(auth=auth_plugin)
 
 
@@ -53,7 +56,7 @@ def _get_user_client(auth_plugin):
 def create_trust_id(auth_plugin, trustor_user_id, trustor_project_id, roles,
                     expires_at):
     """Create a trust with the given user for the configured trustee user."""
-    admin_session = _get_admin_session()
+    admin_session = _get_admin_session(TRUSTEE_CONF_GROUP)
     trustee_user_id = admin_session.get_user_id()
 
     client = _get_user_client(auth_plugin)
@@ -64,3 +67,29 @@ def create_trust_id(auth_plugin, trustor_user_id, trustor_project_id, roles,
                                  role_names=roles,
                                  expires_at=expires_at)
     return trust.id
+
+
+def get_public_endpoint():
+    """Get Zaqar's public endpoint from keystone"""
+    global _ZAQAR_ENDPOINTS
+
+    if _ZAQAR_ENDPOINTS:
+        return _ZAQAR_ENDPOINTS
+
+    zaqar_session = _get_admin_session(KEYSTONE_AUTHTOKEN_GROUP)
+    auth = zaqar_session.auth
+    if not auth:
+        return _ZAQAR_ENDPOINTS
+
+    catalogs = auth.get_auth_ref(zaqar_session).service_catalog
+    try:
+        _ZAQAR_ENDPOINTS['zaqar'] = catalogs.url_for(service_name='zaqar')
+    except Exception:
+        pass
+    try:
+        _ZAQAR_ENDPOINTS['zaqar-websocket'] = catalogs.url_for(
+            service_name='zaqar-websocket')
+    except Exception:
+        pass
+
+    return _ZAQAR_ENDPOINTS

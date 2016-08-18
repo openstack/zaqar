@@ -115,10 +115,15 @@ class TestSubscriptions(base.BaseV2MessagingTest):
         if not test.call_until_true(
                 lambda: self.list_messages(sub_queue)[1]['messages'], 10, 1):
             self.fail("Couldn't get messages")
-        messages = self.list_messages(sub_queue)
+        _, body = self.list_messages(sub_queue)
         expected = message_body['messages'][0]
         expected['queue_name'] = self.queue_name
-        self.assertEqual(expected, messages[1]['messages'][0]['body'])
+        expected['Message_Type'] = 'Notification'
+        for message in body['messages']:
+            # There are two message in the queue. One is the confirm message,
+            # the other one is the notification.
+            if message['body']['Message_Type'] == 'Notification':
+                self.assertEqual(expected, message['body'])
 
     @classmethod
     def resource_cleanup(cls):

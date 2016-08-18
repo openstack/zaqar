@@ -27,6 +27,7 @@
     "subscription:get": "",
     "subscription:delete": "",
     "subscription:update": "",
+    "subscription:confirm": "",
 
     "pools:get_all": "rule:context_is_admin",
     "pools:create": "rule:context_is_admin",
