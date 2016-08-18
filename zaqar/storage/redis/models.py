@@ -126,11 +126,6 @@ class SubscriptionEnvelope(object):
         self.options = kwargs['options']
 
     @staticmethod
-    def from_hmap(hmap):
-        kwargs = _hmap_kv_to_subenv(hmap)
-        return SubscriptionEnvelope(**kwargs)
-
-    @staticmethod
     def from_redis(sid, client):
         values = client.hmget(sid, SUBENV_FIELD_KEYS)
 
