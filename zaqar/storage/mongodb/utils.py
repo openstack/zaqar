@@ -87,8 +87,6 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
         the interval [0, max_sleep), determined linearly according to
         the ratio attempt / max_attempts, with optional jitter.
     """
-    if max_attempts < 0:
-        raise ValueError(u'max_attempts must be >= 0')
 
     if max_sleep < 0:
         raise ValueError(u'max_sleep must be >= 0')
