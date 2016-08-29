@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from distutils.version import LooseVersion
+from distutils import version as d_version
 from wsgiref import simple_server
 
 import falcon
@@ -121,7 +121,8 @@ class Driver(transport.DriverBase):
         # middleware instead of it, but for the compatibility with old version,
         # we support them both now. Hook way can be removed after falcon
         # version must be bigger than 1.0.0 in requirements.
-        if LooseVersion(falcon.__version__) >= LooseVersion("1.0.0"):
+        if (d_version.LooseVersion(falcon.__version__) >=
+                d_version.LooseVersion("1.0.0")):
             middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
             self.app = falcon.API(middleware=middleware)
         else:
