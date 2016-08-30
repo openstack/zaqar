@@ -782,7 +782,7 @@ class MessageControllerTest(ControllerBaseTest):
         res = self.controller.bulk_get(queue_name, message_ids,
                                        project=self.project)
 
-        self.assertTrue(isinstance(res, collections.Iterable))
+        self.assertIsInstance(res, collections.Iterable)
         self.assertEqual([], list(res))
 
 
