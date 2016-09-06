@@ -20,6 +20,7 @@ import uuid
 
 import ddt
 
+from zaqar.common import consts
 from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
 
@@ -126,7 +127,7 @@ class TestMessages(base.V1_1FunctionalTestBase):
         self.assertEqual(200, result.status_code)
 
         # Verify that the response json schema matches the expected schema
-        self.assertSchema(result.json(), 'message_get_many')
+        self.assertSchema(result.json(), consts.MESSAGE_GET_MANY)
 
         self.skipTest('Bug #1273335 - Get set of messages returns wrong hrefs '
                       '(happens randomly)')

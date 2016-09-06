@@ -20,6 +20,7 @@ import ddt
 from keystonemiddleware import auth_token
 import mock
 
+from zaqar.common import consts
 from zaqar.common import urls
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
@@ -68,7 +69,7 @@ class AuthTest(base.V2Base):
         self.assertEqual('200 OK', responses[0])
 
         # Check that the env is available to future requests
-        req = json.dumps({'action': 'message_list',
+        req = json.dumps({'action': consts.MESSAGE_LIST,
                           'body': {'queue_name': 'myqueue'},
                           'headers': self.headers})
         process_request = mock.patch.object(self.protocol._handler,
@@ -89,7 +90,7 @@ class AuthTest(base.V2Base):
         msg_mock = msg_mock.start()
         self.protocol.onMessage(req, False)
 
-        req = test_utils.create_request("queue_list", {}, self.headers)
+        req = test_utils.create_request(consts.QUEUE_LIST, {}, self.headers)
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, msg_mock.call_count)
@@ -198,7 +199,7 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/myqueue/messages']
         })
-        req = json.dumps({'action': 'message_list',
+        req = json.dumps({'action': consts.MESSAGE_LIST,
                           'body': {'queue_name': 'myqueue'},
                           'headers': headers})
         self.protocol.onMessage(req, False)
@@ -222,7 +223,7 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/otherqueue/messages']
         })
-        req = json.dumps({'action': 'message_list',
+        req = json.dumps({'action': consts.MESSAGE_LIST,
                           'body': {'queue_name': 'otherqueue'},
                           'headers': headers})
         self.protocol.onMessage(req, False)
@@ -246,7 +247,7 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/myqueue/messages']
         })
-        req = json.dumps({'action': 'message_delete',
+        req = json.dumps({'action': consts.MESSAGE_DELETE,
                           'body': {'queue_name': 'myqueue',
                                    'message_id': '123'},
                           'headers': headers})

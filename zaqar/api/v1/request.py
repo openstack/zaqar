@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from zaqar.common.api import api
+from zaqar.common import consts
 
 
 class RequestSchema(api.Api):
@@ -78,9 +79,9 @@ class RequestSchema(api.Api):
         },
 
         # Queues
-        'queue_list': {
+        consts.QUEUE_LIST: {
             'properties': {
-                'action': {'enum': ['queue_list']},
+                'action': {'enum': [consts.QUEUE_LIST]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -98,9 +99,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers']
         },
 
-        'queue_create': {
+        consts.QUEUE_CREATE: {
             'properties': {
-                'action': {'enum': ['queue_create']},
+                'action': {'enum': [consts.QUEUE_CREATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -116,9 +117,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'queue_delete': {
+        consts.QUEUE_DELETE: {
             'properties': {
-                'action': {'enum': ['queue_delete']},
+                'action': {'enum': [consts.QUEUE_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -135,9 +136,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'queue_get': {
+        consts.QUEUE_GET: {
             'properties': {
-                'action': {'enum': ['queue_get']},
+                'action': {'enum': [consts.QUEUE_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -154,9 +155,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'queue_get_stats': {
+        consts.QUEUE_GET_STATS: {
             'properties': {
-                'action': {'enum': ['queue_get_stats']},
+                'action': {'enum': [consts.QUEUE_GET_STATS]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -175,9 +176,9 @@ class RequestSchema(api.Api):
         },
 
         # Messages
-        'message_list': {
+        consts.MESSAGE_LIST: {
             'properties': {
-                'action': {'enum': ['message_list']},
+                'action': {'enum': [consts.MESSAGE_LIST]},
                 'headers':  {
                     'type': 'object',
                     'properties': headers,
@@ -198,9 +199,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'message_get': {
+        consts.MESSAGE_GET: {
             'properties': {
-                'action': {'enum': ['message_get']},
+                'action': {'enum': [consts.MESSAGE_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -218,9 +219,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'message_get_many': {
+        consts.MESSAGE_GET_MANY: {
             'properties': {
-                'action': {'enum': ['message_get_many']},
+                'action': {'enum': [consts.MESSAGE_GET_MANY]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -238,9 +239,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'message_post': {
+        consts.MESSAGE_POST: {
             'properties': {
-                'action': {'enum': ['message_post']},
+                'action': {'enum': [consts.MESSAGE_POST]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -258,9 +259,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'message_delete': {
+        consts.MESSAGE_DELETE: {
             'properties': {
-                'action': {'enum': ['message_delete']},
+                'action': {'enum': [consts.MESSAGE_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -279,9 +280,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'message_delete_many': {
+        consts.MESSAGE_DELETE_MANY: {
             'properties': {
-                'action': {'enum': ['message_delete_many']},
+                'action': {'enum': [consts.MESSAGE_DELETE_MANY]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -301,9 +302,9 @@ class RequestSchema(api.Api):
         },
 
         # Claims
-        'claim_create': {
+        consts.CLAIM_CREATE: {
             'properties': {
-                'action': {'enum': ['claim_create']},
+                'action': {'enum': [consts.CLAIM_CREATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -323,9 +324,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'claim_get': {
+        consts.CLAIM_GET: {
             'properties': {
-                'action': {'enum': ['claim_get']},
+                'action': {'enum': [consts.CLAIM_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -343,9 +344,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'claim_update': {
+        consts.CLAIM_UPDATE: {
             'properties': {
-                'action': {'enum': ['claim_update']},
+                'action': {'enum': [consts.CLAIM_UPDATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -364,9 +365,9 @@ class RequestSchema(api.Api):
             'required': ['action', 'headers', 'body']
         },
 
-        'claim_delete': {
+        consts.CLAIM_DELETE: {
             'properties': {
-                'action': {'enum': ['claim_delete']},
+                'action': {'enum': [consts.CLAIM_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,

@@ -19,6 +19,7 @@ import ddt
 import mock
 from oslo_utils import timeutils
 
+from zaqar.common import consts
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
@@ -39,7 +40,7 @@ class ClaimsBaseTest(base.V1_1Base):
             'X-Project-ID': self.project_id
         }
 
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "skittle"}
         req = test_utils.create_request(action, body, self.headers)
 
@@ -48,7 +49,7 @@ class ClaimsBaseTest(base.V1_1Base):
             resp = json.loads(msg_mock.call_args[0][0])
             self.assertEqual(201, resp['headers']['status'])
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "skittle",
                 "messages": [
                     {'body': 239, 'ttl': 300},
@@ -74,7 +75,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
     def tearDown(self):
         super(ClaimsBaseTest, self).tearDown()
-        action = 'queue_delete'
+        action = consts.QUEUE_DELETE
         body = {'queue_name': 'skittle'}
 
         send_mock = mock.Mock()
@@ -88,7 +89,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
     @ddt.data('[', '[]', '.', '"fail"')
     def test_bad_claim(self, doc):
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = doc
 
         send_mock = mock.Mock()
@@ -99,7 +100,7 @@ class ClaimsBaseTest(base.V1_1Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
-        action = "claim_update"
+        action = consts.CLAIM_UPDATE
         body = doc
 
         req = test_utils.create_request(action, body, self.headers)
@@ -108,7 +109,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(400, resp['headers']['status'])
 
     def test_exceeded_claim(self):
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "skittle",
                 "ttl": 100,
                 "grace": 60,
@@ -125,7 +126,7 @@ class ClaimsBaseTest(base.V1_1Base):
     @ddt.data((-1, -1), (59, 60), (60, 59), (60, 43201), (43201, 60))
     def test_unacceptable_ttl_or_grace(self, ttl_grace):
         ttl, grace = ttl_grace
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "skittle",
                 "ttl": ttl,
                 "grace": grace}
@@ -142,7 +143,7 @@ class ClaimsBaseTest(base.V1_1Base):
     def test_unacceptable_new_ttl(self, ttl):
         claim = self._get_a_claim()
 
-        action = "claim_update"
+        action = consts.CLAIM_UPDATE
         body = {"queue_name": "skittle",
                 "claim_id": claim['body']['claim_id'],
                 "ttl": ttl}
@@ -156,7 +157,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(400, resp['headers']['status'])
 
     def test_default_ttl_and_grace(self):
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "skittle"}
 
         send_mock = mock.Mock()
@@ -167,7 +168,7 @@ class ClaimsBaseTest(base.V1_1Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(201, resp['headers']['status'])
 
-        action = "claim_get"
+        action = consts.CLAIM_GET
         body = {"queue_name": "skittle",
                 "claim_id": resp['body']['claim_id']}
 
@@ -180,7 +181,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
     def test_lifecycle(self):
         # First, claim some messages
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "skittle",
                 "ttl": 100,
                 "grace": 60}
@@ -206,7 +207,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(204, resp['headers']['status'])
 
         # Listing messages, by default, won't include claimed, will echo
-        action = "message_list"
+        action = consts.MESSAGE_LIST
         body = {"queue_name": "skittle",
                 "echo": True}
 
@@ -271,7 +272,7 @@ class ClaimsBaseTest(base.V1_1Base):
         message_id_2 = resp['body']['messages'][1]['id']
 
         # Try to delete the message without submitting a claim_id
-        action = "message_delete"
+        action = consts.MESSAGE_DELETE
         body = {"queue_name": "skittle",
                 "message_id": message_id_1}
 
@@ -296,7 +297,7 @@ class ClaimsBaseTest(base.V1_1Base):
             'X-Project-ID': 'someproject'
         }
 
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "skittle",
                 "message_id": message_id_2}
         req = test_utils.create_request(action, body, headers)
@@ -305,7 +306,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(404,  resp['headers']['status'])
 
         # Get the message
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "skittle",
                 "message_id": message_id_2}
         req = test_utils.create_request(action, body, self.headers)
@@ -315,7 +316,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
         # Update the claim
         creation = timeutils.utcnow()
-        action = "claim_update"
+        action = consts.CLAIM_UPDATE
         body = {"queue_name": "skittle",
                 "ttl": 60,
                 "grace": 60,
@@ -326,7 +327,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(204, resp['headers']['status'])
 
         # Get the claimed messages (again)
-        action = "claim_get"
+        action = consts.CLAIM_GET
         body = {"queue_name": "skittle",
                 "claim_id": claim_id}
         req = test_utils.create_request(action, body, self.headers)
@@ -342,7 +343,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertTrue(estimated_age > resp['body']['age'])
 
         # Delete the claim
-        action = "claim_delete"
+        action = consts.CLAIM_DELETE
         body = {"queue_name": "skittle",
                 "claim_id": claim_id}
         req = test_utils.create_request(action, body, self.headers)
@@ -351,7 +352,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(204, resp['headers']['status'])
 
         # Try to delete a message with an invalid claim ID
-        action = "message_delete"
+        action = consts.MESSAGE_DELETE
         body = {"queue_name": "skittle",
                 "message_id": message_id_3,
                 "claim_id": claim_id}
@@ -362,7 +363,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(400, resp['headers']['status'])
 
         # Make sure it wasn't deleted!
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "skittle",
                 "message_id": message_id_2}
         req = test_utils.create_request(action, body, self.headers)
@@ -371,7 +372,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(200, resp['headers']['status'])
 
         # Try to get a claim that doesn't exist
-        action = "claim_get"
+        action = consts.CLAIM_GET
         body = {"queue_name": "skittle",
                 "claim_id": claim_id}
         req = test_utils.create_request(action, body, self.headers)
@@ -380,7 +381,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(404,  resp['headers']['status'])
 
         # Try to update a claim that doesn't exist
-        action = "claim_update"
+        action = consts.CLAIM_UPDATE
         body = {"queue_name": "skittle",
                 "ttl": 60,
                 "grace": 60,
@@ -391,7 +392,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(404,  resp['headers']['status'])
 
     def test_post_claim_nonexistent_queue(self):
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "nonexistent",
                 "ttl": 100,
                 "grace": 60}
@@ -405,7 +406,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(204, resp['headers']['status'])
 
     def test_get_claim_nonexistent_queue(self):
-        action = "claim_get"
+        action = consts.CLAIM_GET
         body = {"queue_name": "nonexistent",
                 "claim_id": "aaabbbba"}
 
@@ -418,7 +419,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(404,  resp['headers']['status'])
 
     def _get_a_claim(self):
-        action = "claim_create"
+        action = consts.CLAIM_CREATE
         body = {"queue_name": "skittle",
                 "ttl": 100,
                 "grace": 60}

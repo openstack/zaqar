@@ -21,6 +21,7 @@ import mock
 import msgpack
 
 from zaqar.common import auth
+from zaqar.common import consts
 from zaqar.storage import errors as storage_errors
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
@@ -41,9 +42,9 @@ class SubscriptionTest(base.V1_1Base):
             'X-Project-ID': self.project_id
         }
 
-        action = 'queue_create'
         body = {'queue_name': 'kitkat'}
-        req = test_utils.create_request(action, body, self.headers)
+        req = test_utils.create_request(consts.QUEUE_CREATE,
+                                        body, self.headers)
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
@@ -55,14 +56,14 @@ class SubscriptionTest(base.V1_1Base):
 
     def tearDown(self):
         super(SubscriptionTest, self).tearDown()
-        action = 'queue_delete'
         body = {'queue_name': 'kitkat'}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(send_mock.stop)
         sender = send_mock.start()
 
-        req = test_utils.create_request(action, body, self.headers)
+        req = test_utils.create_request(consts.QUEUE_DELETE,
+                                        body, self.headers)
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
@@ -72,7 +73,7 @@ class SubscriptionTest(base.V1_1Base):
         self.protocol.onMessage(req, False)
 
     def test_subscription_create(self):
-        action = 'subscription_create'
+        action = consts.SUBSCRIPTION_CREATE
         body = {'queue_name': 'kitkat', 'ttl': 600}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -104,7 +105,7 @@ class SubscriptionTest(base.V1_1Base):
             'body': {'message': 'Subscription kitkat created.',
                      'subscription_id': subscriber['id']},
             'headers': {'status': 201},
-            'request': {'action': 'subscription_create',
+            'request': {'action': consts.SUBSCRIPTION_CREATE,
                         'body': {'queue_name': 'kitkat', 'ttl': 600},
                         'api': 'v2', 'headers': self.headers}}
 
@@ -122,7 +123,7 @@ class SubscriptionTest(base.V1_1Base):
     @mock.patch.object(auth, 'create_trust_id')
     def test_subscription_create_trust(self, create_trust):
         create_trust.return_value = 'trust_id'
-        action = 'subscription_create'
+        action = consts.SUBSCRIPTION_CREATE
         body = {'queue_name': 'kitkat', 'ttl': 600,
                 'subscriber': 'trust+http://example.com'}
         self.protocol._auth_env = {}
@@ -156,7 +157,7 @@ class SubscriptionTest(base.V1_1Base):
         self.addCleanup(
             self.boot.storage.subscription_controller.delete, 'kitkat', sub,
             project=self.project_id)
-        action = 'subscription_delete'
+        action = consts.SUBSCRIPTION_DELETE
         body = {'queue_name': 'kitkat', 'subscription_id': str(sub)}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -174,7 +175,7 @@ class SubscriptionTest(base.V1_1Base):
         response = {
             'body': 'Subscription %s removed.' % str(sub),
             'headers': {'status': 204},
-            'request': {'action': 'subscription_delete',
+            'request': {'action': consts.SUBSCRIPTION_DELETE,
                         'body': {'queue_name': 'kitkat',
                                  'subscription_id': str(sub)},
                         'api': 'v2', 'headers': self.headers}}
@@ -182,7 +183,7 @@ class SubscriptionTest(base.V1_1Base):
         self.assertEqual(response, json.loads(sender.call_args[0][0]))
 
     def test_subscription_create_no_queue(self):
-        action = 'subscription_create'
+        action = consts.SUBSCRIPTION_CREATE
         body = {'queue_name': 'shuffle', 'ttl': 600}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -208,7 +209,7 @@ class SubscriptionTest(base.V1_1Base):
             'body': {'message': 'Subscription shuffle created.',
                      'subscription_id': subscriber['id']},
             'headers': {'status': 201},
-            'request': {'action': 'subscription_create',
+            'request': {'action': consts.SUBSCRIPTION_CREATE,
                         'body': {'queue_name': 'shuffle', 'ttl': 600},
                         'api': 'v2', 'headers': self.headers}}
 
@@ -221,7 +222,7 @@ class SubscriptionTest(base.V1_1Base):
         self.addCleanup(
             self.boot.storage.subscription_controller.delete, 'kitkat', sub,
             project=self.project_id)
-        action = 'subscription_get'
+        action = consts.SUBSCRIPTION_GET
         body = {'queue_name': 'kitkat', 'subscription_id': str(sub)}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -239,7 +240,7 @@ class SubscriptionTest(base.V1_1Base):
                      'ttl': 600,
                      'confirmed': False},
             'headers': {'status': 200},
-            'request': {'action': 'subscription_get',
+            'request': {'action': consts.SUBSCRIPTION_GET,
                         'body': {'queue_name': 'kitkat',
                                  'subscription_id': str(sub)},
                         'api': 'v2', 'headers': self.headers}}
@@ -257,7 +258,7 @@ class SubscriptionTest(base.V1_1Base):
         self.addCleanup(
             self.boot.storage.subscription_controller.delete, 'kitkat', sub,
             project=self.project_id)
-        action = 'subscription_list'
+        action = consts.SUBSCRIPTION_LIST
         body = {'queue_name': 'kitkat'}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -277,7 +278,7 @@ class SubscriptionTest(base.V1_1Base):
                     'ttl': 600,
                     'confirmed': False}]},
             'headers': {'status': 200},
-            'request': {'action': 'subscription_list',
+            'request': {'action': consts.SUBSCRIPTION_LIST,
                         'body': {'queue_name': 'kitkat'},
                         'api': 'v2', 'headers': self.headers}}
         self.assertEqual(1, sender.call_count)
@@ -295,7 +296,7 @@ class SubscriptionTest(base.V1_1Base):
         # if the client suddenly starts sending requests in another format.
 
         # Create a subscription in binary format
-        action = 'subscription_create'
+        action = consts.SUBSCRIPTION_CREATE
         body = {'queue_name': 'kitkat', 'ttl': 600}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -324,7 +325,7 @@ class SubscriptionTest(base.V1_1Base):
         self.addCleanup(webhook_notification_send_mock.stop)
         webhook_notification_sender = webhook_notification_send_mock.start()
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "kitkat",
                 "messages": [{'body': {'status': 'disco queen'}, 'ttl': 60}]}
         req = test_utils.create_request(action, body, self.headers)
@@ -357,7 +358,7 @@ class SubscriptionTest(base.V1_1Base):
         self.addCleanup(
             self.boot.storage.subscription_controller.delete, 'kitkat', sub,
             project=self.project_id)
-        action = 'subscription_list'
+        action = consts.SUBSCRIPTION_LIST
         body = {'queue_name': 'kitkat'}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
