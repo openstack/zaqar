@@ -1,0 +1,6 @@
+---
+deprecations:
+  - Zaqar API v2 has been released for several cycles and it is integrated
+    as the default API version by most of the OpenStack services. So it is time
+    to deprecated v1.1 in favor of v2. Now in Newton cycle, Zaqar API v1.1 is
+    officially deprecated.

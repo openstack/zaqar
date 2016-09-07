@@ -84,7 +84,7 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT debug True
     iniset $ZAQAR_CONF DEFAULT unreliable True
     iniset $ZAQAR_CONF DEFAULT admin_mode True
-    iniset $ZAQAR_CONF DEFAULT enable_deprecated_api_versions 1
+    iniset $ZAQAR_CONF DEFAULT enable_deprecated_api_versions 1,1.1
     iniset $ZAQAR_CONF signed_url secret_key notreallysecret
 
     if is_service_enabled key; then
