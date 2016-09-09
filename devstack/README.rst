@@ -2,12 +2,14 @@
 Enabling in Devstack
 ====================
 
-1. Download DevStack
+1. Download DevStack::
 
-2. Add this repo as an external repository::
+     $ git clone https://git.openstack.org/openstack-dev/devstack
+     $ cd devstack
 
-     > cat local.conf
+2. Add the following repo as an external repository::
+
      [[local|localrc]]
-     enable_plugin zaqar https://github.com/openstack/zaqar
+     enable_plugin zaqar https://git.openstack.org/openstack/zaqar
 
-3. Run ``stack.sh``
+3. Run ``./stack.sh``
