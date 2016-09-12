@@ -38,8 +38,8 @@ EXPECTED_VERSIONS = [
     },
     {
         'id': '1.1',
-        'status': 'SUPPORTED',
-        'updated': '2014-9-24T04:06:47Z',
+        'status': 'DEPRECATED',
+        'updated': '2016-7-29T02:22:47Z',
         'media-types': [
             {
                 'base': 'application/json',
