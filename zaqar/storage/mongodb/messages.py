@@ -988,19 +988,6 @@ def _basic_message(msg, now):
     }
 
 
-# NOTE(kgriffs): E.g.: 'queuecontroller:exists:5083853/my-queue'
-_QUEUE_CACHE_PREFIX = 'queuecontroller:'
-
-_QUEUE_CACHE_TTL = 5
-
-
-def _queue_exists_key(queue, project=None):
-    # NOTE(kgriffs): Use string concatenation for performance,
-    # also put project first since it is guaranteed to be
-    # unique, which should reduce lookup time.
-    return _QUEUE_CACHE_PREFIX + 'exists:' + str(project) + '/' + queue
-
-
 class MessageQueueHandler(object):
 
     def __init__(self, driver, control_driver):
