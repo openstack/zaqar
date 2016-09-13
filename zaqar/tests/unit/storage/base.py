@@ -740,6 +740,28 @@ class MessageControllerTest(ControllerBaseTest):
 
         self.assertEqual(1, len(popped_messages))
 
+    def test_message_period(self):
+        self.queue_controller.create(self.queue_name, project=self.project)
+        messages = [
+            {
+                'ttl': 60,
+                'body': {
+                    'event.data': 'BackupStarted',
+                    'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce',
+                },
+            },
+        ]
+
+        client_uuid = uuid.uuid1()
+        self.controller.post(self.queue_name, messages, client_uuid,
+                             project=self.project)
+
+        stored_messages = self.controller.list(self.queue_name,
+                                               project=self.project)
+
+        self.assertItemsEqual(['event.data', 'backupId'],
+                              list(next(stored_messages))[0]['body'].keys())
+
     def test_delete_message_from_nonexistent_queue(self):
         queue_name = 'fake_name'
         message_id = 'fake_id'
