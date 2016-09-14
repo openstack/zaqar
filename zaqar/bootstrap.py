@@ -19,6 +19,7 @@ from stevedore import driver
 from zaqar.api import handler
 from zaqar.common import cache as oslo_cache
 from zaqar.common import configs
+from zaqar.common import consts
 from zaqar.common import decorators
 from zaqar.common import errors
 from zaqar.storage import pipeline
@@ -90,8 +91,7 @@ class Bootstrap(object):
         transport_name = self.driver_conf.transport
         LOG.debug(u'Loading transport driver: %s', transport_name)
 
-        # FIXME(vkmc): Find a better way to init args
-        if transport_name == 'websocket':
+        if transport_name == consts.TRANSPORT_WEBSOCKET:
             args = [self.conf, self.api, self.cache]
         else:
             args = [

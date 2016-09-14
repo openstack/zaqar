@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from zaqar.common.api import api
+from zaqar.common import consts
 
 
 class ResponseSchema(api.Api):
@@ -59,7 +60,7 @@ class ResponseSchema(api.Api):
         }
 
         self.schema = {
-            'queue_list': {
+            consts.QUEUE_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -110,7 +111,7 @@ class ResponseSchema(api.Api):
                 'required': ['links', 'queues'],
                 'additionalProperties': False,
             },
-            'queue_stats': {
+            consts.QUEUE_GET_STATS: {
                 'type': 'object',
                 'properties': {
                     'messages': {
@@ -144,7 +145,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'pool_list': {
+            consts.POOL_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -198,7 +199,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'message_list': {
+            consts.MESSAGE_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -227,14 +228,14 @@ class ResponseSchema(api.Api):
                     }
                 }
             },
-            'message_get_many': {
+            consts.MESSAGE_GET_MANY: {
                 "type": "array",
                 "items": message,
                 "minItems": 1,
                 "maxItems": self.limits.max_messages_per_page
             },
 
-            'claim_create': {
+            consts.CLAIM_CREATE: {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -257,7 +258,7 @@ class ResponseSchema(api.Api):
                 "maxItems": self.limits.max_messages_per_page
             },
 
-            'claim_get': {
+            consts.CLAIM_GET: {
                 'type': 'object',
                 'properties': {
                     'age': age,

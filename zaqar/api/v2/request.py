@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from zaqar.api.v1_1 import request as v1_1
+from zaqar.common import consts
 
 
 class RequestSchema(v1_1.RequestSchema):
@@ -24,9 +25,9 @@ class RequestSchema(v1_1.RequestSchema):
     schema.update({
 
         # Subscriptions
-        'subscription_list': {
+        consts.SUBSCRIPTION_LIST: {
             'properties': {
-                'action': {'enum': ['subscription_list']},
+                'action': {'enum': [consts.SUBSCRIPTION_LIST]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -43,9 +44,9 @@ class RequestSchema(v1_1.RequestSchema):
             'required': ['action', 'headers', 'body']
         },
 
-        'subscription_create': {
+        consts.SUBSCRIPTION_CREATE: {
             'properties': {
-                'action': {'enum': ['subscription_create']},
+                'action': {'enum': [consts.SUBSCRIPTION_CREATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -64,9 +65,9 @@ class RequestSchema(v1_1.RequestSchema):
             'required': ['action', 'headers', 'body']
         },
 
-        'subscription_delete': {
+        consts.SUBSCRIPTION_DELETE: {
             'properties': {
-                'action': {'enum': ['subscription_delete']},
+                'action': {'enum': [consts.SUBSCRIPTION_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -84,9 +85,9 @@ class RequestSchema(v1_1.RequestSchema):
             'required': ['action', 'headers', 'body']
         },
 
-        'subscription_get': {
+        consts.SUBSCRIPTION_GET: {
             'properties': {
-                'action': {'enum': ['subscription_get']},
+                'action': {'enum': [consts.SUBSCRIPTION_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,

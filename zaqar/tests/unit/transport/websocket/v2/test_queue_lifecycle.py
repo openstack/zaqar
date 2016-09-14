@@ -18,6 +18,7 @@ import uuid
 import ddt
 import mock
 
+from zaqar.common import consts
 from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.websocket import base
@@ -34,7 +35,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol = self.transport.factory()
 
     def test_empty_project_id(self):
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "kitkat",
                 "metadata": {
                     "key": {
@@ -56,7 +57,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     @ddt.data('480924', 'foo')
     def test_basics_thoroughly(self, project_id):
         # Stats are empty - queue not created yet
-        action = "queue_get_stats"
+        action = consts.QUEUE_GET_STATS
         body = {"queue_name": "gummybears"}
         headers = {
             'Client-ID': str(uuid.uuid4()),
@@ -77,7 +78,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Create
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "gummybears",
                 "metadata": {
                     "key": {
@@ -96,7 +97,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Fetch metadata
-        action = "queue_get"
+        action = consts.QUEUE_GET
         body = {"queue_name": "gummybears"}
         meta = {"messages": {"ttl": 600},
                 "key": {
@@ -114,7 +115,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Stats empty queue
-        action = "queue_get_stats"
+        action = consts.QUEUE_GET_STATS
         body = {"queue_name": "gummybears"}
         req = test_utils.create_request(action, body, headers)
 
@@ -126,7 +127,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Delete
-        action = "queue_delete"
+        action = consts.QUEUE_DELETE
         body = {"queue_name": "gummybears"}
         req = test_utils.create_request(action, body, headers)
 
@@ -138,7 +139,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Get non-existent stats
-        action = "queue_get_stats"
+        action = consts.QUEUE_GET_STATS
         body = {"queue_name": "gummybears"}
         req = test_utils.create_request(action, body, headers)
 
@@ -154,7 +155,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": 'marsbar',
                 "metadata": {
                     "key": {
@@ -196,7 +197,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project' * 30
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": 'poptart'}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -230,7 +231,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project' * 30
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": test_params[0]}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -256,7 +257,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "fizbat"}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -285,7 +286,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project' * 30
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "fizbat",
                 "metadata": meta}
 
@@ -307,7 +308,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "buttertoffee",
                 "metadata": {"messages": {"ttl": 600},
                              "padding": "x"}
@@ -334,7 +335,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "peppermint",
                 "metadata": {"messages": {"ttl": 600},
                              "padding": "x"}
@@ -362,7 +363,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         body = {"queue_name": "bonobon"}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')
@@ -393,7 +394,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Get
-        action = "queue_get"
+        action = consts.QUEUE_GET
         body = {"queue_name": "bonobon"}
 
         req = test_utils.create_request(action, body, headers)
@@ -407,7 +408,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Update
-        action = "queue_create"
+        action = consts.QUEUE_CREATE
         meta2 = {"messages": {"ttl": 100}, "padding": "y"}
         body["metadata"] = meta2
 
@@ -421,7 +422,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # Get again
-        action = "queue_get"
+        action = consts.QUEUE_GET
         body = {"queue_name": "bonobon"}
 
         req = test_utils.create_request(action, body, headers)
@@ -454,7 +455,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         alt_project_id = str(arbitrary_number + 1)
 
         # List empty
-        action = "queue_list"
+        action = consts.QUEUE_LIST
         body = {}
 
         req = test_utils.create_request(action, body, headers)
@@ -483,7 +484,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             altheaders = {'Client-ID': client_id}
             if project_id is not None:
                 altheaders['X-Project-ID'] = project_id
-            action = 'queue_create'
+            action = consts.QUEUE_CREATE
             body['queue_name'] = queue_name
             body['metadata'] = metadata
 
@@ -537,7 +538,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
-        action = "queue_get"
+        action = consts.QUEUE_GET
         body = {"queue_name": "q1"}
         req = test_utils.create_request(action, body, headers)
 
@@ -550,7 +551,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         # List tail
-        action = "queue_list"
+        action = consts.QUEUE_LIST
         body = {}
         req = test_utils.create_request(action, body, headers)
 
@@ -571,7 +572,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             'Client-ID': str(uuid.uuid4()),
             'X-Project-ID': 'test-project'
         }
-        action = "queue_list"
+        action = consts.QUEUE_LIST
         body = {}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')

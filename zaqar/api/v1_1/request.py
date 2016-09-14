@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from zaqar.api.v1 import request as v1
+from zaqar.common import consts
 
 
 class RequestSchema(v1.RequestSchema):
@@ -24,9 +25,9 @@ class RequestSchema(v1.RequestSchema):
     schema.update({
 
         # Pools
-        'pool_list': {
+        consts.POOL_LIST: {
             'properties': {
-                'action': {'enum': ['pool_list']},
+                'action': {'enum': [consts.POOL_LIST]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -46,9 +47,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'pool_create': {
+        consts.POOL_CREATE: {
             'properties': {
-                'action': {'enum': ['pool_create']},
+                'action': {'enum': [consts.POOL_CREATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -69,9 +70,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'pool_update': {
+        consts.POOL_UPDATE: {
             'properties': {
-                'action': {'enum': ['pool_update']},
+                'action': {'enum': [consts.POOL_UPDATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -92,9 +93,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'pool_get': {
+        consts.POOL_GET: {
             'properties': {
-                'action': {'enum': ['pool_get']},
+                'action': {'enum': [consts.POOL_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -113,9 +114,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'pool_delete': {
+        consts.POOL_DELETE: {
             'properties': {
-                'action': {'enum': ['pool_delete']},
+                'action': {'enum': [consts.POOL_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -134,9 +135,9 @@ class RequestSchema(v1.RequestSchema):
         },
 
         # Flavors
-        'flavor_list': {
+        consts.FLAVOR_LIST: {
             'properties': {
-                'action': {'enum': ['flavor_list']},
+                'action': {'enum': [consts.FLAVOR_LIST]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -156,9 +157,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'flavor_create': {
+        consts.FLAVOR_CREATE: {
             'properties': {
-                'action': {'enum': ['flavor_create']},
+                'action': {'enum': [consts.FLAVOR_CREATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -178,9 +179,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'flavor_update': {
+        consts.FLAVOR_UPDATE: {
             'properties': {
-                'action': {'enum': ['flavor_update']},
+                'action': {'enum': [consts.FLAVOR_UPDATE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -200,9 +201,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'flavor_get': {
+        consts.FLAVOR_GET: {
             'properties': {
-                'action': {'enum': ['flavor_get']},
+                'action': {'enum': [consts.FLAVOR_GET]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,
@@ -221,9 +222,9 @@ class RequestSchema(v1.RequestSchema):
             'admin': True,
         },
 
-        'flavor_delete': {
+        consts.FLAVOR_DELETE: {
             'properties': {
-                'action': {'enum': ['flavor_delete']},
+                'action': {'enum': [consts.FLAVOR_DELETE]},
                 'headers': {
                     'type': 'object',
                     'properties': headers,

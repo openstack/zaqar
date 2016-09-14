@@ -37,6 +37,7 @@ except ImportError:
     from email.mime import message
     Message = message.MIMEMessage
 
+from zaqar.common import consts
 from zaqar.i18n import _LI
 
 
@@ -127,7 +128,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                 return self._authenticate(payload, isBinary)
             else:
                 resp = self._handler.process_request(req, self)
-            if payload.get('action') == 'subscription_create':
+            if payload.get('action') == consts.SUBSCRIPTION_CREATE:
                 # NOTE(Eva-i): this will make further websocket
                 # notifications encoded in the same format as the last
                 # successful websocket subscription create request.

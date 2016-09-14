@@ -17,6 +17,7 @@ from zaqar.api.v2 import request as schema_validator
 
 from zaqar.common.api import request
 from zaqar.common.api import response
+from zaqar.common import consts
 from zaqar.common import errors
 from zaqar.common import urls
 
@@ -28,12 +29,12 @@ class Handler(object):
     """
 
     _actions_mapping = {
-        'message_list': 'GET',
-        'message_get': 'GET',
-        'message_get_many': 'GET',
-        'message_post': 'POST',
-        'message_delete': 'DELETE',
-        'message_delete_many': 'DELETE'
+        consts.MESSAGE_LIST: 'GET',
+        consts.MESSAGE_GET: 'GET',
+        consts.MESSAGE_GET_MANY: 'GET',
+        consts.MESSAGE_POST: 'POST',
+        consts.MESSAGE_DELETE: 'DELETE',
+        consts.MESSAGE_DELETE_MANY: 'DELETE'
     }
 
     def __init__(self, storage, control, validate, defaults):
@@ -54,7 +55,7 @@ class Handler(object):
 
     def process_request(self, req, protocol):
         # FIXME(vkmc): Control API version
-        if req._action == 'subscription_create':
+        if req._action == consts.SUBSCRIPTION_CREATE:
             subscriber = req._body.get('subscriber')
             if not subscriber:
                 # Default to the connected websocket as subscriber

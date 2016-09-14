@@ -23,6 +23,7 @@ from oslo_utils import timeutils
 import six
 from testtools import matchers
 
+from zaqar.common import consts
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 from zaqar.transport import validation
@@ -45,9 +46,9 @@ class MessagesBaseTest(base.V2Base):
             'X-Project-ID': self.project_id
         }
 
-        action = "queue_create"
         body = {"queue_name": "kitkat"}
-        req = test_utils.create_request(action, body, self.headers)
+        req = test_utils.create_request(consts.QUEUE_CREATE,
+                                        body, self.headers)
 
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
             self.protocol.onMessage(req, False)
@@ -56,13 +57,13 @@ class MessagesBaseTest(base.V2Base):
 
     def tearDown(self):
         super(MessagesBaseTest, self).tearDown()
-        action = "queue_delete"
         body = {"queue_name": "kitkat"}
 
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 
-        req = test_utils.create_request(action, body, self.headers)
+        req = test_utils.create_request(consts.QUEUE_DELETE,
+                                        body, self.headers)
 
         self.protocol.onMessage(req, False)
 
@@ -70,7 +71,6 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(204, resp['headers']['status'])
 
     def _test_post(self, sample_messages, in_binary=False):
-        action = "message_post"
         body = {"queue_name": "kitkat",
                 "messages": sample_messages}
 
@@ -79,7 +79,7 @@ class MessagesBaseTest(base.V2Base):
 
         dumps, loads, create_req = test_utils.get_pack_tools(binary=in_binary)
 
-        req = create_req(action, body, self.headers)
+        req = create_req(consts.MESSAGE_POST, body, self.headers)
 
         self.protocol.onMessage(req, in_binary)
 
@@ -100,7 +100,7 @@ class MessagesBaseTest(base.V2Base):
                 headers = self.headers.copy()
                 headers['X-Project-ID'] = '777777'
                 # Wrong project ID
-                action = "message_get"
+                action = consts.MESSAGE_GET
                 body = {"queue_name": "kitkat",
                         "message_id": msg_id}
 
@@ -131,7 +131,7 @@ class MessagesBaseTest(base.V2Base):
                                 matchers.GreaterThan(-1))
 
         # Test bulk GET
-        action = "message_get_many"
+        action = consts.MESSAGE_GET_MANY
         body = {"queue_name": "kitkat",
                 "message_ids": self.msg_ids}
         req = create_req(action, body, self.headers)
@@ -153,7 +153,7 @@ class MessagesBaseTest(base.V2Base):
 
         # Bulk GET restriction
         get_msg_ids = msg_id * 21
-        action = "message_get_many"
+        action = consts.MESSAGE_GET_MANY
         body = {"queue_name": "kitkat",
                 "message_ids": get_msg_ids}
 
@@ -175,7 +175,7 @@ class MessagesBaseTest(base.V2Base):
 
         # Bulk deletion restriction
         del_msg_ids = msg_id * 22
-        action = "message_get_many"
+        action = consts.MESSAGE_GET_MANY
         body = {"queue_name": "kitkat",
                 "message_ids": del_msg_ids}
         req = test_utils.create_request(action, body, self.headers)
@@ -205,7 +205,7 @@ class MessagesBaseTest(base.V2Base):
         messages = [{'body': 239},
                     {'body': {'key': 'value'}, 'ttl': 200}]
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "kitkat",
                 "messages": messages}
         req = test_utils.create_request(action, body, self.headers)
@@ -219,7 +219,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(201, resp['headers']['status'])
         msg_id = resp['body']['message_ids'][0]
 
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "kitkat", "message_id": msg_id}
 
         req = test_utils.create_request(action, body, self.headers)
@@ -264,7 +264,7 @@ class MessagesBaseTest(base.V2Base):
             {'body': {'key': 'value'}, 'ttl': '200'},
         ]
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "kitkat",
                 "messages": sample_messages}
 
@@ -285,7 +285,7 @@ class MessagesBaseTest(base.V2Base):
             {'ttl': 200},
         ]
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "kitkat",
                 "messages": sample_messages}
 
@@ -301,7 +301,7 @@ class MessagesBaseTest(base.V2Base):
             'Bad request. Missing "body" field.', resp['body']['exception'])
 
     def test_get_from_missing_queue(self):
-        action = "message_list"
+        action = consts.MESSAGE_LIST
         body = {"queue_name": "anothernonexistent"}
         req = test_utils.create_request(action, body, self.headers)
 
@@ -316,7 +316,7 @@ class MessagesBaseTest(base.V2Base):
 
     @ddt.data('', '0xdeadbeef', '550893e0-2b6e-11e3-835a-5cf9dd72369')
     def test_bad_client_id(self, text_id):
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {
             "queue_name": "kinder",
             "messages": [{"ttl": 60,
@@ -337,7 +337,7 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {
             "queue_name": "kinder",
             "limit": 3,
@@ -352,7 +352,7 @@ class MessagesBaseTest(base.V2Base):
 
     @ddt.data(None, '[', '[]', '{}', '.')
     def test_post_bad_message(self, document):
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {
             "queue_name": "kinder",
             "messages": document
@@ -370,7 +370,7 @@ class MessagesBaseTest(base.V2Base):
 
     @ddt.data(-1, 59, 1209601)
     def test_unacceptable_ttl(self, ttl):
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": "kinder",
                 "messages": [{"ttl": ttl, "body": ""}]}
 
@@ -387,7 +387,7 @@ class MessagesBaseTest(base.V2Base):
     def test_exceeded_message_posting(self):
         # Total (raw request) size
         document = [{'body': "some body", 'ttl': 100}] * 8000
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {
             "queue_name": "kinder",
             "messages": document
@@ -406,7 +406,7 @@ class MessagesBaseTest(base.V2Base):
     @ddt.data('{"overflow": 9223372036854775808}',
               '{"underflow": -9223372036854775809}')
     def test_unsupported_json(self, document):
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {
             "queue_name": "fizz",
             "messages": document
@@ -426,7 +426,7 @@ class MessagesBaseTest(base.V2Base):
         resp = self._post_messages("tofi")
         msg_id = resp['body']['message_ids'][0]
 
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "tofi",
                 "message_id": msg_id}
 
@@ -441,7 +441,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(200, resp['headers']['status'])
 
         # Delete queue
-        action = "message_delete"
+        action = consts.MESSAGE_DELETE
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
@@ -450,7 +450,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(204, resp['headers']['status'])
 
         # Get non existent queue
-        action = "message_get"
+        action = consts.MESSAGE_GET
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
@@ -458,7 +458,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(404, resp['headers']['status'])
 
         # Safe to delete non-existing ones
-        action = "message_delete"
+        action = consts.MESSAGE_DELETE
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
@@ -469,7 +469,7 @@ class MessagesBaseTest(base.V2Base):
         resp = self._post_messages("nerds", repeat=5)
         msg_ids = resp['body']['message_ids']
 
-        action = "message_delete_many"
+        action = consts.MESSAGE_DELETE_MANY
         body = {"queue_name": "nerds",
                 "message_ids": msg_ids}
 
@@ -483,7 +483,7 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
-        action = "message_get"
+        action = consts.MESSAGE_GET
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
@@ -492,7 +492,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(400, resp['headers']['status'])
 
         # Safe to delete non-existing ones
-        action = "message_delete_many"
+        action = consts.MESSAGE_DELETE_MANY
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
@@ -501,7 +501,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(204, resp['headers']['status'])
 
         # Even after the queue is gone
-        action = "queue_delete"
+        action = consts.QUEUE_DELETE
         body = {"queue_name": "nerds"}
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
@@ -509,7 +509,7 @@ class MessagesBaseTest(base.V2Base):
         resp = json.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
-        action = "message_delete_many"
+        action = consts.MESSAGE_DELETE_MANY
         body = {"queue_name": "nerds",
                 "message_ids": msg_ids}
         req = test_utils.create_request(action, body, self.headers)
@@ -521,7 +521,7 @@ class MessagesBaseTest(base.V2Base):
     def test_pop_delete(self):
         self._post_messages("kitkat", repeat=5)
 
-        action = "message_delete_many"
+        action = consts.MESSAGE_DELETE_MANY
         body = {"queue_name": "kitkat",
                 "pop_limit": 2}
 
@@ -539,7 +539,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(239, resp['body']['messages'][1]['body'])
 
     def test_get_nonexistent_message_404s(self):
-        action = "message_get"
+        action = consts.MESSAGE_GET
         body = {"queue_name": "notthere",
                 "message_id": "a"}
 
@@ -553,7 +553,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(404, resp['headers']['status'])
 
     def test_get_multiple_invalid_messages_404s(self):
-        action = "message_get_many"
+        action = consts.MESSAGE_GET_MANY
         body = {"queue_name": "notnotthere",
                 "message_ids": ["a", "b", "c"]}
 
@@ -567,7 +567,7 @@ class MessagesBaseTest(base.V2Base):
         self.assertEqual(200, resp['headers']['status'])
 
     def test_delete_multiple_invalid_messages_204s(self):
-        action = "message_delete"
+        action = consts.MESSAGE_DELETE
         body = {"queue_name": "yetanothernotthere",
                 "message_ids": ["a", "b", "c"]}
 
@@ -584,7 +584,7 @@ class MessagesBaseTest(base.V2Base):
     def _post_messages(self, queue_name, repeat=1):
         messages = [{'body': 239, 'ttl': 300}] * repeat
 
-        action = "message_post"
+        action = consts.MESSAGE_POST
         body = {"queue_name": queue_name,
                 "messages": messages}
 

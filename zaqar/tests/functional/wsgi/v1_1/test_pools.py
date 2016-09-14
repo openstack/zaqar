@@ -84,7 +84,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         # Test existence
         result = self.client.get('/'+pool_name+'?detailed=true')
         self.assertEqual(200, result.status_code)
-        self.assertSchema(result.json(), 'pool_detail')
+        self.assertSchema(result.json(), 'pool_get_detail')
 
     @ddt.data(
         {

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from zaqar.common.api import api
+from zaqar.common import consts
 
 
 class ResponseSchema(api.Api):
@@ -84,7 +85,7 @@ class ResponseSchema(api.Api):
         }
 
         self.schema = {
-            'message_get_many': {
+            consts.MESSAGE_GET_MANY: {
                 'type': 'object',
                 'properties': {
                     'messages': {
@@ -98,7 +99,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False,
             },
 
-            'queue_list': {
+            consts.QUEUE_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -151,7 +152,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False,
             },
 
-            'queue_stats': {
+            consts.QUEUE_GET_STATS: {
                 'type': 'object',
                 'properties': {
                     'messages': {
@@ -185,7 +186,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'pool_list': {
+            consts.POOL_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -242,7 +243,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'message_list': {
+            consts.MESSAGE_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {
@@ -271,7 +272,7 @@ class ResponseSchema(api.Api):
                     }
                 }
             },
-            'pool_detail': {
+            consts.POOL_GET_DETAIL: {
                 'type': 'object',
                 'properties': {
                     'name': {
@@ -301,7 +302,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'claim_create': {
+            consts.CLAIM_CREATE: {
                 'type': 'object',
                 'properties': {
                     'messages': {
@@ -334,7 +335,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'claim_get': {
+            consts.CLAIM_GET: {
                 'type': 'object',
                 'properties': {
                     'age': age,
@@ -378,7 +379,7 @@ class ResponseSchema(api.Api):
                 'additionalProperties': False
             },
 
-            'flavor_list': {
+            consts.FLAVOR_LIST: {
                 'type': 'object',
                 'properties': {
                     'links': {

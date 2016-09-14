@@ -16,16 +16,17 @@
 
 
 from zaqar.common.api import request
+from zaqar.common import consts
 from zaqar.tests import base
 
 
 class TestRequest(base.TestBase):
 
     def test_request(self):
-        action = 'message_post'
+        action = consts.MESSAGE_POST
         data = 'body'
         env = {'foo': 'bar'}
         req = request.Request(action=action, body=data, env=env)
         self.assertEqual({'foo': 'bar'}, req._env)
         self.assertEqual('body', req._body)
-        self.assertEqual('message_post', req._action)
+        self.assertEqual(consts.MESSAGE_POST, req._action)
