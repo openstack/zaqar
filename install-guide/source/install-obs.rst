@@ -1,10 +1,10 @@
-.. _install-rdo:
+.. _install-obs:
 
-Install and configure for Red Hat Enterprise Linux and CentOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install and configure for openSUSE and SUSE Linux Enterprise
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This section describes how to install and configure the Messaging service,
-code-named ``zaqar`` for Red Hat Enterprise Linux 7 and CentOS 7.
+This section describes how to install and configure the Messaging service
+for openSUSE Leap 42.1 and SUSE Linux Enterprise Server 12 SP1.
 
 This section assumes that you already have a working OpenStack environment with
 at least Identity service installed.
@@ -101,13 +101,13 @@ credentials and API endpoints in Identity.
 
       .. code-block:: console
 
-         # systemctl start mongod
+         # service mongod start
 
       Make ``MongoDB`` service start automatically after reboot:
 
       .. code-block:: console
 
-         # systemctl enable mongod
+         # chkconfig mongod on
 
    #. Configure ``MongoDB`` Replica Set on the database servers:
 
@@ -244,25 +244,25 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
 
    .. code-block:: console
 
-      # yum install memcached
+      # zypper install memcached
 
    Start ``memcached`` service:
 
    .. code-block:: console
 
-      # systemctl start memcached
+      # /etc/init.d/memcached start
 
    Make ``memcached`` service start automatically after reboot:
 
    .. code-block:: console
 
-      # systemctl enable memcached
+      # chkconfig memcached on
 
 #. Install Messaging service and ``uWSGI``:
 
    .. code-block:: console
 
-      # yum -y install python-pip
+      # zypper install python-pip
       # git clone https://git.openstack.org/openstack/zaqar.git
       # cd zaqar
       # pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
@@ -539,7 +539,7 @@ replica-set as Messaging's pool.
    the management store databases and the message store databases (pools)
    should be on different ``MongoDB`` replica-sets.
 
-.. _`MongoDB installation instructions`: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/
+.. _`MongoDB installation instructions`: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-suse/
 .. _`MongoDB configuration reference`: https://docs.mongodb.org/v3.0/reference/configuration-options/
 .. _`MongoDB security reference`: https://docs.mongodb.org/manual/security/
 .. _`uWSGI configuration reference`: http://uwsgi-docs.readthedocs.io/en/latest/
