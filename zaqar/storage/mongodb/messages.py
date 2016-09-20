@@ -645,7 +645,7 @@ class MessageController(storage.Message):
             for index, message in enumerate(messages)
         ]
 
-        ids = collection.insert(prepared_messages)
+        ids = collection.insert(prepared_messages, check_keys=False)
 
         return [str(id_) for id_ in ids]
 
@@ -838,7 +838,7 @@ class FIFOMessageController(MessageController):
         # before the operation is abandoned is 49.95 seconds.
         for attempt in self._retry_range:
             try:
-                ids = collection.insert(prepared_messages)
+                ids = collection.insert(prepared_messages, check_keys=False)
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
