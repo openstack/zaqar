@@ -75,7 +75,7 @@ _COMMON_OPTIONS = (
                                 group=_deprecated_group), ],
                help='Database name.'),
 
-    cfg.IntOpt('max_attempts', default=1000,
+    cfg.IntOpt('max_attempts', min=0, default=1000,
                deprecated_opts=[cfg.DeprecatedOpt(
                                 'max_attempts',
                                 group=_deprecated_group), ],

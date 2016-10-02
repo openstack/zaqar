@@ -110,8 +110,6 @@ class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
         self.assertRaises(ValueError, utils.calculate_backoff, 0, 10, -2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, 0, 10, 2, -1)
 
-        self.assertRaises(ValueError, utils.calculate_backoff, -2, -10, 2, 0)
-        self.assertRaises(ValueError, utils.calculate_backoff, 2, -10, 2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, -2, 10, 2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, -1, 10, 2, 0)
         self.assertRaises(ValueError, utils.calculate_backoff, 10, 10, 2, 0)
