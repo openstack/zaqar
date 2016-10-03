@@ -33,7 +33,7 @@ address them with your code commits. You will also have to sign the
 It is a good idea to use the same email all of these accounts to
 avoid hooks errors.
 
-Visit the the `Gerrit Workflow's account setup`_ section in the wiki to get
+Visit the `Gerrit Workflow's account setup`_ section in the wiki to get
 more information on setting up your accounts.
 
 .. _Launchpad: http://launchpad.net/
