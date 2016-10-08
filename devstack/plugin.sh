@@ -17,6 +17,7 @@
 # stack.sh
 # ---------
 # install_zaqar
+# install_zaqarui
 # configure_zaqar
 # init_zaqar
 # start_zaqar
@@ -194,6 +195,20 @@ function init_zaqar {
 # install_zaqar() - Collect source and prepare
 function install_zaqar {
     setup_develop $ZAQAR_DIR
+
+    if is_service_enabled horizon; then
+        install_zaqarui
+    fi
+}
+
+function install_zaqarui {
+    git_clone $ZAQARUI_REPO $ZAQARUI_DIR $ZAQARUI_BRANCH
+    setup_develop $ZAQARUI_DIR
+    ln -fs $ZAQARUI_DIR/zaqar_ui/enabled/_1510_project_messaging_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1510_project_messaging_group.py
+    ln -fs $ZAQARUI_DIR/zaqar_ui/enabled/_1520_project_queues.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1520_project_queues.py
+    if [ -d $ZAQARUI_DIR/zaqar_ui/locale ]; then
+        (cd $ZAQARUI_DIR/zaqar_ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
+    fi
 }
 
 # install_zaqarclient() - Collect source and prepare
