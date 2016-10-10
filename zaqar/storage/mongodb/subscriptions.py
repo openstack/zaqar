@@ -164,10 +164,11 @@ class SubscriptionController(base.Subscription):
         return _basic_subscription(res, now)
 
     @utils.raises_conn_error
-    def confirm(self, queue, subscription_id, project=None, confirm=True):
+    def confirm(self, queue, subscription_id, project=None, confirmed=True):
 
         res = self._collection.update({'_id': utils.to_oid(subscription_id),
-                                       'p': project}, {'$set': {'c': confirm}},
+                                       'p': project},
+                                      {'$set': {'c': confirmed}},
                                       upsert=False)
         if not res['updatedExisting']:
             raise errors.SubscriptionDoesNotExist(subscription_id)

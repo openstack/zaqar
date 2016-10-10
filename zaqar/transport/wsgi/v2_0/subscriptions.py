@@ -264,10 +264,10 @@ class ConfirmResource(object):
 
         try:
             self._validate.subscription_confirming(document)
-            confirm = document.get('confirmed', None)
+            confirmed = document.get('confirmed', None)
             self._subscription_controller.confirm(queue_name, subscription_id,
                                                   project=project_id,
-                                                  confirm=confirm)
+                                                  confirmed=confirmed)
             resp.status = falcon.HTTP_204
             resp.location = req.path
         except storage_errors.SubscriptionDoesNotExist as ex:

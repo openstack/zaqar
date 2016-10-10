@@ -94,6 +94,28 @@ class TestSubscriptions(base.BaseV2MessagingTest):
             subscription_id = result[1]["subscription_id"]
             self.delete_subscription(self.queue_name, subscription_id)
 
+    @test.idempotent_id('fe0d8ec1-1a64-4490-8869-e821b2252e74')
+    def test_create_subscriptions_with_duplicate_subscriber(self):
+        # Adding subscriptions to the queue
+        results = self._create_subscriptions()
+        s_id1 = results[0][1]['subscription_id']
+
+        # Adding a subscription with duplicate subscriber, it will reconfirm
+        # the subscription and run well.
+        rbody = {'subscriber': 'http://fake:8080',
+                 'options': {'MessagingKeyMsg': 'MessagingValueMsg'},
+                 'ttl': 293305}
+        resp, body = self.create_subscription(self.queue_name, rbody)
+        s_id2 = body['subscription_id']
+
+        self.assertEqual('201', resp['status'])
+        self.assertEqual(s_id2, s_id1)
+
+        # Delete the subscriptions created
+        for result in results:
+            subscription_id = result[1]["subscription_id"]
+            self.delete_subscription(self.queue_name, subscription_id)
+
     @decorators.idempotent_id('ff4344b4-ba78-44c5-9ffc-44e53e484f76')
     def test_trust_subscription(self):
         sub_queue = data_utils.rand_name('Queues-Test')
