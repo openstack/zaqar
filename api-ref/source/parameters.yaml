@@ -139,7 +139,7 @@ claim_grace:
     including claim lifetime), the server extends the lifetime of claimed
     messages to be at least as long as the lifetime of the claim itself, plus
     the specified grace period. If a claimed message would normally live longer
-    than the grace period, its expiration is not adjusted.
+    than the claim's live period, its expiration is not adjusted.
 
 subscriber:
   type: string

@@ -43,8 +43,8 @@ You must include a value for this attribute in your request. To deal with
 workers that have stopped responding (for up to 1209600 seconds or 14 days,
 including claim lifetime), the server extends the lifetime of claimed messages
 to be at least as long as the lifetime of the claim itself, plus the specified
-grace period. If a claimed message would normally live longer than the grace
-period, its expiration is not adjusted.
+grace period. If a claimed message would normally live longer than the claim's
+live period, its expiration is not adjusted.
 
 
 
