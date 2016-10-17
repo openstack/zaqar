@@ -1,6 +1,6 @@
 [run]
 branch = True
-omit = *zaqar/openstack*
+omit = zaqar/tests/*
 
 [report]
 exclude_lines =
