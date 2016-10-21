@@ -248,11 +248,14 @@ class CollectionResource(object):
 
 class ConfirmResource(object):
 
-    __slots__ = ('_subscription_controller', '_validate')
+    __slots__ = ('_subscription_controller', '_validate', '_notification',
+                 '_conf')
 
-    def __init__(self, validate, subscription_controller):
+    def __init__(self, validate, subscription_controller, conf):
         self._subscription_controller = subscription_controller
         self._validate = validate
+        self._notification = notifier.NotifierDriver()
+        self._conf = conf
 
     @decorators.TransportLog("Subscription confirmation item")
     @acl.enforce("subscription:confirm")
@@ -268,6 +271,22 @@ class ConfirmResource(object):
             self._subscription_controller.confirm(queue_name, subscription_id,
                                                   project=project_id,
                                                   confirmed=confirmed)
+            if confirmed is False:
+                now = timeutils.utcnow_ts()
+                now_dt = datetime.datetime.utcfromtimestamp(now)
+                ttl = self._conf.transport.default_subscription_ttl
+                expires = now_dt + datetime.timedelta(seconds=ttl)
+                api_version = req.path.split('/')[1]
+                sub = self._subscription_controller.get(queue_name,
+                                                        subscription_id,
+                                                        project=project_id)
+                self._notification.send_confirm_notification(queue_name,
+                                                             sub,
+                                                             self._conf,
+                                                             project_id,
+                                                             str(expires),
+                                                             api_version,
+                                                             True)
             resp.status = falcon.HTTP_204
             resp.location = req.path
         except storage_errors.SubscriptionDoesNotExist as ex:

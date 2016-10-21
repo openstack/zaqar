@@ -1,0 +1,15 @@
+---
+features:
+  - This feature is the third part of subscription confirmation feature.
+    Support to send email to subscriber if confirmation is needed.
+    To use this feature, user need to set the config option
+    "external_confirmation_url", "subscription_confirmation_email_template"
+    and "unsubscribe_confirmation_email_template".
+    The confirmation page url that will be used in email subscription
+    confirmation before notification, this page is not hosted in Zaqar server,
+    user should build their own web service to provide this web page.
+    The subscription_confirmation_email_template let user to customize the
+    subscription confimation email content, including topic, body and
+    sender. The unsubscribe_confirmation_email_template let user to customize
+    the unsubscribe confimation email content, including topic, body and
+    sender too.
