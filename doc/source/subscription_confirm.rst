@@ -15,8 +15,12 @@
 The subscription Confirm Guide
 ==============================
 
-The subscription confirm feature now only support webhook with mongoDB backend.
+The subscription confirm feature now supports webhook and email with both
+mongoDB and redis backend.
 This guide shows how to use this feature:
+
+Webhook
+-------
 
 1. Set the config option "require_confirmation" and add the policy to the
 policy.json file. Then restart Zaqar-wsgi service::
@@ -202,3 +206,78 @@ The response::
 
 Then try to post a message. The subscriber will not receive the notification
 any more.
+
+Email
+-----
+
+1. For the email confirmation way, also need to set the config option
+"external_confirmation_url", "subscription_confirmation_email_template" and
+"unsubscribe_confirmation_email_template".
+The confirmation page url that will be used in email subscription confirmation
+before notification, this page is not hosted in Zaqar server, user should
+build their own web service to provide this web page.
+The subscription_confirmation_email_template let user to customize the 
+subscription confirmation email content, including topic, body and sender.
+The unsubscribe_confirmation_email_template let user to customize the 
+unsubscribe confirmation email content, including topic, body and sender too::
+
+    In the config file:
+    [notification]
+    require_confirmation = True
+    external_confirmation_url = http://web_service_url/
+    subscription_confirmation_email_template = topic:Zaqar Notification - Subscription Confirmation,\
+                                              body:'You have chosen to subscribe to the queue: {0}. This queue belongs to project: {1}. To confirm this subscription, click or visit this link below: {2}',\
+                                              sender:Zaqar Notifications <no-reply@openstack.org>
+    unsubscribe_confirmation_email_template = topic: Zaqar Notification - Unsubscribe Confirmation,\
+                                              body:'You have unsubscribed successfully to the queue: {0}. This queue belongs to project: {1}. To resubscribe this subscription, click or visit this link below: {2}',\
+                                              sender:Zaqar Notifications <no-reply@openstack.org>
+
+    In the policy.json file:
+    "subscription:confirm": "",
+
+2. Create a subscription.
+For email confirmation, you should create a subscription like this::
+
+    curl -i -X POST http://10.229.47.217:8888/v2/queues/test/subscriptions \
+    -H "Content-type: application/json" \
+    -H "Client-ID: de305d54-75b4-431b-adb2-eb6b9e546014" \
+    -H "X-Auth-Token: 440b677561454ea8a7f872201dd4e2c4" \
+    -d '{"subscriber":"your email address", "ttl":3600, "options":{}}'
+
+The response::
+
+    HTTP/1.1 201 Created
+    content-length: 47
+    content-type: application/json; charset=UTF-8
+    location: http://10.229.47.217:8888/v2/queues/test/subscriptions
+    Connection: close
+    {"subscription_id": "576256b03990b480617b4063"}
+
+After the subscription created, Zaqar will send a email to the email address
+of subscriber. The email specifies how to confirm the subscription.
+
+3. Click the confirmation page link in the email body
+
+4. The confirmation page will send the subscription confirmation request to
+Zaqar server automatically. User also can choose to unsubscribe by clicking
+the unsubscription link in this page, that will cause Zaqar to cancel this
+subscription and send another email to notify this unsubscription action.
+Zaqar providers two examples of those web pages that will help user to build
+their own pages::
+
+    zaqar/sample/html/subscriptionConfirmation.html
+    zaqar/sample/html/unsubscriptionConfirmation.html
+
+User can place those pages in web server like Apache to access them by browser,
+so the external_confirmation_url will be like this::
+    http://127.0.0.1:8080/subscriptionConfirmation.html
+For CORS, here used zaqar/samples/html/confirmation_web_service_sample.py
+be a simple web service for example, it will relay the confirmation request to
+Zaqar Server. So before Step 3, you should start the web service first.
+The service could be started simply by the command::
+
+    python zaqar/samples/html/confirmation_web_service_sample.py
+The service's default port is 5678. If you want to use a new port, the command
+will be like::
+
+    python zaqar/samples/html/confirmation_web_service_sample.py new_port_number

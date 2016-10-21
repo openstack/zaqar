@@ -81,7 +81,7 @@ class NotifierDriver(object):
 
     def send_confirm_notification(self, queue, subscription, conf,
                                   project=None, expires=None,
-                                  api_version=None):
+                                  api_version=None, is_unsubscribed=False):
         # NOTE(flwang): If the confirmation feature isn't enabled, just do
         # nothing. Here we're getting the require_confirmation from conf
         # object instead of using self.require_confirmation, because the
@@ -100,7 +100,15 @@ class NotifierDriver(object):
                                                           subscription['id'])
         pre_url = urls.create_signed_url(key, [url], project=project,
                                          expires=expires, methods=['PUT'])
-        message_type = MessageType.SubscriptionConfirmation.name
+        message = None
+        if is_unsubscribed:
+            message_type = MessageType.UnsubscribeConfirmation.name
+            message = ('You have unsubscribed successfully to the queue: %s, '
+                       'you can resubscribe it by using confirmed=True.'
+                       % queue)
+        else:
+            message_type = MessageType.SubscriptionConfirmation.name
+            message = 'You have chosen to subscribe to the queue: %s' % queue
 
         messages = {}
         endpoint_dict = auth.get_public_endpoint()
@@ -116,8 +124,7 @@ class NotifierDriver(object):
                     websocket_endpoint, url)
                 messages['WebSocketSubscribeURL'] = websocket_subscribe_url
         messages.update({'Message_Type': message_type,
-                         'Message': 'You have chosen to subscribe to the '
-                                    'queue: %s' % queue,
+                         'Message': message,
                          'URL-Signature': pre_url['signature'],
                          'URL-Methods': pre_url['methods'][0],
                          'URL-Paths': pre_url['paths'][0],
@@ -126,8 +133,8 @@ class NotifierDriver(object):
                          'SubscribeBody': {'confirmed': True},
                          'UnsubscribeBody': {'confirmed': False}})
         s_type = urllib_parse.urlparse(subscription['subscriber']).scheme
-        LOG.info(_LI('Begin to send %(type)s confirm notification. The request'
-                     'body is %(messages)s'),
+        LOG.info(_LI('Begin to send %(type)s confirm/unsubscribe notification.'
+                     ' The request body is %(messages)s'),
                  {'type': s_type, 'messages': messages})
 
         self._execute(s_type, subscription, [messages], conf)

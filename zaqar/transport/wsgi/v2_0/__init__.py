@@ -114,7 +114,8 @@ def public_endpoints(driver, conf):
 
         ('/queues/{queue_name}/subscriptions/{subscription_id}/confirm',
          subscriptions.ConfirmResource(driver._validate,
-                                       subscription_controller)),
+                                       subscription_controller,
+                                       conf)),
 
         # Pre-Signed URL Endpoint
         ('/queues/{queue_name}/share', urls.Resource(driver)),
