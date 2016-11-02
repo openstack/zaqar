@@ -82,6 +82,11 @@ class NotifierDriver(object):
     def send_confirm_notification(self, queue, subscription, conf,
                                   project=None, expires=None,
                                   api_version=None):
+        # NOTE(flwang): If the confirmation feature isn't enabled, just do
+        # nothing.
+        if not self.require_confirmation:
+            return
+
         key = conf.signed_url.secret_key
         if not key:
             LOG.error(_LE("Can't send confirm notification due to the value of"
