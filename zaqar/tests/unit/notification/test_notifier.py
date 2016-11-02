@@ -18,6 +18,7 @@ import uuid
 
 import mock
 
+from zaqar.common import urls
 from zaqar.notification import notifier
 from zaqar import tests as testing
 
@@ -269,7 +270,8 @@ class NotifierTest(testing.TestBase):
                         'options': {}}
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=subscription)
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         require_confirmation=True)
         self.conf.signed_url.secret_key = 'test_key'
         driver.send_confirm_notification('test_queue', subscription, self.conf,
                                          str(self.project),
@@ -298,3 +300,16 @@ class NotifierTest(testing.TestBase):
         driver.executor.shutdown()
 
         self.assertEqual(0, mock_request.call_count)
+
+    @mock.patch.object(urls, 'create_signed_url')
+    def test_require_confirmation_false(self, mock_create_signed_url):
+        subscription = [{'subscriber': 'http://trigger_me',
+                         'source': 'fake_queue', 'options': {}}]
+        ctlr = mock.MagicMock()
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         require_confirmation=False)
+
+        driver.send_confirm_notification('test_queue', subscription, self.conf,
+                                         str(self.project), self.api_version)
+
+        self.assertFalse(mock_create_signed_url.called)
