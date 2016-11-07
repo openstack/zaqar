@@ -1,6 +1,8 @@
 ===============
 Claims (claims)
 ===============
+Claim is a mechanism to mark messages so that other workers will not process
+the same message.
 
 Claim messages
 ==============

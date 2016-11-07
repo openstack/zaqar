@@ -1,6 +1,10 @@
 ============================
 Subscriptions(subscriptions)
 ============================
+Subscriptions are relationships between queue/topic and the targeted
+subscribers. After created subscriptions for a particular subscriber, like an
+email or a webhook, then when new messages posted to the queue, the subscriber
+will be notified automatically.
 
 List Subscriptions
 ==================
