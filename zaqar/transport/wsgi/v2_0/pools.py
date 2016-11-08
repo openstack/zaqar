@@ -42,6 +42,7 @@ from oslo_log import log
 import six
 
 from zaqar.common.api.schemas import pools as schema
+from zaqar.common import decorators
 from zaqar.common import utils as common_utils
 from zaqar.i18n import _
 from zaqar.storage import errors
@@ -63,6 +64,7 @@ class Listing(object):
     def __init__(self, pools_controller):
         self._ctrl = pools_controller
 
+    @decorators.TransportLog("Pools collection")
     @acl.enforce("pools:get_all")
     def on_get(self, request, response, project_id):
         """Returns a pool listing as objects embedded in an object:
@@ -131,6 +133,7 @@ class Resource(object):
             'create': validator_type(schema.create)
         }
 
+    @decorators.TransportLog("Pools item")
     @acl.enforce("pools:get")
     def on_get(self, request, response, project_id, pool):
         """Returns a JSON object for a single pool entry:
@@ -194,6 +197,7 @@ class Resource(object):
             LOG.exception(e)
             raise wsgi_errors.HTTPConflict(six.text_type(e))
 
+    @decorators.TransportLog("Pools item")
     @acl.enforce("pools:delete")
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.
@@ -215,6 +219,7 @@ class Resource(object):
 
         response.status = falcon.HTTP_204
 
+    @decorators.TransportLog("Pools item")
     @acl.enforce("pools:update")
     def on_patch(self, request, response, project_id, pool):
         """Allows one to update a pool's weight, uri, and/or options.

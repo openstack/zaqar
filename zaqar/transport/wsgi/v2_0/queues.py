@@ -49,7 +49,7 @@ class ItemResource(object):
         }
         return reserved_metadata
 
-    @decorators.TransportLog("Queue metadata")
+    @decorators.TransportLog("Queues item")
     @acl.enforce("queues:get")
     def on_get(self, req, resp, project_id, queue_name):
         try:
@@ -70,7 +70,7 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
-    @decorators.TransportLog("Queue item")
+    @decorators.TransportLog("Queues item")
     @acl.enforce("queues:create")
     def on_put(self, req, resp, project_id, queue_name):
         try:
@@ -103,7 +103,7 @@ class ItemResource(object):
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
         resp.location = req.path
 
-    @decorators.TransportLog("Queue item")
+    @decorators.TransportLog("Queues item")
     @acl.enforce("queues:delete")
     def on_delete(self, req, resp, project_id, queue_name):
         LOG.debug(u'Queue item DELETE - queue: %(queue)s, '
@@ -119,6 +119,7 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_204
 
+    @decorators.TransportLog("Queues item")
     @acl.enforce("queues:update")
     def on_patch(self, req, resp, project_id, queue_name):
         """Allows one to update a queue's metadata.
@@ -247,7 +248,7 @@ class CollectionResource(object):
         self._queue_controller = queue_controller
         self._validate = validate
 
-    @decorators.TransportLog("Queue collection")
+    @decorators.TransportLog("Queues collection")
     @acl.enforce("queues:get_all")
     def on_get(self, req, resp, project_id):
         kwargs = {}

@@ -16,6 +16,7 @@
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
 from zaqar.transport import acl
@@ -33,6 +34,7 @@ class Resource(object):
     def __init__(self, queue_controller):
         self._queue_ctrl = queue_controller
 
+    @decorators.TransportLog("Queues stats item")
     @acl.enforce("queues:stats")
     def on_get(self, req, resp, project_id, queue_name):
         try:

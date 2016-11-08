@@ -17,6 +17,7 @@ import os
 from oslo_log import log as logging
 import six
 
+from zaqar.common import decorators
 from zaqar.common import urls
 from zaqar.i18n import _LE
 from zaqar.transport import acl
@@ -39,6 +40,7 @@ class Resource(object):
         self._driver = driver
         self._conf = driver._conf
 
+    @decorators.TransportLog("Queues share item")
     @acl.enforce("queues:share")
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Pre-Signed URL Creation for queue: %(queue)s, '

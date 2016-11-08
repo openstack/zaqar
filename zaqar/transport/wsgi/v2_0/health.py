@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 
+from zaqar.common import decorators
 from zaqar.i18n import _
 from zaqar.transport import acl
 from zaqar.transport import utils
@@ -30,6 +31,7 @@ class Resource(object):
     def __init__(self, driver):
         self._driver = driver
 
+    @decorators.TransportLog("Health item")
     @acl.enforce("health:get")
     def on_get(self, req, resp, **kwargs):
         try:
