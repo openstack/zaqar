@@ -170,6 +170,14 @@ Tutorials
    running_benchmark
    writing_pipeline_stages
 
+Feature Guide
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   subscription_confirm
+
 Other resources
 ===============
 
