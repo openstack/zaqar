@@ -27,6 +27,7 @@ ZAQARCLIENT_REPO=${ZAQARCLIENT_REPO:-${GIT_BASE}/openstack/python-zaqarclient.gi
 ZAQARCLIENT_BRANCH=${ZAQARCLIENT_BRANCH:-master}
 
 # Set Zaqar UI repository
+ZAQARUI_DIR=$DEST/zaqar-ui
 ZAQARUI_REPO=${ZAQARUI_REPO:-${GIT_BASE}/openstack/zaqar-ui.git}
 ZAQARUI_BRANCH=${ZAQARUI_BRANCH:-$ZAQAR_BRANCH}
 
