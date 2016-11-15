@@ -203,11 +203,17 @@ function install_zaqar {
 
 function install_zaqarui {
     git_clone $ZAQARUI_REPO $ZAQARUI_DIR $ZAQARUI_BRANCH
+    # NOTE(flwang): Workaround for devstack bug: 1540328
+    # where devstack install 'test-requirements' but should not do it
+    # for zaqar-ui project as it installs Horizon from url.
+    # Remove following two 'mv' commands when mentioned bug is fixed.
+    mv $ZAQARUI_DIR/test-requirements.txt $ZAQARUI_DIR/_test-requirements.txt
     setup_develop $ZAQARUI_DIR
+    mv $ZAQARUI_DIR/_test-requirements.txt $ZAQARUI_DIR/test-requirements.txt
     ln -fs $ZAQARUI_DIR/zaqar_ui/enabled/_1510_project_messaging_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1510_project_messaging_group.py
     ln -fs $ZAQARUI_DIR/zaqar_ui/enabled/_1520_project_queues.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1520_project_queues.py
-    if [ -d $ZAQARUI_DIR/zaqar_ui/locale ]; then
-        (cd $ZAQARUI_DIR/zaqar_ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
+    if [ -d $ZAQARUI_DIR/zaqar-ui/locale ]; then
+        (cd $ZAQARUI_DIR/zaqar-ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
     fi
 }
 
