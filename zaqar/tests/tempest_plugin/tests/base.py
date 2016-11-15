@@ -155,7 +155,8 @@ class BaseV1MessagingTest(BaseMessagingTest):
             cls.os.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
-            **cls.os.default_params_with_timeout_values)
+            build_interval=CONF.compute.build_interval,
+            build_timeout=CONF.compute.build_timeout)
 
     @classmethod
     def check_queue_exists(cls, queue_name):
@@ -179,7 +180,8 @@ class BaseV11MessagingTest(BaseMessagingTest):
             cls.os.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
-            **cls.os.default_params_with_timeout_values)
+            build_interval=CONF.compute.build_interval,
+            build_timeout=CONF.compute.build_timeout)
 
     @classmethod
     def generate_message_body(cls, repeat=1):
@@ -206,7 +208,8 @@ class BaseV2MessagingTest(BaseMessagingTest):
             cls.os.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
-            **cls.os.default_params_with_timeout_values)
+            build_interval=CONF.compute.build_interval,
+            build_timeout=CONF.compute.build_timeout)
 
     @classmethod
     def create_subscription(cls, queue_name, rbody):
