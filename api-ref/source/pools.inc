@@ -1,9 +1,15 @@
 ===============
 Pools (pools)
 ===============
+If pooling is enabled, queuing service uses multiple queues databases in order
+to scale horizontally. A pool (queues database) can be added any time without
+stopping the service. Each pool has a weight that is assigned during the
+creation time but can be changed later. Pooling is done by queue which
+indicates that all messages for a particular queue can be found in the same
+pool (queues database).
 
 List pools
-===========
+==========
 
 .. rest_method:: GET /v2/pools
 

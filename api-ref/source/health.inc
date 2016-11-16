@@ -1,6 +1,9 @@
 ===============
 Health (health)
 ===============
+With health API, user or operator can get a general idea about the status of
+Zaqar server. Those information can be used for basic validation, performance
+checking, etc.
 
 Ping
 ====

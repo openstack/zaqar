@@ -1,6 +1,12 @@
 ===================
 Messages (messages)
 ===================
+Message is sent through a queue and exists until it is deleted by a recipient
+or automatically by the system based on a TTL (time-to-live) value.
+
+All message-related operations require Client-Id to be included in the headers.
+This is to ensure that messages are not echoed back to the client that posted
+them unless the client explicitly requests this.
 
 Post Message
 ============

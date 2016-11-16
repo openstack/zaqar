@@ -1,6 +1,14 @@
 ===============
 Queues (queues)
 ===============
+Queue is a logical entity that groups messages. Ideally a queue is created per
+work type. For example, if you want to compress files, you would create a queue
+dedicated for this job. Any application that reads from this queue would only
+compress files.
+
+Nowadays, queue in Zaqar is most like a topic, it's created lazily. User can
+post messages to a queue before creating the queue. Zaqar will create the
+queue/topic automatically.
 
 List queues
 ===========
