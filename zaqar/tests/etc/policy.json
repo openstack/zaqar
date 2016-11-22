@@ -10,6 +10,7 @@
     "queues:update": "",
     "queues:stats": "",
     "queues:share": "",
+    "queues:purge": "",
 
     "messages:get_all": "",
     "messages:create": "",

@@ -1,0 +1,4 @@
+features:
+  - A new queue action is added so that users can purge a queue
+    quickly. That means all the messages and subscriptions will be deleted
+    automatically but the metadata of the queue will be kept.
