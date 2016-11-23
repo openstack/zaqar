@@ -252,7 +252,7 @@ function stop_zaqar {
 function create_zaqar_accounts {
     create_service_user "zaqar"
 
-    if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+    if [[ "$KEYSTONE_IDENTITY_BACKEND" = 'sql' ]]; then
 
         local zaqar_service=$(get_or_create_service "zaqar" \
             "messaging" "Zaqar Service")
