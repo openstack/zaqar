@@ -68,29 +68,29 @@ Instead of running all tests, you can specify an individual directory, file,
 class or method that contains test code, i.e. filter full names of tests by a
 string.
 
-To run the tests located only in the ``zaqar/tests/unit/queues/storage``
+To run the tests located only in the ``zaqar/tests/unit/storage``
 directory use:
 
 .. code-block:: console
 
-    $ tox -e py27 zaqar.tests.unit.queues.storage
+    $ tox -e py27 zaqar.tests.unit.storage
 
 To run the tests specific to the MongoDB driver in the
-``zaqar/tests/unit/queues/storage/test_impl_mongodb.py`` file:
+``zaqar/tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
     $ tox -e py27 test_impl_mongodb
 
 To run the tests in the ``MongodbMessageTests`` class in
-the ``tests/unit/queues/storage/test_impl_mongodb.py`` file:
+the ``tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
     $ tox -e py27 test_impl_mongodb.MongodbMessageTests
 
 To run the ``MongodbMessageTests.test_message_lifecycle`` test method in
-the ``tests/unit/queues/storage/test_impl_mongodb.py`` file:
+the ``tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
