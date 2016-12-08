@@ -18,6 +18,7 @@ import six
 
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 
@@ -32,6 +33,7 @@ class Resource(object):
     def __init__(self, queue_controller):
         self._queue_ctrl = queue_controller
 
+    @acl.enforce("queues:stats")
     def on_get(self, req, resp, project_id, queue_name):
         try:
             resp_dict = self._queue_ctrl.stats(queue_name,

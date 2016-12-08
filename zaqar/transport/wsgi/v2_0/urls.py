@@ -19,6 +19,7 @@ import six
 
 from zaqar.common import urls
 from zaqar.i18n import _LE
+from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
@@ -38,6 +39,7 @@ class Resource(object):
         self._driver = driver
         self._conf = driver._conf
 
+    @acl.enforce("queues:share")
     def on_post(self, req, resp, project_id, queue_name):
         LOG.debug(u'Pre-Signed URL Creation for queue: %(queue)s, '
                   u'project: %(project)s',

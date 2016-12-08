@@ -9,6 +9,7 @@
     "queues:delete": "",
     "queues:update": "",
     "queues:stats": "",
+    "queues:share": "",
 
     "messages:get_all": "",
     "messages:create": "",
