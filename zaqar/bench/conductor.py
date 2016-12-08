@@ -30,7 +30,7 @@ from zaqar.bench import producer
 CONF = config.conf
 
 
-def _print_verbose_stats(name, stats):
+def _print_debug_stats(name, stats):
     print(name.capitalize())
     print('=' * len(name))
 
@@ -55,7 +55,7 @@ def main():
     # clean them up after the performance test, in case
     # the user wants to examine the state of the system.
     if not CONF.skip_queue_reset:
-        if CONF.verbose:
+        if CONF.debug:
             print('Resetting queues...')
 
         _reset_queues()
@@ -74,7 +74,7 @@ def main():
     for each_proc in procs:
         stats.update(downstream_queue.get_nowait())
 
-    if CONF.verbose:
+    if CONF.debug:
         print()
 
         for name in ('producer', 'observer', 'consumer'):
@@ -84,7 +84,7 @@ def main():
             if not stats_group['duration_sec']:
                 continue
 
-            _print_verbose_stats(name, stats_group)
+            _print_debug_stats(name, stats_group)
 
     else:
         stats['params'] = {
