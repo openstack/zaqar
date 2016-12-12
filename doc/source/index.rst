@@ -126,6 +126,17 @@ In order to keep these layers decoupled, we have established that
 transport drivers must guarantee that the incoming data is well-formed and
 storage drivers must enforce their data model stays consistent.
 
+User Guide
+==========
+
+.. toctree::
+   :maxdepth: 1
+
+   getting_started
+   send_request_api.rst
+   authentication_tokens.rst
+   headers_queue_api_working.rst
+
 Setting up Zaqar in development environment
 ===========================================
 
