@@ -30,9 +30,9 @@ General information is available in wiki:
 
     https://wiki.openstack.org/wiki/Zaqar
 
-The API v1.1 (stable) specification and documentation are available at:
+The API v2.0 (stable) specification and documentation are available at:
 
-    https://wiki.openstack.org/wiki/Zaqar/specs/api/v1.1
+    https://wiki.openstack.org/wiki/Zaqar/specs/api/v2.0
 
 Zaqar Contributor Documentation, the source of which is in ``doc/source/``, is
 available at:
