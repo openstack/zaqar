@@ -104,4 +104,23 @@ class RequestSchema(v1_1.RequestSchema):
             },
             'required': ['action', 'headers', 'body']
         },
+
+        consts.QUEUE_PURGE: {
+            'properties': {
+                'action': {'enum': [consts.QUEUE_PURGE]},
+                'headers': {
+                    'type': 'object',
+                    'properties': headers,
+                    'required': ['Client-ID', 'X-Project-ID']},
+                'body': {
+                    'type': 'object',
+                    'properties': {
+                        'queue_name': {'type': 'string'},
+                        'resource_types': {'type': 'array'},
+                    },
+                    'required': ['queue_name'],
+                }
+            },
+            'required': ['action', 'headers', 'body']
+        },
     })

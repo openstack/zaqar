@@ -64,12 +64,14 @@ QUEUE_OPS = (
     QUEUE_GET,
     QUEUE_DELETE,
     QUEUE_GET_STATS,
+    QUEUE_PURGE
 ) = (
     'queue_create',
     'queue_list',
     'queue_get',
     'queue_delete',
     'queue_get_stats',
+    'queue_purge'
 )
 
 CLAIM_OPS = (

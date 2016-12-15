@@ -602,6 +602,59 @@ class QueueLifecycleBaseTest(base.V2Base):
             mock_queue_list.return_value = fake_generator()
             self.protocol.onMessage(req, False)
 
+    def _post_messages(self, queue_name, headers, repeat=1):
+        messages = [{'body': 239, 'ttl': 300}] * repeat
+
+        action = consts.MESSAGE_POST
+        body = {"queue_name": queue_name,
+                "messages": messages}
+
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+
+        req = test_utils.create_request(action, body, headers)
+
+        self.protocol.onMessage(req, False)
+
+        return json.loads(send_mock.call_args[0][0])
+
+    def test_purge(self):
+        arbitrary_number = 644079696574693
+        project_id = str(arbitrary_number)
+        client_id = str(uuid.uuid4())
+        headers = {
+            'X-Project-ID': project_id,
+            'Client-ID': client_id
+        }
+        queue_name = 'myqueue'
+        resp = self._post_messages(queue_name, headers, repeat=5)
+        msg_ids = resp['body']['message_ids']
+
+        send_mock = mock.Mock()
+        self.protocol.sendMessage = send_mock
+        for msg_id in msg_ids:
+            action = consts.MESSAGE_GET
+            body = {"queue_name": queue_name, "message_id": msg_id}
+            req = test_utils.create_request(action, body, headers)
+            self.protocol.onMessage(req, False)
+            resp = json.loads(send_mock.call_args[0][0])
+            self.assertEqual(200, resp['headers']['status'])
+
+        action = consts.QUEUE_PURGE
+        body = {"queue_name": queue_name, "resource_types": ["messages"]}
+        req = test_utils.create_request(action, body, headers)
+        self.protocol.onMessage(req, False)
+        resp = json.loads(send_mock.call_args[0][0])
+        self.assertEqual(204, resp['headers']['status'])
+
+        for msg_id in msg_ids:
+            action = consts.MESSAGE_GET
+            body = {"queue_name": queue_name, "message_id": msg_id}
+            req = test_utils.create_request(action, body, headers)
+            self.protocol.onMessage(req, False)
+            resp = json.loads(send_mock.call_args[0][0])
+            self.assertEqual(404, resp['headers']['status'])
+
 
 class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
 

@@ -222,6 +222,57 @@ class Endpoints(object):
             headers = {'status': 200}
             return response.Response(req, body, headers)
 
+    @api_utils.on_exception_sends_500
+    def queue_purge(self, req):
+        """Purge queue
+
+        :param req: Request instance ready to be sent.
+        :type req: `api.common.Request`
+        :return: resp: Response instance
+        :type: resp: `api.common.Response`
+        """
+        project_id = req._headers.get('X-Project-ID')
+        queue_name = req._body.get('queue_name')
+        resource_types = req._body.get('resource_types', ["messages",
+                                                          "subscriptions"])
+
+        LOG.debug(u'Purge queue - queue: %(queue)s, '
+                  u'project: %(project)s',
+                  {'queue': queue_name, 'project': project_id})
+
+        try:
+            pop_limit = 100
+            if "messages" in resource_types:
+                LOG.debug("Purge all messages under queue %s" % queue_name)
+                resp = self._pop_messages(req, queue_name,
+                                          project_id, pop_limit)
+                while resp.get_response()['body']['messages']:
+                    resp = self._pop_messages(req, queue_name,
+                                              project_id, pop_limit)
+
+            if "subscriptions" in resource_types:
+                LOG.debug("Purge all subscriptions under queue %s" %
+                          queue_name)
+                resp = self._subscription_controller.list(queue_name,
+                                                          project=project_id)
+                subscriptions = list(next(resp))
+                for sub in subscriptions:
+                    self._subscription_controller.delete(queue_name,
+                                                         sub['id'],
+                                                         project=project_id)
+
+        except storage_errors.QueueDoesNotExist as ex:
+            LOG.exception(ex)
+            headers = {'status': 404}
+            return api_utils.error_response(req, ex, headers)
+        except storage_errors.ExceptionBase as ex:
+            LOG.exception(ex)
+            headers = {'status': 503}
+            return api_utils.error_response(req, ex, headers)
+        else:
+            headers = {'status': 204}
+            return response.Response(req, {}, headers)
+
     # Messages
     @api_utils.on_exception_sends_500
     def message_list(self, req):
