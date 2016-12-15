@@ -188,6 +188,7 @@ Feature Guide
    :maxdepth: 1
 
    subscription_confirm
+   OSprofiler
 
 Other resources
 ===============
