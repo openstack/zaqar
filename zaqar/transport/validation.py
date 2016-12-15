@@ -27,6 +27,7 @@ MIN_MESSAGE_TTL = 60
 MIN_CLAIM_TTL = 60
 MIN_CLAIM_GRACE = 60
 MIN_SUBSCRIPTION_TTL = 60
+_PURGBLE_RESOURCE_TYPES = {'messages', 'subscriptions'}
 
 _TRANSPORT_LIMITS_OPTIONS = (
     cfg.IntOpt('max_queues_per_page', default=20,
@@ -319,6 +320,22 @@ class Validator(object):
                     _(u'_max_messages_post_size can not exceed {0}, '
                       ' and must be at least greater than 0.'),
                     self._limits_conf.max_messages_post_size)
+
+    def queue_purging(self, document):
+        """Restrictions the resource types to be purged for a queue.
+
+        :param resource_types: Type list of all resource under a queue
+        :raises: ValidationFailed if the resource types are invalid
+        """
+
+        if 'resource_types' not in document:
+            msg = _(u'Post body must contain key "resource_types".')
+            raise ValidationFailed(msg)
+
+        if (not set(document['resource_types']).issubset(
+                _PURGBLE_RESOURCE_TYPES)):
+            msg = _(u'Resource types must be a sub set of {0}.')
+            raise ValidationFailed(msg, _PURGBLE_RESOURCE_TYPES)
 
     def message_posting(self, messages):
         """Restrictions on a list of messages.

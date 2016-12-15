@@ -179,3 +179,25 @@ class TestValidation(base.V2Base):
                             body='[{"op":"add","path":"/metadata/a",'
                             '"value":2}]')
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+    def test_queue_purge(self):
+        # Wrong key
+        queue_1 = self.url_prefix + '/queues/queue1/purge'
+        self.simulate_post(queue_1,
+                           self.project_id,
+                           body='{"wrong_key": ["messages"]}')
+        self.addCleanup(self.simulate_delete, queue_1, self.project_id,
+                        headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # Wrong value
+        self.simulate_post(queue_1,
+                           self.project_id,
+                           body='{"resource_types": ["wrong_value"]}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # Correct input
+        self.simulate_post(queue_1,
+                           self.project_id,
+                           body='{"resource_types": ["messages"]}')
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)

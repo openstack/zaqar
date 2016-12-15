@@ -20,6 +20,7 @@ from zaqar.transport.wsgi.v2_0 import homedoc
 from zaqar.transport.wsgi.v2_0 import messages
 from zaqar.transport.wsgi.v2_0 import ping
 from zaqar.transport.wsgi.v2_0 import pools
+from zaqar.transport.wsgi.v2_0 import purge
 from zaqar.transport.wsgi.v2_0 import queues
 from zaqar.transport.wsgi.v2_0 import stats
 from zaqar.transport.wsgi.v2_0 import subscriptions
@@ -69,7 +70,8 @@ def public_endpoints(driver, conf):
                              message_controller)),
         ('/queues/{queue_name}/stats',
          stats.Resource(queue_controller)),
-
+        ('/queues/{queue_name}/purge',
+         purge.Resource(driver)),
         # Messages Endpoints
         ('/queues/{queue_name}/messages',
          messages.CollectionResource(driver._wsgi_conf,

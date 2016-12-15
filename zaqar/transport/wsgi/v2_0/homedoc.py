@@ -72,6 +72,19 @@ JSON_HOME = {
                 'accept-post': ['application/json'],
             },
         },
+        'rel/queue_purge': {
+            'href-template': '/v2/queues/{queue_name}/purge',
+            'href-vars': {
+                'queue_name': 'param/queue_name',
+            },
+            'hints': {
+                'allow': ['POST'],
+                'formats': {
+                    'application/json': {},
+                },
+                'accept-post': ['application/json'],
+            },
+        },
 
         # -----------------------------------------------------------------
         # Messages
