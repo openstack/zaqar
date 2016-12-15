@@ -31,6 +31,7 @@ import pymongo.errors
 import pymongo.read_preferences
 
 from zaqar.i18n import _
+from zaqar.i18n import _LW
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
@@ -450,9 +451,9 @@ class MessageController(storage.Message):
                 # NOTE(kgriffs): Since we did not filter by a time window,
                 # the queue should have been found and updated. Perhaps
                 # the queue has been deleted?
-                message = _(u'Failed to increment the message '
-                            u'counter for queue %(name)s and '
-                            u'project %(project)s')
+                message = _LW(u'Failed to increment the message '
+                              u'counter for queue %(name)s and '
+                              u'project %(project)s')
                 message %= dict(name=queue_name, project=project)
 
                 LOG.warning(message)
@@ -899,8 +900,8 @@ class FIFOMessageController(MessageController):
                 # this situation can not happen.
                 elapsed = timeutils.utcnow_ts() - now
                 if elapsed > MAX_RETRY_POST_DURATION:
-                    msgtmpl = _(u'Exceeded maximum retry duration for queue '
-                                u'"%(queue)s" under project %(project)s')
+                    msgtmpl = _LW(u'Exceeded maximum retry duration for queue '
+                                  u'"%(queue)s" under project %(project)s')
 
                     LOG.warning(msgtmpl,
                                 dict(queue=queue_name, project=project))
@@ -943,9 +944,10 @@ class FIFOMessageController(MessageController):
                     next_marker = self._get_counter(
                         queue_name, project)
                 else:
-                    msgtmpl = (u'Detected a stalled message counter for '
-                               u'queue "%(queue)s" under project %(project)s. '
-                               u'The counter was incremented to %(value)d.')
+                    msgtmpl = _LW(u'Detected a stalled message counter '
+                                  u'for queue "%(queue)s" under '
+                                  u'project %(project)s.'
+                                  u'The counter was incremented to %(value)d.')
 
                     LOG.warning(msgtmpl,
                                 dict(queue=queue_name,
@@ -959,8 +961,8 @@ class FIFOMessageController(MessageController):
                 LOG.exception(ex)
                 raise
 
-        msgtmpl = _(u'Hit maximum number of attempts (%(max)s) for queue '
-                    u'"%(queue)s" under project %(project)s')
+        msgtmpl = _LW(u'Hit maximum number of attempts (%(max)s) for queue '
+                      u'"%(queue)s" under project %(project)s')
 
         LOG.warning(msgtmpl,
                     dict(max=self.driver.mongodb_conf.max_attempts,
