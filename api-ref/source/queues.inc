@@ -264,7 +264,7 @@ Pre-signed queue
 
 Create a pre-signed URL for a given queue.
 
-.. note:
+.. note::
 
    In the case of pre-signed URLs, the queue cannot be created lazily. This
    is to prevent cases where queues are deleted and users still have a valid
@@ -316,4 +316,40 @@ Response Example
 ----------------
 
 .. literalinclude:: samples/queue-pre-signed-response.json
+   :language: javascript
+
+
+Purge queue
+===========
+
+.. rest_method:: POST /v2/queues/{queue_name}/purge
+
+Purge particular resource of the queue.
+
+.. note::
+
+   Now Zaqar supports to purge "messages" and "subscriptions" resource from
+   a queue.
+
+Normal response codes: 204
+
+Error response codes:
+
+- BadRequest (400)
+- Unauthorized (401)
+- ServiceUnavailable (503)
+
+
+Request Parameters
+------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - queue_name: queue_name
+  - resource_types: resource_types
+
+Request Example
+---------------
+
+.. literalinclude:: samples/purge-queue-request.json
    :language: javascript

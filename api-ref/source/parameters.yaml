@@ -213,6 +213,14 @@ flavor_pool_group:
     The ``pool_group`` attribute specifies the name of the pool group
     this flavor sits on top of.
 
+resource_types:
+  type: list
+  in: body
+  required: false
+  description: |
+    The ``resource_types`` attribute allows user to purge particular resource
+    of the queue.
+
 #### variables in response ###################################################
 
 versions:
