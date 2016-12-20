@@ -282,6 +282,10 @@ class TestSubscriptionsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         next_subscriptions_list = jsonutils.loads(resp[0])['subscriptions']
         self.assertEqual(5, len(next_subscriptions_list))
+        # The subscriptions's age should be 0 at this moment. But in some
+        # unexpected case, such as slow test, the age maybe larger than 0.
+        self.assertGreaterEqual(next_subscriptions_list[0].pop('age'),
+                                subscriptions_list[10].pop('age'))
         self.assertEqual(subscriptions_list[10], next_subscriptions_list[0])
 
     def test_get_works(self):
