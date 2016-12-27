@@ -16,10 +16,13 @@
 
 from six import moves
 from tempest.common.utils import data_utils
+from tempest import config
 from tempest.lib import decorators
 from testtools import matchers
 
 from zaqar.tests.tempest_plugin.tests import base
+
+CONF = config.CONF
 
 
 class TestQueues(base.BaseV2MessagingTest):
@@ -52,6 +55,22 @@ class TestManageQueue(base.BaseV2MessagingTest):
             cls.queues.append(queue_name)
             # Create Queue
             cls.client.create_queue(queue_name)
+
+    def _post_messages(self, repeat=CONF.messaging.max_messages_per_page,
+                       queue_name=None):
+        message_body = self.generate_message_body(repeat=repeat)
+        resp, body = self.post_messages(queue_name=queue_name,
+                                        rbody=message_body)
+        return resp, body
+
+    def _create_subscriptions(self, queue_name):
+        bodys = self.generate_subscription_body()
+        results = []
+        for body in bodys:
+            resp, body = self.create_subscription(queue_name=queue_name,
+                                                  rbody=body)
+            results.append((resp, body))
+        return results
 
     @decorators.idempotent_id('8f1fec00-54fc-48b9-aa67-c10a824b768d')
     def test_list_queues(self):
@@ -97,6 +116,31 @@ class TestManageQueue(base.BaseV2MessagingTest):
         # Get Queue Metadata
         _, body = self.get_queue_metadata(queue_name)
         self.assertThat(body, matchers.Equals(req_body))
+
+    @decorators.idempotent_id('2fb6e5a8-c18f-4407-9ee7-7a13c8e09f69')
+    def test_purge_queue(self):
+        queue_name = self.queues[0]
+        # The queue contains no messages and subscriptions by default.
+        resp, body = self.list_messages(queue_name=queue_name)
+        self.assertEqual([], body['messages'])
+        resp, body = self.list_subscription(queue_name)
+        self.assertEqual([], body['subscriptions'])
+        # Post some messages and create some subscriptions for the queue.
+        self._post_messages(queue_name=queue_name)
+        self._create_subscriptions(queue_name=queue_name)
+        # The queue contains messages and subscriptions now.
+        resp, body = self.list_messages(queue_name=queue_name)
+        self.assertIsNotNone(len(body['messages']))
+        resp, body = self.list_subscription(queue_name)
+        self.assertIsNotNone(len(body['subscriptions']))
+        # Purge the queue
+        resp, body = self.purge_queue(queue_name)
+        self.assertEqual(204, resp.status)
+        # The queue contains nothing.
+        resp, body = self.list_messages(queue_name=queue_name)
+        self.assertEqual([], body['messages'])
+        resp, body = self.list_subscription(queue_name)
+        self.assertEqual([], body['subscriptions'])
 
     @classmethod
     def resource_cleanup(cls):

@@ -212,6 +212,12 @@ class BaseV2MessagingTest(BaseMessagingTest):
             build_timeout=CONF.compute.build_timeout)
 
     @classmethod
+    def purge_queue(cls, queue_name, resource=None):
+        resp, body = cls.client.purge_queue(
+            queue_name, resource)
+        return resp, body
+
+    @classmethod
     def create_subscription(cls, queue_name, rbody):
         resp, body = cls.client.create_subscription(
             queue_name, rbody)
