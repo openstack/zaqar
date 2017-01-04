@@ -1175,6 +1175,39 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                    project=self.project)
         self.assertIsNone(s_id)
 
+    def test_get_update_delete_on_non_existing_queue(self):
+        self._precreate_queue(precreate_queue=True)
+        s_id = self.subscription_controller.create(
+            self.source,
+            self.subscriber,
+            self.ttl,
+            self.options,
+            project=self.project)
+        self.addCleanup(self.subscription_controller.delete, self.source, s_id,
+                        self.project)
+        self.assertIsNotNone(s_id)
+        non_existing_queue = "fake_name"
+        # get
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.get,
+                          non_existing_queue, s_id, project=self.project)
+        # update
+        body = {
+            "subscriber": self.subscriber,
+            "ttl": self.ttl,
+            "options": self.options
+        }
+        self.assertRaises(errors.SubscriptionDoesNotExist,
+                          self.subscription_controller.update,
+                          non_existing_queue, s_id, project=self.project,
+                          **body)
+        # delete
+        self.subscription_controller.delete(non_existing_queue, s_id,
+                                            project=self.project)
+        s_id = self.subscription_controller.get(self.queue_name, s_id,
+                                                project=self.project)
+        self.assertIsNotNone(s_id)
+
     def test_nonexist_source(self):
         try:
             s_id = self.subscription_controller.create('fake_queue_name',

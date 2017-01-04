@@ -93,8 +93,10 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def get(self, queue, subscription_id, project=None):
-        subscription = SubscriptionEnvelope.from_redis(subscription_id,
-                                                       self._client)
+        subscription = None
+        if self.exists(queue, subscription_id, project):
+            subscription = SubscriptionEnvelope.from_redis(subscription_id,
+                                                           self._client)
         if subscription:
             now = timeutils.utcnow_ts()
             return subscription.to_basic(now)
@@ -230,11 +232,13 @@ class SubscriptionController(base.Subscription):
     def delete(self, queue, subscription_id, project=None):
         subset_key = utils.scope_subscription_ids_set(queue, project,
                                                       SUBSCRIPTION_IDS_SUFFIX)
-        # NOTE(prashanthr_): Pipelining is used to mitigate race conditions
-        with self._client.pipeline() as pipe:
-            pipe.zrem(subset_key, subscription_id)
-            pipe.delete(subscription_id)
-            pipe.execute()
+
+        if self._client.zrank(subset_key, subscription_id) is not None:
+            # NOTE(prashanthr_): Pipelining is used to mitigate race conditions
+            with self._client.pipeline() as pipe:
+                pipe.zrem(subset_key, subscription_id)
+                pipe.delete(subscription_id)
+                pipe.execute()
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
