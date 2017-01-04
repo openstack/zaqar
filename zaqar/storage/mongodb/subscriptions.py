@@ -90,7 +90,8 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     def get(self, queue, subscription_id, project=None):
         res = self._collection.find_one({'_id': utils.to_oid(subscription_id),
-                                         'p': project})
+                                         'p': project,
+                                         's': queue})
 
         if not res:
             raise errors.SubscriptionDoesNotExist(subscription_id)
@@ -143,7 +144,8 @@ class SubscriptionController(base.Subscription):
         try:
             res = self._collection.update(
                 {'_id': utils.to_oid(subscription_id),
-                 'p': project},
+                 'p': project,
+                 's': queue},
                 {'$set': fields},
                 upsert=False)
         except pymongo.errors.DuplicateKeyError:
@@ -154,7 +156,8 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     def delete(self, queue, subscription_id, project=None):
         self._collection.remove({'_id': utils.to_oid(subscription_id),
-                                 'p': project}, w=0)
+                                 'p': project,
+                                 's': queue}, w=0)
 
     @utils.raises_conn_error
     def get_with_subscriber(self, queue, subscriber, project=None):

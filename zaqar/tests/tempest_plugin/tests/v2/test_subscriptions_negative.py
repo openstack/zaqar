@@ -239,10 +239,9 @@ class TestSubscriptionsNegative(base.BaseV2MessagingTest):
         subscription_id = results[0][1]["subscription_id"]
         non_existent_queue = data_utils.rand_name('rand_queuename')
         update_rbody = {'ttl': 1000}
-        resp, _ = self.client.update_subscription(non_existent_queue,
-                                                  subscription_id,
-                                                  update_rbody)
-        self.assertEqual('204', resp['status'])
+        self.assertRaises(lib_exc.NotFound, self.client.update_subscription,
+                          non_existent_queue, subscription_id, update_rbody)
+
         for result in results:
             subscription_id = result[1]["subscription_id"]
             self.delete_subscription(self.queue_name, subscription_id)
