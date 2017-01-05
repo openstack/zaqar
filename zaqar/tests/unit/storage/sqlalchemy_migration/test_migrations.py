@@ -30,8 +30,6 @@ postgres=# create database openstack_citest with owner openstack_citest;
 
 """
 
-import os
-
 from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import utils as db_utils
 
@@ -95,17 +93,17 @@ class ZaqarMigrationsCheckers(object):
             'metadata'
         ]
         self.assertColumnsExist(
-            engine, 'queues', queues_columns)
+            engine, 'Queues', queues_columns)
         self.assertColumnCount(
-            engine, 'queues', queues_columns)
+            engine, 'Queues', queues_columns)
 
         poolgroup_columns = [
             'name',
         ]
         self.assertColumnsExist(
-            engine, 'poolgroup', poolgroup_columns)
+            engine, 'PoolGroup', poolgroup_columns)
         self.assertColumnCount(
-            engine, 'poolgroup', poolgroup_columns)
+            engine, 'PoolGroup', poolgroup_columns)
 
         pools_columns = [
             'name',
@@ -115,9 +113,9 @@ class ZaqarMigrationsCheckers(object):
             'options',
         ]
         self.assertColumnsExist(
-            engine, 'pools', pools_columns)
+            engine, 'Pools', pools_columns)
         self.assertColumnCount(
-            engine, 'pools', pools_columns)
+            engine, 'Pools', pools_columns)
 
         flavors_columns = [
             'name',
@@ -126,9 +124,9 @@ class ZaqarMigrationsCheckers(object):
             'capabilities',
         ]
         self.assertColumnsExist(
-            engine, 'flavors', flavors_columns)
+            engine, 'Flavors', flavors_columns)
         self.assertColumnCount(
-            engine, 'flavors', flavors_columns)
+            engine, 'Flavors', flavors_columns)
 
         catalogue_columns = [
             'pool',
@@ -136,19 +134,19 @@ class ZaqarMigrationsCheckers(object):
             'queue',
         ]
         self.assertColumnsExist(
-            engine, 'catalogue', catalogue_columns)
+            engine, 'Catalogue', catalogue_columns)
         self.assertColumnCount(
-            engine, 'catalogue', catalogue_columns)
+            engine, 'Catalogue', catalogue_columns)
 
         self._data_001(engine, data)
 
     def _data_001(self, engine, data):
-        datasize = 512 * 1024  # 512kB
-        data = os.urandom(datasize)
-        t = db_utils.get_table(engine, 'job_binary_internal')
-        engine.execute(t.insert(), data=data, id='123', name='name')
-        new_data = engine.execute(t.select()).fetchone().data
-        self.assertEqual(data, new_data)
+        project = 'myproject'
+        t = db_utils.get_table(engine, 'Queues')
+        engine.execute(t.insert(), id='123', name='name', project='myproject',
+                       metadata={})
+        new_project = engine.execute(t.select()).fetchone().project
+        self.assertEqual(project, new_project)
         engine.execute(t.delete())
 
     def _check_002(self, engine, data):

@@ -153,6 +153,15 @@ For example, you want to run functional tests with keystone authentication
 enabled, input a valid set of credentials to ``[auth]`` section in
 configuration file and set ``auth_on`` parameter to ``True``.
 
+Using local Mysql database
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To use a similar testing environment with database support like upstream CI,
+you can run ``zaqar/tools/test-setup.sh`` to create a required Mysql user
+``openstack_citest`` with same password. The user is required by oslo.db's
+test. Zaqar needs it because Zaqar's sqlalchemy database migration is
+leveraging oslo.db's migration test base.
+
 .. rubric:: Footnotes
 
 .. [#f1] See http://docs.openstack.org/infra/system-config/jenkins.html
