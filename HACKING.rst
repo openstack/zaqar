@@ -115,7 +115,7 @@ Example::
   :param bar: (Default True) the bar parameter
   :param foo_long_bar: the foo parameter description is very
     long so we have to split it in multiple lines in order to
-    keey things ordered
+    keep things ordered
   :returns: return_type -- description of the return value
   :returns: description of the return value
   :raises: AttributeError, KeyError
