@@ -563,7 +563,7 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
         message_ids = req._body.get('message_ids')
-        pop_limit = req._body.get('pop_limit')
+        pop_limit = req._body.get('pop')
 
         LOG.debug(u'Messages collection DELETE - queue: %(queue)s,'
                   u'project: %(project)s, messages: %(message_ids)s',

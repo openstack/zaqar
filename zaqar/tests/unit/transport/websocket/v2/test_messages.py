@@ -522,8 +522,7 @@ class MessagesBaseTest(base.V2Base):
         self._post_messages("kitkat", repeat=5)
 
         action = consts.MESSAGE_DELETE_MANY
-        body = {"queue_name": "kitkat",
-                "pop_limit": 2}
+        body = {"queue_name": "kitkat", "pop": 2}
 
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
