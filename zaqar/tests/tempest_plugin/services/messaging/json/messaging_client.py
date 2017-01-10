@@ -358,6 +358,16 @@ class V2MessagingClient(MessagingClient):
         self.expected_success(204, resp.status)
         return resp, body
 
+    def purge_queue(self, queue_name, resource=None):
+        uri = '{0}/queues/{1}/purge'.format(self.uri_prefix, queue_name)
+        rbody = {"resource_types": ["messages", "subscriptions"]}
+        if resource:
+            rbody = {"resource_types": resource}
+        resp, body = self.post(uri, body=json.dumps(rbody),
+                               headers=self.headers)
+        self.expected_success(204, resp.status)
+        return resp, body
+
     def show_queue_stats(self, queue_name):
         uri = '{0}/queues/{1}/stats'.format(self.uri_prefix, queue_name)
         resp, body = self.get(uri, headers=self.headers)
