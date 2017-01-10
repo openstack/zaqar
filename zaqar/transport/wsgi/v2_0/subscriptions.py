@@ -43,7 +43,7 @@ class ItemResource(object):
         self._validate = validate
         self._subscription_controller = subscription_controller
 
-    @decorators.TransportLog("Subscription")
+    @decorators.TransportLog("Subscriptions item")
     @acl.enforce("subscription:get")
     def on_get(self, req, resp, project_id, queue_name, subscription_id):
         try:
@@ -63,7 +63,7 @@ class ItemResource(object):
         resp.body = utils.to_json(resp_dict)
         # status defaults to 200
 
-    @decorators.TransportLog("Subscription")
+    @decorators.TransportLog("Subscriptions item")
     @acl.enforce("subscription:delete")
     def on_delete(self, req, resp, project_id, queue_name, subscription_id):
         try:
@@ -78,7 +78,7 @@ class ItemResource(object):
 
         resp.status = falcon.HTTP_204
 
-    @decorators.TransportLog("Subscription")
+    @decorators.TransportLog("Subscriptions item")
     @acl.enforce("subscription:update")
     def on_patch(self, req, resp, project_id, queue_name, subscription_id):
         if req.content_length:
@@ -126,7 +126,7 @@ class CollectionResource(object):
         self._conf = conf
         self._notification = notifier.NotifierDriver()
 
-    @decorators.TransportLog("Subscription collection")
+    @decorators.TransportLog("Subscriptions collection")
     @acl.enforce("subscription:get_all")
     def on_get(self, req, resp, project_id, queue_name):
         kwargs = {}
@@ -171,7 +171,7 @@ class CollectionResource(object):
         resp.body = utils.to_json(response_body)
         # status defaults to 200
 
-    @decorators.TransportLog("Subscription item")
+    @decorators.TransportLog("Subscriptions collection")
     @acl.enforce("subscription:create")
     def on_post(self, req, resp, project_id, queue_name):
         if req.content_length:
@@ -254,7 +254,7 @@ class ConfirmResource(object):
         self._subscription_controller = subscription_controller
         self._validate = validate
 
-    @decorators.TransportLog("Confirm Subscription")
+    @decorators.TransportLog("Subscription confirmation item")
     @acl.enforce("subscription:confirm")
     def on_put(self, req, resp, project_id, queue_name, subscription_id):
         if req.content_length:

@@ -19,6 +19,7 @@ from oslo_log import log
 import six
 
 from zaqar.common.api.schemas import flavors as schema
+from zaqar.common import decorators
 from zaqar.common import utils as common_utils
 from zaqar.i18n import _
 from zaqar.storage import errors
@@ -40,6 +41,7 @@ class Listing(object):
         self._ctrl = flavors_controller
         self._pools_ctrl = pools_controller
 
+    @decorators.TransportLog("Flavors collection")
     @acl.enforce("flavors:get_all")
     def on_get(self, request, response, project_id):
         """Returns a flavor listing as objects embedded in an object:
@@ -121,6 +123,7 @@ class Resource(object):
             'capabilities': validator_type(schema.patch_capabilities),
         }
 
+    @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:get")
     def on_get(self, request, response, project_id, flavor):
         """Returns a JSON object for a single flavor entry:
@@ -152,6 +155,7 @@ class Resource(object):
 
         response.body = transport_utils.to_json(data)
 
+    @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:create")
     def on_put(self, request, response, project_id, flavor):
         """Registers a new flavor. Expects the following input:
@@ -183,6 +187,7 @@ class Resource(object):
                            dict(flavor=flavor, pool_group=pool_group))
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
+    @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:delete")
     def on_delete(self, request, response, project_id, flavor):
         """Deregisters a flavor.
@@ -194,6 +199,7 @@ class Resource(object):
         self._ctrl.delete(flavor, project=project_id)
         response.status = falcon.HTTP_204
 
+    @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:update")
     def on_patch(self, request, response, project_id, flavor):
         """Allows one to update a flavors's pool_group.
