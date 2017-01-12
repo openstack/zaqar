@@ -264,6 +264,7 @@ class NotifierTest(testing.TestBase):
 
     @mock.patch('requests.post')
     def test_send_confirm_notification(self, mock_request):
+        self.conf.notification.require_confirmation = True
         subscription = {'id': '5760c9fb3990b42e8b7c20bd',
                         'subscriber': 'http://trigger_me',
                         'source': 'fake_queue',

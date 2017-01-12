@@ -83,8 +83,12 @@ class NotifierDriver(object):
                                   project=None, expires=None,
                                   api_version=None):
         # NOTE(flwang): If the confirmation feature isn't enabled, just do
-        # nothing.
-        if not self.require_confirmation:
+        # nothing. Here we're getting the require_confirmation from conf
+        # object instead of using self.require_confirmation, because the
+        # variable from self object really depends on the kwargs when
+        # initializing the NotifierDriver object. See bug 1655812 for more
+        # information.
+        if not conf.notification.require_confirmation:
             return
 
         key = conf.signed_url.secret_key
