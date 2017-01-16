@@ -27,12 +27,15 @@ to the WSGI app when it is called from other apps.
 """
 
 from oslo_config import cfg
+from oslo_log import log
 
 from zaqar import bootstrap
 
 # Use the global CONF instance
 conf = cfg.CONF
+log.register_options(conf)
 conf(project='zaqar', prog='zaqar-queues', args=[])
+log.setup(conf, 'zaqar')
 
 boot = bootstrap.Bootstrap(conf)
 conf.drivers.transport = 'wsgi'
