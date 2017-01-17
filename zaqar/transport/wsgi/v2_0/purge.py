@@ -18,6 +18,7 @@ from oslo_log import log as logging
 import six
 
 from zaqar.common import decorators
+from zaqar.i18n import _
 from zaqar.transport import acl
 from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
@@ -49,9 +50,6 @@ class Resource(object):
                 self._validate.queue_purging(document)
             else:
                 document = {'resource_types': ['messages', 'subscriptions']}
-        except ValueError as ex:
-            LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -78,5 +76,9 @@ class Resource(object):
                                                    project=project_id)
         except ValueError as err:
             raise wsgi_errors.HTTPBadRequestAPI(str(err))
+        except Exception as ex:
+            LOG.exception(ex)
+            description = _(u'Queue could not be purged.')
+            raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
