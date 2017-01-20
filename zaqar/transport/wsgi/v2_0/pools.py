@@ -49,6 +49,7 @@ from zaqar.storage import errors
 from zaqar.storage import utils as storage_utils
 from zaqar.transport import acl
 from zaqar.transport import utils as transport_utils
+from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
 
@@ -61,8 +62,9 @@ class Listing(object):
     :param pools_controller: means to interact with storage
     """
 
-    def __init__(self, pools_controller):
+    def __init__(self, pools_controller, validate):
         self._ctrl = pools_controller
+        self._validate = validate
 
     @decorators.TransportLog("Pools collection")
     @acl.enforce("pools:get_all")
@@ -90,6 +92,12 @@ class Listing(object):
         request.get_param('marker', store=store)
         request.get_param_as_int('limit', store=store)
         request.get_param_as_bool('detailed', store=store)
+
+        try:
+            self._validate.pool_listing(**store)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         cursor = self._ctrl.list(**store)
         pools = list(next(cursor))

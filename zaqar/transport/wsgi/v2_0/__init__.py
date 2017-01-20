@@ -133,14 +133,16 @@ def private_endpoints(driver, conf):
     if conf.pooling:
         pools_controller = driver._control.pools_controller
         flavors_controller = driver._control.flavors_controller
+        validate = driver._validate
 
         catalogue.extend([
             ('/pools',
-             pools.Listing(pools_controller)),
+             pools.Listing(pools_controller, validate)),
             ('/pools/{pool}',
              pools.Resource(pools_controller)),
             ('/flavors',
-             flavors.Listing(flavors_controller, pools_controller)),
+             flavors.Listing(flavors_controller, pools_controller,
+                             validate)),
             ('/flavors/{flavor}',
              flavors.Resource(flavors_controller, pools_controller)),
         ])

@@ -25,6 +25,7 @@ from zaqar.i18n import _
 from zaqar.storage import errors
 from zaqar.transport import acl
 from zaqar.transport import utils as transport_utils
+from zaqar.transport import validation
 from zaqar.transport.wsgi import errors as wsgi_errors
 from zaqar.transport.wsgi import utils as wsgi_utils
 
@@ -37,9 +38,10 @@ class Listing(object):
     :param flavors_controller: means to interact with storage
     """
 
-    def __init__(self, flavors_controller, pools_controller):
+    def __init__(self, flavors_controller, pools_controller, validate):
         self._ctrl = flavors_controller
         self._pools_ctrl = pools_controller
+        self._validate = validate
 
     @decorators.TransportLog("Flavors collection")
     @acl.enforce("flavors:get_all")
@@ -68,6 +70,12 @@ class Listing(object):
         request.get_param('marker', store=store)
         request.get_param_as_int('limit', store=store)
         detailed = request.get_param_as_bool('detailed')
+
+        try:
+            self._validate.flavor_listing(**store)
+        except validation.ValidationFailed as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
         cursor = self._ctrl.list(project=project_id, **store)
         flavors = list(next(cursor))

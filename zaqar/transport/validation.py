@@ -79,6 +79,12 @@ _TRANSPORT_LIMITS_OPTIONS = (
     cfg.ListOpt('subscriber_types', default=['http', 'https', 'mailto',
                                              'trust+http', 'trust+https'],
                 help='Defines supported subscriber types.'),
+
+    cfg.IntOpt('max_flavors_per_page', default=20,
+               help='Defines the maximum number of flavors per page.'),
+
+    cfg.IntOpt('max_pools_per_page', default=20,
+               help='Defines the maximum number of pools per page.'),
 )
 
 _TRANSPORT_LIMITS_GROUP = 'transport'
@@ -585,3 +591,29 @@ class Validator(object):
         :param limit_conf_name: configuration name
         """
         return self._limits_conf[limit_conf_name]
+
+    def flavor_listing(self, limit=None, **kwargs):
+        """Restrictions involving a list of pools.
+
+        :param limit: The expected number of flavors in the list
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the limit is exceeded
+        """
+
+        uplimit = self._limits_conf.max_flavors_per_page
+        if limit is not None and not (0 < limit <= uplimit):
+            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            raise ValidationFailed(msg, self._limits_conf.max_flavors_per_page)
+
+    def pool_listing(self, limit=None, **kwargs):
+        """Restrictions involving a list of pools.
+
+        :param limit: The expected number of flavors in the list
+        :param kwargs: Ignored arguments passed to storage API
+        :raises: ValidationFailed if the limit is exceeded
+        """
+
+        uplimit = self._limits_conf.max_pools_per_page
+        if limit is not None and not (0 < limit <= uplimit):
+            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            raise ValidationFailed(msg, self._limits_conf.max_pools_per_page)
