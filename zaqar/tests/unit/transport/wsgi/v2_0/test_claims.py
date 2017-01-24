@@ -234,7 +234,7 @@ class TestClaimsMongoDB(base.V2Base):
 
         self.assertEqual(60, claim['ttl'])
         estimated_age = timeutils.delta_seconds(creation, query)
-        self.assertTrue(estimated_age > claim['age'])
+        self.assertGreater(estimated_age, claim['age'])
 
         # Delete the claim
         self.simulate_delete(claim['href'], headers=self.headers)
