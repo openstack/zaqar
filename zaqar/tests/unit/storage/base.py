@@ -16,6 +16,7 @@
 
 import collections
 import datetime
+import math
 import random
 import time
 import uuid
@@ -568,14 +569,14 @@ class MessageControllerTest(ControllerBaseTest):
         # perhaps the claim expired before it got around to
         # trying to delete the message, which means another
         # worker could be processing this message now.
-        with testing.expect(errors.NotPermitted):
+        with testing.expect(errors.NotPermitted, errors.ClaimDoesNotExist):
             self.controller.delete(self.queue_name, msg2['id'],
                                    project=self.project,
                                    claim=cid)
 
     @testing.is_slow(condition=lambda self: self.gc_interval > 1)
     def test_expired_messages(self):
-        messages = [{'body': 3.14, 'ttl': 0}, {'body': 0.618, 'ttl': 600}]
+        messages = [{'body': 3.14, 'ttl': 1}, {'body': 0.618, 'ttl': 600}]
         client_uuid = uuid.uuid4()
 
         [msgid_expired, msgid] = self.controller.post(self.queue_name,
@@ -599,11 +600,6 @@ class MessageControllerTest(ControllerBaseTest):
         else:
             self.fail("Didn't remove the queue")
 
-        stats = self.queue_controller.stats(self.queue_name,
-                                            project=self.project)
-
-        self.assertEqual(1, stats['messages']['free'])
-
         # Make sure expired messages not return when listing
         interaction = self.controller.list(self.queue_name,
                                            project=self.project)
@@ -611,6 +607,10 @@ class MessageControllerTest(ControllerBaseTest):
         messages = list(next(interaction))
         self.assertEqual(1, len(messages))
         self.assertEqual(msgid, messages[0]['id'])
+
+        stats = self.queue_controller.stats(self.queue_name,
+                                            project=self.project)
+        self.assertEqual(1, stats['messages']['free'])
 
         # Make sure expired messages not return when popping
         messages = self.controller.pop(self.queue_name,
@@ -950,10 +950,11 @@ class ClaimControllerTest(ControllerBaseTest):
             self.assertEqual(120, message['ttl'])
 
     def test_expired_claim(self):
-        meta = {'ttl': 0, 'grace': 60}
+        meta = {'ttl': 1, 'grace': 60}
 
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
+        time.sleep(1)
 
         with testing.expect(errors.DoesNotExist):
             self.controller.get(self.queue_name, claim_id,
@@ -1063,7 +1064,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                 'source' in s and 'subscriber' in s,
                                 subscriptions)))
         self.assertEqual(10, len(subscriptions))
-        self.assertLessEqual(added_age, subscriptions[2]['age'])
+        self.assertLessEqual(added_age, math.ceil(subscriptions[2]['age']))
 
         interaction = (self.subscription_controller.list(self.source,
                                                          project=self.project,
@@ -1127,7 +1128,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
         self.assertEqual(self.subscriber, subscription['subscriber'])
         self.assertEqual(self.ttl, subscription['ttl'])
         self.assertEqual(self.options, subscription['options'])
-        self.assertLessEqual(added_age, subscription['age'])
+        self.assertLessEqual(added_age, math.ceil(subscription['age']))
 
         exist = self.subscription_controller.exists(self.queue_name,
                                                     s_id,
@@ -1218,8 +1219,8 @@ class SubscriptionControllerTest(ControllerBaseTest):
         except Exception:
             self.fail("Subscription controller should not raise an exception "
                       "in case of non-existing queue.")
-        self.addCleanup(self.subscription_controller.delete, self.source, s_id,
-                        self.project)
+        self.addCleanup(self.subscription_controller.delete, 'fake_queue_name',
+                        s_id, self.project)
 
     @ddt.data(True, False)
     def test_update_raises_if_try_to_update_to_existing_subscription(
