@@ -361,3 +361,11 @@ class TestPoolsMongoDB(base.V2Base):
             self.assertEqual(6, len(pool_list))
             path, weight = expected[4][:2]
             self._pool_expect(pool_list[0], path, weight, self.doc['uri'])
+
+    def test_listing_error_with_invalid_limit(self):
+        self.simulate_delete(self.pool)
+        query = 'limit={0}&detailed={1}'.format(0, True)
+
+        with pools(self, 10, self.doc['uri'], 'my-group'):
+            self.simulate_get(self.url_prefix + '/pools', query_string=query)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)

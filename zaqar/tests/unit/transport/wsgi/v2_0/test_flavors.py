@@ -325,6 +325,14 @@ class TestFlavorsMongoDB(base.V2Base):
             path, capabilities = expected[4][:2]
             self._flavor_expect(flavor_list[0], path, self.doc['pool_group'])
 
+    def test_listing_error_with_invalid_limit(self):
+        self.simulate_delete(self.flavor_path)
+        query = 'limit={0}&detailed={1}'.format(0, True)
+
+        with flavors(self, 10, self.doc['pool_group']):
+            self.simulate_get(self.url_prefix + '/flavors', query_string=query)
+            self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
     def test_queue_create_works(self):
         metadata = {'_flavor': self.flavor}
         self.simulate_put(self.queue_path, body=jsonutils.dumps(metadata))
