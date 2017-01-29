@@ -94,7 +94,7 @@ class TestSubscriptions(base.BaseV2MessagingTest):
             subscription_id = result[1]["subscription_id"]
             self.delete_subscription(self.queue_name, subscription_id)
 
-    @test.idempotent_id('fe0d8ec1-1a64-4490-8869-e821b2252e74')
+    @decorators.idempotent_id('fe0d8ec1-1a64-4490-8869-e821b2252e74')
     def test_create_subscriptions_with_duplicate_subscriber(self):
         # Adding subscriptions to the queue
         results = self._create_subscriptions()
