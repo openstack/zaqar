@@ -32,7 +32,7 @@ if [ "$DEVSTACK_GATE_ZAQAR_BACKEND" == "swift" ]; then
     OVERRIDE_ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
 fi
 export DEVSTACK_LOCAL_CONFIG+=$"
-export ZAQAR_BACKEND=$DEVSTACK_GATE_ZAQAR_BACKEND"
+ZAQAR_BACKEND=$DEVSTACK_GATE_ZAQAR_BACKEND"
 export OVERRIDE_ENABLED_SERVICES
 
 function run_devstack_gate() {

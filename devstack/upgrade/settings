@@ -1,0 +1,19 @@
+# Grenade needs to know that Zaqar has a Grenade plugin. This is done in the
+# gate by setting GRENADE_PLUGINRC when using openstack-infra/devstack-gate.
+# That means that in the project openstack-infra/project-config we will need to
+# update the Zaqar grenade job(s) in jenkins/jobs/devstack-gate.yaml with
+# this:
+#     export GRENADE_PLUGINRC="enable_grenade_plugin zaqar https://git.openstack.org/openstack/zaqar"
+# If openstack-infra/project-config is not updated then the Grenade tests will
+# never get run for Zaqar
+
+register_project_for_upgrade zaqar
+
+
+if grep -q 'management_store *= *sqlalchemy' /etc/zaqar/zaqar.conf; then
+    register_db_to_save zaqar
+fi
+
+devstack_localrc base enable_service zaqar-wsgi zaqar-websocket zaqar
+
+devstack_localrc target enable_service zaqar-wsgi zaqar-websocket zaqar
