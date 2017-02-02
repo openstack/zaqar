@@ -1,0 +1,6 @@
+---
+features:
+  - The OSprofiler is integrated to Zaqar in Ocata. It is a library from oslo.
+    It aims to analyse the performance bottleneck issue by making possible to
+    generate one trace per request affecting all involved services and build a
+    tree of calls.
