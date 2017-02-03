@@ -25,7 +25,6 @@
 
 import io
 import os
-import sqlalchemy as sa
 
 import alembic
 from alembic import command
@@ -40,9 +39,16 @@ from zaqar.i18n import _LE
 import zaqar.storage.sqlalchemy.migration
 from zaqar.storage.sqlalchemy import tables
 
-
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+sqlalchemy_opts = [cfg.StrOpt('uri',
+                              help='The SQLAlchemy connection string to'
+                              ' use to connect to the database.',
+                              secret=True)]
+
+CONF.register_opts(sqlalchemy_opts,
+                   group='drivers:management_store:sqlalchemy')
 
 
 class BaseWalkMigrationTestCase(object):
@@ -63,10 +69,10 @@ class BaseWalkMigrationTestCase(object):
         should use oslo_config and openstack.commom.db.sqlalchemy.session with
         database functionality (reset default settings and session cleanup).
         """
+
         CONF.set_override('uri', str(engine.url),
                           group='drivers:management_store:sqlalchemy',
                           enforce_type=True)
-        sa.cleanup()
 
     def _alembic_command(self, alembic_command, engine, *args, **kwargs):
         """Most of alembic command return data into output.
@@ -77,12 +83,12 @@ class BaseWalkMigrationTestCase(object):
         CONF.set_override('uri', str(engine.url),
                           group='drivers:management_store:sqlalchemy',
                           enforce_type=True)
-        sa.cleanup()
+
         getattr(command, alembic_command)(*args, **kwargs)
         res = buf.getvalue().strip()
         LOG.debug('Alembic command {command} returns: {result}'.format(
                   command=alembic_command, result=res))
-        sa.cleanup()
+
         return res
 
     def _get_versions(self):
@@ -167,11 +173,9 @@ class TestModelsMigrationsSync(t_m.ModelsMigrationsSync):
     Allows to check if the DB schema obtained by applying of migration
     scripts is equal to the one produced from models definitions.
     """
-
+    mg_path = os.path.dirname(zaqar.storage.sqlalchemy.migration.__file__)
     ALEMBIC_CONFIG = alembic_config.Config(
-        os.path.join(
-            os.path.dirname(zaqar.storage.sqlalchemy.migration.__file__),
-            'alembic.ini')
+        os.path.join(mg_path, 'alembic.ini')
     )
     ALEMBIC_CONFIG.zaqar_config = CONF
 
@@ -182,6 +186,8 @@ class TestModelsMigrationsSync(t_m.ModelsMigrationsSync):
         CONF.set_override('uri', str(engine.url),
                           group='drivers:management_store:sqlalchemy',
                           enforce_type=True)
+        script_location = os.path.join(self.mg_path, 'alembic_migrations')
+        self.ALEMBIC_CONFIG.set_main_option('script_location', script_location)
         alembic.command.upgrade(self.ALEMBIC_CONFIG, 'head')
 
     def get_metadata(self):

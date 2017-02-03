@@ -33,20 +33,20 @@ MYSQL_CHARSET = 'utf8'
 
 
 def upgrade():
-    op.create_table('queues',
+    op.create_table('Queues',
                     sa.Column('id', sa.INTEGER, primary_key=True),
                     sa.Column('project', sa.String(64)),
                     sa.Column('name', sa.String(64)),
                     sa.Column('metadata', sa.LargeBinary),
                     sa.UniqueConstraint('project', 'name'))
 
-    op.create_table('poolgroup',
+    op.create_table('PoolGroup',
                     sa.Column('name', sa.String(64), primary_key=True))
 
-    op.create_table('pools',
+    op.create_table('Pools',
                     sa.Column('name', sa.String(64), primary_key=True),
                     sa.Column('group', sa.String(64),
-                              sa.ForeignKey('poolgroup.name',
+                              sa.ForeignKey('PoolGroup.name',
                                             ondelete='CASCADE'),
                               nullable=True),
                     sa.Column('uri', sa.String(255),
@@ -54,18 +54,18 @@ def upgrade():
                     sa.Column('weight', sa.INTEGER, nullable=False),
                     sa.Column('options', sa.Text()))
 
-    op.create_table('flavors',
+    op.create_table('Flavors',
                     sa.Column('name', sa.String(64), primary_key=True),
                     sa.Column('project', sa.String(64)),
                     sa.Column('pool_group', sa.String(64),
-                              sa.ForeignKey('poolgroup.name',
+                              sa.ForeignKey('PoolGroup.name',
                                             ondelete='CASCADE'),
                               nullable=False),
                     sa.Column('capabilities', sa.Text()))
 
-    op.create_table('catalogue',
+    op.create_table('Catalogue',
                     sa.Column('pool', sa.String(64),
-                              sa.ForeignKey('pools.name',
+                              sa.ForeignKey('Pools.name',
                                             ondelete='CASCADE')),
                     sa.Column('project', sa.String(64)),
                     sa.Column('queue', sa.String(64), nullable=False),
