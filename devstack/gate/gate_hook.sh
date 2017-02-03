@@ -14,7 +14,7 @@
 
 # This script is executed inside gate_hook function in devstack gate.
 
-ENABLED_SERVICES="mysql,key,tempest,zaqar-websocket,zaqar-wsgi"
+OVERRIDE_ENABLED_SERVICES="mysql,key,tempest,zaqar-websocket,zaqar-wsgi"
 
 export DEVSTACK_GATE_ZAQAR=1
 export DEVSTACK_GATE_INSTALL_TESTONLY=1
@@ -28,9 +28,12 @@ export DEVSTACK_GATE_ZAQAR_TEST_SUITE=$1
 # NOTE(flaper87): Backwards compatibility until `project-config`'s
 # patch lands.
 export DEVSTACK_GATE_ZAQAR_BACKEND=${2:-$DEVSTACK_GATE_ZAQAR_TEST_SUITE}
+if [ "$DEVSTACK_GATE_ZAQAR_BACKEND" == "swift" ]; then
+    OVERRIDE_ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
+fi
 export DEVSTACK_LOCAL_CONFIG+=$"
 export ZAQAR_BACKEND=$DEVSTACK_GATE_ZAQAR_BACKEND"
-export ENABLED_SERVICES
+export OVERRIDE_ENABLED_SERVICES
 
 function run_devstack_gate() {
     $BASE/new/devstack-gate/devstack-vm-gate.sh
