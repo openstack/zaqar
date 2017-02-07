@@ -102,7 +102,7 @@ function configure_zaqar {
 
     configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
 
-    iniset $ZAQAR_CONF trustee auth_plugin password
+    iniset $ZAQAR_CONF trustee auth_type password
     iniset $ZAQAR_CONF trustee auth_url $KEYSTONE_AUTH_URI
     iniset $ZAQAR_CONF trustee username $ZAQAR_TRUSTEE_USER
     iniset $ZAQAR_CONF trustee password $ZAQAR_TRUSTEE_PASSWORD
