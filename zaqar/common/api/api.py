@@ -45,7 +45,6 @@ class Api(object):
         try:
             return self.schema[action]
         except KeyError:
-            # TODO(flaper87): gettext support
             msg = _('{0} is not a valid action').format(action)
             raise errors.InvalidAction(msg)
 
