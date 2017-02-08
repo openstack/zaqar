@@ -53,7 +53,7 @@ class Bootstrap(object):
         profiler_opts.set_defaults(self.conf)
 
         # TODO(wangxiyuan): Now the OSprofiler feature in Zaqar only support
-        # wsgi. Websockt part will be added in the future.
+        # wsgi. Websocket part will be added in the future.
         profile.setup(self.conf, 'Zaqar-server', socket.gethostname())
 
         self.driver_conf = self.conf[configs._DRIVER_GROUP]
