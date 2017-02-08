@@ -26,13 +26,13 @@ patch_options = {
     }
 }
 
-# NOTE(cpp-cabrera): a string valid for use in a URI
-# TODO(cpp-cabrera): perhaps validate this further using jsonschema's
-# uri validator as per rfc3987
 patch_uri = {
     'type': 'object', 'properties': {
         'uri': {
-            'type': 'string'
+            'type': 'string',
+            'minLength': 0,
+            'maxLength': 255,
+            'format': 'uri'
         },
         'additionalProperties': False
     }
@@ -41,7 +41,9 @@ patch_uri = {
 patch_group = {
     'type': 'object', 'properties': {
         'uri': {
-            'type': 'string'
+            'type': 'string',
+            'minLength': 0,
+            'maxLength': 255
         },
         'additionalProperties': False
     }

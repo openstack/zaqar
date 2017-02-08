@@ -65,12 +65,13 @@ def pools(test, count, uri, group):
     :returns: (paths, weights, uris, options)
     :rtype: ([six.text_type], [int], [six.text_type], [dict])
     """
+    mongo_url = uri
     base = test.url_prefix + '/pools/'
     args = [(base + str(i), i,
              {str(i): i})
             for i in range(count)]
     for path, weight, option in args:
-        uri = "%s/%s" % (uri, str(uuid.uuid4()))
+        uri = "%s/%s" % (mongo_url, str(uuid.uuid4()))
         doc = {'weight': weight, 'uri': uri,
                'group': group, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
