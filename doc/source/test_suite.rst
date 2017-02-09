@@ -93,4 +93,4 @@ When you run tests via ``tox -e py27`` command in the root directory of Zaqar:
 .. _`OpenStack Tox testing manual` : https://wiki.openstack.org/wiki/Testing#Unit_Testing_with_Tox
 .. _`Tox documentation` : https://tox.readthedocs.org/en/latest/
 .. _`OpenStack Testr manual` : https://wiki.openstack.org/wiki/Testr
-.. _`Tempest repository` : https://github.com/openstack/tempest
+.. _`Tempest repository` : https://git.openstack.org/cgit/openstack/tempest
