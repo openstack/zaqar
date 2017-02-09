@@ -99,11 +99,11 @@ On Fedora-based distributions, follow the instructions in the
 Getting the code
 ################
 
-Get the code from GitHub to create a local repository with Zaqar:
+Get the code from git.openstack.org to create a local repository with Zaqar:
 
 .. code-block:: console
 
-  $ git clone https://github.com/openstack/zaqar.git
+  $ git clone https://git.openstack.org/openstack/zaqar.git
 
 Configuration
 #############
@@ -276,7 +276,7 @@ To do this, you first need to add the following setting to your ``local.conf``:
 
 .. code-block:: ini
 
-  enable_plugin zaqar https://github.com/openstack/zaqar
+  enable_plugin zaqar https://git.openstack.org/openstack/zaqar
 
 Then run the ``stack.sh`` script as usual.
 
