@@ -39,7 +39,7 @@ class Resource(object):
         self._subscription_ctrl = driver._storage.subscription_controller
         self._validate = driver._validate
 
-    @decorators.TransportLog("Queue item")
+    @decorators.TransportLog("Queues item")
     @acl.enforce("queues:purge")
     def on_post(self, req, resp, project_id, queue_name):
         try:
