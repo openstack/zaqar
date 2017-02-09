@@ -50,10 +50,6 @@ VERSION = {
 
 @decorators.api_version_manager(VERSION)
 def public_endpoints(driver, conf):
-    LOG.warning('Zaqar\'s API version 1.1 will enter deprecation during the '
-                'Newton cycle. As part of that, it will be marked as '
-                'deprecated and it will be turned off by default')
-
     queue_controller = driver._storage.queue_controller
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
