@@ -17,8 +17,8 @@ import json
 import uuid
 
 from tempest.common.utils import data_utils
+from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
-from tempest import test
 
 from zaqar.tests.tempest_plugin.tests import base
 
@@ -134,7 +134,7 @@ class TestSubscriptions(base.BaseV2MessagingTest):
         message_body = self.generate_message_body()
         self.post_messages(queue_name=self.queue_name, rbody=message_body)
 
-        if not test.call_until_true(
+        if not test_utils.call_until_true(
                 lambda: self.list_messages(sub_queue)[1]['messages'], 10, 1):
             self.fail("Couldn't get messages")
         _, body = self.list_messages(sub_queue)
