@@ -254,7 +254,7 @@ class ConfirmResource(object):
         self._subscription_controller = subscription_controller
         self._validate = validate
 
-    @decorators.TransportLog("Subscription confirmation item")
+    @decorators.TransportLog("Subscriptions confirmation item")
     @acl.enforce("subscription:confirm")
     def on_put(self, req, resp, project_id, queue_name, subscription_id):
         if req.content_length:

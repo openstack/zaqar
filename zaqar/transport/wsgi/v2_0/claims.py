@@ -125,7 +125,7 @@ class ItemResource(object):
             ('grace', int, default_grace_ttl),
         )
 
-    @decorators.TransportLog("Claim item")
+    @decorators.TransportLog("Claims item")
     @acl.enforce("claims:get")
     def on_get(self, req, resp, project_id, queue_name, claim_id):
         try:
@@ -159,7 +159,7 @@ class ItemResource(object):
         resp.body = utils.to_json(meta)
         # status defaults to 200
 
-    @decorators.TransportLog("Claim item")
+    @decorators.TransportLog("Claims item")
     @acl.enforce("claims:update")
     def on_patch(self, req, resp, project_id, queue_name, claim_id):
         # Read claim metadata (e.g., TTL) and raise appropriate
@@ -189,7 +189,7 @@ class ItemResource(object):
             description = _(u'Claim could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-    @decorators.TransportLog("Claim item")
+    @decorators.TransportLog("Claims item")
     @acl.enforce("claims:delete")
     def on_delete(self, req, resp, project_id, queue_name, claim_id):
         try:
