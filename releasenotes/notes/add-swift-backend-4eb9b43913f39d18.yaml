@@ -1,0 +1,6 @@
+---
+features:
+  - The new Swift storage backend is added to Zaqar in Ocata. It's experimental
+    currently. To use this backend, you should modify the "drivers" section in
+    the config file.
+    [Blueprint `swift-storage-driver <https://blueprints.launchpad.net/zaqar/+spec/swift-storage-driver>`_]
