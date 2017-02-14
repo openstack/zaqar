@@ -168,6 +168,7 @@ class Resource(object):
 
         response.body = transport_utils.to_json(data)
 
+    @decorators.TransportLog("Pools item")
     @acl.enforce("pools:create")
     def on_put(self, request, response, project_id, pool):
         """Registers a new pool. Expects the following input:
