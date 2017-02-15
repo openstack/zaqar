@@ -16,6 +16,7 @@
 import json
 import uuid
 
+import ddt
 import mock
 
 from zaqar.common import urls
@@ -23,6 +24,7 @@ from zaqar.notification import notifier
 from zaqar import tests as testing
 
 
+@ddt.ddt
 class NotifierTest(testing.TestBase):
 
     def setUp(self):
@@ -314,3 +316,98 @@ class NotifierTest(testing.TestBase):
                                          str(self.project), self.api_version)
 
         self.assertFalse(mock_create_signed_url.called)
+
+    def _make_confirm_string(self, conf, message, queue_name):
+        confirmation_url = conf.notification.external_confirmation_url
+        param_string_signature = '?Signature=' + message.get('signature')
+        param_string_methods = '&Methods=' + message.get('methods')[0]
+        param_string_paths = '&Paths=' + message.get('paths')[0]
+        param_string_project = '&Project=' + message.get('project')
+        param_string_expires = '&Expires=' + message.get('expires')
+        param_string_confirm_url = '&Url=' + message.get('WSGISubscribeURL',
+                                                         '')
+        param_string_queue = '&Queue=' + queue_name
+        confirm_url_string = (confirmation_url + param_string_signature +
+                              param_string_methods + param_string_paths +
+                              param_string_project + param_string_expires +
+                              param_string_confirm_url + param_string_queue)
+        return confirm_url_string
+
+    @mock.patch('zaqar.common.urls.create_signed_url')
+    @mock.patch('subprocess.Popen')
+    def _send_confirm_notification_with_email(self, mock_popen,
+                                              mock_signed_url,
+                                              is_unsubscribed=False):
+        subscription = {'id': '5760c9fb3990b42e8b7c20bd',
+                        'subscriber': 'mailto:aaa@example.com',
+                        'source': 'test_queue',
+                        'options': {'subject': 'Hello',
+                                    'from': 'zaqar@example.com'}
+                        }
+        driver = notifier.NotifierDriver(require_confirmation=True)
+        self.conf.signed_url.secret_key = 'test_key'
+        self.conf.notification.external_confirmation_url = 'http://127.0.0.1'
+        self.conf.notification.require_confirmation = True
+
+        message = {'methods': ['PUT'],
+                   'paths': ['/v2/queues/test_queue/subscriptions/'
+                             '5760c9fb3990b42e8b7c20bd/confirm'],
+                   'project': str(self.project),
+                   'expires': '2016-12-20T02:01:23',
+                   'signature': 'e268676368c235dbe16e0e9ac40f2829a92c948288df'
+                                '36e1cbabd9de73f698df',
+                   }
+        confirm_url = self._make_confirm_string(self.conf, message,
+                                                'test_queue')
+        msg = ('Content-Type: text/plain; charset="us-ascii"\n'
+               'MIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nto:'
+               ' %(to)s\nfrom: %(from)s\nsubject: %(subject)s\n\n%(body)s')
+        if is_unsubscribed:
+            e = self.conf.notification.unsubscribe_confirmation_email_template
+            body = e['body']
+            topic = e['topic']
+            sender = e['sender']
+        else:
+            e = self.conf.notification.subscription_confirmation_email_template
+            body = e['body']
+            topic = e['topic']
+            sender = e['sender']
+        body = body.format(subscription['source'], str(self.project),
+                           confirm_url)
+        mail1 = msg % {'to': subscription['subscriber'][7:],
+                       'from': sender,
+                       'subject': topic,
+                       'body': body}
+
+        called = set()
+
+        def _communicate(msg):
+            called.add(msg)
+
+        mock_process = mock.Mock()
+        attrs = {'communicate': _communicate}
+        mock_process.configure_mock(**attrs)
+        mock_popen.return_value = mock_process
+        mock_signed_url.return_value = message
+        driver.send_confirm_notification('test_queue', subscription, self.conf,
+                                         str(self.project),
+                                         api_version=self.api_version,
+                                         is_unsubscribed=is_unsubscribed)
+        driver.executor.shutdown()
+
+        self.assertEqual(1, mock_popen.call_count)
+        options, body = mail1.split('\n\n')
+        expec_options = [options]
+        expect_body = [body]
+        called_options = []
+        called_bodies = []
+        for call in called:
+            options, body = call.split('\n\n')
+            called_options.append(options)
+            called_bodies.append(body)
+        self.assertEqual(expec_options, called_options)
+        self.assertEqual(expect_body, called_bodies)
+
+    @ddt.data(False, True)
+    def test_send_confirm_notification_with_email(self, is_unsub):
+        self._send_confirm_notification_with_email(is_unsubscribed=is_unsub)

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
+<style>
+html, body {
+    margin: 0; padding: 0;
+    background: #fff;
+    color: #333;
+    font: 12px/15px Verdana, sans-serif;
+}
+#container {
+    max-width: 520px;
+    margin: 30px;
+    padding: 0px;
+
+}
+#content h2 {
+    font: bold 16px/16px Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 12px;
+}
+#header {
+    height: 40px;
+    padding-bottom: 0;
+    color: #e47911;
+    position:relative;
+    margin-bottom: 12px;
+}
+#header h1 {
+    font-size: 12px;
+    line-height: 12px;
+    margin: 0; padding: 0;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+#content {
+    padding: 12px;
+    background: #ecf5fb;
+    border: 1px solid #c9e1f4;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+p {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+.error {
+    color: #900;
+}
+.success {
+    color: #090;
+}
+code {
+    font-style: normal;
+    color: #000;
+}
+abbr {
+    font-weight: bold;
+}
+a:visited, a:hover {
+    color: #004b91;
+}
+</style>
+</head>
+<body>
+<div id="container">
+<div id="header">
+<h1>OpenStack Zaqar Service</h1>
+</div>
+<div id="content">
+<h2 id="status">Confirming subscription...</h2>
+<div id="progress">
+<noscript><p>Your browser has JavaScript disabled. <i>To confirm a subscription via this page, your browser must have JavaScript enabled.</i></p></noscript>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+function getParameterByName( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return results[1];
+}
+
+$(document).ready(function(){
+    var confirmationUrl = getParameterByName("Url");
+    var Signature = getParameterByName("Signature");
+    var Methods = getParameterByName("Methods");
+    var Paths = getParameterByName("Paths");
+    var Project = getParameterByName("Project");
+    var Expires = getParameterByName("Expires");
+    var Queue = getParameterByName("Queue");
+
+    var failureString = "<p>Your subscription could not be confirmed because of an error. To receive messages from the queue, please resubscribe your email address.</p>";
+
+    if (Queue == "") {
+        $("#status").html("Subscription <i>not</i> confirmed").addClass("error");
+        $("#progress").html("<p>Your subscription could not be confirmed because your queue is incomplete. Please make sure to use exactly the URL from the subscription confirmation message.</p>");
+    } else {
+        var response = $.ajax({ type: "PUT",
+                                url: "http://127.0.0.1:5678",
+                                dataType: "json",
+                                data: {'confirmed': true},
+                                beforeSend: function(request) {
+                                    request.setRequestHeader("Content-type", "application/json");
+                                    request.setRequestHeader("URL-Signature", Signature);
+                                    request.setRequestHeader("URL-Methods", Methods);
+                                    request.setRequestHeader("URL-Paths", Paths);
+                                    request.setRequestHeader("X-Project-ID", Project);
+                                    request.setRequestHeader("URL-Expires", Expires);
+                                    request.setRequestHeader("Confirmation-Url", confirmationUrl);
+                                },
+                                success: function(data, status, req){
+                                    $("#status").html("Subscription confirmed!").addClass("success");
+                                    $("#progress").html("<p>You have subscribed to the queue:<br /><abbr title=\""
+                                        + Queue
+                                        + "\">"
+                                        + Queue
+                                        + "</abbr>.</p><p>If it was not your intention to subscribe, <a href=\""
+                                        + "unsubscriptionConfirmation.html?Signature="
+                                        + Signature + "&Methods=" + Methods + "&Paths=" + Paths
+                                        + "&Project=" + Project + "&Expires=" + Expires + "&Queue=" + Queue
+                                        + "&Url=" + confirmationUrl + "&Confirm=false"
+                                        + "\">click here to unsubscribe</a>.</p>");
+                                    },
+                                error: function(req, status, error){
+                                    $("#status").html("Subscription <i>not</i> confirmed").addClass("error");
+                                    $("#progress").html(failureString);
+                                }
+                              });
+        }
+    }
+);
+</script>
+
+</body>
+</html>

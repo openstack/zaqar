@@ -67,6 +67,39 @@ _NOTIFICATION_OPTIONS = (
     cfg.BoolOpt('require_confirmation', default=False,
                 help='Whether the http/https/email subscription need to be '
                      'confirmed before notification.'),
+    cfg.StrOpt('external_confirmation_url',
+               help='The confirmation page url that will be used in email '
+                    'subscription confirmation before notification.'),
+    cfg.DictOpt("subscription_confirmation_email_template",
+                default={'topic': 'Zaqar Notification - Subscription '
+                                  'Confirmation',
+                         'body': 'You have chosen to subscribe to the '
+                                 'queue: {0}. This queue belongs to '
+                                 'project: {1}. '
+                                 'To confirm this subscription, '
+                                 'click or visit this link below: {2}',
+                         'sender': 'Zaqar Notifications '
+                                   '<no-reply@openstack.org>'},
+                help="Defines the set of subscription confirmation email "
+                     "content, including topic, body and sender. There is "
+                     "a mapping is {0} -> queue name, {1} ->project id, "
+                     "{2}-> confirm url in body string. User can use any of "
+                     "the three value. But they can't use more than three."),
+    cfg.DictOpt("unsubscribe_confirmation_email_template",
+                default={'topic': 'Zaqar Notification - '
+                                  'Unsubscribe Confirmation',
+                         'body': 'You have unsubscribed successfully to the '
+                                 'queue: {0}. This queue belongs to '
+                                 'project: {1}. '
+                                 'To resubscribe this subscription, '
+                                 'click or visit this link below: {2}',
+                         'sender': 'Zaqar Notifications '
+                                   '<no-reply@openstack.org>'},
+                help="Defines the set of unsubscribe confirmation email "
+                     "content, including topic, body and sender. There is "
+                     "a mapping is {0} -> queue name, {1} ->project id, "
+                     "{2}-> confirm url in body string. User can use any of "
+                     "the three value. But they can't use more than three."),
 )
 
 _NOTIFICATION_GROUP = 'notification'
