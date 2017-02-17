@@ -16,33 +16,40 @@ import six
 
 from zaqar.storage import sqlalchemy
 from zaqar.storage.sqlalchemy import controllers
+from zaqar.storage.sqlalchemy import tables
 from zaqar.storage.sqlalchemy import utils
 from zaqar import tests as testing
 from zaqar.tests.unit.storage import base
 
 
-class SqlalchemyQueueTests(base.QueueControllerTest):
+class DBCreateMixin(object):
+
+    def _prepare_conf(self):
+        tables.metadata.create_all(self.driver.engine)
+
+
+class SqlalchemyQueueTests(DBCreateMixin, base.QueueControllerTest):
     driver_class = sqlalchemy.ControlDriver
     config_file = 'wsgi_sqlalchemy.conf'
     controller_class = controllers.QueueController
     control_driver_class = sqlalchemy.ControlDriver
 
 
-class SqlalchemyPoolsTest(base.PoolsControllerTest):
+class SqlalchemyPoolsTest(DBCreateMixin, base.PoolsControllerTest):
     config_file = 'wsgi_sqlalchemy.conf'
     driver_class = sqlalchemy.ControlDriver
     controller_class = controllers.PoolsController
     control_driver_class = sqlalchemy.ControlDriver
 
 
-class SqlalchemyCatalogueTest(base.CatalogueControllerTest):
+class SqlalchemyCatalogueTest(DBCreateMixin, base.CatalogueControllerTest):
     config_file = 'wsgi_sqlalchemy.conf'
     driver_class = sqlalchemy.ControlDriver
     controller_class = controllers.CatalogueController
     control_driver_class = sqlalchemy.ControlDriver
 
 
-class SqlalchemyFlavorsTest(base.FlavorsControllerTest):
+class SqlalchemyFlavorsTest(DBCreateMixin, base.FlavorsControllerTest):
     config_file = 'wsgi_sqlalchemy.conf'
     driver_class = sqlalchemy.ControlDriver
     controller_class = controllers.FlavorsController

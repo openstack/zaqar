@@ -1,0 +1,7 @@
+---
+critical:
+  - |
+    When using the sqlalchemy driver, operators now are required to run
+    "zaqar-sql-db-manage upgrade" before making the service available. The
+    service previously tried to create the database on the first request, but
+    it was bound to race conditions.

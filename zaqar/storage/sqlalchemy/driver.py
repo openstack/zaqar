@@ -23,7 +23,6 @@ from zaqar.common import decorators
 from zaqar import storage
 from zaqar.storage.sqlalchemy import controllers
 from zaqar.storage.sqlalchemy import options
-from zaqar.storage.sqlalchemy import tables
 
 
 class ControlDriver(storage.ControlDriverBase):
@@ -60,8 +59,6 @@ class ControlDriver(storage.ControlDriverBase):
                 uri.startswith('mysql+pymysql://')):
             sa.event.listen(engine, 'connect',
                             self._mysql_on_connect)
-
-        tables.metadata.create_all(engine, checkfirst=True)
 
         if (self.conf.profiler.enabled and
                 self.conf.profiler.trace_message_store):
