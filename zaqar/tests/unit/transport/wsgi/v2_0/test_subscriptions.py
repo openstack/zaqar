@@ -364,6 +364,15 @@ class TestSubscriptionsMongoDB(base.V2Base):
                             headers=self.headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+    def test_patch_invalid_body(self):
+        resp = self.simulate_patch(self.subscription_path + '/x',
+                                   body='[1]',
+                                   headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+        resp_doc = jsonutils.loads(resp[0])
+        self.assertEqual('Subscriptions must be a dict.',
+                         resp_doc['description'])
+
     def test_delete_works(self):
         self._create_subscription()
         resp = self.simulate_get(self.subscription_path,

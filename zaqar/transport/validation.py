@@ -521,6 +521,10 @@ class Validator(object):
         if not subscription:
             raise ValidationFailed(_(u'No subscription to create.'))
 
+        if not isinstance(subscription, dict):
+            msg = _('Subscriptions must be a dict.')
+            raise ValidationFailed(msg)
+
         subscriber = subscription.get('subscriber', None)
         subscriber_type = None
 
