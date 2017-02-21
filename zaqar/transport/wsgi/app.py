@@ -39,4 +39,6 @@ log.setup(conf, 'zaqar')
 
 boot = bootstrap.Bootstrap(conf)
 conf.drivers.transport = 'wsgi'
-app = boot.transport.app
+application = boot.transport.app
+# Keep the old name for compatibility
+app = application
