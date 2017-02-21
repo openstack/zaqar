@@ -25,8 +25,8 @@ except ImportError:
 
 from zaqar.common import decorators
 from zaqar.i18n import _
-from zaqar.transport import auth
 from zaqar.transport import base
+from zaqar.transport.middleware import auth
 from zaqar.transport.websocket import factory
 
 

@@ -14,22 +14,22 @@
 # limitations under the License.
 
 from distutils import version as d_version
+import falcon
+import six
+import socket
 from wsgiref import simple_server
 
-import falcon
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import netutils
-import six
-import socket
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
 from zaqar.i18n import _
-from zaqar import profile
 from zaqar import transport
 from zaqar.transport import acl
-from zaqar.transport import auth
+from zaqar.transport.middleware import auth
+from zaqar.transport.middleware import profile
 from zaqar.transport import validation
 from zaqar.transport.wsgi import v1_0
 from zaqar.transport.wsgi import v1_1
