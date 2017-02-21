@@ -16,7 +16,7 @@ OSprofiler Guide
 ================
 
 OSprofiler is a library from oslo. It's used for performance analysis. Please
-see `Office Doc`_ for more detail.
+see `Official Doc`_ for more detail.
 
 Preparation
 -----------
@@ -121,4 +121,4 @@ Then you can open the file "list_test" to get the result.
 .. note:: If you used MQ for data transfer, the "--connection-string" here
    could be ignored or set it to your Ceilometer endpoint.
 
-.. _Office Doc: http://docs.openstack.org/developer/osprofiler/background.html
+.. _Official Doc: http://docs.openstack.org/developer/osprofiler/background.html

@@ -189,6 +189,7 @@ Feature Guide
 
    subscription_confirm
    OSprofiler
+   CORS
 
 Other resources
 ===============

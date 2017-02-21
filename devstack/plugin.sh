@@ -111,6 +111,11 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT pooling True
     iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
 
+    if [ "CORS_ENABLED" == 'true'] ; then
+        iniset $ZAQAR_CONF cors
+        iniset $ZAQAR_CONF 'cors' enabled True
+    fi
+
     # NOTE(flaper87): Configure mongodb regardless so we can use it as a pool
     # in tests.
     configure_mongodb

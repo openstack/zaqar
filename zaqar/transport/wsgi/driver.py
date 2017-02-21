@@ -29,6 +29,7 @@ from zaqar.i18n import _
 from zaqar import transport
 from zaqar.transport import acl
 from zaqar.transport.middleware import auth
+from zaqar.transport.middleware import cors
 from zaqar.transport.middleware import profile
 from zaqar.transport import validation
 from zaqar.transport.wsgi import v1_0
@@ -152,6 +153,11 @@ class Driver(transport.DriverBase):
             auth_app = strategy.install(self.app, self._conf)
 
         self.app = auth.SignedHeadersAuth(self.app, auth_app)
+
+        # NOTE(wangxiyuan): Install CORS, this middleware should be called
+        # before Keystone auth.
+        if self._conf.cors.enabled:
+            self.app = cors.install_cors(self.app, self._conf)
 
         acl.setup_policy(self._conf)
 

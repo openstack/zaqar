@@ -1,0 +1,4 @@
+---
+features:
+  - Zaqar now supports Cross-Origin Resource Sharing (CORS). It turns off by
+    default.  Use "enable=True" in [cors] section from zaqar.conf to use it.
