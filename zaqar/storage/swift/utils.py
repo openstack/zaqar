@@ -96,6 +96,8 @@ def _filter_messages(messages, filters, marker, get_object, list_objects,
             if exc.http_status == 404:
                 continue
             raise
+        if not obj:
+            continue
         obj = jsonutils.loads(obj)
         for should_skip in filters:
             if should_skip(obj, headers):
