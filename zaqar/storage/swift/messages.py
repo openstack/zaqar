@@ -288,16 +288,21 @@ class MessageQueueHandler(object):
                           utils._claim_container(name, project)]:
             try:
                 headers, objects = self._client.get_container(container)
+            except swiftclient.ClientException as exc:
+                if exc.http_status != 404:
+                    raise
+            else:
                 for obj in objects:
                     try:
                         self._client.delete_object(container, obj['name'])
                     except swiftclient.ClientException as exc:
                         if exc.http_status != 404:
                             raise
-                self._client.delete_container(container)
-            except swiftclient.ClientException as exc:
-                if exc.http_status != 404:
-                    raise
+                try:
+                    self._client.delete_container(container)
+                except swiftclient.ClientException as exc:
+                    if exc.http_status not in (404, 409):
+                        raise
 
     def stats(self, name, project=None):
         if not self._queue_ctrl.exists(name, project=project):
