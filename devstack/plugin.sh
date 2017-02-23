@@ -156,7 +156,6 @@ function configure_zaqar {
     iniset $ZAQAR_UWSGI_CONF uwsgi processes 1
     iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
     iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
-    iniset $ZAQAR_UWSGI_CONF uwsgi callable app
     iniset $ZAQAR_UWSGI_CONF uwsgi master true
     iniset $ZAQAR_UWSGI_CONF uwsgi add-header "Connection: close"
 
