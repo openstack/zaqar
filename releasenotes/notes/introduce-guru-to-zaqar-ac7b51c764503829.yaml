@@ -1,0 +1,6 @@
+---
+features:
+  - Introduce Guru to Zaqar. Guru is a mechanism whereby developers and system
+    administrators can generate a report about the state of a running Zaqar
+    executable. This report is called a *Guru Meditation Report*. Now Guru can
+    support wsgi, websocket and uwsgi modes all.

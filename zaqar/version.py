@@ -17,6 +17,7 @@ import pbr.version
 
 
 version_info = pbr.version.VersionInfo('zaqar')
+version_string = version_info.version_string
 
 
 def verify_sha(expected):
