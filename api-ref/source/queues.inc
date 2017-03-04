@@ -302,7 +302,7 @@ Request Example
 
 
 Response Parameters
-------------------
+-------------------
 
 .. rest_parameters:: parameters.yaml
 

@@ -85,7 +85,7 @@ Response Parameters
   - resources: messages_resources
 
 Response Example
----------------
+----------------
 
 .. literalinclude:: samples/messages-post-response.json
    :language: javascript
@@ -248,7 +248,7 @@ body.
 Get A Specific Message
 ======================
 
-.. rest_method:: GET /v2/queues/{queue_name}/messages/{messageId}
+.. rest_method:: GET /v2/queues/{queue_name}/messages/{message_id}
 
 Gets the specified message from the specified queue.
 
@@ -293,7 +293,7 @@ Response Example
 Delete A Specific Message
 =========================
 
-.. rest_method:: DELETE /v2/queues/{queue_name}/messages/{messageId}
+.. rest_method:: DELETE /v2/queues/{queue_name}/messages/{message_id}
 
 Deletes the specified message from the specified queue.
 
@@ -327,7 +327,7 @@ Request
 .. rest_parameters:: parameters.yaml
 
   - queue_name: queue_name
-  - messageId: messageId
+  - message_id: message_id
 
 This operation does not accept a request body and does not return a response
 body.

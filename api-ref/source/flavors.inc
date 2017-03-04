@@ -1,6 +1,7 @@
-================
+=================
 Flavors (flavors)
-================
+=================
+
 Queue flavors allow users to have different types of queues based on the
 storage capabilities. By using flavors, it's possible to allow consumers of the
 service to choose between durable storage, fast storage, etc. Flavors must be
@@ -112,7 +113,7 @@ Request Parameters
 
 .. rest_parameters:: parameters.yaml
 
-  - flaovr_name: flavor_name_path
+  - flavor_name: flavor_name_path
   - pool_group: flavor_pool_group
 
 

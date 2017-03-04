@@ -14,33 +14,12 @@ client_id:
 
 #### variables in path #######################################################
 
-queue_name:
-  type: string
-  in: path
-  required: True
-  description: |
-    The name of the queue.
-
 claim_id:
   type: string
   in: path
   required: True
   description: |
     The id of the claim.
-
-subscription_id_path:
-  type: string
-  in: path
-  required: True
-  description: |
-    The id of the subscription.
-
-pool_name_path:
-  type: string
-  in: path
-  required: True
-  description:
-    The name of the pool.
 
 flavor_name_path:
   type: string
@@ -49,7 +28,72 @@ flavor_name_path:
   description:
     The name of the flavor.
 
+message_id:
+  type: string
+  in: path
+  required: True
+  description: |
+    The ID of the message.
+
+pool_name_path:
+  type: string
+  in: path
+  required: True
+  description:
+    The name of the pool.
+
+queue_name:
+  type: string
+  in: path
+  required: True
+  description: |
+    The name of the queue.
+
+subscription_id_path:
+  type: string
+  in: path
+  required: True
+  description: |
+    The id of the subscription.
+
 #### variables in query ######################################################
+
+claim_limit:
+  type: integer
+  in: query
+  required: false
+  description: |
+    The ``limit`` specifies up to 20 messages (configurable) to claim. If not
+    specified, limit defaults to 10. Note that claim creation is best-effort,
+    meaning the server may claim and return less than the requested number of
+    messages.
+
+echo:
+   type: boolean
+   in: query
+   required: false
+   description:
+     Indicate if the messages can be echoed back to the client that posted
+     them.
+
+ids:
+  type: list
+  in: query
+  required: false
+  description: |
+    A list of the messages ids. ``pop`` & ``ids`` parameters are mutually
+    exclusive. Using them together in a request will result in HTTP 400.
+
+    NOTE: Actually, it's not a real list, it's string combined with many
+    message ids separated with comma, for example:
+    /messages?ids=578f0055508f153f256f717e,578f0055508f153f256f717f
+
+include_claimed:
+   type: boolean
+   in: query
+   required: false
+   description:
+     Indicate if the messages list should include the claimed messages.
 
 limit:
   type: integer
@@ -70,43 +114,6 @@ marker:
     initial limited request and use the ID of the last-seen item from the
     response as the ``marker`` parameter value in a subsequent limited request.
 
-claim_limit:
-  type: integer
-  in: query
-  required: false
-  description: |
-    The ``limit`` specifies up to 20 messages (configurable) to claim. If not
-    specified, limit defaults to 10. Note that claim creation is best-effort,
-    meaning the server may claim and return less than the requested number of
-    messages.
-
-echo:
-   type: boolean
-   in: query
-   required: false
-   description:
-     Indicate if the messages can be echoed back to the client that posted
-     them.
-
-include_claimed:
-   type: boolean
-   in: query
-   required: false
-   description:
-     Indicate if the messages list should include the claimed messages.
-
-ids:
-  type: list
-  in: query
-  required: false
-  description: |
-    A list of the messages ids. ``pop`` & ``ids`` parameters are mutually
-    exclusive. Using them together in a request will result in HTTP 400.
-
-    NOTE: Actually, it's not a real list, it's string combined with many
-    message ids separated with comma, for example:
-    /messages?ids=578f0055508f153f256f717e,578f0055508f153f256f717f
-
 pop:
   type: integer
   in: query
@@ -118,14 +125,45 @@ pop:
 
 #### variables in request ####################################################
 
-claim_ttl:
+
+_default_message_ttl:
   type: integer
   in: body
-  required: false
+  required: True
   description: |
-    The ``ttl`` attribute specifies how long the server waits before releasing
-    the claim. The ttl value must be between 60 and 43200 seconds (12 hours).
-    You must include a value for this attribute in your request.
+    The default TTL of messages defined for a queue, which will effect for
+    any messages posted to the queue. So when there is no TTL defined for a
+    message, the queue's _default_message_ttl will be used. By default, the
+    value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
+    one of the ``reserved attributes`` of Zaqar queues. The value will be
+    reverted to the default value after deleting it explicitly.
+
+_max_messages_post_size:
+  type: integer
+  in: body
+  required: True
+  description: |
+    The max post size of messages defined for a queue, which will effect for
+    any messages posted to the queue. So user can define a queue's level
+    cap for post size which can't bigger than the max_messages_post_size
+    defined in zaqar.conf. It is one of the ``reserved attributes`` of Zaqar
+    queues. The value will be reverted to the default value after deleting it
+    explicitly.
+
+capabilities:
+  type: list
+  in: body
+  description: |
+    Capabilities describe what this flavor is capable of base on the storage
+    capabilities. They are used to inform the final user such capabilities.
+
+catalog_reachable:
+  type: boolean
+  in: body
+  required: True
+  description: |
+    A boolean value to indicate if the management(catalog) datatabse is
+    reachable or not.
 
 claim_grace:
   type: integer
@@ -141,277 +179,20 @@ claim_grace:
     the specified grace period. If a claimed message would normally live longer
     than the claim's live period, its expiration is not adjusted.
 
-subscriber:
-  type: string
-  in: body
-  required: True
-  description: |
-    The ``subscriber`` attribute specifies the destination where the message
-    notify to. It has been designed to match the Internet RFC on Relative
-    Uniform Resource Locators. Zaqar now support two kinds of subscribers:
-    http/https and email. The http/https subscriber should start with
-    ``http/https``. The email subscriber should start with ``mailto``.
-
-subscription_ttl:
+claim_ttl:
   type: integer
   in: body
   required: false
   description: |
-    The ``ttl`` attribute specifies how long the subscription be alive. The ttl
-    value must be great than 60 seconds. The default value is 3600 seconds.
+    The ``ttl`` attribute specifies how long the server waits before releasing
+    the claim. The ttl value must be between 60 and 43200 seconds (12 hours).
+    You must include a value for this attribute in your request.
 
-subscription_options:
-  type: dict
-  in: body
-  required: false
-  description: |
-    The ``options`` attribute specifies the extra metadata for the subscription
-    . The value must be a dict and could contain any key-value. If the
-    subscriber is "mailto". The ``options`` can contain ``from`` and
-    ``subject`` to indicate the email's author and title.
-
-pool_weight:
-  type: integer
-  in: body
-  required: true
-  description: |
-    The ``weight`` attribute specifies the likelihood that this pool will be
-    selected for the next queue allocation. The value must be an integer
-    greater than -1.
-
-pool_uri:
-  type: string
-  in: body
-  required: true
-  description: |
-    The ``uri`` attribute specifies a connection string compatible with a
-    storage client (e.g., pymongo) attempting to connect to that pool.
-
-pool_group:
-  type: string
-  in: body
-  required: false
-  description: |
-    The ``group`` attribute specifies a tag to given to more than one pool
-    so that it keeps user remind the purpose/capabilities of all pools that
-    falls under that group.
-
-pool_options:
-  type: dict
-  in: body
-  required: false
-  description: |
-    The ``options`` attribute gives storage-specific options used by storage
-    driver implementations. The value must be a dict and valid key-value come
-    from the registered options for a given storage backend.
-
-flavor_pool_group:
-  type: string
-  in: body
-  required: true
-  description: |
-    The ``pool_group`` attribute specifies the name of the pool group
-    this flavor sits on top of.
-
-resource_types:
-  type: list
-  in: body
-  required: false
-  description: |
-    The ``resource_types`` attribute allows user to purge particular resource
-    of the queue.
-
-#### variables in response ###################################################
-
-versions:
-  type: list
-  in: body
-  required: True
-  description: |
-    A list of supported major API versions.
-
-queues:
-  type: list
-  in: body
-  description: |
-    A list of the queues.
-
-links:
-  type: array
-  in: body
-  required: true
-  description: |
-    Links related to the queues. This is a list of dictionaries, each including
-    keys ``href`` and ``rel``.
-
-queue_metadata:
-  type: dict
-  in: body
-  description: |
-    Metadata of queue.
-
-_max_messages_post_size:
-  type: integer
-  in: body
-  required: True
-  description: |
-    The max post size of messages defined for a queue, which will effect for
-    any messages posted to the queue. So user can define a queue's level
-    cap for post size which can't bigger than the max_messages_post_size
-    defined in zaqar.conf. It is one of the ``reserved attributes`` of Zaqar
-    queues. The value will be reverted to the default value after deleting it
-    explicitly.
-
-_default_message_ttl:
-  type: integer
-  in: body
-  required: True
-  description: |
-    The default TTL of messages defined for a queue, which will effect for
-    any messages posted to the queue. So when there is no TTL defined for a
-    message, the queue's _default_message_ttl will be used. By default, the
-    value is the same value defined as ''max_message_ttl'' in zaqar.conf. It is
-    one of the ``reserved attributes`` of Zaqar queues. The value will be
-    reverted to the default value after deleting it explicitly.
-
-messages:
-  type: list
-  in: body
-  required: True
-  description: |
-    A list of the messages.
-
-messages_resources:
-  type: list
-  in: body
-  description: |
-    A list of the URL to messages.
-
-subscriptions:
-  type: list
-  in: body
-  description: |
-    A list of the subscriptions.
-
-subscription_id:
+flavor_href:
   type: string
   in: body
   description: |
-    The id of the subscription.
-
-subscription_age:
-  type: integer
-  in: body
-  description: |
-    How long the subscription has be existed.
-
-subscription_source:
-  type: string
-  in: body
-  description: |
-    The queue name which the subscription is registered on.
-
-catalog_reachable:
-  type: boolean
-  in: body
-  required: True
-  description: |
-    A boolean value to indicate if the management(catalog) datatabse is
-    reachable or not.
-
-storage_reachable:
-  type: boolean
-  in: body
-  required: False
-  description: |
-    A boolean value to indicate if the messages(pool) datatabse is
-    reachable or not.
-
-operation_status:
-  type: dict
-  in: body
-  required: False
-  description: |
-    A dict which will contain the status for many different actions/operations.
-    For example, post_messages, delete_messages, delete queue, etc. And each
-    status is a dict which contains three items: ``seconds``, ``ref`` and
-    ``succeeded``. Seconds means how long the operation took and succeeded will
-    indicate if the actions was successful or not. Ref may contain the
-    information if the succeeded is False, otherwise it's null.
-
-project_id:
-  type: string
-  in: body
-  required: True
-  description: |
-    The ID of current project/tenant.
-
-pre_signed_queue_paths:
-  type: list
-  in: body
-  required: True
-  description: |
-    A list of paths the pre-signed queue can support. It could be a set of
-    ``messages``, ``subscriptions``, ``claims``.
-
-pre_signed_queue_methods:
-  type: list
-  in: body
-  required: True
-  description: |
-    A list of HTTP methods. The HTTP method(s) this URL was created for. By
-    selecting the HTTP method, it’s possible to give either read or read/write
-    access to a specific resource.
-
-pre_signed_queue_expires:
-  type: string
-  in: body
-  required: True
-  description: |
-    The time to indicate when the pre-signed will be expired.
-
-pre_signed_queue_signature:
-  type: list
-  in: body
-  required: True
-  description: |
-    The signature is generated after create the pre-signed URL. It can be
-    consumed by adding below to HTTP headers:
-
-    URL-Signature: 6a63d63242ebd18c3518871dda6fdcb6273db2672c599bf985469241e9a1c799
-    URL-Expires: 2015-05-31T19:00:17Z
-
-pools:
-  type: list
-  in: body
-  description: |
-    A list of the pools.
-
-pool_href:
-  type: string
-  in: body
-  description: |
-    The url of the pool.
-
-pool_name:
-  type: string
-  in: body
-  description: |
-    The name of the pool.
-
-pool_links:
-  type: array
-  in: body
-  required: true
-  description: |
-    Links related to the pools. This is a list of dictionaries, each including
-    keys ``href`` and ``rel``.
-
-flavors:
-  type: list
-  in: body
-  description: |
-    A list of the flaovrs.
+    The url of the flavor.
 
 flavor_links:
   type: array
@@ -428,15 +209,241 @@ flavor_name:
   description: |
     The name of the flavor.
 
-flavor_href:
+flavor_pool_group:
   type: string
   in: body
+  required: true
   description: |
-    The url of the flavor.
+    The ``pool_group`` attribute specifies the name of the pool group
+    this flavor sits on top of.
 
-capabilities:
+flavors:
   type: list
   in: body
   description: |
-    Capabilities describe what this flavor is capable of base on the storage
-    capabilities. They are used to inform the final user such capabilities.
+    A list of the flaovrs.
+
+links:
+  type: array
+  in: body
+  required: true
+  description: |
+    Links related to the queues. This is a list of dictionaries, each including
+    keys ``href`` and ``rel``.
+
+messages:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of the messages.
+
+messages_resources:
+  type: list
+  in: body
+  description: |
+    A list of the URL to messages.
+
+operation_status:
+  type: dict
+  in: body
+  required: False
+  description: |
+    A dict which will contain the status for many different actions/operations.
+    For example, post_messages, delete_messages, delete queue, etc. And each
+    status is a dict which contains three items: ``seconds``, ``ref`` and
+    ``succeeded``. Seconds means how long the operation took and succeeded will
+    indicate if the actions was successful or not. Ref may contain the
+    information if the succeeded is False, otherwise it's null.
+
+pool_group:
+  type: string
+  in: body
+  required: false
+  description: |
+    The ``group`` attribute specifies a tag to given to more than one pool
+    so that it keeps user remind the purpose/capabilities of all pools that
+    falls under that group.
+
+pool_href:
+  type: string
+  in: body
+  description: |
+    The url of the pool.
+
+pool_links:
+  type: array
+  in: body
+  required: true
+  description: |
+    Links related to the pools. This is a list of dictionaries, each including
+    keys ``href`` and ``rel``.
+
+pool_name:
+  type: string
+  in: body
+  description: |
+    The name of the pool.
+
+pool_options:
+  type: dict
+  in: body
+  required: false
+  description: |
+    The ``options`` attribute gives storage-specific options used by storage
+    driver implementations. The value must be a dict and valid key-value come
+    from the registered options for a given storage backend.
+
+pool_uri:
+  type: string
+  in: body
+  required: true
+  description: |
+    The ``uri`` attribute specifies a connection string compatible with a
+    storage client (e.g., pymongo) attempting to connect to that pool.
+
+pool_weight:
+  type: integer
+  in: body
+  required: true
+  description: |
+    The ``weight`` attribute specifies the likelihood that this pool will be
+    selected for the next queue allocation. The value must be an integer
+    greater than -1.
+
+pools:
+  type: list
+  in: body
+  description: |
+    A list of the pools.
+
+pre_signed_queue_expires:
+  type: string
+  in: body
+  required: True
+  description: |
+    The time to indicate when the pre-signed will be expired.
+
+pre_signed_queue_methods:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of HTTP methods. The HTTP method(s) this URL was created for. By
+    selecting the HTTP method, it’s possible to give either read or read/write
+    access to a specific resource.
+
+pre_signed_queue_paths:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of paths the pre-signed queue can support. It could be a set of
+    ``messages``, ``subscriptions``, ``claims``.
+
+pre_signed_queue_signature:
+  type: list
+  in: body
+  required: True
+  description: |
+    The signature is generated after create the pre-signed URL. It can be
+    consumed by adding below to HTTP headers:
+
+    URL-Signature: 6a63d63242ebd18c3518871dda6fdcb6273db2672c599bf985469241e9a1c799
+    URL-Expires: 2015-05-31T19:00:17Z
+
+project_id:
+  type: string
+  in: body
+  required: True
+  description: |
+    The ID of current project/tenant.
+
+queue_metadata:
+  type: dict
+  in: body
+  description: |
+    Metadata of queue.
+
+queues:
+  type: list
+  in: body
+  description: |
+    A list of the queues.
+
+resource_types:
+  type: list
+  in: body
+  required: false
+  description: |
+    The ``resource_types`` attribute allows user to purge particular resource
+    of the queue.
+
+storage_reachable:
+  type: boolean
+  in: body
+  required: False
+  description: |
+    A boolean value to indicate if the messages(pool) datatabse is
+    reachable or not.
+
+subscriber:
+  type: string
+  in: body
+  required: True
+  description: |
+    The ``subscriber`` attribute specifies the destination where the message
+    notify to. It has been designed to match the Internet RFC on Relative
+    Uniform Resource Locators. Zaqar now support two kinds of subscribers:
+    http/https and email. The http/https subscriber should start with
+    ``http/https``. The email subscriber should start with ``mailto``.
+
+subscription_age:
+  type: integer
+  in: body
+  description: |
+    How long the subscription has be existed.
+
+subscription_id:
+  type: string
+  in: body
+  description: |
+    The id of the subscription.
+
+subscription_options:
+  type: dict
+  in: body
+  required: false
+  description: |
+    The ``options`` attribute specifies the extra metadata for the subscription
+    . The value must be a dict and could contain any key-value. If the
+    subscriber is "mailto". The ``options`` can contain ``from`` and
+    ``subject`` to indicate the email's author and title.
+
+subscription_source:
+  type: string
+  in: body
+  description: |
+    The queue name which the subscription is registered on.
+
+subscription_ttl:
+  type: integer
+  in: body
+  required: false
+  description: |
+    The ``ttl`` attribute specifies how long the subscription be alive. The ttl
+    value must be great than 60 seconds. The default value is 3600 seconds.
+
+
+subscriptions:
+  type: list
+  in: body
+  description: |
+    A list of the subscriptions.
+
+versions:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of supported major API versions.
