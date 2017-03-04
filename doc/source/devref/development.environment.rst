@@ -235,7 +235,7 @@ Installing and using virtualenv
 .. note::
 
   You can run the Zaqar server in the background by passing the
-  :option:`--daemon` flag:
+  ``--daemon`` flag:
 
   .. code-block:: console
 
@@ -274,7 +274,7 @@ can add it to your DevStack_ deployment.
 
 To do this, you first need to add the following setting to your ``local.conf``:
 
-.. code-block:: ini
+.. code-block:: bash
 
   enable_plugin zaqar https://git.openstack.org/openstack/zaqar
 

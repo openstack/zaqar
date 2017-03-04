@@ -725,7 +725,7 @@ class Subscription(ControllerBase):
         :param project: Project id
         :type project: six.text_type
         :param confirmed: Confirm a subscription or cancel the confirmation of
-        a subscription.
+            a subscription.
         :type confirmed: boolean
         """
         raise NotImplementedError

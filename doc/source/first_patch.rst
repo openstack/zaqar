@@ -206,7 +206,7 @@ Common problems
     $ git checkout -b newbranch
     $ git commit -a -m "Edited"
 
-   If you already created the branch, omit the :option:`-b`.
+   If you already created the branch, omit the ``-b``.
 
    You put all your changes to :samp:`{newbranch}`. Problem solved.
 

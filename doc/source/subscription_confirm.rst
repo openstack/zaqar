@@ -40,10 +40,12 @@ service first.
 The service could be started simply by the command::
 
     python zaqar/samples/zaqar/subscriber_service_sample.py
+
 The service's default port is 5678. If you want to use a new port, the command
 will be like::
 
     python zaqar/samples/zaqar/subscriber_service_sample.py new_port_number
+
 The service will not confirm the subscription automatically by default. If you
 want to do that, the command will be like::
 
@@ -80,6 +82,7 @@ service, the request is like::
     "Message": "You have chosen to subscribe to the queue: test",
     "Message_Type": "SubscriptionConfirmation"}
     10.229.47.217 - - [06/Jul/2016 11:35:56] "POST / HTTP/1.1" 200 -
+
 If you start the sample service with "--auto confirm", please go to step 6
 directly, because the step 5 will be done by the service automatically.
 
@@ -270,13 +273,16 @@ their own pages::
 
 User can place those pages in web server like Apache to access them by browser,
 so the external_confirmation_url will be like this::
+
     http://127.0.0.1:8080/subscriptionConfirmation.html
+
 For CORS, here used zaqar/samples/html/confirmation_web_service_sample.py
 be a simple web service for example, it will relay the confirmation request to
 Zaqar Server. So before Step 3, you should start the web service first.
 The service could be started simply by the command::
 
     python zaqar/samples/html/confirmation_web_service_sample.py
+
 The service's default port is 5678. If you want to use a new port, the command
 will be like::
 

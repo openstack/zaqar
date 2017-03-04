@@ -44,7 +44,7 @@ prerequisites:
 -  Basic familiarity with Cloud and RESTful APIs
 
 How Messaging service Works
--------------------------
+---------------------------
 
 Following is an overview of how Messaging service works. For definitions
 of Messaging service terms, see the below glossary.
@@ -138,7 +138,7 @@ This pattern is ideal for communicating with a specific client,
 especially when a reply is desired from that client.
 
 Messaging service Operations
---------------------------
+----------------------------
 
 This section lists all of the operations that are available in the
 Messaging service API. This document uses some of the most common
@@ -315,7 +315,7 @@ Following are some generic use cases for Messaging service:
    (RPC) agent (point-to-point messaging)
 
 Additional Resources
-====================
+--------------------
 
 For more information about using the API, see the Messaging service API v2
 Reference. All you need to get started with Messaging service is the
@@ -328,7 +328,7 @@ This API uses standard HTTP 1.1 response codes as documented at
 `www.w3.org/Protocols/rfc2616/rfc2616-sec10.html <http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html>`__.
 
 Glossary
-========
+--------
 
 **Claim**
 The process of a worker checking out a message to perform a task.
