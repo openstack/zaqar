@@ -68,7 +68,8 @@ So In this example, we should add the following config options::
 
 .. note:: If you want to use MQ and Ceilometer, please leave the
    **connection_string** empty or indicate the MQ information. And please make
-   sure that the following config options have be set in Ceiolmeter.conf
+   sure that the following config options have be set in Ceilometer.conf
+
 ::
 
     [DEFAULT]
@@ -96,6 +97,7 @@ OpenStack Client will return a trace ID like::
     Trace ID: 2902c7a3-ee18-4b08-aae7-4e34388f9352
     Display trace with command:
     osprofiler trace show --html 2902c7a3-ee18-4b08-aae7-4e34388f9352
+
 Now the trace information has been stored in MongoDB already.
 
 2. Use the command from the openstack client return information. The osprofiler

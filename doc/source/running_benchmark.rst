@@ -87,7 +87,7 @@ Usage
      $ zaqar-bench -pp 4 -pw 10 -cp 4 -cw 20 -ow 0 -t 30
 
    By default, the results are in human-readable format. For JSON output add
-   the :option:`--noverbose` flag. The non-verbose output looks similar to the
+   the ``--noverbose`` flag. The non-verbose output looks similar to the
    following:
 
    .. code-block:: console
@@ -99,7 +99,7 @@ Usage
      {"params": {"consumer": {"processes": 1, "workers": 0}, "observer": {"processes": 1, "workers": 5}, "producer": {"processes": 1, "workers": 10}}, "consumer": {"claim_total_requests": 0, "ms_per_claim": 0, "total_reqs": 0, "reqs_per_sec": 0, "successful_reqs": 0, "duration_sec": 0, "ms_per_delete": 0, "messages_processed": 0}, "producer": {"duration_sec": 8.569170951843262, "ms_per_req": 201.715140507139, "total_reqs": 29, "successful_reqs": 29, "reqs_per_sec": 3.384224700729303}, "observer": {"duration_sec": 8.481178045272827, "ms_per_req": 407.40778711107043, "total_reqs": 18, "successful_reqs": 18, "reqs_per_sec": 2.122346672115049}}
 
    By default, zaqar-bench is benchmarking Zaqar API version 2. To run
-   benchmark against other API versions use :option:`-api` parameter. For
+   benchmark against other API versions use ``-api`` parameter. For
    example:
 
    .. code-block:: console
@@ -158,10 +158,10 @@ Let's configure zaqar-bench too to use Keystone:
 
         .. code-block:: bash
 
-           export OS_AUTH_URL=http://<your keystone endpoint>/v2.0
-           export OS_USERNAME=<keystone user name>
-           export OS_PASSWORD=<the user's password>
-           export OS_PROJECT_NAME=<keystone project name for the user>
+           export OS_AUTH_URL="http://<your keystone endpoint>/v2.0"
+           export OS_USERNAME="<keystone user name>"
+           export OS_PASSWORD="<the user's password>"
+           export OS_PROJECT_NAME="<keystone project name for the user>"
 
      Reboot your computer or just run in the terminal where you will start
      zaqar-bench:
