@@ -13,9 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_i18n import *  # noqa
+"""oslo.i18n integration module.
 
-_translators = TranslatorFactory(domain='zaqar')
+See http://docs.openstack.org/developer/oslo.i18n/usage.html .
+
+"""
+
+import oslo_i18n as i18n
+
+_translators = i18n.TranslatorFactory(domain='zaqar')
 
 # The primary translation function using the well-known name "_"
 _ = _translators.primary
