@@ -15,8 +15,8 @@
 
 
 from six import moves
-from tempest.common.utils import data_utils
 from tempest import config
+from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from testtools import matchers
 

@@ -16,7 +16,7 @@
 import json
 import uuid
 
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
