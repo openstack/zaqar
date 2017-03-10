@@ -119,6 +119,7 @@ class ClaimController(storage.Claim):
                     utils._message_container(queue, project),
                     msg['id'],
                     content,
+                    content_type='application/json',
                     headers={'x-object-meta-clientid': msg['client_uuid'],
                              'if-match': md5,
                              'x-object-meta-claimid': claim_id,
@@ -137,6 +138,7 @@ class ClaimController(storage.Claim):
             utils._claim_container(queue, project),
             claim_id,
             jsonutils.dumps([msg['id'] for msg in claimed]),
+            content_type='application/json',
             headers={'x-delete-after': ttl}
         )
 
@@ -152,6 +154,7 @@ class ClaimController(storage.Claim):
             raise
 
         self._client.put_object(container, claim_id, obj,
+                                content_type='application/json',
                                 headers={'x-delete-after': metadata['ttl']})
 
     def delete(self, queue, claim_id, project=None):
@@ -176,6 +179,7 @@ class ClaimController(storage.Claim):
                     utils._message_container(queue, project),
                     msg_id,
                     content,
+                    content_type='application/json',
                     headers={'x-object-meta-clientid': client_id,
                              'if-match': md5,
                              'x-delete-at': headers['x-delete-at']})
