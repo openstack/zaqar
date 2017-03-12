@@ -13,6 +13,8 @@
 
 from six.moves import urllib
 
+from keystoneauth1.identity import v3
+from keystoneauth1 import session as keystone_session
 from oslo_log import log as logging
 import swiftclient
 
@@ -41,7 +43,7 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def connection(self):
-        return _get_swift_client(self)
+        return _ClientWrapper(self.swift_conf)
 
     def is_alive(self):
         return True
@@ -69,10 +71,42 @@ class DataDriver(storage.DataDriverBase):
         pass
 
 
-def _get_swift_client(driver):
-    conf = driver.swift_conf
-    parsed_url = urllib.parse.urlparse(conf.uri)
-    return swiftclient.Connection(conf.auth_url, parsed_url.username,
-                                  parsed_url.password,
-                                  insecure=conf.insecure, auth_version="3",
-                                  tenant_name=parsed_url.path[1:])
+class _ClientWrapper(object):
+    """Wrapper around swiftclient.Connection.
+
+    This wraps swiftclient.Connection to give the same API, but provide a
+    thread-safe alternative with a different object for every method call. It
+    maintains performance by managing authentication itself, and passing the
+    token afterwards.
+    """
+
+    def __init__(self, conf):
+        self.conf = conf
+        self.parsed_url = urllib.parse.urlparse(conf.uri)
+        self.token = None
+        self.url = None
+        self.session = None
+        self.auth = None
+
+    def _refresh_auth(self):
+        self.auth = v3.Password(
+            username=self.parsed_url.username,
+            password=self.parsed_url.password,
+            project_name=self.parsed_url.path[1:],
+            user_domain_id='default',
+            project_domain_id='default',
+            auth_url=self.conf.auth_url)
+        self.session = keystone_session.Session(auth=self.auth)
+        self.url = self.session.get_endpoint(service_type='object-store')
+        self.token = self.session.get_token()
+
+    def __getattr__(self, attr):
+        # This part is not thread-safe, but the worst case is having a bunch of
+        # useless auth calls, so it should be okay.
+        if (self.auth is None or
+                self.auth.get_auth_ref(self.session).will_expire_soon()):
+            self._refresh_auth()
+        client = swiftclient.Connection(
+            preauthurl=self.url,
+            preauthtoken=self.token)
+        return getattr(client, attr)

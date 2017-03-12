@@ -89,7 +89,7 @@ class TestClaims(base.BaseV2MessagingTest):
         # Verify claim ttl >= updated ttl value
         _, body = self.client.query_claim(claim_uri)
         updated_claim_ttl = body["ttl"]
-        self.assertGreaterEqual(updated_claim_ttl, claim_ttl)
+        self.assertGreaterEqual(claim_ttl, updated_claim_ttl)
 
         # Delete Claimed message
         self.client.delete_messages(claimed_message_uri)
