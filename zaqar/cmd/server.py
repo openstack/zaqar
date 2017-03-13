@@ -16,10 +16,13 @@ import os
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 
 from zaqar import bootstrap
 from zaqar.common import cli
 from zaqar.common import configs
+from zaqar import version
 
 # NOTE(eggmaster): define command line options for zaqar-server
 _CLI_OPTIONS = (
@@ -33,6 +36,7 @@ _CLI_OPTIONS = (
 def run():
     # Use the global CONF instance
     conf = cfg.CONF
+    gmr_opts.set_defaults(conf)
     # NOTE(eggmaster): register command line options for zaqar-server
     conf.register_cli_opts(_CLI_OPTIONS)
     log.register_options(conf)
@@ -45,6 +49,8 @@ def run():
                      ' [project_id:%(project_id)s] %(message)s')
     conf(project='zaqar', prog='zaqar-server')
     log.setup(conf, 'zaqar')
+
+    gmr.TextGuruMeditation.setup_autorun(version, conf=conf)
 
     server = bootstrap.Bootstrap(conf)
 

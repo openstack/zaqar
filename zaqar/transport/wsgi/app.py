@@ -28,14 +28,20 @@ to the WSGI app when it is called from other apps.
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 
 from zaqar import bootstrap
+from zaqar import version
 
 # Use the global CONF instance
 conf = cfg.CONF
+gmr_opts.set_defaults(conf)
 log.register_options(conf)
 conf(project='zaqar', prog='zaqar-queues', args=[])
 log.setup(conf, 'zaqar')
+
+gmr.TextGuruMeditation.setup_autorun(version, conf=conf)
 
 boot = bootstrap.Bootstrap(conf)
 conf.drivers.transport = 'wsgi'

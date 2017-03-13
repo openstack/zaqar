@@ -208,6 +208,14 @@ Internal API reference
 
    api/autoindex
 
+Guru Meditation Reports
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   devref/gmr
+
 Indices and tables
 ------------------
 
