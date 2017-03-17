@@ -220,6 +220,7 @@ class MessageController(storage.Message):
                 utils._message_container(queue, project),
                 slug,
                 contents=contents,
+                content_type='application/json',
                 headers={
                     'x-object-meta-clientid': str(client_uuid),
                     'x-delete-after': msg['ttl']})

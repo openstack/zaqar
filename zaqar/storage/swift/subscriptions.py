@@ -98,7 +98,7 @@ class SubscriptionController(storage.Subscription):
                 'confirmed': False}
         utils._put_or_create_container(
             self._client, container, slug, contents=jsonutils.dumps(data),
-            headers={'x-delete-after': ttl})
+            content_type='application/json', headers={'x-delete-after': ttl})
         return slug
 
     def update(self, queue, subscription_id, project=None, **kwargs):
@@ -124,6 +124,7 @@ class SubscriptionController(storage.Subscription):
         self._client.put_object(container,
                                 subscription_id,
                                 contents=jsonutils.dumps(data),
+                                content_type='application/json',
                                 headers={'x-delete-after': ttl})
 
     def exists(self, queue, subscription_id, project=None):
