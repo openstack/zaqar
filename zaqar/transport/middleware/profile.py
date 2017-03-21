@@ -22,7 +22,6 @@ from osprofiler import _utils as utils
 from osprofiler import notifier
 from osprofiler import profiler
 from osprofiler import web
-from zaqar.i18n import _LW
 
 LOG = log.getLogger(__name__)
 
@@ -54,15 +53,15 @@ def setup(conf, binary, host):
             _notifier = notifier.create(backend_uri, project="Zaqar",
                                         service=binary, host=host)
         notifier.set(_notifier)
-        LOG.warning(_LW("OSProfiler is enabled.\nIt means that person who "
-                        "knows any of hmac_keys that are specified in "
-                        "/etc/zaqar/zaqar.conf can trace his requests. \n In "
-                        "real life only operator can read this file so there "
-                        "is no security issue. Note that even if person can "
-                        "trigger profiler, only admin user can retrieve trace "
-                        "information.\n"
-                        "To disable OSprofiler set in zaqar.conf:\n"
-                        "[profiler]\nenabled=false"))
+        LOG.warning("OSProfiler is enabled.\nIt means that person who "
+                    "knows any of hmac_keys that are specified in "
+                    "/etc/zaqar/zaqar.conf can trace his requests. \n In "
+                    "real life only operator can read this file so there "
+                    "is no security issue. Note that even if person can "
+                    "trigger profiler, only admin user can retrieve trace "
+                    "information.\n"
+                    "To disable OSprofiler set in zaqar.conf:\n"
+                    "[profiler]\nenabled=false")
         web.enable(conf.profiler.hmac_keys)
     else:
         web.disable()

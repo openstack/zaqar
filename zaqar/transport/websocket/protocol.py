@@ -38,7 +38,6 @@ except ImportError:
     Message = message.MIMEMessage
 
 from zaqar.common import consts
-from zaqar.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -72,10 +71,10 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._subscriptions = []
 
     def onConnect(self, request):
-        LOG.info(_LI("Client connecting: %s"), request.peer)
+        LOG.info("Client connecting: %s", request.peer)
 
     def onOpen(self):
-        LOG.info(_LI("WebSocket connection open."))
+        LOG.info("WebSocket connection open.")
 
     def onMessage(self, payload, isBinary):
         # Deserialize the request
@@ -144,7 +143,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
     def onClose(self, wasClean, code, reason):
         self._handler.clean_subscriptions(self._subscriptions)
         self.factory.unregister(self.proto_id)
-        LOG.info(_LI("WebSocket connection closed: %s"), reason)
+        LOG.info("WebSocket connection closed: %s", reason)
 
     def _authenticate(self, payload, in_binary):
         self._auth_in_binary = in_binary
@@ -217,8 +216,8 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             body = json.dumps(resp._request._body)
             var_dict = {'api': api, 'pack_name': pack_name, 'status':
                         status, 'action': action, 'body': body}
-            LOG.info(_LI('Response: API %(api)s %(pack_name)s, %(status)s. '
-                         'Request: action "%(action)s", body %(body)s.'),
+            LOG.info('Response: API %(api)s %(pack_name)s, %(status)s. '
+                     'Request: action "%(action)s", body %(body)s.',
                      var_dict)
 
 

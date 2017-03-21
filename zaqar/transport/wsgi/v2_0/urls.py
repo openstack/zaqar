@@ -19,7 +19,6 @@ import six
 
 from zaqar.common import decorators
 from zaqar.common import urls
-from zaqar.i18n import _LE
 from zaqar.transport import acl
 from zaqar.transport import utils
 from zaqar.transport.wsgi import errors as wsgi_errors
@@ -55,7 +54,7 @@ class Resource(object):
 
         diff = set(document.keys()) - _KNOWN_KEYS
         if diff:
-            msg = six.text_type(_LE('Unknown keys: %s') % diff)
+            msg = six.text_type('Unknown keys: %s' % diff)
             raise wsgi_errors.HTTPBadRequestAPI(msg)
 
         key = self._conf.signed_url.secret_key
@@ -65,7 +64,7 @@ class Resource(object):
         else:
             diff = set(paths) - _VALID_PATHS
             if diff:
-                msg = six.text_type(_LE('Invalid paths: %s') % diff)
+                msg = six.text_type('Invalid paths: %s' % diff)
                 raise wsgi_errors.HTTPBadRequestAPI(msg)
             paths = [os.path.join(req.path[:-6], path) for path in paths]
 

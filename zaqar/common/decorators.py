@@ -20,8 +20,6 @@ from oslo_cache import core
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-from zaqar.i18n import _LW
-
 
 LOG = logging.getLogger(__name__)
 
@@ -209,12 +207,12 @@ def api_version_manager(version_info):
                 return None
 
             if deprecated:
-                LOG.warning(_LW('Enabling API version %(version)s. '
-                                'This version was marked as deprecated in '
-                                '%(updated)s. Using it may expose security '
-                                'issues, unexpected behavior or damage your '
-                                'data.') % {'version': api_version,
-                                            'updated': api_updated})
+                LOG.warning('Enabling API version %(version)s. '
+                            'This version was marked as deprecated in '
+                            '%(updated)s. Using it may expose security '
+                            'issues, unexpected behavior or damage your '
+                            'data.' % {'version': api_version,
+                                       'updated': api_updated})
             return fn(driver, conf)
         return register_api
     return wrapper

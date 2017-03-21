@@ -22,7 +22,6 @@ from stevedore import driver
 
 from zaqar.common import errors
 from zaqar.common import utils
-from zaqar.i18n import _LE
 from zaqar.storage import configuration
 
 LOG = log.getLogger(__name__)
@@ -147,7 +146,7 @@ def load_storage_driver(conf, cache, storage_type=None,
             return mgr.driver
 
     except Exception as exc:
-        LOG.error(_LE('Failed to load "{}" driver for "{}"').format(
+        LOG.error('Failed to load "{}" driver for "{}"'.format(
             driver_type, storage_type))
         LOG.exception(exc)
         raise errors.InvalidDriver(exc)
