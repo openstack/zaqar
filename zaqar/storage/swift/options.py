@@ -15,12 +15,17 @@
 
 from oslo_config import cfg
 MESSAGE_SWIFT_OPTIONS = (
-    cfg.StrOpt('auth_url', default="http://127.0.0.1:5000/v3/",
+    cfg.StrOpt("auth_url", default="http://127.0.0.1:5000/v3/",
                help="URI of Keystone endpoint to discover Swift"),
-    cfg.StrOpt('uri',
+    cfg.StrOpt("uri",
                default="swift://demo:nomoresecrete@/demo",
                help="Custom URI describing the swift connection."),
-    cfg.StrOpt('insecure', default=False, help="Don't check SSL certificate"),
+    cfg.StrOpt("insecure", default=False, help="Don't check SSL certificate"),
+    cfg.StrOpt("project_domain_id", default="default",
+               help="Domain ID containing project"),
+    cfg.StrOpt("project_domain_name", help="Domain name containing project"),
+    cfg.StrOpt("user_domain_id", default="default", help="User's domain id"),
+    cfg.StrOpt("user_domain_name", help="User's domain name"),
 )
 
 
