@@ -53,7 +53,7 @@ cURL, followed by the response.
 
 For a complete list of operations available for Message Queuing, see :doc:`getting_started`
 Each operation is fully described in the `Message Queuing API v2
-Reference <http://http://developer.openstack.org/api-ref/messaging>`_.
+Reference <http://developer.openstack.org/api-ref/messaging>`_.
 
 Create Queue
 ------------
