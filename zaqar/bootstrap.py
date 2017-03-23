@@ -26,11 +26,11 @@ from zaqar.common import configs
 from zaqar.common import consts
 from zaqar.common import decorators
 from zaqar.common import errors
-from zaqar import profile
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
 from zaqar.transport import base
+from zaqar.transport.middleware import profile
 from zaqar.transport import validation
 
 from zaqar.i18n import _LE
