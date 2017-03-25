@@ -82,7 +82,7 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
     :param max_jitter: maximum jitter value to add to the baseline sleep
         time. Actual value will be chosen randomly.
 
-    :raises: ValueError
+    :raises ValueError: if the parameter is not invalid
     :returns: float representing the number of seconds to sleep, within
         the interval [0, max_sleep), determined linearly according to
         the ratio attempt / max_attempts, with optional jitter.
@@ -122,7 +122,7 @@ def to_oid(obj):
 def oid_ts(oid):
     """Converts an ObjectId to a UNIX timestamp.
 
-    :raises: TypeError if oid isn't an ObjectId
+    :raises TypeError: if oid isn't an ObjectId
     """
     try:
         return timeutils.delta_seconds(EPOCH, oid.generation_time)

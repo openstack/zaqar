@@ -38,8 +38,7 @@ class Api(object):
         :returns: Action's schema
         :rtype: dict
 
-        :raises: `errors.InvalidAction` if the action
-            does not exist
+        :raises InvalidAction: if the action does not exist
         """
 
         try:
@@ -63,8 +62,7 @@ class Api(object):
         :type body: dict
 
         :returns: True if the schema is valid, False otherwise
-        :raises: `errors.InvalidAction` if the action
-            does not exist
+        :raises InvalidAction: if the action does not exist
         """
 
         if action not in self.validators:

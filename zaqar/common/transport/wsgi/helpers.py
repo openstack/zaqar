@@ -65,7 +65,7 @@ def get_client_uuid(req):
     """Read a required Client-ID from a request.
 
     :param req: A falcon.Request object
-    :raises: HTTPBadRequest if the Client-ID header is missing or
+    :raises HTTPBadRequest: if the Client-ID header is missing or
         does not represent a valid UUID
     :returns: A UUID object
     """
@@ -182,7 +182,7 @@ def require_accepts_json(req, resp, params):
     :param params: additional parameters passed to responders
     :type params: dict
     :rtype: None
-    :raises: falcon.HTTPNotAcceptable
+    :raises HTTPNotAcceptable: if the request does not accept JSON
     """
     if not req.client_accepts('application/json'):
         raise falcon.HTTPNotAcceptable(
@@ -212,8 +212,8 @@ def require_content_type_be_non_urlencoded(req, resp, params):
     :param params: additional parameters passed to responders
     :type params: dict
     :rtype: None
-    :raises: falcon.HTTPBadRequest
-
+    :raises HTTPBadRequest: if request has body and "Content-Type" header has
+        "application/x-www-form-urlencoded" value
     """
     if req.content_length is None:
         return

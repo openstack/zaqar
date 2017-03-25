@@ -332,7 +332,7 @@ class Queue(ControllerBase):
         :param project: Project id
 
         :returns: Dictionary containing queue metadata
-        :raises: DoesNotExist
+        :raises DoesNotExist: if queue metadata does not exist
         """
         return self._get(name, project)
 
@@ -345,7 +345,7 @@ class Queue(ControllerBase):
         :param project: Project id
 
         :returns: Dictionary containing queue metadata
-        :raises: DoesNotExist
+        :raises DoesNotExist: if queue metadata does not exist
         """
         raise NotImplementedError
 
@@ -355,7 +355,7 @@ class Queue(ControllerBase):
         :param name: The queue name
         :param metadata: Queue metadata as a dict
         :param project: Project id
-        :raises: DoesNotExist
+        :raises DoesNotExist: if queue metadata can not be updated
         """
         raise NotImplementedError
 
@@ -458,7 +458,7 @@ class Message(ControllerBase):
         :param message_id: Message ID
 
         :returns: Dictionary containing message data
-        :raises: DoesNotExist
+        :raises DoesNotExist: if message data can not be got
         """
         raise NotImplementedError
 
@@ -547,7 +547,7 @@ class Claim(ControllerBase):
         :param project: Project id
 
         :returns: (Claim's metadata, claimed messages)
-        :raises: DoesNotExist
+        :raises DoesNotExist: if claimed messages can not be got
         """
         raise NotImplementedError
 
@@ -630,7 +630,7 @@ class Subscription(ControllerBase):
         :type project: six.text_type
         :returns: Dictionary containing subscription data
         :rtype: {}
-        :raises: SubscriptionDoesNotExist if not found
+        :raises SubscriptionDoesNotExist: if not found
         """
         raise NotImplementedError
 
@@ -664,8 +664,8 @@ class Subscription(ControllerBase):
         :type name: text
         :param kwargs: one of: `source`, `subscriber`, `ttl`, `options`
         :type kwargs: dict
-        :raises: SubscriptionDoesNotExist if not found
-        :raises: SubscriptionAlreadyExists on attempt to update in a way to
+        :raises SubscriptionDoesNotExist: if not found
+        :raises SubscriptionAlreadyExists: if attempt to update in a way to
             create duplicate subscription
         """
 
@@ -823,7 +823,7 @@ class PoolsBase(ControllerBase):
         :type detailed: bool
         :returns: weight, uri, and options for this pool
         :rtype: {}
-        :raises: PoolDoesNotExist if not found
+        :raises PoolDoesNotExist: if not found
         """
         return self._get_pools_by_group(group, detailed)
 
@@ -838,7 +838,7 @@ class PoolsBase(ControllerBase):
         :type detailed: bool
         :returns: weight, uri, and options for this pool
         :rtype: {}
-        :raises: PoolDoesNotExist if not found
+        :raises PoolDoesNotExist: if not found
         """
         return self._get(name, detailed)
 
@@ -874,7 +874,7 @@ class PoolsBase(ControllerBase):
         :type name: text
         :param kwargs: one of: `uri`, `weight`, `options`
         :type kwargs: dict
-        :raises: PoolDoesNotExist
+        :raises PoolDoesNotExist: if not found
         """
         uri = kwargs.get('uri')
         if uri and not self._check_capabilities(uri, name=name):
@@ -922,7 +922,7 @@ class CatalogueBase(ControllerBase):
         :type queue: six.text_type
         :returns: {'pool': ...}
         :rtype: dict
-        :raises: QueueNotMapped
+        :raises QueueNotMapped: if queue is not mapped
         """
 
         raise NotImplementedError
@@ -975,7 +975,7 @@ class CatalogueBase(ControllerBase):
         :type queue: six.text_type
         :param pools: The name of the pool where this project/queue lives.
         :type pools: six.text_type
-        :raises: QueueNotMapped
+        :raises QueueNotMapped: if queue is not mapped
         """
 
         raise NotImplementedError
@@ -1032,7 +1032,7 @@ class FlavorsBase(ControllerBase):
         :param project: Project this flavor belongs to.
         :type project: six.text_type
         :rtype: {}
-        :raises: FlavorDoesNotExist if not found
+        :raises FlavorDoesNotExist: if not found
         """
 
         raise NotImplementedError
@@ -1074,7 +1074,7 @@ class FlavorsBase(ControllerBase):
         :type project: six.text_type
         :param kwargs: one of: `uri`, `weight`, `options`
         :type kwargs: dict
-        :raises: FlavorDoesNotExist
+        :raises FlavorDoesNotExist: if not found
         """
 
         raise NotImplementedError

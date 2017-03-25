@@ -42,7 +42,9 @@ def sanitize(document, spec=None, doctype=dict):
         If spec is None, the incoming documents will not be validated.
     :param doctype: type of document to expect; must be either
         JSONObject or JSONArray.
-    :raises: DocumentTypeNotSupported, TypeError
+    :raises DocumentTypeNotSupported: if document type is not supported
+    :raises TypeError: if document type is neither a JSONObject
+        nor JSONArray
     :returns: A sanitized, filtered version of the document. If the
         document is a list of objects, each object will be filtered
         and returned in a new list. If, on the other hand, the document
@@ -80,7 +82,7 @@ def filter_fields(document, spec):
         tuples with the form of: (field_name, value_type). Note that
         value_type may either be a Python type, or the special
         string '*' to accept any type.
-    :raises: BadRequest if any field is missing or not an
+    :raises BadRequest: if any field is missing or not an
         instance of the specified type
     :returns: A filtered dict containing only the fields
         listed in the spec
@@ -106,7 +108,7 @@ def get_checked_field(document, name, value_type, default_value):
     :param value_type: expected value type, or '*' to accept any type
     :param default_value: Default value to use if the value is missing,
         or None to make the value required.
-    :raises: BadRequest if the field is missing or not an
+    :raises BadRequest: if the field is missing or not an
         instance of value_type
     :returns: value obtained from doc[name]
     """
@@ -134,7 +136,7 @@ def get_client_uuid(req):
     """Read a required Client-ID from a request.
 
     :param req: Request object
-    :raises: BadRequest if the Client-ID header is missing or
+    :raises BadRequest: if the Client-ID header is missing or
         does not represent a valid UUID
     :returns: A UUID object
     """

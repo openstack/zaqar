@@ -118,7 +118,8 @@ Example::
     keep things ordered
   :returns: return_type -- description of the return value
   :returns: description of the return value
-  :raises: AttributeError, KeyError
+  :raises ValueError: if the message_body exceeds 160 characters
+  :raises TypeError: if the message_body is not a basestring
   """
 
 **DO NOT** leave an extra newline before the closing triple-double-quote.

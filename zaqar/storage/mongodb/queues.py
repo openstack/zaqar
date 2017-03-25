@@ -144,7 +144,7 @@ class QueueController(storage.Queue):
             was specified, and the counter has already been updated
             within the specified time period.
 
-        :raises: storage.errors.QueueDoesNotExist
+        :raises QueueDoesNotExist: if not found
         """
         now = timeutils.utcnow_ts()
 

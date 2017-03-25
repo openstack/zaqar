@@ -121,7 +121,7 @@ class Validator(object):
 
         :param queue: Name of the queue
         :param project: Project id
-        :raises: ValidationFailed if the `name` is longer than 64
+        :raises ValidationFailed: if the `name` is longer than 64
             characters or contains anything other than ASCII digits and
             letters, underscores, and dashes.  Also raises if `project`
             is not None but longer than 256 characters.
@@ -271,7 +271,7 @@ class Validator(object):
 
         :param limit: The expected number of queues in the list
         :param kwargs: Ignored arguments passed to storage API
-        :raises: ValidationFailed if the limit is exceeded
+        :raises ValidationFailed: if the limit is exceeded
         """
 
         uplimit = self._limits_conf.max_queues_per_page
@@ -283,7 +283,7 @@ class Validator(object):
         """Restrictions on queue's length.
 
         :param content_length: Queue request's length.
-        :raises: ValidationFailed if the metadata is oversize.
+        :raises ValidationFailed: if the metadata is oversize.
         """
         if content_length is None:
             return
@@ -295,7 +295,7 @@ class Validator(object):
         """Checking if the reserved attributes of the queue are valid.
 
         :param queue_metadata: Queue's metadata.
-        :raises: ValidationFailed if any reserved attribute is invalid.
+        :raises ValidationFailed: if any reserved attribute is invalid.
         """
         if not queue_metadata:
             return
@@ -331,7 +331,7 @@ class Validator(object):
         """Restrictions the resource types to be purged for a queue.
 
         :param resource_types: Type list of all resource under a queue
-        :raises: ValidationFailed if the resource types are invalid
+        :raises ValidationFailed: if the resource types are invalid
         """
 
         if 'resource_types' not in document:
@@ -347,7 +347,7 @@ class Validator(object):
         """Restrictions on a list of messages.
 
         :param messages: A list of messages
-        :raises: ValidationFailed if any message has a out-of-range
+        :raises ValidationFailed: if any message has a out-of-range
             TTL.
         """
 
@@ -361,7 +361,7 @@ class Validator(object):
         """Restrictions on message post length.
 
         :param content_length: Queue request's length.
-        :raises: ValidationFailed if the metadata is oversize.
+        :raises ValidationFailed: if the metadata is oversize.
         """
         if content_length is None:
             return
@@ -407,7 +407,7 @@ class Validator(object):
 
         :param limit: The expected number of messages in the list
         :param kwargs: Ignored arguments passed to storage API
-        :raises: ValidationFailed if the limit is exceeded
+        :raises ValidationFailed: if the limit is exceeded
         """
 
         uplimit = self._limits_conf.max_messages_per_page
@@ -423,10 +423,10 @@ class Validator(object):
 
         :param ids: message ids passed in by the delete request
         :param pop: count of messages to be POPped
-        :raises: ValidationFailed if,
-                 pop AND id params are present together
-                 neither pop or id params are present
-                 message count to be popped > maximum allowed
+        :raises ValidationFailed: if,
+            pop AND id params are present together
+            neither pop or id params are present
+            message count to be popped > maximum allowed
         """
 
         if pop is not None and ids is not None:
@@ -460,7 +460,7 @@ class Validator(object):
 
         :param metadata: The claim metadata
         :param limit: The number of messages to claim
-        :raises: ValidationFailed if either TTL or grace is out of range,
+        :raises ValidationFailed: if either TTL or grace is out of range,
             or the expected number of messages exceed the limit.
         """
 
@@ -487,7 +487,7 @@ class Validator(object):
         """Restrictions on the claim TTL.
 
         :param metadata: The claim metadata
-        :raises: ValidationFailed if the TTL is out of range
+        :raises ValidationFailed: if the TTL is out of range
         """
 
         ttl = metadata['ttl']
@@ -503,7 +503,7 @@ class Validator(object):
         """Restrictions on a creation of subscription.
 
         :param subscription: dict of subscription
-        :raises: ValidationFailed if the subscription is invalid.
+        :raises ValidationFailed: if the subscription is invalid.
         """
         for p in ('subscriber',):
             if p not in subscription.keys():
@@ -515,7 +515,7 @@ class Validator(object):
         """Restrictions on an update of subscription.
 
         :param subscription: dict of subscription
-        :raises: ValidationFailed if the subscription is invalid.
+        :raises ValidationFailed: if the subscription is invalid.
         """
 
         if not subscription:
@@ -578,7 +578,7 @@ class Validator(object):
 
         :param limit: The expected number of subscriptions in the list
         :param kwargs: Ignored arguments passed to storage API
-        :raises: ValidationFailed if the limit is exceeded
+        :raises ValidationFailed: if the limit is exceeded
         """
 
         uplimit = self._limits_conf.max_subscriptions_per_page
@@ -601,7 +601,7 @@ class Validator(object):
 
         :param limit: The expected number of flavors in the list
         :param kwargs: Ignored arguments passed to storage API
-        :raises: ValidationFailed if the limit is exceeded
+        :raises ValidationFailed: if the limit is exceeded
         """
 
         uplimit = self._limits_conf.max_flavors_per_page
@@ -614,7 +614,7 @@ class Validator(object):
 
         :param limit: The expected number of flavors in the list
         :param kwargs: Ignored arguments passed to storage API
-        :raises: ValidationFailed if the limit is exceeded
+        :raises ValidationFailed: if the limit is exceeded
         """
 
         uplimit = self._limits_conf.max_pools_per_page

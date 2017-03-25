@@ -488,7 +488,7 @@ class Catalog(object):
 
         :returns: pool id
 
-        :raises: `errors.QueueNotMapped`
+        :raises QueueNotMapped: if queue is not mapped
         """
         return self._catalogue_ctrl.get(project, queue)['pool']
 
@@ -512,7 +512,7 @@ class Catalog(object):
         :param flavor: Flavor for the queue (OPTIONAL)
         :type flavor: six.text_type
 
-        :raises: NoPoolFound
+        :raises NoPoolFound: if not found
 
         """
 
