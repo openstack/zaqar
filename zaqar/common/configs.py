@@ -118,19 +118,9 @@ _PROFILER_OPTIONS = [
 _PROFILER_GROUP = "profiler"
 
 
-_CORS_OPTIONS = [
-    cfg.BoolOpt("enabled", default=False,
-                help="Whether enable Cross Origin Resource Sharing(CORS) "
-                     "function from oslo.middleware"),
-]
-
-_CORS_GROUP = "cors"
-
-
 def _config_options():
     return [(None, _GENERAL_OPTIONS),
             (_DRIVER_GROUP, _DRIVER_OPTIONS),
             (_SIGNED_URL_GROUP, _SIGNED_URL_OPTIONS),
             (_NOTIFICATION_GROUP, _NOTIFICATION_OPTIONS),
-            (_PROFILER_GROUP, _PROFILER_OPTIONS),
-            (_CORS_GROUP, _CORS_OPTIONS)]
+            (_PROFILER_GROUP, _PROFILER_OPTIONS)]

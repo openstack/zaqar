@@ -156,8 +156,7 @@ class Driver(transport.DriverBase):
 
         # NOTE(wangxiyuan): Install CORS, this middleware should be called
         # before Keystone auth.
-        if self._conf.cors.enabled:
-            self.app = cors.install_cors(self.app, self._conf)
+        self.app = cors.install_cors(self.app, auth_app, self._conf)
 
         acl.setup_policy(self._conf)
 

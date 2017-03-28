@@ -25,11 +25,6 @@ New Config Options
 
 There are some new config options.
 
-**enabled**
-
-Enables CORS functions for Zaqar. The default value is "False" at this moment.
-It will be turn to "True" in the future once it's stable enough.
-
 **allowed_origin**
 
 Indicate whether this resource may be shared with the domain received in the
