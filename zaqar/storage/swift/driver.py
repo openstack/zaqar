@@ -13,7 +13,7 @@
 
 from six.moves import urllib
 
-from keystoneauth1.identity import v3
+from keystoneauth1.identity import generic
 from keystoneauth1 import session as keystone_session
 from oslo_log import log as logging
 import swiftclient
@@ -89,7 +89,7 @@ class _ClientWrapper(object):
         self.auth = None
 
     def _refresh_auth(self):
-        self.auth = v3.Password(
+        self.auth = generic.Password(
             username=self.parsed_url.username,
             password=self.parsed_url.password,
             project_name=self.parsed_url.path[1:],
