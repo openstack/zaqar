@@ -120,7 +120,6 @@ def load_storage_driver(conf, cache, storage_type=None,
         instance to pass to the storage driver. Needed to access
         the queue controller, mainly.
     """
-
     if control_mode:
         mode = 'control'
         storage_type = storage_type or conf['drivers'].management_store
@@ -197,19 +196,19 @@ def can_connect(uri, conf=None):
     :returns: True if can connect else False
     :rtype: bool
     """
+    # NOTE(cabrera): create a mock configuration containing only
+    # the URI field. This should be sufficient to initialize a
+    # storage driver.
     conf = dynamic_conf(uri, {}, conf=conf)
     storage_type = six.moves.urllib_parse.urlparse(uri).scheme
 
     try:
-        # NOTE(cabrera): create a mock configuration containing only
-        # the URI field. This should be sufficient to initialize a
-        # storage driver.
+        ctrl = load_storage_driver(conf, None,
+                                   storage_type=conf.drivers.management_store,
+                                   control_mode=True)
         driver = load_storage_driver(conf, None,
                                      storage_type=storage_type,
-                                     control_driver=load_storage_driver
-                                     (conf, None,
-                                      storage_type=storage_type,
-                                      control_mode=True))
+                                     control_driver=ctrl)
         return driver.is_alive()
     except Exception as exc:
         LOG.debug('Can\'t connect to: %s \n%s' % (uri, exc))
