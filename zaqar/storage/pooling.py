@@ -159,7 +159,7 @@ class DataDriver(storage.DataDriverBase):
 
 
 class QueueController(storage.Queue):
-    """Routes operations to a queue controller in the appropriate pool.
+    """Routes operations to get the appropriate queue controller.
 
     :param pool_catalog: a catalog of available pools
     :type pool_catalog: queues.pooling.base.Catalog
@@ -168,16 +168,14 @@ class QueueController(storage.Queue):
     def __init__(self, pool_catalog):
         super(QueueController, self).__init__(None)
         self._pool_catalog = pool_catalog
+        self._mgt_queue_ctrl = self._pool_catalog.control.queue_controller
         self._get_controller = self._pool_catalog.get_queue_controller
 
     def _list(self, project=None, marker=None,
               limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
 
         def all_pages():
-            pool = self._pool_catalog.get_default_pool()
-            if pool is None:
-                raise errors.NoPoolFound()
-            yield next(pool.queue_controller.list(
+            yield next(self._mgt_queue_ctrl.list(
                 project=project,
                 marker=marker,
                 limit=limit,
@@ -218,17 +216,15 @@ class QueueController(storage.Queue):
         # however. If between the time we register a queue and go to
         # look it up, the queue is deleted, then this assertion will
         # fail.
-        control = self._get_controller(name, project)
-        if not control:
+        pool = self._pool_catalog.lookup(name, project)
+        if not pool:
             raise RuntimeError('Failed to register queue')
-        return control.create(name, metadata=metadata, project=project)
+        return self._mgt_queue_ctrl.create(name, metadata=metadata,
+                                           project=project)
 
     def _delete(self, name, project=None):
-        # NOTE(cpp-cabrera): If we fail to find a project/queue in the
-        # catalogue for a delete, just ignore it.
-        control = self._get_controller(name, project)
-        if control:
-
+        mqHandler = self._get_controller(name, project)
+        if mqHandler:
             # NOTE(cpp-cabrera): delete from the catalogue first. If
             # zaqar crashes in the middle of these two operations,
             # it is desirable that the entry be missing from the
@@ -239,34 +235,24 @@ class QueueController(storage.Queue):
             # latter case is more difficult to reason about, and may
             # yield 500s in some operations.
             self._pool_catalog.deregister(name, project)
-            ret = control.delete(name, project)
-            return ret
+            mqHandler.delete(name, project)
 
-        return None
+        return self._mgt_queue_ctrl.delete(name, project)
 
     def _exists(self, name, project=None):
-        control = self._get_controller(name, project)
-        if control:
-            return control.exists(name, project=project)
-        return False
+        return self._mgt_queue_ctrl.exists(name, project=project)
 
     def get_metadata(self, name, project=None):
-        control = self._get_controller(name, project)
-        if control:
-            return control.get_metadata(name, project=project)
-        raise errors.QueueDoesNotExist(name, project)
+        return self._mgt_queue_ctrl.get_metadata(name, project=project)
 
     def set_metadata(self, name, metadata, project=None):
-        control = self._get_controller(name, project)
-        if control:
-            return control.set_metadata(name, metadata=metadata,
-                                        project=project)
-        raise errors.QueueDoesNotExist(name, project)
+        return self._mgt_queue_ctrl.set_metadata(name, metadata=metadata,
+                                                 project=project)
 
     def _stats(self, name, project=None):
-        control = self._get_controller(name, project)
-        if control:
-            return control.stats(name, project=project)
+        mqHandler = self._get_controller(name, project)
+        if mqHandler:
+            return mqHandler.stats(name, project=project)
         raise errors.QueueDoesNotExist(name, project)
 
 

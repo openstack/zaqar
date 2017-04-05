@@ -29,7 +29,7 @@ from zaqar import tests as testing
 @testing.requires_mongodb
 class PoolCatalogTest(testing.TestBase):
 
-    config_file = 'wsgi_mongodb_pooled.conf'
+    config_file = 'wsgi_mongodb_pooled_disable_virtual_pool.conf'
 
     def setUp(self):
         super(PoolCatalogTest, self).setUp()

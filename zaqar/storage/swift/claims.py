@@ -145,6 +145,9 @@ class ClaimController(storage.Claim):
         return claim_id, claimed
 
     def update(self, queue, claim_id, metadata, project=None):
+        if not self._queue_ctrl.exists(queue, project):
+            raise errors.QueueDoesNotExist(queue, project)
+
         container = utils._claim_container(queue, project)
         try:
             headers, obj = self._client.get_object(container, claim_id)
