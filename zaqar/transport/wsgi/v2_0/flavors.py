@@ -182,10 +182,12 @@ class Resource(object):
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
         pool_group = data.get('pool_group') or data.get('pool')
+        capabilities = self._pools_ctrl.capabilities(pool_group)
         try:
             self._ctrl.create(flavor,
                               pool_group=pool_group,
-                              project=project_id)
+                              project=project_id,
+                              capabilities=capabilities)
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolGroupDoesNotExist as ex:

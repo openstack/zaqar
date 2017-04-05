@@ -132,12 +132,11 @@ class TestFlavorsMongoDB(base.V2Base):
                           body=jsonutils.dumps({'pool_group': pool_group}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(-1, 'wee', [])
-    def test_put_raises_if_invalid_capabilities(self, capabilities):
+    def test_put_auto_get_capabilities(self):
         path = self.url_prefix + '/flavors/' + str(uuid.uuid1())
-        doc = {'pool_group': 'a', 'capabilities': capabilities}
+        doc = {'pool_group': self.pool_group}
         self.simulate_put(path, body=jsonutils.dumps(doc))
-        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default flavor
