@@ -46,7 +46,12 @@ class DataDriver(storage.DataDriverBase):
         return _ClientWrapper(self.swift_conf)
 
     def is_alive(self):
-        return True
+        try:
+            self.connection.get_capabilities()
+            return True
+        except Exception as e:
+            LOG.exception(e)
+            return False
 
     @decorators.lazy_property(write=False)
     def queue_controller(self):

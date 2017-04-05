@@ -10,7 +10,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from zaqar.common import cache as oslo_cache
 from zaqar.storage import mongodb
 from zaqar.storage.swift import controllers
 from zaqar.storage.swift import driver
@@ -50,3 +50,17 @@ class SwiftSubscriptionsTest(base.SubscriptionControllerTest):
     config_file = 'wsgi_swift.conf'
     controller_class = controllers.SubscriptionController
     control_driver_class = mongodb.ControlDriver
+
+
+@testing.requires_swift
+class SwiftDriverTest(testing.TestBase):
+    config_file = 'wsgi_swift.conf'
+
+    def test_is_alive(self):
+        oslo_cache.register_config(self.conf)
+        cache = oslo_cache.get_cache(self.conf)
+        swift_driver = driver.DataDriver(self.conf, cache,
+                                         mongodb.ControlDriver
+                                         (self.conf, cache))
+
+        self.assertTrue(swift_driver.is_alive())
