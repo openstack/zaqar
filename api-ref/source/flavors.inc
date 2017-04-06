@@ -32,6 +32,7 @@ Query Parameters
 
   - limit: limit
   - marker: marker
+  - detailed: detailed
 
 Response Parameters
 -------------------

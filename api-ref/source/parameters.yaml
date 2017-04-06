@@ -68,6 +68,14 @@ claim_limit:
     meaning the server may claim and return less than the requested number of
     messages.
 
+detailed:
+  type: boolean
+  in: query
+  required: false
+  description: |
+    The 'detailed' specifies if showing the detailed information when querying
+    queues, flavors and pools.
+
 echo:
    type: boolean
    in: query
@@ -124,7 +132,6 @@ pop:
     in a request will result in HTTP 400.
 
 #### variables in request ####################################################
-
 
 _default_message_ttl:
   type: integer
