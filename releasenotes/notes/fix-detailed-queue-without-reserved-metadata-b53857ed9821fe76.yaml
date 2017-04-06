@@ -1,0 +1,5 @@
+---
+fixes:
+  - Zaqar didn't return the reserved metadata when listing detailed queue.
+    After this fix, Zaqar will return reserved metadata '_default_message_ttl'
+    and '_max_messages_post_size' in response of listing detailed queue.

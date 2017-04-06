@@ -29,6 +29,16 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = logging.getLogger(__name__)
 
 
+def _get_reserved_metadata(validate):
+    _reserved_metadata = ['max_messages_post_size', 'default_message_ttl']
+    reserved_metadata = {
+        '_%s' % meta:
+            validate.get_limit_conf_value(meta)
+        for meta in _reserved_metadata
+    }
+    return reserved_metadata
+
+
 class ItemResource(object):
 
     __slots__ = ('_validate', '_queue_controller', '_message_controller',
@@ -38,16 +48,6 @@ class ItemResource(object):
         self._validate = validate
         self._queue_controller = queue_controller
         self._message_controller = message_controller
-        self._reserved_metadata = ['max_messages_post_size',
-                                   'default_message_ttl']
-
-    def _get_reserved_metadata(self):
-        reserved_metadata = {
-            '_%s' % meta:
-                self._validate.get_limit_conf_value(meta)
-            for meta in self._reserved_metadata
-        }
-        return reserved_metadata
 
     @decorators.TransportLog("Queues item")
     @acl.enforce("queues:get")
@@ -55,7 +55,7 @@ class ItemResource(object):
         try:
             resp_dict = self._queue_controller.get(queue_name,
                                                    project=project_id)
-            for meta, value in self._get_reserved_metadata().items():
+            for meta, value in _get_reserved_metadata(self._validate).items():
                 if not resp_dict.get(meta, None):
                     resp_dict[meta] = value
         except storage_errors.DoesNotExist as ex:
@@ -186,7 +186,7 @@ class ItemResource(object):
             # queue.
             metadata = self._queue_controller.get_metadata(queue_name,
                                                            project=project_id)
-            reserved_metadata = self._get_reserved_metadata()
+            reserved_metadata = _get_reserved_metadata(self._validate)
             for change in changes:
                 change_method_name = '_do_%s' % change['op']
                 change_method = getattr(self, change_method_name)
@@ -209,7 +209,7 @@ class ItemResource(object):
             LOG.exception(ex)
             description = _(u'Queue could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
-        for meta, value in self._get_reserved_metadata().items():
+        for meta, value in _get_reserved_metadata(self._validate).items():
             if not metadata.get(meta, None):
                 metadata[meta] = value
         resp.body = utils.to_json(metadata)
@@ -242,7 +242,7 @@ class ItemResource(object):
 
 class CollectionResource(object):
 
-    __slots__ = ('_queue_controller', '_validate')
+    __slots__ = ('_queue_controller', '_validate', '_reserved_metadata')
 
     def __init__(self, validate, queue_controller):
         self._queue_controller = queue_controller
@@ -277,8 +277,13 @@ class CollectionResource(object):
 
         # Got some. Prepare the response.
         kwargs['marker'] = next(results) or kwargs.get('marker', '')
+        reserved_metadata = _get_reserved_metadata(self._validate).items()
         for each_queue in queues:
             each_queue['href'] = req.path + '/' + each_queue['name']
+            if kwargs.get('detailed'):
+                for meta, value in reserved_metadata:
+                    if not each_queue.get('metadata', {}).get(meta):
+                        each_queue['metadata'][meta] = value
 
         links = []
         if queues:

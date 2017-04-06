@@ -425,8 +425,6 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         queue = result_doc['queues'][0]
         result = self.simulate_get(queue['href'], headers=header)
         result_doc = jsonutils.loads(result[0])
-        queue['metadata']['_default_message_ttl'] = 3600
-        queue['metadata']['_max_messages_post_size'] = 262144
         self.assertEqual(queue['metadata'], result_doc)
         self.assertEqual({'node': 31, '_default_message_ttl': 3600,
                           '_max_messages_post_size': 262144},  result_doc)
