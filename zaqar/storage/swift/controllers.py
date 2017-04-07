@@ -13,11 +13,9 @@
 
 from zaqar.storage.swift import claims
 from zaqar.storage.swift import messages
-from zaqar.storage.swift import queues
 from zaqar.storage.swift import subscriptions
 
 
 MessageController = messages.MessageController
-QueueController = queues.QueueController
 ClaimController = claims.ClaimController
 SubscriptionController = subscriptions.SubscriptionController

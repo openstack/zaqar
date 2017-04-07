@@ -19,15 +19,6 @@ from zaqar.tests.unit.storage import base
 
 
 @testing.requires_swift
-class SwiftQueuesTest(base.QueueControllerTest):
-
-    driver_class = driver.DataDriver
-    config_file = 'wsgi_swift.conf'
-    controller_class = controllers.QueueController
-    control_driver_class = mongodb.ControlDriver
-
-
-@testing.requires_swift
 class SwiftMessagesTest(base.MessageControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_swift.conf'
