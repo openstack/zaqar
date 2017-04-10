@@ -187,9 +187,6 @@ class V11MessagingClient(MessagingClient):
         self.version = '1.1'
         self.uri_prefix = 'v{0}'.format(self.version)
 
-        client_id = uuid.uuid4().hex
-        self.headers = {'Client-ID': client_id}
-
     def list_queues(self):
         uri = '{0}/queues'.format(self.uri_prefix)
         resp, body = self.get(uri, headers=self.headers)
@@ -325,9 +322,6 @@ class V2MessagingClient(MessagingClient):
 
         self.version = '2'
         self.uri_prefix = 'v{0}'.format(self.version)
-
-        client_id = uuid.uuid4().hex
-        self.headers = {'Client-ID': client_id}
 
     def list_queues(self, url_params=False):
         uri = '{0}/queues'.format(self.uri_prefix)
