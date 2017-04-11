@@ -98,8 +98,10 @@ class _ClientWrapper(object):
             username=self.parsed_url.username,
             password=self.parsed_url.password,
             project_name=self.parsed_url.path[1:],
-            user_domain_id='default',
-            project_domain_id='default',
+            user_domain_id=self.conf.user_domain_id,
+            user_domain_name=self.conf.user_domain_name,
+            project_domain_id=self.conf.project_domain_id,
+            project_domain_name=self.conf.project_domain_name,
             auth_url=self.conf.auth_url)
         self.session = keystone_session.Session(auth=self.auth)
         self.url = self.session.get_endpoint(service_type='object-store')
@@ -113,5 +115,6 @@ class _ClientWrapper(object):
             self._refresh_auth()
         client = swiftclient.Connection(
             preauthurl=self.url,
-            preauthtoken=self.token)
+            preauthtoken=self.token,
+            insecure=self.conf.insecure)
         return getattr(client, attr)
