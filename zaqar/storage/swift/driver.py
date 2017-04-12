@@ -88,13 +88,10 @@ class _ClientWrapper(object):
     def __init__(self, conf):
         self.conf = conf
         self.parsed_url = urllib.parse.urlparse(conf.uri)
-        self.token = None
-        self.url = None
         self.session = None
-        self.auth = None
 
-    def _refresh_auth(self):
-        self.auth = generic.Password(
+    def _init_auth(self):
+        auth = generic.Password(
             username=self.parsed_url.username,
             password=self.parsed_url.password,
             project_name=self.parsed_url.path[1:],
@@ -103,18 +100,11 @@ class _ClientWrapper(object):
             project_domain_id=self.conf.project_domain_id,
             project_domain_name=self.conf.project_domain_name,
             auth_url=self.conf.auth_url)
-        self.session = keystone_session.Session(auth=self.auth)
-        self.url = self.session.get_endpoint(service_type='object-store')
-        self.token = self.session.get_token()
+        self.session = keystone_session.Session(auth=auth)
 
     def __getattr__(self, attr):
-        # This part is not thread-safe, but the worst case is having a bunch of
-        # useless auth calls, so it should be okay.
-        if (self.auth is None or
-                self.auth.get_auth_ref(self.session).will_expire_soon()):
-            self._refresh_auth()
-        client = swiftclient.Connection(
-            preauthurl=self.url,
-            preauthtoken=self.token,
-            insecure=self.conf.insecure)
+        if self.session is None:
+            self._init_auth()
+        client = swiftclient.Connection(session=self.session,
+                                        insecure=self.conf.insecure)
         return getattr(client, attr)
