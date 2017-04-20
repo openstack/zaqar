@@ -45,7 +45,4 @@ ZAQAR_TRUSTEE_DOMAIN=${ZAQAR_TRUSTEE_DOMAIN:-default}
 # Tell Tempest this project is present
 TEMPEST_SERVICES+=,zaqar
 
-# CORS
-CORS_ENABLED=${CORS_ENABLED:-false}
-
 enable_service zaqar-websocket zaqar-wsgi
