@@ -54,10 +54,6 @@ class DataDriver(storage.DataDriverBase):
             return False
 
     @decorators.lazy_property(write=False)
-    def queue_controller(self):
-        return controllers.QueueController(self)
-
-    @decorators.lazy_property(write=False)
     def message_controller(self):
         return controllers.MessageController(self)
 

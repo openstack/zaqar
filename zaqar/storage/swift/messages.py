@@ -205,9 +205,8 @@ class MessageController(storage.Message):
                 pass
 
     def post(self, queue, messages, client_uuid, project=None):
-        if not self._queue_ctrl.exists(queue, project):
-            raise errors.QueueDoesNotExist(queue, project)
-
+        # TODO(flwang): It would be nice if we can create a middleware in Swift
+        # to accept a json list so that Zaqar can create objects in bulk.
         return [self._create_msg(queue, m, client_uuid, project)
                 for m in messages]
 
@@ -225,9 +224,21 @@ class MessageController(storage.Message):
                     'x-object-meta-clientid': str(client_uuid),
                     'x-delete-after': msg['ttl']})
         except swiftclient.ClientException as exc:
+            # NOTE(flwang): To avoid check the queue existence each time when
+            # posting messages, let's catch the 404 and create the 'queue'
+            # on demand.
             if exc.http_status == 404:
-                raise errors.QueueDoesNotExist(queue, project)
-            raise
+                self._client.put_container(utils._message_container(queue,
+                                                                    project))
+                self._client.put_object(
+                    utils._message_container(queue, project),
+                    slug,
+                    contents=contents,
+                    content_type='application/json',
+                    headers={
+                        'x-object-meta-clientid': str(client_uuid),
+                        'x-delete-after': msg['ttl']})
+
         return slug
 
     def delete(self, queue, message_id, project=None, claim=None):
