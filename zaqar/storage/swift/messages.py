@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import functools
 import uuid
 
@@ -329,7 +330,7 @@ class MessageQueueHandler(object):
                     'age': now - created,
                     'created': timeutils.iso8601_from_timestamp(created)}
                 if oldest is None:
-                    oldest = newest
+                    oldest = copy.deepcopy(newest)
                 total += 1
                 if headers.get('x-object-meta-claimid'):
                     claimed += 1
