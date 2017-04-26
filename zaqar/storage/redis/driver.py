@@ -220,7 +220,7 @@ class DataDriver(storage.DataDriverBase):
         controller = controllers.SubscriptionController(self)
         if (self.conf.profiler.enabled and
                 self.conf.profiler.trace_message_store):
-            return profiler.trace_cls("mongodb_subscription_"
+            return profiler.trace_cls("redis_subscription_"
                                       "controller")(controller)
         else:
             return controller
