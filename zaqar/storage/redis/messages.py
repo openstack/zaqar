@@ -110,10 +110,6 @@ class MessageController(storage.Message, scripting.Mixin):
     def _queue_ctrl(self):
         return self.driver.queue_controller
 
-    @decorators.lazy_property(write=False)
-    def _claim_ctrl(self):
-        return self.driver.claim_controller
-
     def _index_messages(self, msgset_key, counter_key, message_ids):
         # NOTE(kgriffs): A watch on a pipe could also be used to ensure
         # messages are inserted in order, but that would be less efficient.
@@ -283,6 +279,7 @@ class MessageController(storage.Message, scripting.Mixin):
 
         :returns: Number of messages removed
         """
+        claim_ctrl = self.driver.claim_controller
         client = self._client
 
         num_removed = 0
@@ -306,7 +303,7 @@ class MessageController(storage.Message, scripting.Mixin):
                 # here, because we already know the queue and project
                 # scope.
                 queue, project = utils.descope_message_ids_set(msgset_key)
-                self._claim_ctrl._gc(queue, project)
+                claim_ctrl._gc(queue, project)
 
                 offset_mids = 0
 
@@ -439,6 +436,7 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def delete(self, queue, message_id, project=None, claim=None):
+        claim_ctrl = self.driver.claim_controller
         if not self._queue_ctrl.exists(queue, project):
             return
 
@@ -468,7 +466,7 @@ class MessageController(storage.Message, scripting.Mixin):
             raise errors.MessageNotClaimed(message_id)
 
         elif msg_claim['id'] != claim:
-            if not self._claim_ctrl._exists(queue, claim, project):
+            if not claim_ctrl._exists(queue, claim, project):
                 raise errors.ClaimDoesNotExist(claim, queue, project)
 
             raise errors.MessageNotClaimedBy(message_id, claim)
@@ -480,15 +478,15 @@ class MessageController(storage.Message, scripting.Mixin):
             pipe.zrem(msgset_key, message_id)
 
             if is_claimed:
-                self._claim_ctrl._del_message(queue, project,
-                                              msg_claim['id'], message_id,
-                                              pipe)
+                claim_ctrl._del_message(queue, project, msg_claim['id'],
+                                        message_id, pipe)
 
             pipe.execute()
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def bulk_delete(self, queue, message_ids, project=None):
+        claim_ctrl = self.driver.claim_controller
         if not self._queue_ctrl.exists(queue, project):
             return
 
@@ -504,9 +502,8 @@ class MessageController(storage.Message, scripting.Mixin):
 
                 msg_claim = self._get_claim(mid)
                 if msg_claim is not None:
-                    self._claim_ctrl._del_message(queue, project,
-                                                  msg_claim['id'], mid,
-                                                  pipe)
+                    claim_ctrl._del_message(queue, project, msg_claim['id'],
+                                            mid, pipe)
             pipe.execute()
 
     @utils.raises_conn_error
@@ -516,8 +513,8 @@ class MessageController(storage.Message, scripting.Mixin):
         # 1. Create a claim.
         # 2. Delete the messages claimed.
         # 3. Delete the claim.
-
-        claim_id, messages = self._claim_ctrl.create(
+        claim_ctrl = self.driver.claim_controller
+        claim_id, messages = claim_ctrl.create(
             queue, dict(ttl=1, grace=0), project, limit=limit)
 
         message_ids = [message['id'] for message in messages]
@@ -525,7 +522,7 @@ class MessageController(storage.Message, scripting.Mixin):
         # NOTE(prashanthr_): Creating a claim controller reference
         # causes a recursive reference. Hence, using the reference
         # from the driver.
-        self._claim_ctrl.delete(queue, claim_id, project)
+        claim_ctrl.delete(queue, claim_id, project)
         return messages
 
 

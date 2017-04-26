@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from osprofiler import profiler
 from six.moves import urllib
 
 from keystoneauth1.identity import generic
@@ -55,15 +56,31 @@ class DataDriver(storage.DataDriverBase):
 
     @decorators.lazy_property(write=False)
     def message_controller(self):
-        return controllers.MessageController(self)
+        controller = controllers.MessageController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("swift_message_controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def subscription_controller(self):
-        return controllers.SubscriptionController(self)
+        controller = controllers.SubscriptionController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("swift_subscription_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @decorators.lazy_property(write=False)
     def claim_controller(self):
-        return controllers.ClaimController(self)
+        controller = controllers.ClaimController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_message_store):
+            return profiler.trace_cls("swift_claim_controller")(controller)
+        else:
+            return controller
 
     def _health(self):
         raise NotImplementedError("No health checks")

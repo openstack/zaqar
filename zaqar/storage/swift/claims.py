@@ -35,10 +35,6 @@ class ClaimController(storage.Claim):
         self._client = self.driver.connection
 
     @decorators.lazy_property(write=False)
-    def _message_ctrl(self):
-        return self.driver.message_controller
-
-    @decorators.lazy_property(write=False)
     def _queue_ctrl(self):
         return self.driver.queue_controller
 
@@ -68,6 +64,7 @@ class ClaimController(storage.Claim):
         }
 
     def get(self, queue, claim_id, project=None):
+        message_ctrl = self.driver.message_controller
         now = timeutils.utcnow_ts(True)
         self._exists(queue, claim_id, project)
 
@@ -78,8 +75,8 @@ class ClaimController(storage.Claim):
         def g():
             for msg_id in jsonutils.loads(claim_obj):
                 try:
-                    headers, msg = self._message_ctrl._find_message(
-                        queue, msg_id, project)
+                    headers, msg = message_ctrl._find_message(queue, msg_id,
+                                                              project)
                 except errors.MessageDoesNotExist:
                     continue
                 else:
@@ -95,13 +92,14 @@ class ClaimController(storage.Claim):
 
     def create(self, queue, metadata, project=None,
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
+        message_ctrl = self.driver.message_controller
         ttl = metadata['ttl']
         grace = metadata['grace']
         msg_ts = ttl + grace
         claim_id = uuidutils.generate_uuid()
 
-        messages, marker = self._message_ctrl._list(
-            queue, project, limit=limit, include_claimed=False)
+        messages, marker = message_ctrl._list(queue, project, limit=limit,
+                                              include_claimed=False)
 
         claimed = []
         for msg in messages:
@@ -158,14 +156,15 @@ class ClaimController(storage.Claim):
                                 headers={'x-delete-after': metadata['ttl']})
 
     def delete(self, queue, claim_id, project=None):
+        message_ctrl = self.driver.message_controller
         try:
             header, obj = self._client.get_object(
                 utils._claim_container(queue, project),
                 claim_id)
             for msg_id in jsonutils.loads(obj):
                 try:
-                    headers, msg = self._message_ctrl._find_message(
-                        queue, msg_id, project)
+                    headers, msg = message_ctrl._find_message(queue, msg_id,
+                                                              project)
                 except errors.MessageDoesNotExist:
                     continue
                 md5 = hashlib.md5()
