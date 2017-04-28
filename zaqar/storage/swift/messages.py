@@ -323,7 +323,13 @@ class MessageQueueHandler(object):
         total = 0
         claimed = 0
         container = utils._message_container(name, project)
-        _, objects = self._client.get_container(container)
+
+        try:
+            _, objects = self._client.get_container(container)
+        except swiftclient.ClientException as exc:
+            if exc.http_status == 404:
+                raise errors.QueueIsEmpty(name, project)
+
         newest = None
         oldest = None
         now = timeutils.utcnow_ts(True)
