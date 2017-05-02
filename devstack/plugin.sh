@@ -240,8 +240,8 @@ function install_zaqarclient {
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
     cat $ZAQAR_UWSGI_CONF
-    run_process zaqar-wsgi "uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
-    run_process zaqar-websocket "zaqar-server --config-file $ZAQAR_CONF"
+    run_process zaqar-wsgi "$ZAQAR_BIN_DIR/uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
+    run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
 }
 
 # stop_zaqar() - Stop running processes
