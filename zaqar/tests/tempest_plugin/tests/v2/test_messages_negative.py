@@ -21,7 +21,6 @@ from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
-from tempest import test
 
 from zaqar.tests.tempest_plugin.tests import base
 
@@ -42,7 +41,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
 
     # Get specific Message
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('8246ee51-651c-4e2a-9a07-91848ca5e1e4')
     def test_request_single_message_from_a_nonexistent_queue(self):
         # List a message from a nonexistent queue
@@ -52,7 +51,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.NotFound,
                           self.client.show_single_message, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('767fdad1-37df-485a-8063-5036e8d16a12')
     def test_request_a_non_existing_message(self):
         # List a message with an invalid id
@@ -63,7 +62,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.NotFound,
                           self.client.show_single_message, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('ac2d1a88-5721-4bef-8dfa-53d936630e84')
     def test_request_a_message_with_negative_message_id(self):
         # List a message with an invalid id, negative
@@ -75,7 +74,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.NotFound,
                           self.client.show_single_message, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('ac083d78-67bb-4515-b553-2fc76499e2bd')
     def test_request_a_message_without_a_token(self):
         # List a message without a valid token
@@ -92,7 +91,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
 
     # Get a Set of Messages by ID
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('f544e745-f3da-451d-8621-c3711cd37453')
     def test_request_multiple_messages_from_a_nonexistent_queue(self):
         # List multiple messages from a non existent queue
@@ -104,7 +103,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.NotFound,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('654e64f8-01df-40a0-a09e-d5ec17a3e187')
     def test_request_multiple_messages_with_invalid_message_id(self):
         # List multiple messages by passing invalid id
@@ -117,7 +116,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.NotFound,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('295a37a6-5c93-43e3-a316-3f3dffd4b242')
     def test_request_multiple_messages_by_exceeding_the_default_limit(self):
         # Default limit value is 20 , configurable
@@ -128,7 +127,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('f96eb4a0-8930-4d5e-b8bf-11080628c761')
     def test_request_message_by_passing_invalid_echo_param(self):
         # Value of the echo parameter must be either true or false
@@ -139,7 +138,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('6f668242-6a45-48bc-8ef2-fb581e57d471')
     def test_request_messages_by_passing_invalid_include_claimed_param(self):
         # Value of include_claimed param must be either true or false
@@ -151,7 +150,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('dd267387-76f6-47bd-849b-b1640051aff4')
     def test_request_messages_limit_greater_than_configured_value(self):
         # Default limit value is 20 , configurable
@@ -163,7 +162,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('d199f64e-0f22-4129-9bc4-ff709c01592b')
     def test_request_messages_with_limit_less_than_configured_value(self):
         # Default limit value is 20 , configurable
@@ -175,7 +174,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('0b2e803c-7cb9-4c11-bed6-f976f5247b27')
     def test_request_multiple_messages_request_without_a_token(self):
         # List messages without a valid token
@@ -207,7 +206,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
 
     # Post Messages
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('5a0ba3e6-e6ca-4952-be50-fb6be7834ab7')
     def test_post_messages_with_no_request_body(self):
         # Post message with empty body
@@ -217,7 +216,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('af5ffb4d-c0b4-41db-aea3-bcfc8a232bd6')
     def test_post_messages_with_a_bad_message(self):
         # Post message with invalid message format
@@ -227,7 +226,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('10bc153c-97d2-4a19-9795-e0f6993bad4f')
     def test_post_messages_to_a_nonexistent_queue(self):
         # Post message to a non existent queue
@@ -236,7 +235,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.post_messages(non_existent_queue, body)
         self.assertEqual('201', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('263d6361-4759-4f2c-be9c-12559f064135')
     def test_post_messages_to_a_non_ascii_queue(self):
         # Post message to a queue with non ascii queue name
@@ -245,7 +244,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('04c1b220-1e22-4e38-9db2-a76e8b5e2f3f')
     def test_post_messages_to_a_queue_with_invalid_name(self):
         # Post messages to a queue with invalid characters for queue name
@@ -254,7 +253,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('72290766-cb01-425e-856b-a57877015336')
     def test_post_messages_to_a_queue_with_invalid_length_for_queue_name(self):
         # Post messages to a queue with a long queue name
@@ -263,7 +262,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('774e8bc8-9b20-40fb-9eed-c5368de368c5')
     def test_post_messages_with_invalid_json_request_body(self):
         # Post messages to a queue with non-JSON request body
@@ -273,7 +272,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, body)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('ebbe257a-9f1e-498a-bba8-f5c71230365a')
     def test_post_messages_with_TTL_less_than_60(self):
         # TTL for a message may not exceed 1209600 seconds,
@@ -293,7 +292,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('6d64de03-fd57-4f07-b6f1-8563200a4b4d')
     def test_post_messages_with_TTL_greater_than_1209600(self):
         # TTL for a message may not exceed 1209600 seconds, and
@@ -313,7 +312,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('c48802d7-7e91-4d5f-9c23-32cd4edc41ff')
     def test_post_messages_with_non_int_value_of_TTL(self):
         # TTL for a message may not exceed 1209600 seconds, and
@@ -332,7 +331,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('203fed96-0df3-43c0-9956-723b34b8a23b')
     def test_post_messages_with_negative_value_of_TTL(self):
         # TTL for a message may not exceed 1209600 seconds, and
@@ -352,7 +351,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('d3ad28e7-0c84-43cf-bb87-1574da28a10d')
     def test_post_messages_without_TTL(self):
         # TTL for a message may not exceed 1209600 seconds, and
@@ -369,7 +368,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('662428d4-302f-4000-8ac6-1a53fb8818b8')
     def test_post_messages_exceeding_message_post_size(self):
         # Post messages with greater message size
@@ -387,7 +386,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('ba4f7334-1a4d-4bc8-acd3-040a1310fe62')
     def test_post_messages_with_invalid_body_size(self):
         # Maximum number of queue message per page
@@ -405,7 +404,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('855d36a2-e583-4355-af33-fcec0f71842c')
     def test_post_messages_without_body_in_request_body(self):
         # TTL for a message may not exceed 1209600 seconds, and
@@ -420,7 +419,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.post_messages, queue_name, rbody)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('074fe312-0077-41ba-8aa9-e6d6a586a685')
     def test_post_messages_with_invalid_auth_token(self):
         # X-Auth-Token is not provided
@@ -436,7 +435,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
 
     # Delete Messages
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('8552d5b3-7c16-4eaf-a8de-a7b178823458')
     def test_delete_message_from_a_nonexistent_queue(self):
         # Delete is an idempotent operation
@@ -447,7 +446,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('a5d581f0-0403-4c2d-9ea4-048cc6cc85f0')
     def test_delete_a_non_existing_message(self):
         # Delete is an idempotent operation
@@ -459,7 +458,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('f792f462-0ad9-41b1-9bae-636957364ca0')
     def test_delete_message_with_non_existent_message_id(self):
         # Delete is an idempotent operation
@@ -471,7 +470,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('6b8f14b3-2307-49e2-aa53-75d4d4b82754')
     def test_delete_multiple_non_existing_messages(self):
         # Delete is an idempotent operation
@@ -485,7 +484,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('805f75fd-6447-4c8a-860c-2659d8a5b0b5')
     def test_delete_message_without_id(self):
         # Delete all the message from a queue
@@ -498,7 +497,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('85eed2fb-fa72-4886-8cfc-44c7fb58ffea')
     def test_delete_message_with_invalid_message_id(self):
         # Delete is an idempotent operation
@@ -511,7 +510,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('374265e7-1146-4da4-a265-38c8698e4144')
     def test_delete_the_deleted_message(self):
         # Delete is an idempotent operation
@@ -525,7 +524,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         resp, _ = self.client.delete_messages(uri)
         self.assertEqual('204', resp['status'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('a130d499-cd41-42dd-b1f0-e859f73b00e0')
     def test_delete_multiple_messages_by_exceeding_the_default_limit(self):
         # Default limit value is 20
@@ -536,7 +535,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('51a2f5ca-e358-4ef6-9f33-73d3e01f07b9')
     def test_delete_message_without_providing_claim_id(self):
         # When message is claimed;
@@ -562,7 +561,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
                           self.client.delete_messages,
                           uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('18fa5f43-20e6-47bd-a751-ef33e62a4315')
     def test_delete_message_with_invalid_claim_id(self):
         # Delete with a non existent claim id
@@ -576,7 +575,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('b82e5dee-5470-4408-9dca-d4a7536ff25f')
     def test_delete_message_with_no_pop_value(self):
         # Pop value must be at least 1 and may not be greater than 20
@@ -587,7 +586,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('6454103d-9cfd-48da-bd8c-061e61a7e634')
     def test_delete_message_with_invalid_pop_value(self):
         # Pop value must be at least 1 and may not be greater than 20
@@ -598,7 +597,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('9874b696-352b-47d7-a338-d149d4096c28')
     def test_delete_message_with_negative_pop_value(self):
         # Pop value must be at least 1 and may not be greater than 20
@@ -609,7 +608,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('4044f38a-0a70-4c86-ab1b-ca369e5b443a')
     def test_delete_message_with_invalid_params_with_pop(self):
         # Pop & ids parameters are mutually exclusive
@@ -624,7 +623,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('ea609ee5-a7a2-41a0-a9fb-73e8c7ed8c59')
     def test_delete_messages_with_invalid_auth_token(self):
         # Delete message with an invalid token
