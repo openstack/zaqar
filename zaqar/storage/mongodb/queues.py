@@ -278,7 +278,7 @@ class QueueController(storage.Queue):
     @utils.retries_on_autoreconnect
     @_exists.purges
     def _delete(self, name, project=None):
-        self._collection.remove(_get_scoped_query(name, project))
+        self._collection.delete_one(_get_scoped_query(name, project))
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect

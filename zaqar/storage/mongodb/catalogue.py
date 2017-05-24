@@ -82,8 +82,8 @@ class CatalogueController(base.CatalogueBase):
 
     @utils.raises_conn_error
     def delete(self, project, queue):
-        self._col.remove({PRIMARY_KEY: utils.scope_queue_name(queue, project)},
-                         w=0)
+        self._col.delete_one({
+            PRIMARY_KEY: utils.scope_queue_name(queue, project)})
 
     def update(self, project, queue, pool=None):
         # NOTE(cpp-cabrera): _insert handles conn_error

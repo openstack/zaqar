@@ -146,7 +146,7 @@ class PoolsController(base.PoolsBase):
                 flavors = ', '.join([x['name'] for x in res])
                 raise errors.PoolInUseByFlavor(name, flavors)
 
-            self._col.remove({'n': name}, w=0)
+            self._col.delete_one({'n': name})
         except errors.PoolDoesNotExist:
             pass
 
