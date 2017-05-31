@@ -110,7 +110,7 @@ class TestBase(testtools.TestCase):
         test by the tearDown() method.
         """
         for k, v in kw.items():
-            self.conf.set_override(k, v, group, enforce_type=True)
+            self.conf.set_override(k, v, group)
 
     def _my_dir(self):
         return os.path.abspath(os.path.dirname(__file__))

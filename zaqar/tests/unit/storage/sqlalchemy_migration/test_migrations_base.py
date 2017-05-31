@@ -71,8 +71,7 @@ class BaseWalkMigrationTestCase(object):
         """
 
         CONF.set_override('uri', str(engine.url),
-                          group='drivers:management_store:sqlalchemy',
-                          enforce_type=True)
+                          group='drivers:management_store:sqlalchemy')
 
     def _alembic_command(self, alembic_command, engine, *args, **kwargs):
         """Most of alembic command return data into output.
@@ -81,8 +80,7 @@ class BaseWalkMigrationTestCase(object):
         """
         self.ALEMBIC_CONFIG.stdout = buf = io.StringIO()
         CONF.set_override('uri', str(engine.url),
-                          group='drivers:management_store:sqlalchemy',
-                          enforce_type=True)
+                          group='drivers:management_store:sqlalchemy')
 
         getattr(command, alembic_command)(*args, **kwargs)
         res = buf.getvalue().strip()
@@ -184,8 +182,7 @@ class TestModelsMigrationsSync(t_m.ModelsMigrationsSync):
 
     def db_sync(self, engine):
         CONF.set_override('uri', str(engine.url),
-                          group='drivers:management_store:sqlalchemy',
-                          enforce_type=True)
+                          group='drivers:management_store:sqlalchemy')
         script_location = os.path.join(self.mg_path, 'alembic_migrations')
         self.ALEMBIC_CONFIG.set_main_option('script_location', script_location)
         alembic.command.upgrade(self.ALEMBIC_CONFIG, 'head')
