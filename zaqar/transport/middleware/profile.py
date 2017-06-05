@@ -46,9 +46,10 @@ def setup(conf, binary, host):
         backend_type = parsed_connection.scheme
         if backend_type == "messaging":
             import oslo_messaging
-            _notifier = notifier.create(backend_uri, oslo_messaging, {},
-                                        oslo_messaging.get_transport(conf),
-                                        "Zaqar", binary, host)
+            _notifier = notifier.create(
+                backend_uri, oslo_messaging, {},
+                oslo_messaging.get_notification_transport(conf),
+                "Zaqar", binary, host)
         else:
             _notifier = notifier.create(backend_uri, project="Zaqar",
                                         service=binary, host=host)
