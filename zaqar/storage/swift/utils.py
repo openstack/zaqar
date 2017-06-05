@@ -129,10 +129,16 @@ class SubscriptionListCursor(object):
         return self
 
     def next(self):
-        curr = next(self.objects)
-        self.marker_next['next'] = curr['name']
-        headers, sub = self.get_object(curr['name'])
-        return _subscription_to_json(sub, headers)
+        while True:
+            curr = next(self.objects)
+            self.marker_next['next'] = curr['name']
+            try:
+                headers, sub = self.get_object(curr['name'])
+            except swiftclient.ClientException as exc:
+                if exc.http_status == 404:
+                    continue
+                raise
+            return _subscription_to_json(sub, headers)
 
     def __next__(self):
         return self.next()
