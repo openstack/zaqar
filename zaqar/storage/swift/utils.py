@@ -24,10 +24,6 @@ def _claim_container(queue=None, project=None):
     return "zaqar_claim:%s:%s" % (queue, project)
 
 
-def _queue_container(project=None):
-    return "zaqar_queue:%s" % (project,)
-
-
 def _subscription_container(queue, project=None):
     return "zaqar_subscription:%s:%s" % (queue, project)
 
@@ -120,30 +116,6 @@ def _filter_messages(messages, filters, marker, get_object, list_objects,
         for msg in _filter_messages(objects, filters, marker, get_object,
                                     list_objects, limit):
             yield msg
-
-
-class QueueListCursor(object):
-
-    def __init__(self, objects, detailed, marker_next, get_object):
-        self.objects = iter(objects)
-        self.detailed = detailed
-        self.marker_next = marker_next
-        self.get_object = get_object
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        curr = next(self.objects)
-        self.marker_next['next'] = curr['name']
-        queue = {'name': curr['name']}
-        if self.detailed:
-            _, metadata = self.get_object(curr['name'])
-            queue['metadata'] = metadata
-        return queue
-
-    def __next__(self):
-        return self.next()
 
 
 class SubscriptionListCursor(object):
