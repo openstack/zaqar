@@ -91,7 +91,7 @@ _TRANSPORT_LIMITS_GROUP = 'transport'
 
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.
-QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-]+$')
+QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-.]+$')
 QUEUE_NAME_MAX_LEN = 64
 PROJECT_ID_MAX_LEN = 256
 
