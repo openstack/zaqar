@@ -87,10 +87,6 @@ class ClaimController(storage.Claim, scripting.Mixin):
         self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
 
     @decorators.lazy_property(write=False)
-    def _message_ctrl(self):
-        return self.driver.message_controller
-
-    @decorators.lazy_property(write=False)
     def _queue_ctrl(self):
         return self.driver.queue_controller
 

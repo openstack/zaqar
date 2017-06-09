@@ -60,10 +60,6 @@ class MessageController(storage.Message):
     def _queue_ctrl(self):
         return self.driver.queue_controller
 
-    @decorators.lazy_property(write=False)
-    def _claim_ctrl(self):
-        return self.driver.claim_controller
-
     def _delete_queue_messages(self, queue, project, pipe):
         """Method to remove all the messages belonging to a queue.
 
@@ -243,19 +239,19 @@ class MessageController(storage.Message):
         return slug
 
     def delete(self, queue, message_id, project=None, claim=None):
+        claim_ctrl = self.driver.claim_controller
         try:
             msg = self._get(queue, message_id, project)
         except (errors.QueueDoesNotExist, errors.MessageDoesNotExist):
             return
         if claim is None:
             if msg['claim_id']:
-                claim_obj = self._claim_ctrl._get(queue, msg['claim_id'],
-                                                  project)
+                claim_obj = claim_ctrl._get(queue, msg['claim_id'], project)
                 if claim_obj is not None and claim_obj['ttl'] > 0:
                     raise errors.MessageIsClaimed(message_id)
         else:
             # Check if the claim does exist
-            self._claim_ctrl._exists(queue, claim, project)
+            claim_ctrl._exists(queue, claim, project)
             if not msg['claim_id']:
                 raise errors.MessageNotClaimed(message_id)
             elif msg['claim_id'] != claim:
@@ -276,9 +272,9 @@ class MessageController(storage.Message):
         # 1. Create a claim.
         # 2. Delete the messages claimed.
         # 3. Delete the claim.
-
-        claim_id, messages = self._claim_ctrl.create(
-            queue, dict(ttl=1, grace=0), project, limit=limit)
+        claim_ctrl = self.driver.claim_controller
+        claim_id, messages = claim_ctrl.create(queue, dict(ttl=1, grace=0),
+                                               project, limit=limit)
 
         message_ids = [message['id'] for message in messages]
         self.bulk_delete(queue, message_ids, project)
