@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from oslo_db.sqlalchemy import engines
 from osprofiler import profiler
 from osprofiler import sqlalchemy as sa_tracer
 import sqlalchemy as sa
@@ -31,11 +32,6 @@ class ControlDriver(storage.ControlDriverBase):
                                 group=options.MANAGEMENT_SQLALCHEMY_GROUP)
         self.sqlalchemy_conf = self.conf[options.MANAGEMENT_SQLALCHEMY_GROUP]
 
-    def _sqlite_on_connect(self, conn, record):
-        # NOTE(flaper87): This is necessary in order
-        # to ensure FK are treated correctly by sqlite.
-        conn.execute('pragma foreign_keys=ON')
-
     def _mysql_on_connect(self, conn, record):
         # NOTE(flaper87): This is necessary in order
         # to ensure that all date operations in mysql
@@ -43,18 +39,16 @@ class ControlDriver(storage.ControlDriverBase):
         conn.query('SET time_zone = "+0:00"')
 
     @decorators.lazy_property(write=False)
-    def engine(self, *args, **kwargs):
+    def engine(self):
         uri = self.sqlalchemy_conf.uri
-        engine = sa.create_engine(uri, **kwargs)
-
-        # TODO(flaper87): Find a better way
-        # to do this.
-        if uri.startswith('sqlite://'):
-            sa.event.listen(engine, 'connect',
-                            self._sqlite_on_connect)
+        engine = engines.create_engine(uri, sqlite_fk=True)
 
         if (uri.startswith('mysql://') or
                 uri.startswith('mysql+pymysql://')):
+            # oslo_db.create_engine makes a test connection, throw that out
+            # first.   mysql time_zone can be added to oslo_db as a
+            # startup option
+            engine.dispose()
             sa.event.listen(engine, 'connect',
                             self._mysql_on_connect)
 

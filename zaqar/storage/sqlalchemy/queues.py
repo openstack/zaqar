@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import oslo_db.exception
 import sqlalchemy as sa
 
 from zaqar import storage
@@ -85,7 +86,7 @@ class QueueController(storage.Queue):
                                                 name=name,
                                                 metadata=smeta)
             res = self.driver.run(ins)
-        except sa.exc.IntegrityError:
+        except oslo_db.exception.DBDuplicateEntry:
             return False
 
         return res.rowcount == 1

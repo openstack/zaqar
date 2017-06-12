@@ -17,6 +17,7 @@ controller for sqlalchemy.
 
 """
 
+import oslo_db.exception
 import sqlalchemy as sa
 
 from zaqar.storage import base
@@ -80,7 +81,7 @@ class FlavorsController(base.FlavorsBase):
                 capabilities=cap
             )
             self.driver.run(stmt)
-        except sa.exc.IntegrityError:
+        except oslo_db.exception.DBDuplicateEntry:
             if not self._pools_ctrl.get_pools_by_group(pool_group):
                 raise errors.PoolGroupDoesNotExist(pool_group)
 

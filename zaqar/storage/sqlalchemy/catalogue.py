@@ -22,6 +22,7 @@ project: string
 queue: string
 """
 
+import oslo_db.exception
 import sqlalchemy as sa
 
 from zaqar.storage import base
@@ -70,7 +71,9 @@ class CatalogueController(base.CatalogueBase):
             )
             self.driver.run(stmt)
 
-        except sa.exc.IntegrityError:
+        except oslo_db.exception.DBReferenceError:
+            self._update(project, queue, pool)
+        except oslo_db.exception.DBDuplicateError:
             self._update(project, queue, pool)
 
     def delete(self, project, queue):
