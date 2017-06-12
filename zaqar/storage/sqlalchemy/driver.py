@@ -16,8 +16,6 @@
 from osprofiler import profiler
 from osprofiler import sqlalchemy as sa_tracer
 import sqlalchemy as sa
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
 
 from zaqar.common import decorators
 from zaqar import storage
@@ -70,18 +68,11 @@ class ControlDriver(storage.ControlDriverBase):
     # that acquires the connection to the DB for the desired scope and
     # closes it once the operations are completed
     # TODO(wangxiyuan): we should migrate to oslo.db asap.
-    @decorators.lazy_property(write=False)
-    def connection(self):
-        # use scoped_session to avoid multi-threading problem.
-        session = scoped_session(sessionmaker(bind=self.engine,
-                                              autocommit=True))
-        return session()
-
     def run(self, *args, **kwargs):
-        return self.connection.execute(*args, **kwargs)
+        return self.engine.execute(*args, **kwargs)
 
     def close(self):
-        self.connection.close()
+        pass
 
     @property
     def pools_controller(self):
