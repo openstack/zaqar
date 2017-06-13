@@ -7,7 +7,7 @@ the same message.
 Claim messages
 ==============
 
-.. rest_method:: POST /v2//queues/{queue_name}/claims
+.. rest_method:: POST /v2/queues/{queue_name}/claims
 
 Claims a set of messages from the specified queue.
 
@@ -50,7 +50,7 @@ live period, its expiration is not adjusted.
 
 
 
-Normal response codes: 201
+Normal response codes: 201 204
 
 Error response codes:
 
