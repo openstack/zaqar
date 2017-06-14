@@ -35,7 +35,6 @@ from oslo_config import cfg
 from oslo_db.sqlalchemy import test_migrations as t_m
 from oslo_log import log as logging
 
-from zaqar.i18n import _LE
 import zaqar.storage.sqlalchemy.migration
 from zaqar.storage.sqlalchemy import tables
 
@@ -160,8 +159,8 @@ class BaseWalkMigrationTestCase(object):
                 if check:
                     check(engine, data)
         except Exception:
-            LOG.error(_LE("Failed to migrate to version {version} on engine "
-                      "{engine}").format(version=version, engine=engine))
+            LOG.error("Failed to migrate to version {version} on engine "
+                      "{engine}".format(version=version, engine=engine))
             raise
 
 

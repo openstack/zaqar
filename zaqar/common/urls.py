@@ -20,8 +20,6 @@ import hmac
 from oslo_utils import timeutils
 import six
 
-from zaqar.i18n import _LE
-
 _DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
@@ -44,13 +42,13 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
     methods = methods or ['GET']
 
     if key is None:
-        raise ValueError(_LE('The `key` can\'t be None'))
+        raise ValueError('The `key` can\'t be None')
 
     if not isinstance(paths, list) or not paths:
-        raise ValueError(_LE('`paths` must be a non-empty list'))
+        raise ValueError('`paths` must be a non-empty list')
 
     if not isinstance(methods, list):
-        raise ValueError(_LE('`methods` should be a list'))
+        raise ValueError('`methods` should be a list')
 
     # NOTE(flaper87): The default expiration time is 1day
     # Evaluate whether this should be configurable. We may
@@ -65,9 +63,9 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
         except ValueError:
             pass
         if check_expires:
-            raise ValueError(_LE('`expires` should be date format, '
-                                 'for example 2016-01-01T00:00:00, '
-                                 'not integer value: %s') % check_expires)
+            raise ValueError('`expires` should be date format, '
+                             'for example 2016-01-01T00:00:00, '
+                             'not integer value: %s' % check_expires)
         parsed = timeutils.parse_isotime(expires)
         expires = timeutils.normalize_time(parsed)
     else:
@@ -75,7 +73,7 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
         expires = timeutils.utcnow() + delta
 
     if expires <= timeutils.utcnow():
-        raise ValueError(_LE('`expires` is lower than the current time'))
+        raise ValueError('`expires` is lower than the current time')
 
     methods = sorted(methods)
     paths = sorted(paths)

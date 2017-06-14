@@ -22,8 +22,6 @@ from six.moves import urllib_parse
 
 from zaqar.common import auth
 from zaqar.common import urls
-from zaqar.i18n import _LE
-from zaqar.i18n import _LI
 from zaqar.storage import pooling
 
 LOG = logging.getLogger(__name__)
@@ -67,8 +65,8 @@ class NotifierDriver(object):
                         # should allow them be subscribed.
                         if (self.require_confirmation and
                                 not sub.get('confirmed', True)):
-                            LOG.info(_LI('The subscriber %s is not '
-                                         'confirmed.'), sub['subscriber'])
+                            LOG.info('The subscriber %s is not '
+                                     'confirmed.', sub['subscriber'])
                             continue
                         for msg in messages:
                             msg['Message_Type'] = MessageType.Notification.name
@@ -77,7 +75,7 @@ class NotifierDriver(object):
                     if not marker:
                         break
         else:
-            LOG.error(_LE('Failed to get subscription controller.'))
+            LOG.error('Failed to get subscription controller.')
 
     def send_confirm_notification(self, queue, subscription, conf,
                                   project=None, expires=None,
@@ -93,8 +91,8 @@ class NotifierDriver(object):
 
         key = conf.signed_url.secret_key
         if not key:
-            LOG.error(_LE("Can't send confirm notification due to the value of"
-                          " secret_key option is None"))
+            LOG.error("Can't send confirm notification due to the value of"
+                      " secret_key option is None")
             return
         url = "/%s/queues/%s/subscriptions/%s/confirm" % (api_version, queue,
                                                           subscription['id'])
@@ -133,8 +131,8 @@ class NotifierDriver(object):
                          'SubscribeBody': {'confirmed': True},
                          'UnsubscribeBody': {'confirmed': False}})
         s_type = urllib_parse.urlparse(subscription['subscriber']).scheme
-        LOG.info(_LI('Begin to send %(type)s confirm/unsubscribe notification.'
-                     ' The request body is %(messages)s'),
+        LOG.info('Begin to send %(type)s confirm/unsubscribe notification.'
+                 ' The request body is %(messages)s',
                  {'type': s_type, 'messages': messages})
 
         self._execute(s_type, subscription, [messages], conf)

@@ -20,7 +20,7 @@ import subprocess
 
 from oslo_log import log as logging
 
-from zaqar.i18n import _, _LE
+from zaqar.i18n import _
 from zaqar.notification.notifier import MessageType
 
 LOG = logging.getLogger(__name__)
@@ -101,10 +101,10 @@ class MailtoTask(object):
                 p.communicate(msg.as_string())
                 LOG.debug("Send mail successfully: %s", msg.as_string())
         except OSError as err:
-            LOG.exception(_LE('Failed to create process for sendmail, '
-                              'because %s.') % str(err))
+            LOG.exception('Failed to create process for sendmail, '
+                          'because %s.' % str(err))
         except Exception as exc:
-            LOG.exception(_LE('Failed to send email because %s.') % str(exc))
+            LOG.exception('Failed to send email because %s.' % str(exc))
 
     def register(self, subscriber, options, ttl, project_id, request_data):
         pass

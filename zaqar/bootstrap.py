@@ -33,8 +33,6 @@ from zaqar.transport import base
 from zaqar.transport.middleware import profile
 from zaqar.transport import validation
 
-from zaqar.i18n import _LE
-
 LOG = log.getLogger(__name__)
 
 
@@ -122,8 +120,8 @@ class Bootstrap(object):
             return mgr.driver
         except RuntimeError as exc:
             LOG.exception(exc)
-            LOG.error(_LE(u'Failed to load transport driver zaqar.transport.'
-                          u'%(driver)s with args %(args)s'),
+            LOG.error(u'Failed to load transport driver zaqar.transport.'
+                      u'%(driver)s with args %(args)s',
                       {'driver': transport_name, 'args': args})
             raise errors.InvalidDriver(exc)
 
