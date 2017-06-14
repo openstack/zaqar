@@ -1,5 +1,5 @@
 {
-    "subscriber":"mailto://test@gmail.com",
+    "subscriber":"mailto:test@gmail.com",
     "ttl":3600,
     "options":{
       "from": "Jack",
