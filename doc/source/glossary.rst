@@ -49,7 +49,7 @@ protocol, which is one of the main requirements in today’s scalable applicatio
    Producer - Consumer
      Producer - Consumer is a pattern where each worker application that reads
      the queue has to claim the message in order to prevent duplicate processing.
-     Later, when the work is done, the worker is responsible from deleting the
+     Later, when the work is done, the worker is responsible for deleting the
      message. If message is not deleted in a predefined time (claim TTL), it can
      be claimed by other workers.
 
