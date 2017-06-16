@@ -19,6 +19,7 @@ controller for sqlalchemy.
 
 import functools
 
+import oslo_db.exception
 import sqlalchemy as sa
 
 from zaqar.common import utils as common_utils
@@ -81,7 +82,7 @@ class PoolsController(base.PoolsBase):
             stmt = sa.sql.expression.insert(tables.PoolGroup).values(name=name)
             self.driver.run(stmt)
             return True
-        except sa.exc.IntegrityError:
+        except oslo_db.exception.DBDuplicateEntry:
             return False
 
     # TODO(cpp-cabrera): rename to upsert
@@ -98,7 +99,7 @@ class PoolsController(base.PoolsBase):
             )
             self.driver.run(stmt)
 
-        except sa.exc.IntegrityError:
+        except oslo_db.exception.DBDuplicateEntry:
             # TODO(cpp-cabrera): merge update/create into a single
             # method with introduction of upsert
             self._update(name, weight=weight, uri=uri,
