@@ -84,7 +84,7 @@ Command Line
 ------------
 
 we can use OpenStack Client to analyse the user request now. For example, if we
-want know the performance for "queue list", we can do like this:
+want to know the performance for "queue list", we can do like this:
 
 1. OpenStack Client now supports OSprofiler by default. Only thing we need to
 do is adding ``--os-profile {hmac_keys}`` in the command::
@@ -112,7 +112,7 @@ It also supports json format::
 
     osprofiler trace show --json 2902c7a3-ee18-4b08-aae7-4e34388f9352 --connection-string mongodb://localhost:27017
 
-Of cause it supports to save the result to a file::
+Of course it supports to save the result to a file::
 
     osprofiler trace show --json 2902c7a3-ee18-4b08-aae7-4e34388f9352 --out list_test --connection-string mongodb://localhost:27017
 
