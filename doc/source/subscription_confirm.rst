@@ -22,6 +22,12 @@ This guide shows how to use this feature:
 Webhook
 -------
 
+.. note::
+
+   You should make sure that the message notification is enabled. By default,
+   the ``message_pipeline`` config option in [storage] section should be set
+   like: message_pipeline = zaqar.notification.notifier
+
 1. Set the config option "require_confirmation" and add the policy to the
 policy.json file. Then restart Zaqar-wsgi service::
 
