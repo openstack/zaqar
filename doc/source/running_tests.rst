@@ -164,4 +164,4 @@ leveraging oslo.db's migration test base.
 
 .. rubric:: Footnotes
 
-.. [#f1] See http://docs.openstack.org/infra/system-config/jenkins.html
+.. [#f1] See https://docs.openstack.org/infra/system-config/jjb.html
