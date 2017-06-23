@@ -41,6 +41,13 @@ _WS_OPTIONS = (
     cfg.PortOpt('external-port',
                 help='Port on which the service is provided to the user.'),
 
+    cfg.HostAddressOpt('notification-bind',
+                       help='Address on which the notification server will '
+                            'listen.'),
+
+    cfg.PortOpt('notification-port', default=0,
+                help='Port on which the notification server will listen.'),
+
 )
 
 _WS_GROUP = 'drivers:transport:websocket'
@@ -58,7 +65,6 @@ class Driver(base.DriverBase):
         super(Driver, self).__init__(conf, None, None, None)
         self._api = api
         self._cache = cache
-        self._hostname = socket.gethostname()
 
         self._conf.register_opts(_WS_OPTIONS, group=_WS_GROUP)
         self._ws_conf = self._conf[_WS_GROUP]
@@ -86,24 +92,35 @@ class Driver(base.DriverBase):
         return factory.NotificationFactory(self.factory)
 
     def listen(self):
-        """Self-host using 'bind' and 'port' from the WS config group."""
+        """Self-host the WebSocket server.
 
+        It runs the WebSocket server using 'bind' and 'port' options from the
+        websocket config group, and the notifiton endpoint using the
+        'notification_bind' and 'notification_port' options.
+        """
         msgtmpl = _(u'Serving on host %(bind)s:%(port)s')
         LOG.info(msgtmpl,
                  {'bind': self._ws_conf.bind, 'port': self._ws_conf.port})
 
         loop = asyncio.get_event_loop()
         coro_notification = loop.create_server(
-            self.notification_factory, port=0)
-        coro = loop.create_server(self.factory,
-                                  self._ws_conf.bind,
-                                  self._ws_conf.port)
+            self.notification_factory,
+            self._ws_conf.notification_bind,
+            self._ws_conf.notification_port)
+        coro = loop.create_server(
+            self.factory,
+            self._ws_conf.bind,
+            self._ws_conf.port)
 
         def got_server(task):
             # Retrieve the port number of the listening socket
             port = task.result().sockets[0].getsockname()[1]
+            if self._ws_conf.notification_bind is not None:
+                host = self._ws_conf.notification_bind
+            else:
+                host = socket.gethostname()
             self.notification_factory.set_subscription_url(
-                'http://%s:%s/' % (self._hostname, port))
+                'http://%s:%s/' % (host, port))
             self._api.set_subscription_factory(self.notification_factory)
 
         task = asyncio.Task(coro_notification)
