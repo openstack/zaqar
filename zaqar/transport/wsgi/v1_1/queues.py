@@ -66,7 +66,7 @@ class ItemResource(object):
             if req.content_length:
                 document = wsgi_utils.deserialize(req.stream,
                                                   req.content_length)
-                metadata = wsgi_utils.sanitize(document, spec=None)
+                metadata = wsgi_utils.sanitize(document)
             # NOTE(Eva-i): reserved queue attributes is Zaqar's feature since
             # API v2. But we have to ensure the bad data will not come from
             # older APIs, so we validate metadata here.

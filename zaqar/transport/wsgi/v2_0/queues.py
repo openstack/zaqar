@@ -81,7 +81,7 @@ class ItemResource(object):
             if req.content_length:
                 document = wsgi_utils.deserialize(req.stream,
                                                   req.content_length)
-                metadata = wsgi_utils.sanitize(document, spec=None)
+                metadata = wsgi_utils.sanitize(document)
             self._validate.queue_metadata_putting(metadata)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
@@ -156,8 +156,7 @@ class ItemResource(object):
         if req.content_length:
             try:
                 changes = utils.read_json(req.stream, req.content_length)
-                changes = wsgi_utils.sanitize(changes,
-                                              spec=None, doctype=list)
+                changes = wsgi_utils.sanitize(changes, doctype=list)
             except utils.MalformedJSON as ex:
                 LOG.debug(ex)
                 description = _(u'Request body could not be parsed.')
