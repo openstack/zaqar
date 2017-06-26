@@ -63,7 +63,7 @@ class Resource(object):
             self._validate.queue_metadata_length(req.content_length)
             # Deserialize queue metadata
             document = wsgi_utils.deserialize(req.stream, req.content_length)
-            metadata = wsgi_utils.sanitize(document, spec=None)
+            metadata = wsgi_utils.sanitize(document)
             # Restrict setting any reserved queue attributes
             for key in metadata:
                 if key.startswith('_'):
