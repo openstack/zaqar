@@ -155,7 +155,9 @@ class DataDriver(base.DataDriverBase):
                   'max_notifier_workers':
                   self.conf.notification.max_notifier_workers,
                   'require_confirmation':
-                  self.conf.notification.require_confirmation}
+                  self.conf.notification.require_confirmation,
+                  'queue_controller':
+                  self._storage.queue_controller}
         stages.extend(_get_storage_pipeline('message', self.conf, **kwargs))
         stages.append(self._storage.message_controller)
         return common.Pipeline(stages)

@@ -1,0 +1,6 @@
+---
+features:
+  - Support notificaiton delivery policy in webhook type. It will work when
+    the notification is sent from Zaqar to the subscriber failed.
+    User can define the retry policy in the options of subscription or
+    metadata of queue.

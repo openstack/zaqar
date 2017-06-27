@@ -70,9 +70,13 @@ class NotifierTest(testing.TestBase):
                          'options': {}}]
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         headers = {'Content-Type': 'application/json'}
         with mock.patch('requests.post') as mock_post:
+            mock_post.return_value = None
             driver.post('fake_queue', self.messages, self.client_id,
                         self.project)
             driver.executor.shutdown()
@@ -114,9 +118,13 @@ class NotifierTest(testing.TestBase):
                          'options': {'post_data': json.dumps(post_data)}}]
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         headers = {'Content-Type': 'application/json'}
         with mock.patch('requests.post') as mock_post:
+            mock_post.return_value = None
             driver.post('fake_queue', self.messages, self.client_id,
                         self.project)
             driver.executor.shutdown()
@@ -155,9 +163,13 @@ class NotifierTest(testing.TestBase):
                 return iter([subscription2, {}])
 
         ctlr.list = mock_list
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         headers = {'Content-Type': 'application/json'}
         with mock.patch('requests.post') as mock_post:
+            mock_post.return_value = None
             driver.post('fake_queue', self.messages, self.client_id,
                         self.project)
             driver.executor.shutdown()
@@ -192,7 +204,10 @@ class NotifierTest(testing.TestBase):
                                      'from': 'zaqar@example.com'}}]
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         called = set()
         msg = ('Content-Type: text/plain; charset="us-ascii"\n'
                'MIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nto:'
@@ -242,7 +257,10 @@ class NotifierTest(testing.TestBase):
     def test_post_no_subscriber(self):
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([[], {}]))
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         with mock.patch('requests.post') as mock_post:
             driver.post('fake_queue', self.messages, self.client_id,
                         self.project)
@@ -255,8 +273,12 @@ class NotifierTest(testing.TestBase):
                          'options': {}}]
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
-        driver = notifier.NotifierDriver(subscription_controller=ctlr)
+        queue_ctlr = mock.MagicMock()
+        queue_ctlr.get = mock.Mock(return_value={})
+        driver = notifier.NotifierDriver(subscription_controller=ctlr,
+                                         queue_controller=queue_ctlr)
         with mock.patch('requests.post') as mock_post:
+            mock_post.return_value = None
             driver.post('fake_queue', self.messages, self.client_id,
                         self.project)
             driver.executor.shutdown()

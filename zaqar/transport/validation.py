@@ -232,6 +232,39 @@ class Validator(object):
         path_list = self._decode_json_pointer(path)
         return op, path_list
 
+    def _validate_retry_policy(self, metadata):
+        retry_policy = metadata.get('_retry_policy') if metadata else None
+        if retry_policy and not isinstance(retry_policy, dict):
+            msg = _('retry_policy must be a dict.')
+            raise ValidationFailed(msg)
+
+        if retry_policy:
+            valid_keys = ['retries_with_no_delay', 'minimum_delay_retries',
+                          'minimum_delay', 'maximum_delay',
+                          'maximum_delay_retries', 'retry_backoff_function',
+                          'ignore_subscription_override']
+            for key in valid_keys:
+                retry_value = retry_policy.get(key)
+                if key == 'retry_backoff_function':
+                    if retry_value and not isinstance(retry_value, str):
+                        msg = _('retry_backoff_function must be a string.')
+                        raise ValidationFailed(msg)
+                    # TODO(wanghao): Now we only support linear function.
+                    # This will be removed after we support more functions.
+                    if retry_value and retry_value != 'linear':
+                        msg = _('retry_backoff_function only supports linear '
+                                'now.')
+                        raise ValidationFailed(msg)
+                elif key == 'ignore_subscription_override':
+                    if retry_value and not isinstance(retry_value, bool):
+                        msg = _('ignore_subscription_override must be a '
+                                'boolean.')
+                        raise ValidationFailed(msg)
+                else:
+                    if retry_value and not isinstance(retry_value, int):
+                        msg = _('Retry policy: %s must be a integer.') % key
+                        raise ValidationFailed(msg)
+
     def queue_patching(self, request, changes):
         washed_changes = []
         content_types = {
@@ -343,6 +376,8 @@ class Validator(object):
                     'and must be at least {1} seconds long.')
             raise ValidationFailed(msg, self._limits_conf.max_message_ttl,
                                    MIN_MESSAGE_TTL)
+
+        self._validate_retry_policy(queue_metadata)
 
     def queue_purging(self, document):
         """Restrictions the resource types to be purged for a queue.
@@ -558,6 +593,8 @@ class Validator(object):
         if options and not isinstance(options, dict):
             msg = _(u'Options must be a dict.')
             raise ValidationFailed(msg)
+
+        self._validate_retry_policy(options)
 
         ttl = subscription.get('ttl')
         if ttl:

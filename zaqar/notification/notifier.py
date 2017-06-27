@@ -45,6 +45,7 @@ class NotifierDriver(object):
         max_workers = kwargs.get('max_notifier_workers', 10)
         self.executor = futurist.ThreadPoolExecutor(max_workers=max_workers)
         self.require_confirmation = kwargs.get('require_confirmation', False)
+        self.queue_controller = kwargs.get('queue_controller')
 
     def post(self, queue_name, messages, client_uuid, project=None):
         """Send messages to the subscribers."""
@@ -52,6 +53,9 @@ class NotifierDriver(object):
             if not isinstance(self.subscription_controller,
                               pooling.SubscriptionController):
                 marker = None
+                queue_metadata = self.queue_controller.get(queue_name,
+                                                           project)
+                retry_policy = queue_metadata.get('_retry_policy', {})
                 while True:
                     subscribers = self.subscription_controller.list(
                         queue_name, project, marker=marker)
@@ -70,7 +74,8 @@ class NotifierDriver(object):
                             continue
                         for msg in messages:
                             msg['Message_Type'] = MessageType.Notification.name
-                        self._execute(s_type, sub, messages)
+                        self._execute(s_type, sub, messages,
+                                      retry_policy=retry_policy)
                     marker = next(subscribers)
                     if not marker:
                         break
@@ -137,7 +142,8 @@ class NotifierDriver(object):
 
         self._execute(s_type, subscription, [messages], conf)
 
-    def _execute(self, s_type, subscription, messages, conf=None):
+    def _execute(self, s_type, subscription, messages, conf=None,
+                 retry_policy=None):
         if self.subscription_controller:
             data_driver = self.subscription_controller.driver
             conf = data_driver.conf
@@ -147,4 +153,4 @@ class NotifierDriver(object):
                                    s_type,
                                    invoke_on_load=True)
         self.executor.submit(mgr.driver.execute, subscription, messages,
-                             conf=conf)
+                             conf=conf, queue_retry_policy=retry_policy)

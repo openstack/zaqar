@@ -115,3 +115,19 @@ FLAVOR_OPS = (
     'flavor_update',
     'flavor_delete',
 )
+
+RETRY_OPS = (
+    RETRIES_WITH_NO_DELAY,
+    MINIMUM_DELAY_RETRIES,
+    MINIMUM_DELAY,
+    MAXIMUM_DELAY,
+    MAXIMUM_DELA_RETRIES,
+    LINEAR_INTERVAL,
+) = (
+    3,
+    3,
+    5,
+    30,
+    3,
+    5,
+)
