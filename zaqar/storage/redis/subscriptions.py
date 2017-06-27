@@ -196,7 +196,7 @@ class SubscriptionController(base.Subscription):
         subscription_to_update = self.get(queue, subscription_id,
                                           project=project)
 
-        new_subscriber = fields.get('u', None)
+        new_subscriber = fields.get('u')
 
         # Let's do some checks to prevent subscription duplication.
         if new_subscriber:
@@ -210,11 +210,11 @@ class SubscriptionController(base.Subscription):
 
         # NOTE(Eva-i): if there are new options, we need to pack them before
         # sending to the database.
-        new_options = fields.get('o', None)
+        new_options = fields.get('o')
         if new_options is not None:
             fields['o'] = self._packer(new_options)
 
-        new_ttl = fields.get('t', None)
+        new_ttl = fields.get('t')
         if new_ttl is not None:
             now = timeutils.utcnow_ts()
             expires = now + new_ttl

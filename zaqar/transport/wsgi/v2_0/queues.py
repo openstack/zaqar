@@ -56,7 +56,7 @@ class ItemResource(object):
             resp_dict = self._queue_controller.get(queue_name,
                                                    project=project_id)
             for meta, value in _get_reserved_metadata(self._validate).items():
-                if not resp_dict.get(meta, None):
+                if not resp_dict.get(meta):
                     resp_dict[meta] = value
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
@@ -209,7 +209,7 @@ class ItemResource(object):
             description = _(u'Queue could not be updated.')
             raise wsgi_errors.HTTPServiceUnavailable(description)
         for meta, value in _get_reserved_metadata(self._validate).items():
-            if not metadata.get(meta, None):
+            if not metadata.get(meta):
                 metadata[meta] = value
         resp.body = utils.to_json(metadata)
 

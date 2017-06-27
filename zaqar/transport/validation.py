@@ -300,7 +300,7 @@ class Validator(object):
         if not queue_metadata:
             return
 
-        queue_default_ttl = queue_metadata.get('_default_message_ttl', None)
+        queue_default_ttl = queue_metadata.get('_default_message_ttl')
         if queue_default_ttl and not isinstance(queue_default_ttl, int):
             msg = _(u'_default_message_ttl must be integer.')
             raise ValidationFailed(msg)
@@ -525,7 +525,7 @@ class Validator(object):
             msg = _('Subscriptions must be a dict.')
             raise ValidationFailed(msg)
 
-        subscriber = subscription.get('subscriber', None)
+        subscriber = subscription.get('subscriber')
         subscriber_type = None
 
         if subscriber:
@@ -537,12 +537,12 @@ class Validator(object):
                         u'supported in the list {0}.')
                 raise ValidationFailed(msg, self._limits_conf.subscriber_types)
 
-        options = subscription.get('options', None)
+        options = subscription.get('options')
         if options and not isinstance(options, dict):
             msg = _(u'Options must be a dict.')
             raise ValidationFailed(msg)
 
-        ttl = subscription.get('ttl', None)
+        ttl = subscription.get('ttl')
         if ttl:
             if not isinstance(ttl, int):
                 msg = _(u'TTL must be an integer.')
@@ -568,7 +568,7 @@ class Validator(object):
                 raise ValidationFailed(msg, datetime.datetime.max)
 
     def subscription_confirming(self, confirmed):
-        confirmed = confirmed.get('confirmed', None)
+        confirmed = confirmed.get('confirmed')
         if not isinstance(confirmed, bool):
             msg = _(u"The 'confirmed' should be boolean.")
             raise ValidationFailed(msg)

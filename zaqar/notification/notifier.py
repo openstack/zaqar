@@ -111,12 +111,12 @@ class NotifierDriver(object):
         messages = {}
         endpoint_dict = auth.get_public_endpoint()
         if endpoint_dict:
-            wsgi_endpoint = endpoint_dict.get('zaqar', None)
+            wsgi_endpoint = endpoint_dict.get('zaqar')
             if wsgi_endpoint:
                 wsgi_subscribe_url = urllib_parse.urljoin(
                     wsgi_endpoint, url)
                 messages['WSGISubscribeURL'] = wsgi_subscribe_url
-            websocket_endpoint = endpoint_dict.get('zaqar-websocket', None)
+            websocket_endpoint = endpoint_dict.get('zaqar-websocket')
             if websocket_endpoint:
                 websocket_subscribe_url = urllib_parse.urljoin(
                     websocket_endpoint, url)

@@ -267,7 +267,7 @@ class ConfirmResource(object):
 
         try:
             self._validate.subscription_confirming(document)
-            confirmed = document.get('confirmed', None)
+            confirmed = document.get('confirmed')
             self._subscription_controller.confirm(queue_name, subscription_id,
                                                   project=project_id,
                                                   confirmed=confirmed)
