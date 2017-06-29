@@ -1,0 +1,7 @@
+---
+fixes:
+  - Add two configurations for the notification endpoint of the websocket
+    server, instead of a random port and local address.
+    One is 'notification-bind', address on which the notification server will
+    listen. Another is 'notification-port', port on which the notification
+    server will listen.
