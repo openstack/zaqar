@@ -134,7 +134,7 @@ class SubscriptionController(base.Subscription):
         assert fields, ('`subscriber`, `ttl`, '
                         'or `options` not found in kwargs')
 
-        new_ttl = fields.get('t', None)
+        new_ttl = fields.get('t')
         if new_ttl is not None:
             now = timeutils.utcnow_ts()
             now_dt = datetime.datetime.utcfromtimestamp(now)

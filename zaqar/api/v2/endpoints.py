@@ -442,7 +442,7 @@ class Endpoints(object):
 
             queue_max_msg_size = queue_meta.get('_max_messages_post_size',
                                                 None)
-            queue_default_ttl = queue_meta.get('_default_message_ttl', None)
+            queue_default_ttl = queue_meta.get('_default_message_ttl')
 
             # TODO(flwang): To avoid any unexpected regression issue, we just
             # leave the _message_post_spec attribute of class as it's. It

@@ -207,7 +207,7 @@ class QueueController(storage.Queue):
     def _create(self, name, metadata=None, project=None):
         flavor = None
         if isinstance(metadata, dict):
-            flavor = metadata.get('_flavor', None)
+            flavor = metadata.get('_flavor')
 
         self._pool_catalog.register(name, project=project, flavor=flavor)
 
