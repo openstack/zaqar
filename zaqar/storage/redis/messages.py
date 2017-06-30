@@ -90,6 +90,8 @@ class MessageController(storage.Message, scripting.Mixin):
         +---------------------+---------+
         |  claim expiry time  |  c.e    |
         +---------------------+---------+
+        |  claim count        |  c.c    |
+        +---------------------+---------+
         |  client uuid        |  u      |
         +---------------------+---------+
         |  created time       |  cr     |
@@ -416,6 +418,7 @@ class MessageController(storage.Message, scripting.Mixin):
                     client_uuid=client_uuid,
                     claim_id=None,
                     claim_expires=now,
+                    claim_count=0,
                     body=msg.get('body', {}),
                 )
 
