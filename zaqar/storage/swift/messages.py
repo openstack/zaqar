@@ -121,9 +121,11 @@ class MessageController(storage.Message):
             raise
 
         def is_claimed(msg, headers):
-            if include_claimed:
+            if include_claimed or msg['claim_id'] is None:
                 return False
-            return msg['claim_id'] is not None
+            claim_obj = self.driver.claim_controller._get(
+                queue, msg['claim_id'], project)
+            return claim_obj is not None and claim_obj['ttl'] > 0
 
         def is_echo(msg, headers):
             if echo:
@@ -210,7 +212,8 @@ class MessageController(storage.Message):
     def _create_msg(self, queue, msg, client_uuid, project):
         slug = str(uuid.uuid1())
         contents = jsonutils.dumps(
-            {'body': msg.get('body', {}), 'claim_id': None, 'ttl': msg['ttl']})
+            {'body': msg.get('body', {}), 'claim_id': None,
+             'ttl': msg['ttl'], 'claim_count': 0})
         try:
             self._client.put_object(
                 utils._message_container(queue, project),
