@@ -413,7 +413,7 @@ class MessageController(storage.Message):
             was specified, and the counter has already been updated
             within the specified time period.
 
-        :raises: storage.errors.QueueDoesNotExist
+        :raises QueueDoesNotExist: if not found
         """
 
         # NOTE(flaper87): If this `if` is True, it means we're

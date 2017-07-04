@@ -43,7 +43,8 @@ def deserialize(stream, len):
     :param stream: file-like object from which to read an object or
         array of objects.
     :param len: number of bytes to read from stream
-    :raises: HTTPBadRequest, HTTPServiceUnavailable
+    :raises HTTPBadRequest: if the request is invalid
+    :raises HTTPServiceUnavailable: if the http service is unavailable
     """
 
     if len is None:
@@ -90,7 +91,7 @@ def sanitize(document, spec=None, doctype=JSONObject):
         If spec is None, the incoming documents will not be validated.
     :param doctype: type of document to expect; must be either
         JSONObject or JSONArray.
-    :raises: HTTPBadRequestBody
+    :raises HTTPBadRequestBody: if the request is invalid
     :returns: A sanitized, filtered version of the document. If the
         document is a list of objects, each object will be filtered
         and returned in a new list. If, on the other hand, the document
@@ -128,7 +129,7 @@ def filter(document, spec):
         tuples with the form of: (field_name, value_type). Note that
         value_type may either be a Python type, or the special
         string '*' to accept any type.
-    :raises: HTTPBadRequest if any field is missing or not an
+    :raises HTTPBadRequest: if any field is missing or not an
         instance of the specified type
     :returns: A filtered dict containing only the fields
         listed in the spec
@@ -154,7 +155,7 @@ def get_checked_field(document, name, value_type, default_value):
     :param value_type: expected value type, or '*' to accept any type
     :param default_value: Default value to use if the value is missing,
         or None to make the value required.
-    :raises: HTTPBadRequest if the field is missing or not an
+    :raises HTTPBadRequest: if the field is missing or not an
         instance of value_type
     :returns: value obtained from doc[name]
     """
@@ -185,7 +186,7 @@ def load(req):
     :type req: falcon.Request
     :return: a dictionary decoded from the JSON stream
     :rtype: dict
-    :raises: errors.HTTPBadRequestBody
+    :raises HTTPBadRequestBody: if JSON could not be parsed
     """
     try:
         return utils.read_json(req.stream, req.content_length)
@@ -204,7 +205,7 @@ def validate(validator, document):
     :type validator: jsonschema.Draft4Validator
     :param document: document to check
     :type document: dict
-    :raises: errors.HTTPBadRequestBody
+    :raises HTTPBadRequestBody: if the request is invalid
     """
     try:
         validator.validate(document)

@@ -75,7 +75,7 @@ class Pipeline(object):
             :param args: Positional arguments to pass to the call.
             :param kwargs: Keyword arguments to pass to the call.
 
-            :raises: AttributeError if none of the stages implement `method`
+            :raises AttributeError: if none of the stages implement `method`
             """
             # NOTE(flaper87): Used as a way to verify
             # the requested method exists in at least
