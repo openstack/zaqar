@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/zaqar.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/zaqar.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -37,7 +37,7 @@ The API v2.0 (stable) specification and documentation are available at:
 Zaqar Contributor Documentation, the source of which is in ``doc/source/``, is
 available at:
 
-    http://docs.openstack.org/developer/zaqar/
+    https://docs.openstack.org/developer/zaqar/
 
 Contributors are encouraged to join IRC (``#openstack-zaqar`` channel on
 ``irc.freenode.net``):
@@ -46,11 +46,11 @@ Contributors are encouraged to join IRC (``#openstack-zaqar`` channel on
 
 Information on how to run unit and functional tests is available at:
 
-    http://docs.openstack.org/developer/zaqar/running_tests.html
+    https://docs.openstack.org/developer/zaqar/running_tests.html
 
 Information on how to run benchmarking tool is available at:
 
-    http://docs.openstack.org/developer/zaqar/running_benchmark.html
+    https://docs.openstack.org/developer/zaqar/running_benchmark.html
 
 Using Zaqar
 -----------
@@ -66,7 +66,7 @@ Using Zaqar in development environment:
 
     The instruction is available at:
 
-        http://docs.openstack.org/developer/zaqar/devref/development.environment.html
+        https://docs.openstack.org/developer/zaqar/devref/development.environment.html
 
     This will allow you to run local Zaqar server with MongoDB as database.
 
