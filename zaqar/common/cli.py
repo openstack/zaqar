@@ -19,7 +19,6 @@ import sys
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from zaqar.i18n import _
 
 CONF = cfg.CONF
 
@@ -53,7 +52,7 @@ def runnable(func):
             logging.setup(CONF, 'zaqar')
             func()
         except KeyboardInterrupt:
-            LOG.info(_(u'Terminating'))
+            LOG.info(u'Terminating')
         except Exception as ex:
             _fail(1, ex)
 

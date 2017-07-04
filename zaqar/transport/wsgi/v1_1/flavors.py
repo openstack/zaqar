@@ -57,7 +57,7 @@ class Listing(object):
         :returns: HTTP | 200
         """
 
-        LOG.debug(u'LIST flavors for project_id %s' % project_id)
+        LOG.debug(u'LIST flavors for project_id %s', project_id)
 
         store = {}
         request.get_param('marker', store=store)

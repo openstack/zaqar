@@ -150,7 +150,7 @@ class ItemResource(object):
             headers = {'Accept-Patch':
                        ', '.join(sorted(content_types.keys()))}
             msg = _("Accepted media type for PATCH: %s.")
-            LOG.debug(msg % headers)
+            LOG.debug(msg, headers)
             raise wsgi_errors.HTTPUnsupportedMediaType(msg % headers)
 
         if req.content_length:

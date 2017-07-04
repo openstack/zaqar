@@ -57,7 +57,7 @@ class Resource(object):
         try:
             if "messages" in document['resource_types']:
                 pop_limit = 100
-                LOG.debug("Purge all messages under queue %s" % queue_name)
+                LOG.debug("Purge all messages under queue %s", queue_name)
                 messages = self._message_ctrl.pop(queue_name, pop_limit,
                                                   project=project_id)
                 while messages:
@@ -65,8 +65,7 @@ class Resource(object):
                                                       project=project_id)
 
             if "subscriptions" in document['resource_types']:
-                LOG.debug("Purge all subscriptions under queue %s" %
-                          queue_name)
+                LOG.debug("Purge all subscriptions under queue %s", queue_name)
                 results = self._subscription_ctrl.list(queue_name,
                                                        project=project_id)
                 subscriptions = list(next(results))
