@@ -136,6 +136,10 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           headers=self.headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+        self.simulate_put(self.queue_path + '/Service.test_queue',
+                          headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
     def test_project_id_restriction(self):
         muvluv_queue_path = self.queue_path + '/Muv-Luv'
 

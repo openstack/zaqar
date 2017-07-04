@@ -1,0 +1,3 @@
+---
+features:
+  - Support dot character in queue's name, like 'service.test_queue'.
