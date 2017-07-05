@@ -72,7 +72,7 @@ class Api(object):
         try:
             self.validators[action].validate(body)
         except jsonschema.ValidationError as ex:
-            LOG.debug('Schema validation failed. %s.' % str(ex))
+            LOG.debug('Schema validation failed. %s.', str(ex))
             return False
 
         return True

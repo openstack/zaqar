@@ -208,5 +208,5 @@ def can_connect(uri, conf=None):
                                      control_driver=ctrl)
         return driver.is_alive()
     except Exception as exc:
-        LOG.debug('Can\'t connect to: %s \n%s' % (uri, exc))
+        LOG.debug('Can\'t connect to: %s \n%s', (uri, exc))
         return False

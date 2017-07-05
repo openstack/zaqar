@@ -41,7 +41,7 @@ class WebhookTask(object):
                               data=data,
                               headers=headers)
         except Exception as e:
-            LOG.exception('webhook task got exception: %s.' % str(e))
+            LOG.exception('webhook task got exception: %s.', str(e))
 
     def register(self, subscriber, options, ttl, project_id, request_data):
         pass

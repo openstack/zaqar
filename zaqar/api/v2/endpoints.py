@@ -243,7 +243,7 @@ class Endpoints(object):
         try:
             pop_limit = 100
             if "messages" in resource_types:
-                LOG.debug("Purge all messages under queue %s" % queue_name)
+                LOG.debug("Purge all messages under queue %s", queue_name)
                 resp = self._pop_messages(req, queue_name,
                                           project_id, pop_limit)
                 while resp.get_response()['body']['messages']:
@@ -251,7 +251,7 @@ class Endpoints(object):
                                               project_id, pop_limit)
 
             if "subscriptions" in resource_types:
-                LOG.debug("Purge all subscriptions under queue %s" %
+                LOG.debug("Purge all subscriptions under queue %s",
                           queue_name)
                 resp = self._subscription_controller.list(queue_name,
                                                           project=project_id)
@@ -740,7 +740,7 @@ class Endpoints(object):
         claim_id = req._body.get('claim_id')
 
         LOG.debug(u'Claim update - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project:%(project_id)s' %
+                  u'queue: %(queue_name)s, project:%(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -787,7 +787,7 @@ class Endpoints(object):
         claim_id = req._body.get('claim_id')
 
         LOG.debug(u'Claim delete - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project: %(project_id)s' %
+                  u'queue: %(queue_name)s, project: %(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})

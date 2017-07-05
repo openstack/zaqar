@@ -102,9 +102,9 @@ class MailtoTask(object):
                 LOG.debug("Send mail successfully: %s", msg.as_string())
         except OSError as err:
             LOG.exception('Failed to create process for sendmail, '
-                          'because %s.' % str(err))
+                          'because %s.', str(err))
         except Exception as exc:
-            LOG.exception('Failed to send email because %s.' % str(exc))
+            LOG.exception('Failed to send email because %s.', str(exc))
 
     def register(self, subscriber, options, ttl, project_id, request_data):
         pass

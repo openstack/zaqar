@@ -56,7 +56,7 @@ class NotifierDriver(object):
                     subscribers = self.subscription_controller.list(
                         queue_name, project, marker=marker)
                     for sub in next(subscribers):
-                        LOG.debug("Notifying subscriber %r" % (sub,))
+                        LOG.debug("Notifying subscriber %r", (sub,))
                         s_type = urllib_parse.urlparse(
                             sub['subscriber']).scheme
                         # If the subscriber doesn't contain 'confirmed', it

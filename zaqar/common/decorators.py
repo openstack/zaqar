@@ -211,8 +211,8 @@ def api_version_manager(version_info):
                             'This version was marked as deprecated in '
                             '%(updated)s. Using it may expose security '
                             'issues, unexpected behavior or damage your '
-                            'data.' % {'version': api_version,
-                                       'updated': api_updated})
+                            'data.', {'version': api_version,
+                                      'updated': api_updated})
             return fn(driver, conf)
         return register_api
     return wrapper
