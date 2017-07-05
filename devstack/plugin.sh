@@ -242,6 +242,12 @@ function start_zaqar {
     cat $ZAQAR_UWSGI_CONF
     run_process zaqar-wsgi "$ZAQAR_BIN_DIR/uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
     run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
+
+    echo "Waiting for Zaqar to start..."
+    token=$(openstack token issue -c id -f value)
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
+        die $LINENO "Zaqar did not start"
+    fi
 }
 
 # stop_zaqar() - Stop running processes
