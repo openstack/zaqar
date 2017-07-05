@@ -10,9 +10,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Zaqar documentation build configuration file, created by
-# sphinx-quickstart on Sat May  1 15:17:47 2010.
 #
 # This file is execfile()d with the current directory set
 # to its containing dir.
@@ -51,16 +48,6 @@ extensions = ['sphinx.ext.autodoc',
 # in your terminal to disable
 
 todo_include_todos = True
-
-# Add any paths that contain templates here, relative to this directory.
-# Changing the path so that the Hudson build output contains GA code
-# and the source docs do not contain the code so local, offline sphinx builds
-# are "clean."
-templates_path = []
-if os.getenv('HUDSON_PUBLISH_DOCS'):
-    templates_path = ['_ga', '_templates']
-else:
-    templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
