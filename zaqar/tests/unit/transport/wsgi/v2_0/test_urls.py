@@ -110,6 +110,37 @@ class TestURL(base.V2Base):
         response = self.simulate_get(content['paths'][0], headers=headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
+    def _get_msg_id(self, headers):
+        return self._get_msg_ids(headers)[0]
+
+    def _get_msg_ids(self, headers):
+        return headers['location'].rsplit('=', 1)[-1].split(',')
+
+    def test_url_verification_success_with_message_id(self):
+        doc = {'messages': [{'body': 239, 'ttl': 300}]}
+        body = jsonutils.dumps(doc)
+        self.simulate_post(self.url_prefix + '/queues/shared_queue/messages',
+                           body=body, headers=self.headers)
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+        data = {'methods': ['GET', 'POST']}
+        response = self.simulate_post(self.signed_url_prefix,
+                                      body=jsonutils.dumps(data))
+
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        content = jsonutils.loads(response[0])
+
+        headers = {
+            'URL-Signature': content['signature'],
+            'URL-Expires': content['expires'],
+            'URL-Methods': ','.join(content['methods']),
+            'URL-Paths': ','.join(content['paths'])
+        }
+        headers.update(self.headers)
+
+        self.simulate_get(content['paths'][0] + '/' + msg_id,
+                          headers=headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
     def test_url_verification_bad_request(self):
         path = self.url_prefix + '/queues/shared_queue/messages'
         expires = timeutils.utcnow() + datetime.timedelta(days=1)
@@ -173,4 +204,29 @@ class TestURL(base.V2Base):
         }
         headers.update(self.headers)
         self.simulate_get(path, headers=headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+    def test_url_verification_bad_with_message_id(self):
+        doc = {'messages': [{'body': 239, 'ttl': 300}]}
+        body = jsonutils.dumps(doc)
+        self.simulate_post(self.url_prefix + '/queues/shared_queue/messages',
+                           body=body, headers=self.headers)
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+        data = {'methods': ['GET', 'POST']}
+        response = self.simulate_post(self.signed_url_prefix,
+                                      body=jsonutils.dumps(data))
+
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        content = jsonutils.loads(response[0])
+
+        headers = {
+            'URL-Signature': content['signature'],
+            'URL-Expires': content['expires'],
+            'URL-Methods': ','.join(content['methods']),
+            'URL-Paths': ','.join('/queues/shared_queue/claims')
+        }
+        headers.update(self.headers)
+
+        self.simulate_get(content['paths'][0] + '/' + msg_id,
+                          headers=headers)
         self.assertEqual(falcon.HTTP_404, self.srmock.status)

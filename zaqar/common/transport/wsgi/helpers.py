@@ -16,6 +16,7 @@
 """wsgi transport helpers."""
 
 from distutils import version
+import re
 import uuid
 
 import falcon
@@ -45,7 +46,8 @@ def verify_pre_signed_url(key, req, resp, params):
     if req.method not in methods:
         raise falcon.HTTPNotFound()
 
-    if req.path not in paths:
+    # Support to query single resource with pre-signed url
+    if not any([p for p in paths if re.search(p, req.path)]):
         raise falcon.HTTPNotFound()
 
     try:
