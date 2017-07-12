@@ -226,7 +226,7 @@ class MessageController(storage.Message):
         """
         scope = utils.scope_queue_name(queue_name, project)
         collection = self._collection(queue_name, project)
-        collection.remove({PROJ_QUEUE: scope}, w=0)
+        collection.delete_many({PROJ_QUEUE: scope})
 
     def _list(self, queue_name, project=None, marker=None,
               echo=False, client_uuid=None, projection=None,
@@ -698,7 +698,7 @@ class MessageController(storage.Message):
 
                     raise errors.MessageNotClaimed(message_id)
 
-        collection.remove(query['_id'], w=0)
+        collection.delete_one(query)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
@@ -710,7 +710,7 @@ class MessageController(storage.Message):
         }
 
         collection = self._collection(queue_name, project)
-        collection.remove(query, w=0)
+        collection.delete_many(query)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect

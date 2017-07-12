@@ -155,9 +155,9 @@ class SubscriptionController(base.Subscription):
 
     @utils.raises_conn_error
     def delete(self, queue, subscription_id, project=None):
-        self._collection.remove({'_id': utils.to_oid(subscription_id),
-                                 'p': project,
-                                 's': queue}, w=0)
+        self._collection.delete_one({'_id': utils.to_oid(subscription_id),
+                                     'p': project,
+                                     's': queue})
 
     @utils.raises_conn_error
     def get_with_subscriber(self, queue, subscriber, project=None):

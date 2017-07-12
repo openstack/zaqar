@@ -135,7 +135,7 @@ class FlavorsController(base.FlavorsBase):
 
     @utils.raises_conn_error
     def delete(self, name, project=None):
-        self._col.remove({'n': name, 'p': project}, w=0)
+        self._col.delete_one({'n': name, 'p': project})
 
     @utils.raises_conn_error
     def drop_all(self):
