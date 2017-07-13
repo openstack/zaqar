@@ -15,13 +15,13 @@
 
 import datetime
 import json
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from testtools import matchers
 
 from zaqar import tests as testing
@@ -40,7 +40,7 @@ class TestClaimsMongoDB(base.V2Base):
         self.default_claim_ttl = self.boot.transport._defaults.claim_ttl
         self.project_id = '737_abc8332832'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
         self.queue_path = self.url_prefix + '/queues/fizbit'
@@ -167,7 +167,7 @@ class TestClaimsMongoDB(base.V2Base):
         # List messages with a different client-id and echo=false.
         # Should return some messages
         headers = self.headers.copy()
-        headers["Client-ID"] = str(uuid.uuid4())
+        headers["Client-ID"] = uuidutils.generate_uuid()
         body = self.simulate_get(self.messages_path,
                                  query_string='include_claimed=true'
                                               '&echo=false',
@@ -208,7 +208,7 @@ class TestClaimsMongoDB(base.V2Base):
 
         # Try to get it from the wrong project
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'bogusproject'
         }
         self.simulate_get(message_href, query_string=params, headers=headers)
@@ -295,7 +295,7 @@ class TestClaimsFaultyDriver(base.V2BaseFaulty):
     def test_simple(self):
         self.project_id = '480924abc_'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 

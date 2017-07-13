@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import json
-import uuid
 
+from oslo_utils import uuidutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
@@ -125,7 +125,7 @@ class TestSubscriptions(base.BaseV2MessagingTest):
         post_body = json.dumps(
             {'messages': [{'body': '$zaqar_message$', 'ttl': 60}]})
         post_headers = {'X-Project-ID': self.client.tenant_id,
-                        'Client-ID': str(uuid.uuid4())}
+                        'Client-ID': uuidutils.generate_uuid()}
         sub_body = {'ttl': 1200, 'subscriber': subscriber,
                     'options': {'post_data': post_body,
                                 'post_headers': post_headers}}

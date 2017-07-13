@@ -13,11 +13,11 @@
 # the License.
 
 import six
-import uuid
 
 import falcon
 from falcon import testing as ftest
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar import bootstrap
 from zaqar.common import configs
@@ -56,7 +56,7 @@ class TestBase(testing.TestBase):
         self.srmock = ftest.StartResponseMock()
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-ROLES': 'admin',
             'X-USER-ID': 'a12d157c7d0d41999096639078fd11fc',
             'X-TENANT-ID': 'abb69142168841fcaa2785791b92467f',

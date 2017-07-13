@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 import six
 
 from zaqar.storage import errors as storage_errors
@@ -39,7 +39,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         self.fizbat_queue_path = self.queue_path + '/fizbat'
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '3387309841abc_'
         }
 
@@ -57,7 +57,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
     def test_without_project_id(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
         self.simulate_put(self.gumshoe_queue_path, headers=headers,
@@ -70,7 +70,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
     def test_empty_project_id(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': ''
         }
 
@@ -83,7 +83,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
     @ddt.data('480924', 'foo')
     def test_basics_thoroughly(self, project_id):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': project_id
         }
         gumshoe_queue_path_stats = self.gumshoe_queue_path + '/stats'
@@ -144,13 +144,13 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         muvluv_queue_path = self.queue_path + '/Muv-Luv'
 
         self.simulate_put(muvluv_queue_path,
-                          headers={'Client-ID': str(uuid.uuid4()),
+                          headers={'Client-ID': uuidutils.generate_uuid(),
                                    'X-Project-ID': 'JAM Project' * 24})
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
         # no charset restrictions
         self.simulate_put(muvluv_queue_path,
-                          headers={'Client-ID': str(uuid.uuid4()),
+                          headers={'Client-ID': uuidutils.generate_uuid(),
                                    'X-Project-ID': 'JAM Project'})
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
@@ -250,8 +250,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         xyz_queue_path = self.url_prefix + '/queues/xyz'
         xyz_queue_path_metadata = xyz_queue_path
         headers = {
-            'Client-ID': str(uuid.uuid4()),
-            'X-Project-ID': str(uuid.uuid4())
+            'Client-ID': uuidutils.generate_uuid(),
+            'X-Project-ID': uuidutils.generate_uuid()
         }
         # Create
         self.simulate_put(xyz_queue_path, headers=headers)
@@ -360,7 +360,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
     def test_list(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
-        client_id = str(uuid.uuid4())
+        client_id = uuidutils.generate_uuid()
         header = {
             'X-Project-ID': project_id,
             'Client-ID': client_id
@@ -444,7 +444,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
     def test_list_returns_503_on_nopoolfound_exception(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
-        client_id = str(uuid.uuid4())
+        client_id = uuidutils.generate_uuid()
         header = {
             'X-Project-ID': project_id,
             'Client-ID': client_id
@@ -473,7 +473,7 @@ class TestQueueLifecycleFaultyDriver(base.V2BaseFaulty):
 
     def test_simple(self):
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '338730984abc_1'
         }
 

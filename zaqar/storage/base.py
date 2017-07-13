@@ -19,11 +19,11 @@
 import abc
 import functools
 import time
-import uuid
 
 import enum
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 import six
 
 from zaqar.common import decorators
@@ -138,9 +138,9 @@ class DataDriverBase(DriverBase):
         status_template = lambda s, t, r: {'succeeded': s,
                                            'seconds': t,
                                            'ref': r}
-        project = str(uuid.uuid4())
-        queue = str(uuid.uuid4())
-        client = str(uuid.uuid4())
+        project = uuidutils.generate_uuid()
+        queue = uuidutils.generate_uuid()
+        client = uuidutils.generate_uuid()
         msg_template = lambda s: {'ttl': 600, 'body': {'event': 'p_%s' % s}}
         messages = [msg_template(i) for i in range(100)]
         claim_metadata = {'ttl': 60, 'grace': 300}
@@ -155,7 +155,7 @@ class DataDriverBase(DriverBase):
                 start = time.time()
                 result = callable_operation()
             except Exception as e:
-                ref = str(uuid.uuid4())
+                ref = uuidutils.generate_uuid()
                 LOG.exception(e, extra={'instance_uuid': ref})
                 succeeded = False
             status = status_template(succeeded, time.time() - start, ref)

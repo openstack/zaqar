@@ -13,11 +13,11 @@
 # the License.
 
 import contextlib
-import uuid
 
 import ddt
 import falcon
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
@@ -38,7 +38,7 @@ def pool(test, name, weight, uri, group=None, options={}):
     :returns: (name, weight, uri, options)
     :rtype: see above
     """
-    uri = "%s/%s" % (uri, str(uuid.uuid4()))
+    uri = "%s/%s" % (uri, uuidutils.generate_uuid())
     doc = {'weight': weight, 'uri': uri,
            'group': group, 'options': options}
     path = test.url_prefix + '/pools/' + name
@@ -71,7 +71,7 @@ def pools(test, count, uri, group):
              {str(i): i})
             for i in range(count)]
     for path, weight, option in args:
-        uri = "%s/%s" % (mongo_url, str(uuid.uuid4()))
+        uri = "%s/%s" % (mongo_url, uuidutils.generate_uuid())
         doc = {'weight': weight, 'uri': uri,
                'group': group, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
@@ -94,7 +94,7 @@ class TestPoolsMongoDB(base.V1_1Base):
         self.doc = {'weight': 100,
                     'group': 'mygroup',
                     'uri': self.mongodb_url}
-        self.pool = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        self.pool = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
@@ -104,13 +104,13 @@ class TestPoolsMongoDB(base.V1_1Base):
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_put_pool_works(self):
-        name = str(uuid.uuid1())
+        name = uuidutils.generate_uuid()
         weight, uri = self.doc['weight'], self.doc['uri']
         with pool(self, name, weight, uri, group='my-group'):
             self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_put_raises_if_missing_fields(self):
-        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(path, body=jsonutils.dumps({'weight': 100}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
@@ -121,7 +121,7 @@ class TestPoolsMongoDB(base.V1_1Base):
 
     @ddt.data(-1, 2**32+1, 'big')
     def test_put_raises_if_invalid_weight(self, weight):
-        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         doc = {'weight': weight, 'uri': 'a'}
         self.simulate_put(path,
                           body=jsonutils.dumps(doc))
@@ -129,14 +129,14 @@ class TestPoolsMongoDB(base.V1_1Base):
 
     @ddt.data(-1, 2**32+1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
-        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(path,
                           body=jsonutils.dumps({'weight': 1, 'uri': uri}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     @ddt.data(-1, 'wee', [])
     def test_put_raises_if_invalid_options(self, options):
-        path = self.url_prefix + '/pools/' + str(uuid.uuid1())
+        path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         doc = {'weight': 1, 'uri': 'a', 'options': options}
         self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)

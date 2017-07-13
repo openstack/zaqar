@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import contextlib
-import uuid
 
 import falcon
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar import storage
 from zaqar.tests.unit.transport.wsgi import base
@@ -31,7 +31,7 @@ class TestDefaultLimits(base.V1Base):
         super(TestDefaultLimits, self).setUp()
 
         self.queue_path = self.url_prefix + '/queues'
-        self.q1_queue_path = self.queue_path + '/' + str(uuid.uuid4())
+        self.q1_queue_path = self.queue_path + '/' + uuidutils.generate_uuid()
         self.messages_path = self.q1_queue_path + '/messages'
         self.claims_path = self.q1_queue_path + '/claims'
 
@@ -58,7 +58,8 @@ class TestDefaultLimits(base.V1Base):
         self._prepare_messages(storage.DEFAULT_MESSAGES_PER_PAGE + 1)
 
         result = self.simulate_get(self.messages_path,
-                                   headers={'Client-ID': str(uuid.uuid4())})
+                                   headers={'Client-ID':
+                                            uuidutils.generate_uuid()})
 
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
@@ -93,6 +94,6 @@ class TestDefaultLimits(base.V1Base):
     def _prepare_messages(self, count):
         doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * count)
         self.simulate_post(self.messages_path, body=doc,
-                           headers={'Client-ID': str(uuid.uuid4())})
+                           headers={'Client-ID': uuidutils.generate_uuid()})
 
         self.assertEqual(falcon.HTTP_201, self.srmock.status)

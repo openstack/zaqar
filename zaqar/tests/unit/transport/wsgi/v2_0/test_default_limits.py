@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import contextlib
-import uuid
 
 import falcon
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar import storage
 from zaqar.tests.unit.transport.wsgi import base
@@ -31,11 +31,11 @@ class TestDefaultLimits(base.V2Base):
         super(TestDefaultLimits, self).setUp()
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
-            'X-Project-ID': '%s_' % str(uuid.uuid4())
+            'Client-ID': uuidutils.generate_uuid(),
+            'X-Project-ID': '%s_' % uuidutils.generate_uuid()
         }
         self.queue_path = self.url_prefix + '/queues'
-        self.q1_queue_path = self.queue_path + '/' + str(uuid.uuid4())
+        self.q1_queue_path = self.queue_path + '/' + uuidutils.generate_uuid()
         self.messages_path = self.q1_queue_path + '/messages'
         self.claims_path = self.q1_queue_path + '/claims'
 
@@ -62,7 +62,7 @@ class TestDefaultLimits(base.V2Base):
         self._prepare_messages(storage.DEFAULT_MESSAGES_PER_PAGE + 1)
 
         headers = self.headers.copy()
-        headers['Client-ID'] = str(uuid.uuid4())
+        headers['Client-ID'] = uuidutils.generate_uuid()
         result = self.simulate_get(self.messages_path,
                                    headers=headers,
                                    query_string='echo=false')

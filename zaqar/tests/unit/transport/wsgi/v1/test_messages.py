@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import datetime
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import six
 from testtools import matchers
 
@@ -64,7 +64,7 @@ class TestMessagesMongoDB(base.V1Base):
         self.simulate_put(self.queue_path, body=doc)
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
     def tearDown(self):
@@ -490,7 +490,7 @@ class TestMessagesFaultyDriver(base.V1BaseFaulty):
         path = self.url_prefix + '/queues/fizbit/messages'
         doc = '[{"body": 239, "ttl": 100}]'
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
         self.simulate_post(path, project_id,

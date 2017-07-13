@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
 
 import falcon
 from falcon import testing
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 
 from zaqar.tests.unit.transport.wsgi import base
@@ -41,7 +41,7 @@ class TestMediaType(base.V1Base):
 
         for method, endpoint in endpoints:
             headers = {
-                'Client-ID': str(uuid.uuid4()),
+                'Client-ID': uuidutils.generate_uuid(),
                 'Accept': 'application/xml',
             }
 
@@ -60,7 +60,7 @@ class TestMediaType(base.V1Base):
         eww_queue_messages_path = eww_queue_path + '/messages'
         sample_message = jsonutils.dumps([{'body': {'eww!'}, 'ttl': 200}])
         bad_headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'Content-Type': 'application/x-www-form-urlencoded',
         }
 

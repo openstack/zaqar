@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import json
-import uuid
+from oslo_utils import uuidutils
 
 import falcon
 
@@ -34,7 +34,7 @@ class TestValidation(base.V1Base):
         self.simulate_put(self.queue_path, self.project_id)
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
     def tearDown(self):

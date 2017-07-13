@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import datetime
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import six
 from testtools import matchers
 
@@ -53,7 +53,7 @@ class TestMessagesMongoDB(base.V2Base):
 
         self.project_id = '7e55e1a7e'
         self.headers.update({
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         })
 
@@ -665,7 +665,7 @@ class TestMessagesFaultyDriver(base.V2BaseFaulty):
         path = self.url_prefix + '/queues/fizbit/messages'
         body = '{"messages": [{"body": 239, "ttl": 100}]}'
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': project_id
         }
 

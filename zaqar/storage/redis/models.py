@@ -20,6 +20,7 @@ import uuid
 import msgpack
 from oslo_utils import encodeutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e')
 SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p', b'c')
@@ -50,7 +51,7 @@ class MessageEnvelope(object):
     ]
 
     def __init__(self, **kwargs):
-        self.id = _validate_uuid4(kwargs.get('id', str(uuid.uuid4())))
+        self.id = _validate_uuid4(kwargs.get('id', uuidutils.generate_uuid()))
         self.ttl = kwargs['ttl']
         self.created = kwargs['created']
         self.expires = kwargs.get('expires', self.created + self.ttl)
@@ -119,7 +120,7 @@ class SubscriptionEnvelope(object):
     ]
 
     def __init__(self, **kwargs):
-        self.id = kwargs.get('id', str(uuid.uuid4()))
+        self.id = kwargs.get('id', uuidutils.generate_uuid())
         self.source = kwargs['source']
         self.subscriber = kwargs['subscriber']
         self.ttl = kwargs['ttl']

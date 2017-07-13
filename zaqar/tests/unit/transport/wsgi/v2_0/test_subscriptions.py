@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar.common import auth
 from zaqar.notification import notifier
@@ -48,7 +48,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         self.project_id = '7e55e1a7exyz'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
         self.queue = 'fake-topic'
@@ -226,7 +226,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
     def test_list_returns_503_on_nopoolfound_exception(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
-        client_id = str(uuid.uuid4())
+        client_id = uuidutils.generate_uuid()
         header = {
             'X-Project-ID': project_id,
             'Client-ID': client_id

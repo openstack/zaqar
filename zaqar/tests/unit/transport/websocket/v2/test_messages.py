@@ -15,11 +15,11 @@
 
 import datetime
 import json
-import uuid
 
 import ddt
 import mock
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import six
 from testtools import matchers
 
@@ -42,7 +42,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.project_id = '7e55e1a7e'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 

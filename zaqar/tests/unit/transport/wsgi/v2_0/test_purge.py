@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import falcon
-import uuid
 
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -29,7 +29,7 @@ class TestPurge(base.V2Base):
         super(TestPurge, self).setUp()
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4())
+            'Client-ID': uuidutils.generate_uuid()
         }
         self.queue_path = self.url_prefix + '/queues/myqueue'
         self.messages_path = self.queue_path + '/messages'

@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import uuid
 
 import falcon
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 import six.moves.urllib.parse as urlparse
 
 from zaqar.tests.unit.transport.wsgi import base
@@ -27,7 +27,7 @@ class TestHomeDocument(base.V2Base):
 
     def test_json_response(self):
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '8383830383abc_'
         }
         body = self.simulate_get(self.url_prefix, headers=self.headers)
@@ -43,7 +43,7 @@ class TestHomeDocument(base.V2Base):
 
     def test_href_template(self):
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '8383830383'
         }
         body = self.simulate_get(self.url_prefix, headers=self.headers)

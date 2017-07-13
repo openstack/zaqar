@@ -343,7 +343,7 @@ class RedisMessagesTest(base.MessageControllerTest):
         self.queue_controller.create(self.queue_name)
         self.controller.post(self.queue_name,
                              [{'ttl': 0, 'body': {}}],
-                             client_uuid=str(uuid.uuid4()))
+                             client_uuid=uuidutils.generate_uuid())
 
         num_removed = self.controller.gc()
         self.assertEqual(1, num_removed)
@@ -351,7 +351,7 @@ class RedisMessagesTest(base.MessageControllerTest):
         for _ in range(100):
             self.controller.post(self.queue_name,
                                  [{'ttl': 0, 'body': {}}],
-                                 client_uuid=str(uuid.uuid4()))
+                                 client_uuid=uuidutils.generate_uuid())
 
         num_removed = self.controller.gc()
         self.assertEqual(100, num_removed)
@@ -421,7 +421,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
                         {'ttl': 60, 'body': {}},
                         {'ttl': 60, 'body': {}}]
         self.message_controller.post(queue_name, new_messages,
-                                     client_uuid=str(uuid.uuid1()),
+                                     client_uuid=str(uuid.uuid4()),
                                      project='fake_project')
         claim_id, messages = self.controller.create(queue_name, {'ttl': 1,
                                                     'grace': 0},
@@ -438,7 +438,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
         for _ in range(100):
             self.message_controller.post(self.queue_name,
                                          [{'ttl': 300, 'body': 'yo gabba'}],
-                                         client_uuid=str(uuid.uuid4()))
+                                         client_uuid=uuidutils.generate_uuid())
 
         now = timeutils.utcnow_ts()
         timeutils_utcnow = 'oslo_utils.timeutils.utcnow_ts'

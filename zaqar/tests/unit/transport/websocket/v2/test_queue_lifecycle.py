@@ -13,11 +13,11 @@
 # the License.
 
 import json
-import uuid
 
 import ddt
 import mock
 
+from oslo_utils import uuidutils
 from zaqar.common import consts
 from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
@@ -43,7 +43,7 @@ class QueueLifecycleBaseTest(base.V2Base):
                         "key3": [1, 2, 3, 4, 5]}
                     }
                 }
-        headers = {'Client-ID': str(uuid.uuid4())}
+        headers = {'Client-ID': uuidutils.generate_uuid()}
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
@@ -60,7 +60,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         action = consts.QUEUE_GET_STATS
         body = {"queue_name": "gummybears"}
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': project_id
         }
 
@@ -152,7 +152,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_name_restrictions(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_CREATE
@@ -194,7 +194,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_project_id_restriction(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project' * 30
         }
         action = consts.QUEUE_CREATE
@@ -228,7 +228,7 @@ class QueueLifecycleBaseTest(base.V2Base):
                        (u'/queues/non-ascii-n\xc4me', 'iso8859-1'))
 
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project' * 30
         }
         action = consts.QUEUE_CREATE
@@ -254,7 +254,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_no_metadata(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_CREATE
@@ -283,7 +283,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     @ddt.data('{', '[]', '.', '  ')
     def test_bad_metadata(self, meta):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project' * 30
         }
         action = consts.QUEUE_CREATE
@@ -305,7 +305,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_too_much_metadata(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_CREATE
@@ -332,7 +332,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_way_too_much_metadata(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_CREATE
@@ -360,7 +360,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     def test_update_metadata(self):
         self.skip("Implement patch method")
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_CREATE
@@ -438,7 +438,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     def test_list(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
-        client_id = str(uuid.uuid4())
+        client_id = uuidutils.generate_uuid()
         headers = {
             'X-Project-ID': project_id,
             'Client-ID': client_id
@@ -569,7 +569,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
     def test_list_returns_503_on_nopoolfound_exception(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'
         }
         action = consts.QUEUE_LIST
@@ -621,7 +621,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     def test_purge(self):
         arbitrary_number = 644079696574693
         project_id = str(arbitrary_number)
-        client_id = str(uuid.uuid4())
+        client_id = uuidutils.generate_uuid()
         headers = {
             'X-Project-ID': project_id,
             'Client-ID': client_id

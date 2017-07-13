@@ -14,13 +14,13 @@
 # limitations under the License.
 
 import datetime
-import uuid
 
 import ddt
 import falcon
 import mock
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from testtools import matchers
 
 from zaqar import tests as testing
@@ -48,7 +48,8 @@ class TestClaimsMongoDB(base.V1Base):
 
         doc = jsonutils.dumps([{'body': 239, 'ttl': 300}] * 10)
         self.simulate_post(self.queue_path + '/messages', self.project_id,
-                           body=doc, headers={'Client-ID': str(uuid.uuid4())})
+                           body=doc, headers={'Client-ID':
+                                              uuidutils.generate_uuid()})
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def tearDown(self):
@@ -120,7 +121,7 @@ class TestClaimsMongoDB(base.V1Base):
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
         # Listing messages, by default, won't include claimed

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -251,7 +251,7 @@ class TestSubscriptionsNegative(base.BaseV2MessagingTest):
     def test_update_subscription_with_invalid_id(self):
         # Update subscription using invalid id
         results = self._create_subscriptions()
-        subscription_id = str(uuid.uuid4())
+        subscription_id = uuidutils.generate_uuid()
         update_rbody = {'ttl': 100}
         self.assertRaises(lib_exc.NotFound,
                           self.client.update_subscription, self.queue_name,
@@ -341,7 +341,7 @@ class TestSubscriptionsNegative(base.BaseV2MessagingTest):
     def test_delete_subscription_using_a_nonexisting_id(self):
         # Delete subscription with non existent id
         results = self._create_subscriptions()
-        subscription_id = str(uuid.uuid4())
+        subscription_id = uuidutils.generate_uuid()
         resp, _ = self.client.delete_subscription(self.queue_name,
                                                   subscription_id)
         self.assertEqual('204', resp['status'])

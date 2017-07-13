@@ -14,11 +14,11 @@
 # limitations under the License.
 """Test Auth."""
 
-import uuid
 
 import falcon
 from falcon import testing
 from keystonemiddleware import auth_token
+from oslo_utils import uuidutils
 
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -29,7 +29,7 @@ class TestAuth(base.V2Base):
 
     def setUp(self):
         super(TestAuth, self).setUp()
-        self.headers = {'Client-ID': str(uuid.uuid4())}
+        self.headers = {'Client-ID': uuidutils.generate_uuid()}
 
     def test_auth_install(self):
         self.assertIsInstance(self.app._auth_app, auth_token.AuthProtocol)

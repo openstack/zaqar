@@ -11,9 +11,9 @@
 # the License.
 import json
 import logging
+from oslo_utils import uuidutils
 import requests
 import sys
-import uuid
 
 try:
     import SimpleHTTPServer
@@ -72,7 +72,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-Project-ID': self.headers['x-project-id'],
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'URL-Methods': self.headers['url-methods'],
             'URL-Signature': self.headers['url-signature'],
             'URL-Paths': self.headers['url-paths'],

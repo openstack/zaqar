@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from oslo_serialization import jsonutils as json
 from six.moves.urllib import parse as urllib
@@ -36,7 +36,7 @@ class MessagingClient(rest_client.RestClient):
         self.version = '1'
         self.uri_prefix = 'v{0}'.format(self.version)
 
-        client_id = uuid.uuid4().hex
+        client_id = uuidutils.generate_uuid(dashed=False)
         self.headers = {'Client-ID': client_id}
 
 

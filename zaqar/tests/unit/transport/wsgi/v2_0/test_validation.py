@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import json
-import uuid
 
 import falcon
 
+from oslo_utils import uuidutils
 from zaqar.tests.unit.transport.wsgi import base
 
 
@@ -34,7 +34,7 @@ class TestValidation(base.V2Base):
         self.simulate_put(self.queue_path, self.project_id)
 
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
         }
 
     def tearDown(self):
@@ -155,7 +155,7 @@ class TestValidation(base.V2Base):
 
     def test_queue_patching(self):
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'Content-Type': "application/openstack-messaging-v2.0-json-patch"
         }
 

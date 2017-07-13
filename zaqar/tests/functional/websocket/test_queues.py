@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import json
-import uuid
+from oslo_utils import uuidutils
 
 from testtools import testcase
 import websocket
@@ -31,8 +31,8 @@ class TestQueues(base.V1_1FunctionalTestBase):
         if not base._TEST_INTEGRATION:
             raise testcase.TestSkipped('Only run in integration mode')
         super(TestQueues, self).setUp()
-        self.project_id = str(uuid.uuid4())
-        self.headers = {'Client-ID': str(uuid.uuid4()),
+        self.project_id = uuidutils.generate_uuid()
+        self.headers = {'Client-ID': uuidutils.generate_uuid(),
                         'X-Project-ID': self.project_id}
         self.client = websocket.create_connection('ws://localhost:9000/')
         self.addCleanup(self.client.close)

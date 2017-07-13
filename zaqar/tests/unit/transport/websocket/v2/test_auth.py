@@ -14,12 +14,12 @@
 # limitations under the License.
 
 import json
-import uuid
 
 import ddt
 from keystonemiddleware import auth_token
 import mock
 
+from oslo_utils import uuidutils
 from zaqar.common import consts
 from zaqar.common import urls
 from zaqar.tests.unit.transport.websocket import base
@@ -39,7 +39,7 @@ class AuthTest(base.V2Base):
 
         self.project_id = '7e55e1a7e'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
         auth_mock = mock.patch.object(auth_token.AuthProtocol, '__call__')

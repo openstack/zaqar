@@ -13,11 +13,11 @@
 # the License.
 
 import json
-import uuid
 
 import ddt
 import mock
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 
 from zaqar.common import consts
 from zaqar.tests.unit.transport.websocket import base
@@ -36,7 +36,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
         self.project_id = '7e55e1a7e'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 
@@ -247,7 +247,7 @@ class ClaimsBaseTest(base.V1_1Base):
                 "echo": False}
 
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 
@@ -293,7 +293,7 @@ class ClaimsBaseTest(base.V1_1Base):
 
         # Try to get it from the wrong project
         headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'someproject'
         }
 

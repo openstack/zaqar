@@ -13,10 +13,10 @@
 # the License.
 
 import functools
-import uuid
 
 import msgpack
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import redis
 
 from zaqar.common import utils as common_utils
@@ -106,7 +106,7 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     @utils.retries_on_connection_error
     def create(self, queue, subscriber, ttl, options, project=None):
-        subscription_id = str(uuid.uuid4())
+        subscription_id = uuidutils.generate_uuid()
         subset_key = utils.scope_subscription_ids_set(queue,
                                                       project,
                                                       SUBSCRIPTION_IDS_SUFFIX)

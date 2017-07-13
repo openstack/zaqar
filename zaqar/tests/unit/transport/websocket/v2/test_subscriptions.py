@@ -15,11 +15,11 @@
 
 import json
 import time
-import uuid
 
 import mock
 import msgpack
 
+from oslo_utils import uuidutils
 from zaqar.common import auth
 from zaqar.common import consts
 from zaqar.storage import errors as storage_errors
@@ -38,7 +38,7 @@ class SubscriptionTest(base.V1_1Base):
 
         self.project_id = '7e55e1a7e'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 

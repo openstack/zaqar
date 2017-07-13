@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import random
-import uuid
 
+from oslo_utils import uuidutils
 from six import moves
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -45,7 +45,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('8246ee51-651c-4e2a-9a07-91848ca5e1e4')
     def test_request_single_message_from_a_nonexistent_queue(self):
         # List a message from a nonexistent queue
-        id = str(uuid.uuid4())
+        id = uuidutils.generate_uuid()
         non_existent_queue = data_utils.rand_name('rand_queuename')
         uri = "/v2/queues/{0}/messages/{1}".format(non_existent_queue, id)
         self.assertRaises(lib_exc.NotFound,
@@ -55,7 +55,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('767fdad1-37df-485a-8063-5036e8d16a12')
     def test_request_a_non_existing_message(self):
         # List a message with an invalid id
-        invalid_id = str(uuid.uuid4())
+        invalid_id = uuidutils.generate_uuid()
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
         uri = "/v2/queues/{0}/messages/{1}".format(queue_name, invalid_id)
@@ -80,7 +80,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # List a message without a valid token
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        id = str(uuid.uuid4())
+        id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages/{1}".format(queue_name, id)
         self.client.auth_provider.set_alt_auth_data(
             request_part='headers',
@@ -95,8 +95,8 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('f544e745-f3da-451d-8621-c3711cd37453')
     def test_request_multiple_messages_from_a_nonexistent_queue(self):
         # List multiple messages from a non existent queue
-        id1 = str(uuid.uuid4())
-        id2 = str(uuid.uuid4())
+        id1 = uuidutils.generate_uuid()
+        id2 = uuidutils.generate_uuid()
         queue = data_utils.rand_name('nonexistent_queue')
         uri = "/v2/queues/{0}/messages?ids={1},{2}".format(queue,
                                                            id1, id2)
@@ -107,7 +107,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('654e64f8-01df-40a0-a09e-d5ec17a3e187')
     def test_request_multiple_messages_with_invalid_message_id(self):
         # List multiple messages by passing invalid id
-        invalid_id = str(uuid.uuid4())
+        invalid_id = uuidutils.generate_uuid()
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
         uri = "/v2/queues/{0}/messages?ids={1},{2}".format(queue_name,
@@ -122,7 +122,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Default limit value is 20 , configurable
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        ids = str.join(',', (str(uuid.uuid4())) * 21)
+        ids = str.join(',', (uuidutils.generate_uuid()) * 21)
         uri = "/v2/queues/{0}/messages?ids={1}".format(queue_name, ids)
         self.assertRaises(lib_exc.BadRequest,
                           self.client.show_multiple_messages, uri)
@@ -180,8 +180,8 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # List messages without a valid token
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        id1 = str(uuid.uuid4())
-        id2 = str(uuid.uuid4())
+        id1 = uuidutils.generate_uuid()
+        id2 = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages/{1},{2}".format(queue_name, id1, id2)
         self.client.auth_provider.set_alt_auth_data(
             request_part='headers',
@@ -440,7 +440,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
     def test_delete_message_from_a_nonexistent_queue(self):
         # Delete is an idempotent operation
         non_existent_queue = data_utils.rand_name('rand_queuename')
-        message_id = str(uuid.uuid4())
+        message_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?ids={1}".format(non_existent_queue,
                                                        message_id)
         resp, _ = self.client.delete_messages(uri)
@@ -452,7 +452,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Delete is an idempotent operation
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        message_id = str(uuid.uuid4())
+        message_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?ids={1}".format(queue_name,
                                                        message_id)
         resp, _ = self.client.delete_messages(uri)
@@ -464,7 +464,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Delete is an idempotent operation
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        message_id = str(uuid.uuid4())
+        message_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages/{1}".format(queue_name,
                                                    message_id)
         resp, _ = self.client.delete_messages(uri)
@@ -476,9 +476,9 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Delete is an idempotent operation
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        id1 = str(uuid.uuid4())
-        id2 = str(uuid.uuid4())
-        id3 = str(uuid.uuid4())
+        id1 = uuidutils.generate_uuid()
+        id2 = uuidutils.generate_uuid()
+        id3 = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?ids={1}{2}{3}".format(queue_name,
                                                              id1, id2, id3)
         resp, _ = self.client.delete_messages(uri)
@@ -504,7 +504,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Delete a message with negative id
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        message_id = str(uuid.uuid4())
+        message_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?ids=-{1}".format(queue_name,
                                                         message_id)
         resp, _ = self.client.delete_messages(uri)
@@ -516,7 +516,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Delete is an idempotent operation
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        message_id = str(uuid.uuid4())
+        message_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?ids={1}".format(queue_name,
                                                        message_id)
         resp, _ = self.client.delete_messages(uri)
@@ -530,7 +530,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         # Default limit value is 20
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
-        ids = str.join(',', (str(uuid.uuid4())) * 21)
+        ids = str.join(',', (uuidutils.generate_uuid()) * 21)
         uri = "/v2/queues/{0}/messages?ids={1}".format(queue_name, ids)
         self.assertRaises(lib_exc.BadRequest,
                           self.client.delete_messages, uri)
@@ -616,7 +616,7 @@ class TestMessagesNegative(base.BaseV2MessagingTest):
         queue_name = self.queues[data_utils.rand_int_id(0,
                                                         len(self.queues) - 1)]
         pop_value = 5
-        ids_value = str(uuid.uuid4())
+        ids_value = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/messages?pop={1}&ids={2}".format(queue_name,
                                                                pop_value,
                                                                ids_value)

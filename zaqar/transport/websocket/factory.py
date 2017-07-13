@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import json
-import uuid
 
 from autobahn.asyncio import websocket
 import msgpack
+from oslo_utils import uuidutils
 
 from zaqar.transport.websocket import protocol
 
@@ -37,7 +37,7 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
         self._protos = {}
 
     def __call__(self):
-        proto_id = str(uuid.uuid4())
+        proto_id = uuidutils.generate_uuid()
         proto = self.protocol(self._handler, proto_id, self._auth_strategy,
                               self._loop)
         self._protos[proto_id] = proto

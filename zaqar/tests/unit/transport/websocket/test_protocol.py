@@ -14,11 +14,11 @@
 #    under the License.
 
 import json
-import uuid
 
 import ddt
 import mock
 
+from oslo_utils import uuidutils
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
@@ -32,7 +32,7 @@ class TestMessagingProtocol(base.TestBase):
         self.protocol = self.transport.factory()
         self.project_id = 'protocol-test'
         self.headers = {
-            'Client-ID': str(uuid.uuid4()),
+            'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': self.project_id
         }
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -281,7 +281,7 @@ class TestClaimsNegative(base.BaseV2MessagingTest):
     def test_query_from_a_nonexistent_queue(self):
         # Query claim a non existent queue
         non_existent_queue = data_utils.rand_name('rand_queuename')
-        non_existent_id = str(uuid.uuid4())
+        non_existent_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/claims/{1}".format(non_existent_queue,
                                                  non_existent_id)
         self.assertRaises(lib_exc.NotFound,
@@ -291,7 +291,7 @@ class TestClaimsNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('a2af8e9b-08fb-4079-a77a-28c0390a614a')
     def test_query_claim_with_non_existing_claim_id(self):
         # Query claim using a non existing claim id
-        non_existent_id = str(uuid.uuid4())
+        non_existent_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/claims/{1}".format(self.queue_name,
                                                  non_existent_id)
         self.assertRaises(lib_exc.NotFound,
@@ -332,7 +332,7 @@ class TestClaimsNegative(base.BaseV2MessagingTest):
         claim_ttl = data_utils.rand_int_id(start=60,
                                            end=CONF.messaging.max_claim_ttl)
         update_rbody = {"ttl": claim_ttl}
-        claim_id = str(uuid.uuid4())
+        claim_id = uuidutils.generate_uuid()
         claim_uri = "/v2/queues/{0}/claims/{1}".format(self.queue_name,
                                                        claim_id)
         self.assertRaises(lib_exc.NotFound,
@@ -381,7 +381,7 @@ class TestClaimsNegative(base.BaseV2MessagingTest):
     def test_release_claim_from_a_non_existing_queue(self):
         # Release claim from a non existing queue
         non_existent_queue = data_utils.rand_name('rand_queuename')
-        non_existent_id = str(uuid.uuid4())
+        non_existent_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/claims/{1}".format(non_existent_queue,
                                                  non_existent_id)
         resp, body = self.client.delete_claim(uri)
@@ -391,7 +391,7 @@ class TestClaimsNegative(base.BaseV2MessagingTest):
     @decorators.idempotent_id('20a6e6ed-0f53-484d-aa78-717cdaa25e50')
     def test_release_a_nonexisting_claim_id(self):
         # Release a non existing claim
-        non_existent_id = str(uuid.uuid4())
+        non_existent_id = uuidutils.generate_uuid()
         uri = "/v2/queues/{0}/claims/{1}".format(self.queue_name,
                                                  non_existent_id)
         resp, body = self.client.delete_claim(uri)
