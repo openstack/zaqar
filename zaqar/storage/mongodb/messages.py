@@ -243,8 +243,9 @@ class MessageController(storage.Message):
             client_uuid
         :param client_uuid: (Default None) UUID for the client that
             originated this request
-        :param fields: (Default None) Fields to include in emitted
-            documents
+        :param projection: (Default None) a list of field names that should be
+            returned in the result set or a dict specifying the fields to
+            include or exclude
         :param include_claimed: (Default False) Whether to include
             claimed messages, not just active ones
         :param sort: (Default 1) Sort order for the listing. Pass 1 for
