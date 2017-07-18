@@ -11,9 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Zaqar Release Notes documentation build configuration file, created by
-# sphinx-quickstart on Tue Nov  4 13:44:05 2015.
-#
 # This file is execfile()d with the current directory set to its
 # containing dir.
 #
@@ -140,7 +137,7 @@ html_theme = 'openstackdocs'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
