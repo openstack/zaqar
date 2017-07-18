@@ -59,7 +59,7 @@ Creates a flavor.
 
 This operation creates a new flavor.
 
-``flaovr_name`` is the name that you give to the flavor. The name must not
+``flavor_name`` is the name that you give to the flavor. The name must not
 exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
