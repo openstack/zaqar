@@ -178,8 +178,8 @@ applications to get started.
 .. _`Bug Triage` : https://wiki.openstack.org/wiki/BugTriage
 .. _`OpenStack development cycle` : https://wiki.openstack.org/wiki/ReleaseCycle
 .. _`Launchpad Blueprints` : https://wiki.openstack.org/wiki/Blueprints
-.. _`OpenStack Documentation Contributor Guide` : http://docs.openstack.org/contributor-guide/index.html
-.. _`Zaqar's Contributor Documentation` : http://docs.openstack.org/developer/zaqar/
+.. _`OpenStack Documentation Contributor Guide` : https://docs.openstack.org/contributor-guide/index.html
+.. _`Zaqar's Contributor Documentation` : https://docs.openstack.org/zaqar/latest/
 .. _`Zaqar's Wiki` : https://wiki.openstack.org/wiki/Zaqar
 .. _`"openstack-manuals" project` : https://wiki.openstack.org/wiki/Documentation
 .. _`integrate Zaqar to the OpenStack Dashboard (Horizon)` : https://blueprints.launchpad.net/zaqar/+spec/zaqar-horizon-integration

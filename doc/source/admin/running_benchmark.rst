@@ -181,4 +181,4 @@ Let's configure zaqar-bench too to use Keystone:
    authentication errors.
 
 
-.. _DevStack: http://docs.openstack.org/developer/devstack/
+.. _DevStack: https://docs.openstack.org/devstack/latest/

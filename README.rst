@@ -46,11 +46,11 @@ Contributors are encouraged to join IRC (``#openstack-zaqar`` channel on
 
 Information on how to run unit and functional tests is available at:
 
-    https://docs.openstack.org/zaqar/admin/running_tests.html
+    https://docs.openstack.org/zaqar/latest/contributor/running_tests.html
 
 Information on how to run benchmarking tool is available at:
 
-    https://docs.openstack.org/zaqar/admin/running_benchmark.html
+    https://docs.openstack.org/zaqar/latest/admin/running_benchmark.html
 
 Using Zaqar
 -----------
@@ -66,7 +66,7 @@ Using Zaqar in development environment:
 
     The instruction is available at:
 
-        https://docs.openstack.org/zaqar/contributor/development.environment.html
+        https://docs.openstack.org/zaqar/latest/contributor/development.environment.html
 
     This will allow you to run local Zaqar server with MongoDB as database.
 

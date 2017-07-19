@@ -160,6 +160,6 @@ bad designs, bad code, and bad blood.
      - No
 
 .. _`Why this is important?` : https://thoughtstreams.io/kgriffs/technical-communities/5060/
-.. _`OpenStack Documentation Contributor Guide` : http://docs.openstack.org/contributor-guide/index.html
+.. _`OpenStack Documentation Contributor Guide` : https://docs.openstack.org/contributor-guide/index.html
 .. _`Wikipedia: Don't repeat yourself` : https://en.wikipedia.org/wiki/Don't_repeat_yourself
 .. _`Wikipedia: You aren't gonna need it` : https://en.wikipedia.org/wiki/Don't_repeat_yourself

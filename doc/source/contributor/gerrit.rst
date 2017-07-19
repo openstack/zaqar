@@ -16,7 +16,7 @@ Code reviews with Gerrit
 ========================
 
 Zaqar uses the `Gerrit`_ tool to review proposed code changes. The review site
-is http://review.openstack.org.
+is https://review.openstack.org.
 
 Gerrit is a complete replacement for GitHub pull requests. `All GitHub pull
 requests to the Zaqar repository will be ignored`.
@@ -25,4 +25,4 @@ See `Development Workflow with Gerrit`_ for more detailed documentation on how
 to work with Gerrit.
 
 .. _Gerrit: https://www.gerritcodereview.com/
-.. _Development Workflow with Gerrit: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _Development Workflow with Gerrit: https://docs.openstack.org/infra/manual/developers.html#development-workflow

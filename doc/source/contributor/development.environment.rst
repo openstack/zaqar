@@ -20,7 +20,7 @@ that you can use in developing Zaqar on Ubuntu or Fedora. These instructions
 assume that you are familiar with Git. Refer to GettingTheCode_ for
 additional information.
 
-.. _GettingTheCode: http://wiki.openstack.org/GettingTheCode
+.. _GettingTheCode: https://wiki.openstack.org/wiki/Getting_The_Code
 
 
 Virtual environments
@@ -39,7 +39,7 @@ virtual environment, instead of installing the packages at the system level.
    full integration testing or production usage. If you want to learn about
    production best practices, check out the `OpenStack Operations Guide`_.
 
-   .. _`OpenStack Operations Guide`: http://docs.openstack.org/ops/
+   .. _`OpenStack Operations Guide`: https://docs.openstack.org/ops-guide/
 
 Install GNU/Linux system dependencies
 #####################################
@@ -280,7 +280,7 @@ To do this, you first need to add the following setting to your ``local.conf``:
 
 Then run the ``stack.sh`` script as usual.
 
-.. _DevStack: http://docs.openstack.org/developer/devstack/
+.. _DevStack: https://docs.openstack.org/devstack/latest/
 
 Running tests
 -------------

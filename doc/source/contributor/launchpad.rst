@@ -50,7 +50,7 @@ for technical support requests.
 You can also reach us in ``#openstack-zaqar`` IRC channel at
 ``irc.freenode.org``.
 
-.. _Launchpad: http://launchpad.net
-.. _Wiki: http://wiki.openstack.org
+.. _Launchpad: https://launchpad.net
+.. _Wiki: https://wiki.openstack.org
 .. _Zaqar Team: https://launchpad.net/zaqar
-.. _Ask OpenStack: http://ask.openstack.org/
+.. _Ask OpenStack: https://ask.openstack.org/

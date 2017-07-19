@@ -110,6 +110,6 @@ Review section`_ document.
 
 .. _`Open Zaqar fixes`: https://review.openstack.org/#/q/status:open+zaqar,n,z
 .. _`Git Commit Messages`: https://wiki.openstack.org/wiki/GitCommitMessages
-.. _`Gerrit Workflow Review section`: http://docs.openstack.org/infra/manual/developers.html#code-review
+.. _`Gerrit Workflow Review section`: https://docs.openstack.org/infra/manual/developers.html#code-review
 
 
