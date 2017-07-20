@@ -22,7 +22,9 @@ For more information about home documents, see `http://tools.ietf.org/html/draft
 
 
 Normal response codes: 300
-Error response codes: serviceUnavailable (503)
+Error response codes:
+
+- serviceUnavailable (503)
 
 Response Parameters
 -------------------

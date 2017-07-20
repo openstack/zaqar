@@ -50,7 +50,7 @@ live period, its expiration is not adjusted.
 
 
 
-Normal response codes: 201 204
+Normal response codes: 201, 204
 
 Error response codes:
 
