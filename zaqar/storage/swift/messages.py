@@ -121,9 +121,11 @@ class MessageController(storage.Message):
             raise
 
         def is_claimed(msg, headers):
-            if include_claimed:
+            if include_claimed or msg['claim_id'] is None:
                 return False
-            return msg['claim_id'] is not None
+            claim_obj = self.driver.claim_controller._get(
+                queue, msg['claim_id'], project)
+            return claim_obj is not None and claim_obj['ttl'] > 0
 
         def is_echo(msg, headers):
             if echo:
