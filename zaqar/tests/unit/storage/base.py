@@ -1010,6 +1010,47 @@ class ClaimControllerTest(ControllerBaseTest):
                                    {'ttl': 40},
                                    project=self.project)
 
+    def test_dead_letter_queue(self):
+        DLQ_name = "DLQ"
+        meta = {'ttl': 3, 'grace': 3}
+        self.queue_controller.create("DLQ", project=self.project)
+        # Set dead letter queeu metadata
+        metadata = {"_max_claim_count": 2,
+                    "_dead_letter_queue": DLQ_name,
+                    "_dead_letter_queue_messages_ttl": 9999}
+        self.queue_controller.set_metadata(self.queue_name,
+                                           metadata,
+                                           project=self.project)
+
+        new_messages = [{'ttl': 3600, 'body': {"key": "value"}}]
+
+        self.message_controller.post(self.queue_name, new_messages,
+                                     client_uuid=str(uuid.uuid1()),
+                                     project=self.project)
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNotNone(claim_id)
+        self.assertEqual(1, len(list(messages)))
+        time.sleep(5)
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNotNone(claim_id)
+        messages = list(messages)
+        self.assertEqual(1, len(messages))
+        time.sleep(5)
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNone(claim_id)
+        self.assertEqual(0, len(list(messages)))
+
+        DLQ_messages = self.message_controller.list(DLQ_name,
+                                                    project=self.project,
+                                                    include_claimed=True)
+        expected_msg = list(next(DLQ_messages))[0]
+        self.assertEqual(9999, expected_msg["ttl"])
+        self.assertEqual({"key": "value"}, expected_msg["body"])
+
 
 @ddt.ddt
 class SubscriptionControllerTest(ControllerBaseTest):

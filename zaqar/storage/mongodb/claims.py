@@ -24,11 +24,15 @@ Field Mappings:
 import datetime
 
 from bson import objectid
+from oslo_log import log as logging
 from oslo_utils import timeutils
+from pymongo.collection import ReturnDocument
 
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
+
+LOG = logging.getLogger(__name__)
 
 
 def _messages_iter(msg_iter):
@@ -125,6 +129,7 @@ class ClaimController(storage.Claim):
         time being, to execute an update on a limited number of records.
         """
         msg_ctrl = self.driver.message_controller
+        queue_ctrl = self.driver.queue_controller
 
         ttl = metadata['ttl']
         grace = metadata['grace']
@@ -142,18 +147,24 @@ class ClaimController(storage.Claim):
             'id': oid,
             't': ttl,
             'e': claim_expires,
+            'c': 0   # NOTE(flwang): A placeholder which will be updated later
         }
 
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
-        msgs = msg_ctrl._active(queue, projection={'_id': 1}, project=project,
+        msgs = msg_ctrl._active(queue, projection={'_id': 1, 'c': 1},
+                                project=project,
                                 limit=limit)
 
         messages = iter([])
-        ids = [msg['_id'] for msg in msgs]
+        be_claimed = [(msg['_id'], msg['c'].get('c', 0)) for msg in msgs]
+        ids = [_id for _id, _ in be_claimed]
 
         if len(ids) == 0:
             return None, messages
+
+        # Get the maxClaimCount and deadLetterQueue from current queue's meta
+        queue_meta = queue_ctrl.get(queue, project=project)
 
         now = timeutils.utcnow_ts()
 
@@ -185,6 +196,68 @@ class ClaimController(storage.Claim):
                            'c.id': oid},
                           {'$set': new_values},
                           upsert=False, multi=True)
+
+        if ('_max_claim_count' in queue_meta and
+                '_dead_letter_queue' in queue_meta):
+            LOG.debug(u"The list of messages being claimed: %(be_claimed)s",
+                      {"be_claimed": be_claimed})
+
+            for _id, claimed_count in be_claimed:
+                # NOTE(flwang): We have claimed the message above, but we will
+                # update the claim count below. So that means, when the
+                # claimed_count equals queue_meta['_max_claim_count'], the
+                # message has met the threshold. And Zaqar will move it to the
+                # DLQ.
+                if claimed_count < queue_meta['_max_claim_count']:
+                    # 1. Save the new max claim count for message
+                    collection.update({'_id': _id,
+                                       'c.id': oid},
+                                      {'$set': {'c.c': claimed_count + 1}},
+                                      upsert=False)
+                    LOG.debug(u"Message %(id)s has been claimed %(count)d "
+                              u"times.", {"id": str(_id),
+                                          "count": claimed_count + 1})
+                else:
+                    # 2. Check if the message's claim count has exceeded the
+                    # max claim count defined in the queue, if so, move the
+                    # message to the dead letter queue.
+
+                    # NOTE(flwang): We're moving message directly. That means,
+                    # the queue and dead letter queue must be created on the
+                    # same storage pool. It's a technical tradeoff, because if
+                    # we re-send the message to the dead letter queue by
+                    # message controller, then we will lost all the claim
+                    # information.
+                    dlq_name = queue_meta['_dead_letter_queue']
+                    new_msg = {'c.c': claimed_count,
+                               'p_q': utils.scope_queue_name(dlq_name,
+                                                             project)}
+                    dlq_ttl = queue_meta.get("_dead_letter_queue_messages_ttl")
+                    if dlq_ttl:
+                        new_msg['t'] = dlq_ttl
+                    kwargs = {"return_document": ReturnDocument.AFTER}
+                    msg = collection.find_one_and_update({'_id': _id,
+                                                          'c.id': oid},
+                                                         {'$set': new_msg},
+                                                         **kwargs)
+                    dlq_collection = msg_ctrl._collection(dlq_name, project)
+                    if not dlq_collection:
+                        LOG.warning(u"Failed to find the message collection "
+                                    u"for queue %(dlq_name)s", {"dlq_name":
+                                                                dlq_name})
+                        return None, iter([])
+                    result = dlq_collection.insert_one(msg)
+                    if result.inserted_id:
+                        collection.delete_one({'_id': _id})
+                    LOG.debug(u"Message %(id)s has met the max claim count "
+                              u"%(count)d, now it has been moved to dead "
+                              u"letter queue %(dlq_name)s.",
+                              {"id": str(_id), "count": claimed_count,
+                               "dlq_name": dlq_name})
+                    # NOTE(flwang): Because the claimed count has meet the
+                    # max, so the current claim is not valid. And technically,
+                    # it's failed to create the claim.
+                    return None, iter([])
 
         if updated != 0:
             # NOTE(kgriffs): This extra step is necessary because
