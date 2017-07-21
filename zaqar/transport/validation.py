@@ -337,10 +337,12 @@ class Validator(object):
             msg = _(u'_dead_letter_queue_messages_ttl must be integer.')
             raise ValidationFailed(msg)
 
-            if not (MIN_MESSAGE_TTL <= dlq_ttl <=
-                    self._limits_conf.max_message_ttl):
-                msg = _(u'The TTL for a message may not exceed {0} seconds, '
-                        'and must be at least {1} seconds long.')
+        if dlq_ttl and not (MIN_MESSAGE_TTL <= dlq_ttl <=
+                            self._limits_conf.max_message_ttl):
+            msg = _(u'The TTL for a message may not exceed {0} seconds, '
+                    'and must be at least {1} seconds long.')
+            raise ValidationFailed(msg, self._limits_conf.max_message_ttl,
+                                   MIN_MESSAGE_TTL)
 
     def queue_purging(self, document):
         """Restrictions the resource types to be purged for a queue.
