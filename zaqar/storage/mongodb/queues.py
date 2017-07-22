@@ -23,6 +23,7 @@ Field Mappings:
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from pymongo.collection import ReturnDocument
 import pymongo.errors
 
 from zaqar.common import decorators
@@ -156,8 +157,9 @@ class QueueController(storage.Queue):
 
         while True:
             try:
-                doc = self._collection.find_and_modify(
-                    query, update, new=True, projection={'c.v': 1, '_id': 0})
+                doc = self._collection.find_one_and_update(
+                    query, update, return_document=ReturnDocument.AFTER,
+                    projection={'c.v': 1, '_id': 0})
 
                 break
             except pymongo.errors.AutoReconnect as ex:
@@ -246,8 +248,9 @@ class QueueController(storage.Queue):
             counter = {'v': 1, 't': 0}
 
             scoped_name = utils.scope_queue_name(name, project)
-            self._collection.insert({'p_q': scoped_name, 'm': metadata or {},
-                                     'c': counter})
+            self._collection.insert_one(
+                {'p_q': scoped_name, 'm': metadata or {},
+                 'c': counter})
 
         except pymongo.errors.DuplicateKeyError:
             return False
@@ -266,12 +269,10 @@ class QueueController(storage.Queue):
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
     def set_metadata(self, name, metadata, project=None):
-        rst = self._collection.update(_get_scoped_query(name, project),
-                                      {'$set': {'m': metadata}},
-                                      multi=False,
-                                      manipulate=False)
+        rst = self._collection.update_one(_get_scoped_query(name, project),
+                                          {'$set': {'m': metadata}})
 
-        if not rst['updatedExisting']:
+        if rst.matched_count == 0:
             raise errors.QueueDoesNotExist(name, project)
 
     @utils.raises_conn_error

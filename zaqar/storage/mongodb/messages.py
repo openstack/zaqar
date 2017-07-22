@@ -396,9 +396,9 @@ class MessageController(storage.Message):
         scope = utils.scope_queue_name(queue_name, project)
         collection = self._collection(queue_name, project)
 
-        collection.update({PROJ_QUEUE: scope, 'c.id': cid},
-                          {'$set': {'c': {'id': None, 'e': now}}},
-                          upsert=False, multi=True)
+        collection.update_many({PROJ_QUEUE: scope, 'c.id': cid},
+                               {'$set': {'c': {'id': None, 'e': now}}},
+                               upsert=False)
 
     def _inc_counter(self, queue_name, project=None, amount=1, window=None):
         """Increments the message counter and returns the new value.
@@ -728,9 +728,8 @@ class MessageController(storage.Message):
         collection = self._collection(queue_name, project)
         projection = {'_id': 1, 't': 1, 'b': 1, 'c.id': 1}
 
-        messages = (collection.find_and_modify(query,
-                                               projection=projection,
-                                               remove=True)
+        messages = (collection.find_one_and_delete(query,
+                                                   projection=projection)
                     for _ in range(limit))
 
         final_messages = [_basic_message(message, now)
@@ -868,9 +867,9 @@ class FIFOMessageController(MessageController):
                 # atomic, assuming queries filter out any non-finalized
                 # messages.
                 if transaction is not None:
-                    collection.update({'tx': transaction},
-                                      {'$set': {'tx': None}},
-                                      upsert=False, multi=True)
+                    collection.update_many({'tx': transaction},
+                                           {'$set': {'tx': None}},
+                                           upsert=False)
 
                 return [str(id_) for id_ in ids]
 

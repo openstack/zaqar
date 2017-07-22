@@ -107,9 +107,9 @@ class FlavorsController(base.FlavorsBase):
             raise errors.PoolGroupDoesNotExist(pool_group)
 
         capabilities = {} if capabilities is None else capabilities
-        self._col.update({'n': name, 'p': project},
-                         {'$set': {'s': pool_group, 'c': capabilities}},
-                         upsert=True)
+        self._col.update_one({'n': name, 'p': project},
+                             {'$set': {'s': pool_group, 'c': capabilities}},
+                             upsert=True)
 
     @utils.raises_conn_error
     def exists(self, name, project=None):
@@ -126,11 +126,11 @@ class FlavorsController(base.FlavorsBase):
             fields['s'] = pool_group
 
         assert fields, '`pool_group` or `capabilities` not found in kwargs'
-        res = self._col.update({'n': name, 'p': project},
-                               {'$set': fields},
-                               upsert=False)
+        res = self._col.update_one({'n': name, 'p': project},
+                                   {'$set': fields},
+                                   upsert=False)
 
-        if not res['updatedExisting']:
+        if res.matched_count == 0:
             raise errors.FlavorDoesNotExist(name)
 
     @utils.raises_conn_error

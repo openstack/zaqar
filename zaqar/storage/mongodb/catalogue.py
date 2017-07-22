@@ -48,8 +48,8 @@ class CatalogueController(base.CatalogueBase):
     @utils.raises_conn_error
     def _insert(self, project, queue, pool, upsert):
         key = utils.scope_queue_name(queue, project)
-        return self._col.update({PRIMARY_KEY: key},
-                                {'$set': {'s': pool}}, upsert=upsert)
+        return self._col.update_one({PRIMARY_KEY: key},
+                                    {'$set': {'s': pool}}, upsert=upsert)
 
     @utils.raises_conn_error
     def list(self, project):
@@ -89,7 +89,7 @@ class CatalogueController(base.CatalogueBase):
         # NOTE(cpp-cabrera): _insert handles conn_error
         res = self._insert(project, queue, pool, upsert=False)
 
-        if not res['updatedExisting']:
+        if res.matched_count == 0:
             raise errors.QueueNotMapped(queue, project)
 
     @utils.raises_conn_error
