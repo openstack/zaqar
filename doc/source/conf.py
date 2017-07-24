@@ -30,18 +30,28 @@ sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./'))
 
+
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings.
 # They can be extensions coming with Sphinx (named 'sphinx.ext.*')
 # or your custom ones.
 
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.coverage',
+extensions = ['sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
               'sphinx.ext.graphviz',
+              'stevedore.sphinxext',
+              'oslo_config.sphinxext',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.viewcode',
+              'oslo_config.sphinxconfiggen',
               'openstackdocstheme',
               ]
+
+config_generator_config_file = [
+    ('../../etc/oslo-config-generator/zaqar.conf',
+     '_static/zaqar'),
+]
 
 # autodoc generation is a bit aggressive and a nuisance
 # when doing heavy text edit cycles. Execute "export SPHINX_DEBUG=1"
@@ -153,7 +163,7 @@ html_theme_options = {}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
