@@ -6,6 +6,7 @@ Contribution Guide
    :maxdepth: 2
 
    welcome
+   project_info
    development.environment
    first_patch
    first_review
