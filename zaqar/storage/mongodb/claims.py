@@ -246,9 +246,13 @@ class ClaimController(storage.Claim):
                                     u"for queue %(dlq_name)s", {"dlq_name":
                                                                 dlq_name})
                         return None, iter([])
-                    result = dlq_collection.insert_one(msg)
-                    if result.inserted_id:
-                        collection.delete_one({'_id': _id})
+                    # NOTE(flwang): If dead letter queue and queue are in the
+                    # same partition, the message has been already
+                    # modified.
+                    if collection != dlq_collection:
+                        result = dlq_collection.insert_one(msg)
+                        if result.inserted_id:
+                            collection.delete_one({'_id': _id})
                     LOG.debug(u"Message %(id)s has met the max claim count "
                               u"%(count)d, now it has been moved to dead "
                               u"letter queue %(dlq_name)s.",
