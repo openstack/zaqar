@@ -92,6 +92,7 @@ Contents
    user/index
    admin/index
    install/index
+   configuration/index
    contributor/index
 
 .. toctree::
