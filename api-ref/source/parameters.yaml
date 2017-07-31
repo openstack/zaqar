@@ -369,14 +369,14 @@ pools:
 pre_signed_queue_expires:
   type: string
   in: body
-  required: True
+  required: False
   description: |
     The time to indicate when the pre-signed will be expired.
 
 pre_signed_queue_methods:
   type: list
   in: body
-  required: True
+  required: False
   description: |
     A list of HTTP methods. The HTTP method(s) this URL was created for. By
     selecting the HTTP method, it’s possible to give either read or read/write
@@ -385,7 +385,7 @@ pre_signed_queue_methods:
 pre_signed_queue_paths:
   type: list
   in: body
-  required: True
+  required: False
   description: |
     A list of paths the pre-signed queue can support. It could be a set of
     ``messages``, ``subscriptions``, ``claims``.
