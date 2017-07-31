@@ -27,6 +27,9 @@ from zaqar.storage.redis import utils
 
 QUEUE_CLAIMS_SUFFIX = 'claims'
 CLAIM_MESSAGES_SUFFIX = 'messages'
+# The rank counter is an atomic index to rank messages
+# in a FIFO manner.
+MESSAGE_RANK_COUNTER_SUFFIX = 'rank_counter'
 
 RETRY_CLAIM_TIMEOUT = 10
 
@@ -254,6 +257,9 @@ class ClaimController(storage.Claim, scripting.Mixin):
     def create(self, queue, metadata, project=None,
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
 
+        queue_ctrl = self.driver.queue_controller
+        msg_ctrl = self.driver.message_controller
+
         claim_ttl = metadata['ttl']
         grace = metadata['grace']
 
@@ -261,6 +267,9 @@ class ClaimController(storage.Claim, scripting.Mixin):
         msg_ttl = claim_ttl + grace
         claim_expires = now + claim_ttl
         msg_expires = claim_expires + grace
+
+        # Get the maxClaimCount and deadLetterQueue from current queue's meta
+        queue_meta = queue_ctrl.get(queue, project=project)
 
         claim_id = uuidutils.generate_uuid()
         claimed_msgs = []
@@ -308,6 +317,56 @@ class ClaimController(storage.Claim, scripting.Mixin):
 
                 pipe.zadd(claims_set_key, claim_expires, claim_id)
                 pipe.execute()
+
+                if ('_max_claim_count' in queue_meta and
+                        '_dead_letter_queue' in queue_meta):
+                    for msg in claimed_msgs:
+                        if msg:
+                            claimed_count = msg['claim_count']
+                            if claimed_count < queue_meta['_max_claim_count']:
+                                # 1. Save the new max claim count for message
+                                claim_count = claimed_count + 1
+                                dic = {"c.c": claim_count}
+                                pipe.hmset(msg['id'], dic)
+                                pipe.execute()
+                            else:
+                                # 2. Check if the message's claim count has
+                                # exceeded the max claim count defined in the
+                                # queue, if so, move the message to the dead
+                                # letter queue and modify it's ttl.
+                                # NOTE(gengchc):  We're moving message by
+                                # moving the message id from queue to dead
+                                # letter queue directly.That means, the queue
+                                # and dead letter queue must be created on
+                                # the same pool.
+                                ddl = utils.scope_queue_name(
+                                    queue_meta['_dead_letter_queue'], project)
+                                ddl_ttl = queue_meta.get(
+                                    "_dead_letter_queue_messages_ttl")
+                                dic = {"t": msg['ttl']}
+                                if ddl_ttl:
+                                    dic = {"t": ddl_ttl}
+                                pipe.hmset(msg['id'], dic)
+                                queueproject = [s for s in ddl.split('.')]
+                                msgs_key_ddl = utils.msgset_key(
+                                    queueproject[1], queueproject[0])
+                                counter_key_ddl = utils.scope_queue_index(
+                                    queueproject[1], queueproject[0],
+                                    MESSAGE_RANK_COUNTER_SUFFIX)
+                                msgs_key = utils.msgset_key(
+                                    queue, project=project)
+                                pipe.zrem(msgs_key, msg['id'])
+                                message_ids = []
+                                message_ids.append(msg['id'])
+                                msg_ctrl._index_messages(msgs_key_ddl,
+                                                         counter_key_ddl,
+                                                         message_ids)
+                                pipe.execute()
+                                # NOTE(flwang): Because the claimed count has
+                                # meet the max, so the current claim is not
+                                # valid.And technically,it's failed to create
+                                # the claim.
+                                return None, iter([])
 
         return claim_id, claimed_msgs
 
