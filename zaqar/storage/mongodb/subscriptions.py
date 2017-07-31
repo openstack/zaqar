@@ -142,7 +142,7 @@ class SubscriptionController(base.Subscription):
             fields['e'] = expires
 
         try:
-            res = self._collection.update(
+            res = self._collection.update_one(
                 {'_id': utils.to_oid(subscription_id),
                  'p': project,
                  's': queue},
@@ -150,7 +150,7 @@ class SubscriptionController(base.Subscription):
                 upsert=False)
         except pymongo.errors.DuplicateKeyError:
             raise errors.SubscriptionAlreadyExists()
-        if not res['updatedExisting']:
+        if res.matched_count == 0:
             raise errors.SubscriptionDoesNotExist(subscription_id)
 
     @utils.raises_conn_error
@@ -169,11 +169,12 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     def confirm(self, queue, subscription_id, project=None, confirmed=True):
 
-        res = self._collection.update({'_id': utils.to_oid(subscription_id),
-                                       'p': project},
-                                      {'$set': {'c': confirmed}},
-                                      upsert=False)
-        if not res['updatedExisting']:
+        res = self._collection.update_one(
+            {'_id': utils.to_oid(subscription_id),
+             'p': project},
+            {'$set': {'c': confirmed}},
+            upsert=False)
+        if res.matched_count == 0:
             raise errors.SubscriptionDoesNotExist(subscription_id)
 
 

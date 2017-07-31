@@ -99,13 +99,13 @@ class PoolsController(base.PoolsBase):
     def _create(self, name, weight, uri, group=None, options=None):
         options = {} if options is None else options
         try:
-            self._col.update({'n': name},
-                             {'$set': {'n': name,
-                                       'w': weight,
-                                       'u': uri,
-                                       'g': group,
-                                       'o': options}},
-                             upsert=True)
+            self._col.update_one({'n': name},
+                                 {'$set': {'n': name,
+                                           'w': weight,
+                                           'u': uri,
+                                           'g': group,
+                                           'o': options}},
+                                 upsert=True)
         except mongo_error.DuplicateKeyError:
             raise errors.PoolAlreadyExists()
 
@@ -122,10 +122,10 @@ class PoolsController(base.PoolsBase):
         assert fields, ('`weight`, `uri`, `group`, '
                         'or `options` not found in kwargs')
 
-        res = self._col.update({'n': name},
-                               {'$set': fields},
-                               upsert=False)
-        if not res['updatedExisting']:
+        res = self._col.update_one({'n': name},
+                                   {'$set': fields},
+                                   upsert=False)
+        if res.matched_count == 0:
             raise errors.PoolDoesNotExist(name)
 
     @utils.raises_conn_error

@@ -180,22 +180,21 @@ class ClaimController(storage.Claim):
         # posted. There is no need to check whether
         # 'c' exists or 'c.id' is None.
         collection = msg_ctrl._collection(queue, project)
-        updated = collection.update({'_id': {'$in': ids},
-                                     'c.e': {'$lte': now}},
-                                    {'$set': {'c': meta}},
-                                    upsert=False,
-                                    multi=True)['n']
+        updated = collection.update_many({'_id': {'$in': ids},
+                                          'c.e': {'$lte': now}},
+                                         {'$set': {'c': meta}},
+                                         upsert=False)
 
         # NOTE(flaper87): Dirty hack!
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
         new_values = {'e': message_expiration, 't': message_ttl}
-        collection.update({'p_q': utils.scope_queue_name(queue, project),
-                           'e': {'$lt': claim_expires_dt},
-                           'c.id': oid},
-                          {'$set': new_values},
-                          upsert=False, multi=True)
+        collection.update_many({'p_q': utils.scope_queue_name(queue, project),
+                                'e': {'$lt': claim_expires_dt},
+                                'c.id': oid},
+                               {'$set': new_values},
+                               upsert=False)
 
         if ('_max_claim_count' in queue_meta and
                 '_dead_letter_queue' in queue_meta):
@@ -210,10 +209,10 @@ class ClaimController(storage.Claim):
                 # DLQ.
                 if claimed_count < queue_meta['_max_claim_count']:
                     # 1. Save the new max claim count for message
-                    collection.update({'_id': _id,
-                                       'c.id': oid},
-                                      {'$set': {'c.c': claimed_count + 1}},
-                                      upsert=False)
+                    collection.update_one({'_id': _id,
+                                           'c.id': oid},
+                                          {'$set': {'c.c': claimed_count + 1}},
+                                          upsert=False)
                     LOG.debug(u"Message %(id)s has been claimed %(count)d "
                               u"times.", {"id": str(_id),
                                           "count": claimed_count + 1})
@@ -259,7 +258,7 @@ class ClaimController(storage.Claim):
                     # it's failed to create the claim.
                     return None, iter([])
 
-        if updated != 0:
+        if updated.modified_count != 0:
             # NOTE(kgriffs): This extra step is necessary because
             # in between having gotten a list of active messages
             # and updating them, some of them may have been
@@ -305,20 +304,20 @@ class ClaimController(storage.Claim):
         # with the messages collection directly (loose coupling)
         scope = utils.scope_queue_name(queue, project)
         collection = msg_ctrl._collection(queue, project)
-        collection.update({'p_q': scope, 'c.id': cid},
-                          {'$set': {'c': meta}},
-                          upsert=False, multi=True)
+        collection.update_many({'p_q': scope, 'c.id': cid},
+                               {'$set': {'c': meta}},
+                               upsert=False)
 
         # NOTE(flaper87): Dirty hack!
         # This sets the expiration time to
         # `expires` on messages that would
         # expire before claim.
-        collection.update({'p_q': scope,
-                           'e': {'$lt': claim_expires_dt},
-                           'c.id': cid},
-                          {'$set': {'e': message_expires,
-                                    't': message_ttl}},
-                          upsert=False, multi=True)
+        collection.update_many({'p_q': scope,
+                                'e': {'$lt': claim_expires_dt},
+                                'c.id': cid},
+                               {'$set': {'e': message_expires,
+                                         't': message_ttl}},
+                               upsert=False)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
