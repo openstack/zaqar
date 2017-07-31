@@ -152,7 +152,7 @@ class BaseV1MessagingTest(BaseMessagingTest):
     def setup_clients(cls):
         super(BaseV1MessagingTest, cls).setup_clients()
         cls.client = messaging_client.V1MessagingClient(
-            cls.os.auth_provider,
+            cls.os_primary.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
             build_interval=CONF.compute.build_interval,
@@ -177,7 +177,7 @@ class BaseV11MessagingTest(BaseMessagingTest):
     def setup_clients(cls):
         super(BaseV11MessagingTest, cls).setup_clients()
         cls.client = messaging_client.V11MessagingClient(
-            cls.os.auth_provider,
+            cls.os_primary.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
             build_interval=CONF.compute.build_interval,
@@ -205,7 +205,7 @@ class BaseV2MessagingTest(BaseMessagingTest):
     def setup_clients(cls):
         super(BaseV2MessagingTest, cls).setup_clients()
         cls.client = messaging_client.V2MessagingClient(
-            cls.os.auth_provider,
+            cls.os_primary.auth_provider,
             CONF.messaging.catalog_type,
             CONF.identity.region,
             build_interval=CONF.compute.build_interval,
