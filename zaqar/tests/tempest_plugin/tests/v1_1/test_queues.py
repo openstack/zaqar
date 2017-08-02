@@ -17,7 +17,6 @@
 from six import moves
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
-from testtools import matchers
 
 from zaqar.tests.tempest_plugin.tests import base
 
@@ -73,30 +72,6 @@ class TestManageQueue(base.BaseV11MessagingTest):
             self.assertEqual(0, msgs[element])
         for element in ('oldest', 'newest'):
             self.assertNotIn(element, msgs)
-
-    @decorators.skip_because(bug='1543900')
-    @decorators.idempotent_id('883a5fba-fb87-4663-b941-cf4a25e64607')
-    def test_set_and_get_queue_metadata(self):
-        # Retrieve random queue
-        queue_name = self.queues[data_utils.rand_int_id(0,
-                                                        len(self.queues) - 1)]
-        # Check the Queue has no metadata
-        _, body = self.get_queue_metadata(queue_name)
-        self.assertThat(body, matchers.HasLength(0))
-        # Create metadata
-        key3 = [0, 1, 2, 3, 4]
-        key2 = data_utils.rand_name('value')
-        req_body1 = dict()
-        req_body1[data_utils.rand_name('key3')] = key3
-        req_body1[data_utils.rand_name('key2')] = key2
-        req_body = dict()
-        req_body[data_utils.rand_name('key1')] = req_body1
-        # Set Queue Metadata
-        self.set_queue_metadata(queue_name, req_body)
-
-        # Get Queue Metadata
-        _, body = self.get_queue_metadata(queue_name)
-        self.assertThat(body, matchers.Equals(req_body))
 
     @classmethod
     def resource_cleanup(cls):
