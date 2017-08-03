@@ -212,7 +212,8 @@ class MessageController(storage.Message):
     def _create_msg(self, queue, msg, client_uuid, project):
         slug = str(uuid.uuid1())
         contents = jsonutils.dumps(
-            {'body': msg.get('body', {}), 'claim_id': None, 'ttl': msg['ttl']})
+            {'body': msg.get('body', {}), 'claim_id': None,
+             'ttl': msg['ttl'], 'claim_count': 0})
         try:
             self._client.put_object(
                 utils._message_container(queue, project),

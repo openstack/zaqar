@@ -56,7 +56,8 @@ def _message_to_json(message_id, msg, headers, now):
         'age': now - float(headers['x-timestamp']),
         'ttl': msg['ttl'],
         'body': msg['body'],
-        'claim_id': msg['claim_id']
+        'claim_id': msg['claim_id'],
+        'claim_count': msg.get('claim_count', 0)
     }
 
 
@@ -105,6 +106,7 @@ def _filter_messages(messages, filters, marker, get_object, list_objects,
                 'body': obj['body'],
                 'age': now - float(headers['x-timestamp']),
                 'claim_id': obj['claim_id'],
+                'claim_count': obj.get('claim_count', 0),
             }
             if limit <= 0:
                 break
