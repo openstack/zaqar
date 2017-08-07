@@ -93,29 +93,31 @@ class TestManageQueue(base.BaseV2MessagingTest):
         for element in ('oldest', 'newest'):
             self.assertNotIn(element, msgs)
 
-    @decorators.skip_because(bug='1543900')
     @decorators.idempotent_id('dfb1e0b0-b481-4e2a-91ae-2c28b65e9c28')
     def test_set_and_get_queue_metadata(self):
-        # Retrieve random queue
-        queue_name = self.queues[data_utils.rand_int_id(0,
-                                                        len(self.queues) - 1)]
-        # Check the Queue has no metadata
-        _, body = self.get_queue_metadata(queue_name)
-        self.assertThat(body, matchers.HasLength(0))
+        QueueName = "QueueWithMeta"
+        self.client.create_queue(QueueName)
+        _, body = self.get_queue_metadata(QueueName)
+        self.assertThat(body, matchers.HasLength(2))
+        self.assertEqual(262144, body['_max_messages_post_size'])
+        self.assertEqual(3600, body['_default_message_ttl'])
         # Create metadata
-        key3 = [0, 1, 2, 3, 4]
-        key2 = data_utils.rand_name('value')
-        req_body1 = dict()
-        req_body1[data_utils.rand_name('key3')] = key3
-        req_body1[data_utils.rand_name('key2')] = key2
-        req_body = dict()
-        req_body[data_utils.rand_name('key1')] = req_body1
+        op1 = {"op": "add",
+               "path": "/metadata/_max_claim_count", "value": 2}
+        op2 = {"op": "add",
+               "path": "/metadata/_dead_letter_queue_messages_ttl",
+               "value": 7799}
+        metadata = [op1, op2]
         # Set Queue Metadata
-        self.set_queue_metadata(queue_name, req_body)
-
+        self.set_queue_metadata(QueueName, metadata)
         # Get Queue Metadata
-        _, body = self.get_queue_metadata(queue_name)
-        self.assertThat(body, matchers.Equals(req_body))
+        _, body = self.get_queue_metadata(QueueName)
+        self.assertThat(body, matchers.HasLength(4))
+        self.assertEqual(262144, body['_max_messages_post_size'])
+        self.assertEqual(7799, body['_dead_letter_queue_messages_ttl'])
+        self.assertEqual(2, body['_max_claim_count'])
+        self.assertEqual(3600, body['_default_message_ttl'])
+        self.client.delete_queue(QueueName)
 
     @decorators.idempotent_id('2fb6e5a8-c18f-4407-9ee7-7a13c8e09f69')
     def test_purge_queue(self):

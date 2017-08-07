@@ -370,17 +370,20 @@ class V2MessagingClient(MessagingClient):
         return resp, body
 
     def show_queue_metadata(self, queue_name):
-        uri = '{0}/queues/{1}/metadata'.format(self.uri_prefix, queue_name)
+        uri = '{0}/queues/{1}'.format(self.uri_prefix, queue_name)
         resp, body = self.get(uri, headers=self.headers)
         self.expected_success(200, resp.status)
         body = json.loads(body)
         return resp, body
 
     def set_queue_metadata(self, queue_name, rbody):
-        uri = '{0}/queues/{1}/metadata'.format(self.uri_prefix, queue_name)
-        resp, body = self.put(uri, body=json.dumps(rbody),
-                              headers=self.headers)
-        self.expected_success(204, resp.status)
+        uri = '{0}/queues/{1}'.format(self.uri_prefix, queue_name)
+        headers = self.headers.copy()
+        headers['Content-Type'] =\
+            'application/openstack-messaging-v2.0-json-patch'
+        resp, body = self.patch(uri, body=json.dumps(rbody),
+                                headers=headers)
+        self.expected_success(200, resp.status)
         return resp, body
 
     def post_messages(self, queue_name, rbody):
@@ -439,8 +442,9 @@ class V2MessagingClient(MessagingClient):
                                extra_headers=True,
                                headers=self.headers)
 
-        body = json.loads(body)
-        self.validate_response(v2schema.claim_messages, resp, body)
+        if resp['status'] != '204':
+            body = json.loads(body)
+            self.validate_response(v2schema.claim_messages, resp, body)
         return resp, body
 
     def query_claim(self, claim_uri):
