@@ -155,13 +155,20 @@ function configure_zaqar {
     iniset_rpc_backend zaqar $ZAQAR_CONF DEFAULT
 
     pip_install uwsgi
+
+    iniset $ZAQAR_UWSGI_CONF uwsgi master true
+    iniset $ZAQAR_UWSGI_CONF uwsgi die-on-term true
+    iniset $ZAQAR_UWSGI_CONF uwsgi exit-on-reload true
     iniset $ZAQAR_UWSGI_CONF uwsgi http $ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT
-    iniset $ZAQAR_UWSGI_CONF uwsgi harakiri 60
-    iniset $ZAQAR_UWSGI_CONF uwsgi processes 1
+    iniset $ZAQAR_UWSGI_CONF uwsgi processes $API_WORKERS
+    iniset $ZAQAR_UWSGI_CONF uwsgi enable_threads true
     iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
+    iniset $ZAQAR_UWSGI_CONF uwsgi thunder-lock true
+    iniset $ZAQAR_UWSGI_CONF uwsgi buffer-size 65535
     iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
     iniset $ZAQAR_UWSGI_CONF uwsgi master true
     iniset $ZAQAR_UWSGI_CONF uwsgi add-header "Connection: close"
+    iniset $ZAQAR_UWSGI_CONF uwsgi lazy-apps true
 
     cleanup_zaqar
 }
