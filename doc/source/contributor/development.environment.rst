@@ -78,7 +78,8 @@ On Ubuntu, follow the instructions in the
 .. _`MongoDB on Ubuntu installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
 On Fedora-based distributions, follow the instructions in the
-`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux Installation Guide`_.
+`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux
+Installation Guide`_.
 
 .. _`MongoDB on Red Hat Enterprise, CentOS, Fedora, or Amazon Linux installation guide`: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/
 

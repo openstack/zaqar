@@ -23,15 +23,15 @@ Project Team Lead (PTL)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 
-+------------------------------+------------------------------------------------+
-|       Contact                |             Area of interest                   |
-+------------------------------+------------------------------------------------+
-| | Feilong Wang               |  * Chief Architect                             |
-| | flwang (irc)               |  * Release management                          |
-| | flwang@catalyst.net.nz     |  * Community management                        |
-| | flwang@qq.com              |  * Core team management                        |
-| |                            |  * Road Map                                    |
-+------------------------------+------------------------------------------------+
++------------------------------+---------------------------------------------+
+|       Contact                |             Area of interest                |
++------------------------------+---------------------------------------------+
+| | Feilong Wang               |  * Chief Architect                          |
+| | flwang (irc)               |  * Release management                       |
+| | flwang@catalyst.net.nz     |  * Community management                     |
+| | flwang@qq.com              |  * Core team management                     |
+| |                            |  * Road Map                                 |
++------------------------------+---------------------------------------------+
 
 | *If you would like to refactor whole Zaqar or have UX/community/other
    issues please contact me.*
@@ -40,24 +40,25 @@ Project Team Lead (PTL)
 Project Core maintainers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+------------------------------+------------------------------------------------+
-|       Contact                |             Area of interest                   |
-+------------------------------+------------------------------------------------+
-| | Xiyuan Wang                |  * Zaqar related questions or bugs.            |
-| | wxy (irc) UTC0200-UTC1000  |  * Production problem for Zaqar.               |
-| | wangxiyuan1007@gmail.com   |  * Integration with container.                 |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
-| | Hao Wang                   |  * Introduce interesting and helpful features  |
-| | wanghao (irc)              |  * Bug Fix and Code Optimization               |
-| | sxmatch1986@gmail.com      |  * Notification Service                        |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
-| | Thomas Herve               |  * Websocket                                   |
-| | therve (irc)               |  * Swift backend                               |
-| | therve@redhat.com          |                                                |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
++------------------------------+---------------------------------------------+
+|       Contact                |             Area of interest                |
++------------------------------+---------------------------------------------+
+| | Xiyuan Wang                |  * Zaqar related questions or bugs.         |
+| | wxy (irc) UTC0200-UTC1000  |  * Production problem for Zaqar.            |
+| | wangxiyuan1007@gmail.com   |  * Integration with container.              |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
+| | Hao Wang                   |  * Introduce interesting and helpful        |
+| |                            |    features                                 |
+| | wanghao (irc)              |  * Bug Fix and Code Optimization            |
+| | sxmatch1986@gmail.com      |  * Notification Service                     |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
+| | Thomas Herve               |  * Websocket                                |
+| | therve (irc)               |  * Swift backend                            |
+| | therve@redhat.com          |                                             |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
 
 | *All cores from this list are reviewing all changes that are proposed to Zaqar.
   To avoid duplication of efforts, please contact them before starting work on
@@ -67,28 +68,28 @@ Project Core maintainers
 Storage Backend Maintainers reviewers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+------------------------------+------------------------------------------------+
-|       Contact                |             Area of interest                   |
-+------------------------------+------------------------------------------------+
-| | Hao Wang                   |  * MongoDB                                     |
-| | wanghao (irc)              |                                                |
-| | sxmatch1986@gmail.com      |                                                |
-+------------------------------+------------------------------------------------+
-| | gecong                     |  * Swift                                       |
-| | gecong (irc)               |                                                |
-| | ge.cong@zte.com.cn         |                                                |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
-| | gengchc2                   |  * Redis                                       |
-| | gengchc (irc)              |                                                |
-| | geng.changcai2@zte.com.cn  |                                                |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
-| | Feilong Wang               |  * SqlAlchemy                                  |
-| | flwang (irc)               |                                                |
-| | flwang@catalyst.net.nz     |                                                |
-| |                            |                                                |
-+------------------------------+------------------------------------------------+
++------------------------------+---------------------------------------------+
+|       Contact                |             Area of interest                |
++------------------------------+---------------------------------------------+
+| | Hao Wang                   |  * MongoDB                                  |
+| | wanghao (irc)              |                                             |
+| | sxmatch1986@gmail.com      |                                             |
++------------------------------+---------------------------------------------+
+| | gecong                     |  * Swift                                    |
+| | gecong (irc)               |                                             |
+| | ge.cong@zte.com.cn         |                                             |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
+| | gengchc2                   |  * Redis                                    |
+| | gengchc (irc)              |                                             |
+| | geng.changcai2@zte.com.cn  |                                             |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
+| | Feilong Wang               |  * SqlAlchemy                               |
+| | flwang (irc)               |                                             |
+| | flwang@catalyst.net.nz     |                                             |
+| |                            |                                             |
++------------------------------+---------------------------------------------+
 
 | *All cores from this list are responsible for maintaining the storage backend.
   To avoid duplication of efforts, please contact them before starting working
