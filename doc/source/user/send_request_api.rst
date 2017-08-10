@@ -52,7 +52,7 @@ the examples.
        the ``PUT`` request method.
 
 **Note**  If you have the tools, you can run the cURL JSON request examples
-with the following options to format the output from cURL: 
+with the following options to format the output from cURL:
 ``<curl JSON request example> | python -mjson.tool``.
 
 Copying and Pasting cURL Request Examples into a Terminal Window

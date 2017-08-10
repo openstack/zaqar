@@ -25,7 +25,8 @@ Installation Guide.
 Ocata
 ~~~~~
 
-To install Glance, see the Ocata Image service install guide for each distribution:
+To install Glance, see the Ocata Image service install guide for each
+distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/ocata/install-ubuntu.html>`__
 - `CentOS and RHEL <https://docs.openstack.org/project-install-guide/messaging/ocata/install-rdo.html>`__
@@ -34,7 +35,8 @@ To install Glance, see the Ocata Image service install guide for each distributi
 Newton
 ~~~~~~
 
-To install Glance, see the Newton Image service install guide for each distribution:
+To install Glance, see the Newton Image service install guide for each
+distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/newton/install-ubuntu.html>`__
 - `CentOS and RHEL <https://docs.openstack.org/project-install-guide/messaging/newton/install-rdo.html>`__

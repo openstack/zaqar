@@ -41,7 +41,8 @@ performance, so please set to disable in production environment.
 **connection_string**
 
 Connection string for a notifier backend. Default value is messaging:// which
-sets the notifier to oslo_messaging. Here we set it to "mongodb://localhost:27017"
+sets the notifier to oslo_messaging. Here we set it to
+"mongodb://localhost:27017"
 
 **hmac_keys**
 

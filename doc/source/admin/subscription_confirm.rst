@@ -227,10 +227,10 @@ The confirmation page url that will be used in email subscription confirmation
 before notification, this page is not hosted in Zaqar server, user should
 build their own web service to provide this web page.
 
-The subscription_confirmation_email_template let user to customize the 
+The subscription_confirmation_email_template let user to customize the
 subscription confirmation email content, including topic, body and sender.
 
-The unsubscribe_confirmation_email_template let user to customize the 
+The unsubscribe_confirmation_email_template let user to customize the
 unsubscribe confirmation email content, including topic, body and sender too::
 
     In the config file:
