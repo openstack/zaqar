@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Support for dead letter queue is added for MongoDB, Redis and Swift. With
+    this feature, message will be moved to the specified dead letter queue if
+    it's claimed many times but still can't successfully processed by a client.
+    New reseved metadata keys of queue are added: _max_claim_count,
+    _dead_letter_queue and _dead_letter_queue_messages_ttl.
