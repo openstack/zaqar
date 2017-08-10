@@ -36,11 +36,11 @@ avoid hooks errors.
 Visit the `Gerrit Workflow's account setup`_ section in the wiki to get
 more information on setting up your accounts.
 
-.. _Launchpad: http://launchpad.net/
-.. _Gerrit: http://review.openstack.org/
-.. _`Contributors License Agreement`: http://docs.openstack.org/infra/manual/developers.html#account-setup
-.. _`join the OpenStack Foundation`: http://openstack.org/join
-.. _`Gerrit Workflow's account setup`: http://docs.openstack.org/infra/manual/developers.html#account-setup
+.. _Launchpad: https://launchpad.net/
+.. _Gerrit: https://review.openstack.org/
+.. _`Contributors License Agreement`: https://docs.openstack.org/infra/manual/developers.html#account-setup
+.. _`join the OpenStack Foundation`: https://www.openstack.org/join/
+.. _`Gerrit Workflow's account setup`: https://docs.openstack.org/infra/manual/developers.html#account-setup
 
 SSH setup
 #########
@@ -193,7 +193,7 @@ working on bugs is to name the branch ``bug/BUG-NUMBER`` (for example,
 
 Read more about the commit syntax in the `Gerrit workflow`_ wiki.
 
-.. _`Gerrit workflow`: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _`Gerrit workflow`: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Common problems
 ^^^^^^^^^^^^^^^

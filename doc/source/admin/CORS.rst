@@ -116,5 +116,5 @@ CORS rule::
   Access-Control-Allow-Credentials: true
   Connection: close
 
-.. _Official Doc: https://docs.openstack.org/developer/oslo.middleware/cors.html
-.. _OpenStack Spec: http://specs.openstack.org/openstack/openstack-specs/specs/cors-support.html
+.. _Official Doc: https://docs.openstack.org/oslo.middleware/latest/reference/cors.html
+.. _OpenStack Spec: https://specs.openstack.org/openstack/openstack-specs/specs/cors-support.html

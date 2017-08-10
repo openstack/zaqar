@@ -88,7 +88,7 @@ When you run tests via ``tox -e py27`` command in the root directory of Zaqar:
 
 .. rubric:: Footnotes
 
-.. [#f1] See http://docs.openstack.org/developer/tempest/overview.html
+.. [#f1] See https://docs.openstack.org/tempest/latest/#overview
 
 .. _`OpenStack Tox testing manual` : https://wiki.openstack.org/wiki/Testing#Unit_Testing_with_Tox
 .. _`Tox documentation` : https://tox.readthedocs.org/en/latest/

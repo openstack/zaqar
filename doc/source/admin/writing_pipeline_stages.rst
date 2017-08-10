@@ -221,5 +221,5 @@ will happen in Zaqar's database.
          ],
      },
 
-.. _`Stevedore - Creating Plugins`: http://docs.openstack.org/developer/stevedore/tutorial/creating_plugins.html
-.. _`Stevedore - Loading the Plugins`: http://docs.openstack.org/developer/stevedore/tutorial/loading.html
+.. _`Stevedore - Creating Plugins`: https://docs.openstack.org/stevedore/latest/user/tutorial/creating_plugins.html
+.. _`Stevedore - Loading the Plugins`: https://docs.openstack.org/stevedore/latest/user/tutorial/loading.html
