@@ -320,6 +320,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
 
                 if ('_max_claim_count' in queue_meta and
                         '_dead_letter_queue' in queue_meta):
+                    claimed_msgs_removed = []
                     for msg in claimed_msgs:
                         if msg:
                             claimed_count = msg['claim_count']
@@ -362,11 +363,16 @@ class ClaimController(storage.Claim, scripting.Mixin):
                                                          counter_key_ddl,
                                                          message_ids)
                                 pipe.execute()
-                                # NOTE(flwang): Because the claimed count has
-                                # meet the max, so the current claim is not
-                                # valid.And technically,it's failed to create
-                                # the claim.
-                                return None, iter([])
+                                # Add dead letter message to
+                                # claimed_msgs_removed, finally remove
+                                # them from claimed_msgs.
+                                claimed_msgs_removed.append(msg)
+
+                    # Remove dead letter messages from claimed_msgs.
+                    for msg_remove in claimed_msgs_removed:
+                        claimed_msgs.remove(msg_remove)
+                    if len(claimed_msgs) == 0:
+                        return None, iter([])
 
         return claim_id, claimed_msgs
 
