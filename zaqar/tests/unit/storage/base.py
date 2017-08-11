@@ -1321,7 +1321,6 @@ class SubscriptionControllerTest(ControllerBaseTest):
                         s_id, self.project)
         subscription = self.subscription_controller.get(self.source, s_id,
                                                         project=self.project)
-
         self.assertFalse(subscription['confirmed'])
 
         self.subscription_controller.confirm(self.source, s_id,
@@ -1329,8 +1328,14 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                              confirmed=True)
         subscription = self.subscription_controller.get(self.source, s_id,
                                                         project=self.project)
-
         self.assertTrue(subscription['confirmed'])
+
+        self.subscription_controller.confirm(self.source, s_id,
+                                             project=self.project,
+                                             confirmed=False)
+        subscription = self.subscription_controller.get(self.source, s_id,
+                                                        project=self.project)
+        self.assertFalse(subscription['confirmed'])
 
     def test_confirm_with_nonexist_subscription(self):
         s_id = 'fake-id'

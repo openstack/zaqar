@@ -157,4 +157,4 @@ class SubscriptionController(storage.Subscription):
         return self.get(queue, obj, project)
 
     def confirm(self, queue, subscription_id, project=None, confirmed=True):
-        self.update(queue, subscription_id, project, confirmed=True)
+        self.update(queue, subscription_id, project, confirmed=confirmed)
