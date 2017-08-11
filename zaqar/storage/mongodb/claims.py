@@ -196,6 +196,7 @@ class ClaimController(storage.Claim):
                                {'$set': new_values},
                                upsert=False)
 
+        msg_count_moved_to_DLQ = 0
         if ('_max_claim_count' in queue_meta and
                 '_dead_letter_queue' in queue_meta):
             LOG.debug(u"The list of messages being claimed: %(be_claimed)s",
@@ -257,10 +258,7 @@ class ClaimController(storage.Claim):
                               u"letter queue %(dlq_name)s.",
                               {"id": str(_id), "count": claimed_count,
                                "dlq_name": dlq_name})
-                    # NOTE(flwang): Because the claimed count has meet the
-                    # max, so the current claim is not valid. And technically,
-                    # it's failed to create the claim.
-                    return None, iter([])
+                    msg_count_moved_to_DLQ += 1
 
         if updated.modified_count != 0:
             # NOTE(kgriffs): This extra step is necessary because
@@ -269,7 +267,12 @@ class ClaimController(storage.Claim):
             # claimed by a parallel request. Therefore, we need
             # to find out which messages were actually tagged
             # with the claim ID successfully.
-            claim, messages = self.get(queue, oid, project=project)
+            if msg_count_moved_to_DLQ < updated.modified_count:
+                claim, messages = self.get(queue, oid, project=project)
+            else:
+                # NOTE(flwang): Though messages are claimed, but all of them
+                # have met the max claim count and have been moved to DLQ.
+                return None, iter([])
 
         return str(oid), messages
 
