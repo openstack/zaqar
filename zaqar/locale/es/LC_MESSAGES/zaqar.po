@@ -10,30 +10,19 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: zaqar 2.0.1.dev22\n"
+"Project-Id-Version: zaqar 5.0.0.0rc2.dev1\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-05-03 22:29+0000\n"
+"POT-Creation-Date: 2017-08-11 11:47+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-08-27 07:38+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-04-12 06:53+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Spanish\n"
-
-msgid ""
-"\n"
-"X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-"
-"ID\n"
-"and retry."
-msgstr ""
-"\n"
-"X-PROJECT-ID no puede ser una cadena vacía. Especifique el encabezado X-"
-"PROJECT-ID\n"
-"correcto y vuelva a intentar."
 
 #, python-format
 msgid ""
@@ -80,14 +69,6 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Exceeded maximum retry duration for queue \"%(queue)s\" under project "
-"%(project)s"
-msgstr ""
-"Se excedió la duración máxima de intentos para la cola \"%(queue)s\" del "
-"proyecto %(project)s"
-
-#, python-format
-msgid ""
 "Failed to increment the message counter for queue %(name)s and project "
 "%(project)s"
 msgstr ""
@@ -104,14 +85,6 @@ msgstr ""
 
 msgid "Health status could not be read."
 msgstr "No se pudo leer el estado de salud."
-
-#, python-format
-msgid ""
-"Hit maximum number of attempts (%(max)s) for queue \"%(queue)s\" under "
-"project %(project)s"
-msgstr ""
-"Alcanzado el número máximo (%(max)s) de intentos para la cola \"%(queue)s\" "
-"del proyecto %(project)s"
 
 msgid "Invalid API request"
 msgstr "Solicitud API no válida"
@@ -280,10 +253,6 @@ msgid "Serving on host %(bind)s:%(port)s"
 msgstr "Sirviendo en la máquina %(bind)s:%(port)s"
 
 #, python-format
-msgid "Stage %(stage)s could not be imported: %(ex)s"
-msgstr "No se puede importar: %(ex)s la etapa %(stage)s"
-
-#, python-format
 msgid "Stage %(stage)s does not implement %(method)s"
 msgstr "La etapa %(stage)s no implementa %(method)s"
 
@@ -301,9 +270,6 @@ msgstr "No se pueden listar suscripciones."
 
 msgid "TTL must be an integer."
 msgstr "TTL debe ser un entero."
-
-msgid "Terminating"
-msgstr "Terminando"
 
 msgid ""
 "The Redis URI specifies multiple sentinel hosts, but is missing the \"master"
