@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import functools
 import uuid
 
 import msgpack
 from oslo_utils import encodeutils
-from oslo_utils import timeutils
 from oslo_utils import uuidutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e', b'c.c')
@@ -232,7 +232,8 @@ class Message(MessageEnvelope):
         }
 
         if include_created:
-            created_iso = timeutils.iso8601_from_timestamp(self.created)
+            created_iso = datetime.datetime.utcfromtimestamp(
+                self.created).strftime('%Y-%m-%dT%H:%M:%SZ')
             basic_msg['created'] = created_iso
 
         return basic_msg

@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import copy
+import datetime
 import functools
 import uuid
 
@@ -341,10 +342,12 @@ class MessageQueueHandler(object):
                     raise
             else:
                 created = float(headers['x-timestamp'])
+                created_iso = datetime.datetime.utcfromtimestamp(
+                    created).strftime('%Y-%m-%dT%H:%M:%SZ')
                 newest = {
                     'id': obj['name'],
                     'age': now - created,
-                    'created': timeutils.iso8601_from_timestamp(created)}
+                    'created': created_iso}
                 if oldest is None:
                     oldest = copy.deepcopy(newest)
                 total += 1
