@@ -24,9 +24,8 @@ class Configuration(object):
     def register_opts(self, volume_opts, group=None):
         self.local_conf.register_opts(volume_opts, group=group)
 
-    def set_override(self, name, override, group=None, enforce_type=False):
-        self.local_conf.set_override(name, override, group=group,
-                                     enforce_type=enforce_type)
+    def set_override(self, name, override, group=None):
+        self.local_conf.set_override(name, override, group=group)
 
     def safe_get(self, value):
         try:
