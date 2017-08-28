@@ -58,10 +58,9 @@ default value is [].
 
 Request and Response example
 ----------------------------
-To use CORS, you should make sure that the feature is enabled::
+The CORS feature is enabled by default in Zaqar. Here is a config example:::
 
   [cors]
-  enabled = true
   allowed_origin = http://example
   allow_methods = GET
 
