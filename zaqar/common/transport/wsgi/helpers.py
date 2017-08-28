@@ -243,12 +243,13 @@ def inject_context(req, resp, params):
 
     """
     client_id = req.get_header('Client-ID')
-    project_id = params.get('project_id')
-    request_id = req.headers.get('X-Openstack-Request-ID'),
+    request_id = req.headers.get('X-Openstack-Request-ID')
     auth_token = req.headers.get('X-AUTH-TOKEN')
-    user = req.headers.get('X-USER-ID')
-    tenant = req.headers.get('X-TENANT-ID')
-
+    project_id = params.get('project_id')
+    user_id = req.headers.get('X-USER-ID')
+    domain_id = req.headers.get('X-DOMAIN-ID')
+    project_domain_id = req.headers.get('X-PROJECT-DOMAIN-ID')
+    user_domain_id = req.headers.get('X-USER-DOMAIN-ID')
     roles = req.headers.get('X-ROLES')
     roles = roles and roles.split(',') or []
 
@@ -256,7 +257,9 @@ def inject_context(req, resp, params):
                                   client_id=client_id,
                                   request_id=request_id,
                                   auth_token=auth_token,
-                                  user=user,
-                                  tenant=tenant,
-                                  roles=roles)
+                                  user_id=user_id,
+                                  roles=roles,
+                                  domain_id=domain_id,
+                                  project_domain_id=project_domain_id,
+                                  user_domain_id=user_domain_id)
     req.env['zaqar.context'] = ctxt

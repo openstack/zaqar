@@ -23,22 +23,20 @@ from oslo_context import context
 class RequestContext(context.RequestContext):
 
     def __init__(self, project_id=None, client_id=None, overwrite=True,
-                 auth_token=None, user=None, tenant=None, domain=None,
-                 user_domain=None, project_domain=None, is_admin=False,
-                 read_only=False, show_deleted=False, request_id=None,
-                 instance_uuid=None, roles=None, **kwargs):
+                 auth_token=None, user_id=None, domain_id=None,
+                 user_domain_id=None, project_domain_id=None, is_admin=False,
+                 read_only=False, request_id=None, roles=None, **kwargs):
         super(RequestContext, self).__init__(auth_token=auth_token,
-                                             user=user,
-                                             tenant=tenant,
-                                             domain=domain,
-                                             user_domain=user_domain,
-                                             project_domain=project_domain,
+                                             user=user_id,
+                                             tenant=project_id,
+                                             domain=domain_id,
+                                             user_domain=user_domain_id,
+                                             project_domain=project_domain_id,
                                              is_admin=is_admin,
                                              read_only=read_only,
                                              show_deleted=False,
                                              request_id=request_id,
                                              roles=roles)
-        self.project_id = project_id
         self.client_id = client_id
         if overwrite or not hasattr(context._request_store, 'context'):
             self.update_store()
