@@ -73,10 +73,11 @@ class ControllerBaseTest(testing.TestBase):
                 db_name = "zaqar_test_pools_" + str(i)
 
                 # NOTE(dynarro): we need to create a unique uri.
-                uri = "%s/%s" % (uri, db_name)
+                new_uri = "%s/%s" % (uri, db_name)
                 options = {'database': db_name}
                 self.control.pools_controller.create(six.text_type(i),
-                                                     100, uri, options=options)
+                                                     100, new_uri,
+                                                     options=options)
             self.driver = self.driver_class(self.conf, cache, self.control)
             self.addCleanup(self.control.pools_controller.drop_all)
             self.addCleanup(self.control.catalogue_controller.drop_all)

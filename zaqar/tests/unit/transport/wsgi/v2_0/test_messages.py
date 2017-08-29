@@ -44,9 +44,9 @@ class TestMessagesMongoDB(base.V2Base):
             for i in range(4):
                 db_name = "zaqar_test_pools_" + str(i)
                 # NOTE(dynarro): we need to create a unique uri.
-                uri = "%s/%s" % (uri, db_name)
+                new_uri = "%s/%s" % (uri, db_name)
                 options = {'database': db_name}
-                doc = {'weight': 100, 'uri': uri, 'options': options}
+                doc = {'weight': 100, 'uri': new_uri, 'options': options}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
                                   body=jsonutils.dumps(doc))
                 self.assertEqual(falcon.HTTP_201, self.srmock.status)
