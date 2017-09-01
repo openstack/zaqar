@@ -417,6 +417,7 @@ queue_metadata:
 queues:
   type: list
   in: body
+  required: true
   description: |
     A list of the queues.
 
