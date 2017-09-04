@@ -157,7 +157,10 @@ def scope_queue_name(queue=None, project=None):
     for that project is returned. If neither queue nor project are
     specified, a scope for "all global queues" is returned, which
     is to be interpreted as excluding queues scoped by project.
-
+    :param queue: name of queue to seek
+    :type queue: six.text_type
+    :param project: namespace
+    :type project: six.text_type
     :returns: '{project}/{queue}' if project and queue are given,
         '{project}/' if ONLY project is given, '/{queue}' if ONLY
         queue is given, and '/' if neither are given.
@@ -194,8 +197,6 @@ def scoped_query(queue, project):
     :type queue: six.text_type
     :param project: namespace
     :type project: six.text_type
-    :param key: query key to use
-    :type key: six.text_type
     :returns: query to issue
     :rtype: dict
     """
