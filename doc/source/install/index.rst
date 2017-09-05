@@ -25,7 +25,7 @@ Installation Guide.
 Ocata
 ~~~~~
 
-To install Glance, see the Ocata Image service install guide for each
+To install Zaqar, see the Ocata Messaging service install guide for each
 distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/ocata/install-ubuntu.html>`__
@@ -35,7 +35,7 @@ distribution:
 Newton
 ~~~~~~
 
-To install Glance, see the Newton Image service install guide for each
+To install Zaqar, see the Newton Messaging service install guide for each
 distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/newton/install-ubuntu.html>`__
