@@ -65,7 +65,8 @@ source $ZAQAR_DEVSTACK_DIR/plugin.sh
 set -o xtrace
 
 function wait_for_keystone {
-    if ! wait_for_service $SERVICE_TIMEOUT ${KEYSTONE_AUTH_URI}/v$IDENTITY_API_VERSION/; then
+    local auth_uri=http://${ZAQAR_SERVICE_HOST}/identity
+    if ! wait_for_service $SERVICE_TIMEOUT ${auth_uri}/v$IDENTITY_API_VERSION/; then
         die $LINENO "keystone did not start"
     fi
 }
@@ -82,8 +83,8 @@ fi
 # calls upgrade-zaqar for specific release
 upgrade_project zaqar $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
-start_zaqar
 wait_for_keystone
+start_zaqar
 
 
 # Don't succeed unless the services come up

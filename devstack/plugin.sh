@@ -228,7 +228,7 @@ function install_zaqarui {
     # Remove following two 'mv' commands when mentioned bug is fixed.
     mv $ZAQARUI_DIR/test-requirements.txt $ZAQARUI_DIR/_test-requirements.txt
     setup_develop $ZAQARUI_DIR
-    mv $ZAQARUI_DIR/_test-requirements.txt $ZAQARUI_DIR/test-requirements.txt   
+    mv $ZAQARUI_DIR/_test-requirements.txt $ZAQARUI_DIR/test-requirements.txt
     cp -a $ZAQARUI_DIR/zaqar_ui/enabled/* $HORIZON_DIR/openstack_dashboard/local/enabled/
     if [ -d $ZAQARUI_DIR/zaqar-ui/locale ]; then
         (cd $ZAQARUI_DIR/zaqar-ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
@@ -251,7 +251,8 @@ function start_zaqar {
     run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
-    token=$(openstack token issue -c id -f value)
+    local auth_uri=http://${ZAQAR_SERVICE_HOST}/identity
+    token=$(openstack token issue -c id -f value --os-auth-url ${auth_uri})
     if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
