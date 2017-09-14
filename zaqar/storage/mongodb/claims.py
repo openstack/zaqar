@@ -166,8 +166,6 @@ class ClaimController(storage.Claim):
         # Get the maxClaimCount and deadLetterQueue from current queue's meta
         queue_meta = queue_ctrl.get(queue, project=project)
 
-        now = timeutils.utcnow_ts()
-
         # NOTE(kgriffs): Set the claim field for
         # the active message batch, while also
         # filtering out any messages that happened
