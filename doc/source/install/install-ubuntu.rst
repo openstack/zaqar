@@ -256,11 +256,11 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       # pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
       # pip install --upgrade pymongo gevent uwsgi
 
-#. Copy the Zaqar RBAC policy sample file to the directory ``etc/zaqar/``:
+#. Copy the Zaqar RBAC policy sample file to the directory ``/etc/zaqar/``:
 
    .. code-block:: console
 
-      # mkdir
+      # mkdir /etc/zaqar/
       # cp etc/policy.json.sample /etc/zaqar/policy.json
 
 #. Create log file:
