@@ -42,8 +42,22 @@ def _put_or_create_container(client, *args, **kwargs):
         client.put_object(*args, **kwargs)
     except swiftclient.ClientException as e:
         if e.http_status == 404:
-            client.put_container(args[0])
-            client.put_object(*args, **kwargs)
+            # Because of lazy creation, the container may be used by different
+            # clients and cause cache problem. Retrying object creation a few
+            # times should fix this.
+            for i in range(5):
+                client.put_container(args[0])
+                try:
+                    client.put_object(*args, **kwargs)
+                except swiftclient.ClientException as ex:
+                    if ex.http_status != 404:
+                        raise
+                else:
+                    break
+            else:
+                # If we got there, we ignored the 5th exception, so the
+                # exception context will be set.
+                raise
         else:
             raise
 
