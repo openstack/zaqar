@@ -133,11 +133,12 @@ def stat_message(message, now):
     msg_id = message['id']
     created = oid_ts(to_oid(msg_id))
     age = now - created
-
+    created_iso = datetime.datetime.utcfromtimestamp(created).strftime(
+        '%Y-%m-%dT%H:%M:%SZ')
     return {
         'id': msg_id,
         'age': int(age),
-        'created': timeutils.iso8601_from_timestamp(created),
+        'created': created_iso,
     }
 
 
