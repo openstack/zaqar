@@ -1,12 +1,13 @@
 ---
-  ZaqarBasic.create_queue:
+  version: 2
+  title: Task used by Zaqar CI job gate-rally-dsvm-zaqar-zaqar-ubuntu-xenial-nv
+  subtasks:
     -
-      args:
-        name_length: 10
+      title: Zaqar create queue concurrency test
+      scenario:
+        ZaqarBasic.create_queue:
+          name_length: 10
       runner:
-        type: "rps"
-        times: 1000
-        rps: 50
-      sla:
-        failure_rate:
-          max: 0
+        rps:
+          times: 900
+          rps: 50
