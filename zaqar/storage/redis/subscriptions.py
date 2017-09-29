@@ -33,9 +33,9 @@ SUBSCRIPTION_IDS_SUFFIX = 'subscriptions'
 
 
 class SubscriptionController(base.Subscription):
-    """Implements subscription resource operations using MongoDB.
+    """Implements subscription resource operations using Redis.
 
-    Subscriptions are unique by project + queue/topic + subscriber.
+    Subscriptions are unique by project + queue + subscriber.
 
     Schema:
       's': source :: six.text_type

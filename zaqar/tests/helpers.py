@@ -236,7 +236,7 @@ def requires_redis(test_case):
 def requires_swift(test_case):
     """Decorator to flag a test case as being dependent on Swift.
 
-    Redis-specific tests will be skipped unless the ZAQAR_TEST_SWIFT
+    Swift-specific tests will be skipped unless the ZAQAR_TEST_SWIFT
     environment variable is set. If the variable is set, the tests will
     assume that Swift is accessible and configured properly.
     """
