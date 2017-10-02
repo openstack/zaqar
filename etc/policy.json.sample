@@ -1,15 +1,6 @@
 {
     "default": "rule:admin_or_owner",
 
-    "queues:get_all": "",
-    "queues:create": "",
-    "queues:get": "",
-    "queues:delete": "",
-    "queues:update": "",
-    "queues:stats": "",
-    "queues:share": "",
-    "queues:purge": "",
-
     "messages:get_all": "",
     "messages:create": "",
     "messages:get": "",

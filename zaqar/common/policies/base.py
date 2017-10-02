@@ -14,6 +14,7 @@ from oslo_policy import policy
 
 ROLE_ADMIN = 'role:admin'
 RULE_ADMIN_OR_OWNER = 'is_admin:True or project_id:%(project_id)s'
+UNPROTECTED = ''
 
 rules = [
     policy.RuleDefault(
