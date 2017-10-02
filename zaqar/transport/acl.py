@@ -18,6 +18,8 @@ import functools
 
 from oslo_policy import policy
 
+from zaqar.common import policies
+
 ENFORCER = None
 
 
@@ -25,6 +27,11 @@ def setup_policy(conf):
     global ENFORCER
 
     ENFORCER = policy.Enforcer(conf)
+    register_rules(ENFORCER)
+
+
+def register_rules(enforcer):
+    enforcer.register_defaults(policies.list_rules())
 
 
 def enforce(rule):
