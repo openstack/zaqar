@@ -83,7 +83,7 @@ class WebhookTask(object):
         # Post-Backoff Phase
         for maximum_delay_retries in range(
                 0, retry_policy.get('maximum_delay_retries',
-                                    consts.MAXIMUM_DELA_RETRIES)):
+                                    consts.MAXIMUM_DELAY_RETRIES)):
             LOG.debug('Retry with maximum delay, count: %s',
                       maximum_delay_retries)
             time.sleep(retry_policy.get('maximum_delay', consts.MAXIMUM_DELAY))
