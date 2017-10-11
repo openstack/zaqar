@@ -12,12 +12,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from oslo_utils import timeutils
 import sqlalchemy as sa
 
 metadata = sa.MetaData()
-
-now = timeutils.utcnow
 
 Queues = sa.Table('Queues', metadata,
                   sa.Column('id', sa.INTEGER, primary_key=True),
