@@ -19,6 +19,7 @@ import ddt
 import mock
 
 from oslo_utils import uuidutils
+import zaqar
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils
 
@@ -92,3 +93,15 @@ class TestMessagingProtocol(base.TestBase):
         self.protocol.onMessage(req, in_binary)
         resp = loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
+
+    @mock.patch.object(zaqar.transport.websocket.factory, 'ProtocolFactory')
+    def test_ipv6_escaped(self, mock_pf):
+        delattr(self.transport, '_lazy_factory')
+        self.transport.factory()
+        self.assertEqual('ws://127.0.0.1:9000', mock_pf.mock_calls[0][1][0])
+
+        mock_pf.reset_mock()
+        with mock.patch.object(self.transport._ws_conf, 'bind', "1::4"):
+            delattr(self.transport, '_lazy_factory')
+            self.transport.factory()
+            self.assertEqual('ws://[1::4]:9000', mock_pf.mock_calls[0][1][0])

@@ -17,6 +17,7 @@ import socket
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import netutils
 
 try:
     import asyncio
@@ -59,6 +60,14 @@ def _config_options():
     return [(_WS_GROUP, _WS_OPTIONS)]
 
 
+# TODO(derekh): use escape_ipv6 from oslo.utils once available
+def _escape_ipv6(address):
+    """Escape an IP address in square brackets if IPv6"""
+    if netutils.is_valid_ipv6(address):
+        return "[%s]" % address
+    return address
+
+
 class Driver(base.DriverBase):
 
     def __init__(self, conf, api, cache):
@@ -78,7 +87,8 @@ class Driver(base.DriverBase):
 
     @decorators.lazy_property(write=False)
     def factory(self):
-        uri = 'ws://' + self._ws_conf.bind + ':' + str(self._ws_conf.port)
+        uri = 'ws://' + _escape_ipv6(self._ws_conf.bind) + ':' + \
+              str(self._ws_conf.port)
         return factory.ProtocolFactory(
             uri,
             handler=self._api,
