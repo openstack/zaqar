@@ -27,6 +27,7 @@ from zaqar.storage.redis import options
 REDIS_DEFAULT_PORT = 6379
 SENTINEL_DEFAULT_PORT = 26379
 DEFAULT_SOCKET_TIMEOUT = 0.1
+DEFAULT_DBID = 0
 
 STRATEGY_TCP = 1
 STRATEGY_UNIX = 2
@@ -59,6 +60,7 @@ class ConnectionURI(object):
         self.strategy = None
         self.socket_timeout = float(query_params.get('socket_timeout',
                                                      DEFAULT_SOCKET_TIMEOUT))
+        self.dbid = int(query_params.get('dbid', DEFAULT_DBID))
 
         # TCP
         self.port = None
@@ -285,6 +287,7 @@ def _get_redis_client(driver):
         return redis.StrictRedis(
             host=connection_uri.hostname,
             port=connection_uri.port,
+            db=connection_uri.dbid,
             socket_timeout=connection_uri.socket_timeout)
     else:
         return redis.StrictRedis(
