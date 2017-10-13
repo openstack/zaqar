@@ -150,10 +150,10 @@ Response Example
    :language: javascript
 
 
-Get A Set Of Messages By Id
-===========================
+Get A Set Of Messages
+=====================
 
-.. rest_method:: GET /v2/queues/{queue_name}/messages?ids={ids}
+.. rest_method:: GET /v2/queues/{queue_name}/messages
 
 Gets a specified set of messages from the specified queue.
 
@@ -208,16 +208,20 @@ Response Example
    :language: javascript
 
 
-Delete A Set Of Messages By Id
-==============================
+Delete A Set Of Messages
+========================
 
-.. rest_method:: DELETE /v2/queues/{queue_name}/messages?ids={ids}
+.. rest_method:: DELETE /v2/queues/{queue_name}/messages
 
 Provides a bulk delete for messages.
 
 This operation immediately deletes the specified messages. If any of the
 message IDs are malformed or non-existent, they are ignored. The remaining
-valid messages IDs are deleted.
+valid messages IDs are deleted. Please note that users should input either
+``ids`` or ``pop`` parameter, otherwise this API will delete nothing. If
+``pop`` is provided, the value must be at least 1 and may not be greater than
+``max_messages_per_claim_or_pop`` in conf. If ``ids`` is provided, it should
+contain at least one id and not greater than ``max_messages_per_page`` in conf.
 
 
 
