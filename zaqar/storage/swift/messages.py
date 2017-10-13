@@ -215,31 +215,15 @@ class MessageController(storage.Message):
         contents = jsonutils.dumps(
             {'body': msg.get('body', {}), 'claim_id': None,
              'ttl': msg['ttl'], 'claim_count': 0})
-        try:
-            self._client.put_object(
-                utils._message_container(queue, project),
-                slug,
-                contents=contents,
-                content_type='application/json',
-                headers={
-                    'x-object-meta-clientid': str(client_uuid),
-                    'x-delete-after': msg['ttl']})
-        except swiftclient.ClientException as exc:
-            # NOTE(flwang): To avoid check the queue existence each time when
-            # posting messages, let's catch the 404 and create the 'queue'
-            # on demand.
-            if exc.http_status == 404:
-                self._client.put_container(utils._message_container(queue,
-                                                                    project))
-                self._client.put_object(
-                    utils._message_container(queue, project),
-                    slug,
-                    contents=contents,
-                    content_type='application/json',
-                    headers={
-                        'x-object-meta-clientid': str(client_uuid),
-                        'x-delete-after': msg['ttl']})
-
+        utils._put_or_create_container(
+            self._client,
+            utils._message_container(queue, project),
+            slug,
+            contents=contents,
+            content_type='application/json',
+            headers={
+                'x-object-meta-clientid': str(client_uuid),
+                'x-delete-after': msg['ttl']})
         return slug
 
     def delete(self, queue, message_id, project=None, claim=None):
