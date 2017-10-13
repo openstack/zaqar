@@ -21,7 +21,9 @@ from oslo_config import cfg
 from oslo_utils import timeutils
 import six
 
+from zaqar.common import consts
 from zaqar.i18n import _
+
 
 MIN_MESSAGE_TTL = 60
 MIN_CLAIM_TTL = 60
@@ -249,11 +251,11 @@ class Validator(object):
                     if retry_value and not isinstance(retry_value, str):
                         msg = _('retry_backoff_function must be a string.')
                         raise ValidationFailed(msg)
-                    # TODO(wanghao): Now we only support linear function.
-                    # This will be removed after we support more functions.
-                    if retry_value and retry_value != 'linear':
-                        msg = _('retry_backoff_function only supports linear '
-                                'now.')
+                    # Now we support linear, arithmetic, exponential
+                    # and geometric retry backoff function.
+                    fun = {'linear', 'arithmetic', 'exponential', 'geometric'}
+                    if retry_value and retry_value not in fun:
+                        msg = _('invalid retry_backoff_function.')
                         raise ValidationFailed(msg)
                 elif key == 'ignore_subscription_override':
                     if retry_value and not isinstance(retry_value, bool):
@@ -264,6 +266,16 @@ class Validator(object):
                     if retry_value and not isinstance(retry_value, int):
                         msg = _('Retry policy: %s must be a integer.') % key
                         raise ValidationFailed(msg)
+            min_delay = retry_policy.get('minimum_delay',
+                                         consts.MINIMUM_DELAY)
+            max_delay = retry_policy.get('maximum_delay',
+                                         consts.MAXIMUM_DELAY)
+            if max_delay < min_delay:
+                msg = _('minimum_delay must less than maximum_delay.')
+                raise ValidationFailed(msg)
+            if ((max_delay - min_delay) < 2*consts.LINEAR_INTERVAL):
+                msg = _('invalid minimum_delay and maximum_delay.')
+                raise ValidationFailed(msg)
 
     def queue_patching(self, request, changes):
         washed_changes = []
