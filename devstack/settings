@@ -14,6 +14,7 @@ ZAQAR_AUTH_CACHE_DIR=${ZAQAR_AUTH_CACHE_DIR:-/var/cache/zaqar}
 
 # Support potential entry-points console scripts
 ZAQAR_BIN_DIR=$(get_python_exec_prefix)
+ZAQAR_UWSGI_APP=$ZAQAR_BIN_DIR/zaqar-wsgi
 
 # Set up database backend
 ZAQAR_BACKEND=${ZAQAR_BACKEND:-mongodb}

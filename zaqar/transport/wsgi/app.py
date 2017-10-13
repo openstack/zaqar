@@ -42,9 +42,14 @@ conf(project='zaqar', prog='zaqar-queues', args=[])
 log.setup(conf, 'zaqar')
 
 gmr.TextGuruMeditation.setup_autorun(version, conf=conf)
-
 boot = bootstrap.Bootstrap(conf)
 conf.drivers.transport = 'wsgi'
 application = boot.transport.app
 # Keep the old name for compatibility
 app = application
+
+
+def build_wsgi():
+    """Another way used by setup.cfg to initialize WSGI app"""
+    # TODO(wxy): Move the outside code into this function in T.
+    return app

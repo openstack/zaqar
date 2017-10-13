@@ -153,19 +153,7 @@ function configure_zaqar {
 
     pip_install uwsgi
 
-    iniset $ZAQAR_UWSGI_CONF uwsgi master true
-    iniset $ZAQAR_UWSGI_CONF uwsgi die-on-term true
-    iniset $ZAQAR_UWSGI_CONF uwsgi exit-on-reload true
-    iniset $ZAQAR_UWSGI_CONF uwsgi http $ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT
-    iniset $ZAQAR_UWSGI_CONF uwsgi processes $API_WORKERS
-    iniset $ZAQAR_UWSGI_CONF uwsgi enable_threads true
-    iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
-    iniset $ZAQAR_UWSGI_CONF uwsgi thunder-lock true
-    iniset $ZAQAR_UWSGI_CONF uwsgi buffer-size 65535
-    iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
-    iniset $ZAQAR_UWSGI_CONF uwsgi master true
-    iniset $ZAQAR_UWSGI_CONF uwsgi add-header "Connection: close"
-    iniset $ZAQAR_UWSGI_CONF uwsgi lazy-apps true
+    write_uwsgi_config "$ZAQAR_UWSGI_CONF" "$ZAQAR_UWSGI_APP" "/messaging"
 
     cleanup_zaqar
 }
@@ -258,8 +246,12 @@ function start_zaqar {
     echo "Waiting for Zaqar to start..."
     local www_authenticate_uri=http://${ZAQAR_SERVICE_HOST}/identity
     token=$(openstack token issue -c id -f value --os-auth-url ${www_authenticate_uri})
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
-        die $LINENO "Zaqar did not start"
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging/v2/ping; do sleep 1; done"; then
+        # TODO(wxy): This check could be removed after the migration to Apache
+        # proxy.
+        if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
+            die $LINENO "Zaqar did not start"
+        fi
     fi
 }
 
@@ -268,9 +260,9 @@ function stop_zaqar {
     local serv
     # Kill the zaqar screen windows
     for serv in zaqar-wsgi zaqar-websocket; do
-        screen -S $SCREEN_NAME -p $serv -X kill
+        stop_process $serv
     done
-    uwsgi --stop $ZAQAR_UWSGI_MASTER_PIDFILE
+    remove_uwsgi_config "$ZAQAR_UWSGI_CONF" "$ZAQAR_UWSGI_APP"
 }
 
 function create_zaqar_accounts {
@@ -282,9 +274,9 @@ function create_zaqar_accounts {
             "messaging" "Zaqar Service")
         get_or_create_endpoint $zaqar_service \
             "$REGION_NAME" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT"
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging" \
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging" \
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging"
 
         local zaqar_ws_service=$(get_or_create_service "zaqar-websocket" \
             "messaging-websocket" "Zaqar Websocket Service")
