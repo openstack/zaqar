@@ -19,6 +19,7 @@ from zaqar.common.policies import health
 from zaqar.common.policies import messages
 from zaqar.common.policies import pools
 from zaqar.common.policies import queues
+from zaqar.common.policies import subscription
 
 
 def list_rules():
@@ -29,5 +30,6 @@ def list_rules():
         health.list_rules(),
         messages.list_rules(),
         pools.list_rules(),
-        queues.list_rules()
+        queues.list_rules(),
+        subscription.list_rules()
     )
