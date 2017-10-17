@@ -15,7 +15,9 @@ import itertools
 from zaqar.common.policies import base
 from zaqar.common.policies import claims
 from zaqar.common.policies import flavors
+from zaqar.common.policies import health
 from zaqar.common.policies import messages
+from zaqar.common.policies import pools
 from zaqar.common.policies import queues
 
 
@@ -24,6 +26,8 @@ def list_rules():
         base.list_rules(),
         claims.list_rules(),
         flavors.list_rules(),
+        health.list_rules(),
         messages.list_rules(),
+        pools.list_rules(),
         queues.list_rules()
     )
