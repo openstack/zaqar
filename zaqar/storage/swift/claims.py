@@ -103,8 +103,12 @@ class ClaimController(storage.Claim):
         dlq = True if ('_max_claim_count' in queue_meta and
                        '_dead_letter_queue' in queue_meta) else False
 
+        include_delayed = False if queue_meta.get('_default_message_delay',
+                                                  0) else True
+
         messages, marker = message_ctrl._list(queue, project, limit=limit,
-                                              include_claimed=False)
+                                              include_claimed=False,
+                                              include_delayed=include_delayed)
 
         claimed = []
         for msg in messages:
