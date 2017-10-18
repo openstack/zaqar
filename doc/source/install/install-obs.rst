@@ -268,11 +268,11 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       # pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
       # pip install --upgrade pymongo gevent uwsgi
 
-#. Copy the Zaqar RBAC policy sample file to the directory ``etc/zaqar/``:
+#. Copy the Zaqar RBAC policy sample file to the directory ``/etc/zaqar/``:
 
    .. code-block:: console
 
-      # mkdir
+      # mkdir /etc/zaqar
       # cp etc/policy.json.sample /etc/zaqar/policy.json
 
 #. Create log file:
@@ -286,7 +286,11 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
    Replace ``ZAQARUSER`` with the name of the user in system under which the
    Messaging service will run.
 
-#. Create ``/srv/zaqar`` folder to store ``uWSGI`` configuration files.
+#. Create ``/srv/zaqar`` folder to store ``uWSGI`` configuration files:
+
+   .. code-block:: console
+
+      # mkdir /srv/zaqar
 
 #. Create ``/srv/zaqar/zaqar_uwsgi.py`` with the following content:
 
@@ -315,6 +319,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       gevent-monkey-patch = true
       listen = 1024
       enable-threads = true
+      chdir = /srv/zaqar
       module = zaqar_uwsgi:app
       workers = 4
       harakiri = 60
@@ -330,7 +335,17 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       security and performance requirements including load balancing. See the
       official `uWSGI configuration reference`_.
 
-#. Create Messaging service's configuration file ``/etc/zaqar.conf`` with the
+#. Create pid file:
+
+   .. code-block:: console
+
+      # touch /var/run/zaqar.pid
+      # chown ZAQARUSER:ZAQARUSER /var/run/zaqar.pid
+
+   Replace ``ZAQARUSER`` with the name of the user in system under which the
+   Messaging service will run.
+
+#. Create Messaging service's configuration file ``/etc/zaqar/zaqar.conf`` with the
    following content:
 
    .. code-block:: ini
@@ -461,7 +476,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
    Edit any options as needed, especially the options with capitalized values.
 
 #. Create a service file for Messaging service
-   ``/etc/systemd/system/zaqaruwsgi.service``:
+   ``/etc/systemd/system/zaqar-uwsgi.service``:
 
    .. code-block:: ini
 
@@ -499,13 +514,13 @@ replica-set as Messaging's pool.
 
    .. code-block:: console
 
-      # systemctl start zaqar.uwsgi.service
+      # systemctl start zaqar-uwsgi.service
 
 #. Make Messaging service start automatically after reboot on the web server:
 
    .. code-block:: console
 
-      # systemctl enable zaqar.uwsgi.service
+      # systemctl enable zaqar-uwsgi.service
 
 #. Configure pool:
 

@@ -274,7 +274,11 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
    Replace ``ZAQARUSER`` with the name of the user in system under which the
    Messaging service will run.
 
-#. Create ``/srv/zaqar`` folder to store ``uWSGI`` configuration files.
+#. Create ``/srv/zaqar`` folder to store ``uWSGI`` configuration files:
+
+   .. code-block:: console
+
+      # mkdir /srv/zaqar
 
 #. Create ``/srv/zaqar/zaqar_uwsgi.py`` with the following content:
 
@@ -303,6 +307,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       gevent-monkey-patch = true
       listen = 1024
       enable-threads = true
+      chdir = /srv/zaqar
       module = zaqar_uwsgi:app
       workers = 4
       harakiri = 60
@@ -318,7 +323,17 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       security and performance requirements including load balancing. See the
       official `uWSGI configuration reference`_.
 
-#. Create Messaging service's configuration file ``/etc/zaqar.conf`` with the
+#. Create pid file:
+
+   .. code-block:: console
+
+      # touch /var/run/zaqar.pid
+      # chown ZAQARUSER:ZAQARUSER /var/run/zaqar.pid
+
+   Replace ``ZAQARUSER`` with the name of the user in system under which the
+   Messaging service will run.
+
+#. Create Messaging service's configuration file ``/etc/zaqar/zaqar.conf`` with the
    following content:
 
    .. code-block:: ini
@@ -356,7 +371,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       auth_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:5000
       # Complete admin Identity API endpoint (HTTPS protocol is more preferable
       # than HTTP).
-      auth_url = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:35357
+      identity_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:35357
       # Token cache time in seconds.
       token_cache_time = TOKEN_CACHE_TIME
       memcached_servers = 127.0.0.1:11211
