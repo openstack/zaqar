@@ -22,7 +22,8 @@ import msgpack
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 
-MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e', b'c.c')
+MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e',
+                     b'c.c', b'd')
 SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p', b'c')
 
 
@@ -49,6 +50,7 @@ class MessageEnvelope(object):
         'claim_id',
         'claim_expires',
         'claim_count',
+        'delay_expires',
     ]
 
     def __init__(self, **kwargs):
@@ -64,6 +66,7 @@ class MessageEnvelope(object):
             _validate_uuid4(self.claim_id)
         self.claim_expires = kwargs['claim_expires']
         self.claim_count = kwargs.get('claim_count', 0)
+        self.delay_expires = kwargs.get('delay_expires', 0)
 
     @staticmethod
     def from_hmap(hmap):
@@ -274,6 +277,7 @@ def _hmap_to_msgenv_kwargs(hmap):
         'claim_id': claim_id,
         'claim_expires': int(hmap[b'c.e']),
         'claim_count': int(hmap[b'c.c']),
+        'delay_expires': int(hmap.get(b'd', 0)),
     }
 
 
@@ -287,6 +291,7 @@ def _msgenv_to_hmap(msg):
         'c': msg.claim_id or '',
         'c.e': msg.claim_expires,
         'c.c': msg.claim_count,
+        'd': msg.delay_expires,
     }
 
 

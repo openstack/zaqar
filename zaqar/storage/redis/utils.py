@@ -219,6 +219,12 @@ def msg_claimed_filter(message, now):
     return message.claim_id and (now < message.claim_expires)
 
 
+def msg_delayed_filter(message, now):
+    """Return True IFF the message is currently delayed."""
+
+    return now < message.delay_expires
+
+
 def msg_echo_filter(message, client_uuid):
     """Return True IFF the specified client posted the message."""
 
