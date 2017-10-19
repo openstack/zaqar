@@ -1,5 +1,6 @@
 {
     "_max_messages_post_size": 262144,
     "_default_message_ttl": 3600,
+    "_default_message_delay": 30,
     "description": "Queue for international traffic billing."
 }

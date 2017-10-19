@@ -103,6 +103,13 @@ include_claimed:
    description:
      Indicate if the messages list should include the claimed messages.
 
+include_delayed:
+   type: boolean
+   in: query
+   required: false
+   description:
+     Indicate if the messages list should include the delayed messages.
+
 limit:
   type: integer
   in: query
@@ -154,6 +161,17 @@ _dead_letter_queue_messages_ttl:
     The new TTL setting for messages when moved to dead letter queue. If it's
     not set, current TTL will be kept. It is one of the ``reserved attributes``
     of Zaqar queues.
+
+_default_message_delay:
+  type: string
+  in: body
+  required: False
+  description: |
+    The delay of messages defined for a queue. When the messages send to
+    the queue, it will be delayed for some times and means it can not be
+    claimed until the delay expired. And user can define a queue's level
+    value for delay, also can define a message's level. The latter has
+    a higher priority.
 
 _default_message_ttl:
   type: integer

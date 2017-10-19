@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Support for delayed queues is added for MongoDB, Redis and Swift. With
+    this feature, if the queue is a delayed queue, its message will be
+    delayed some time to be claimed. New reseved metadata key of queue
+    is added: _default_message_delay.
