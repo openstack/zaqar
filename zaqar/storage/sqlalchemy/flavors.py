@@ -89,7 +89,7 @@ class FlavorsController(base.FlavorsBase):
             # method with introduction of upsert
             self.update(name, pool_group=pool_group,
                         project=project,
-                        capabilities=cap)
+                        capabilities=capabilities)
 
     @utils.raises_conn_error
     def exists(self, name, project=None):
