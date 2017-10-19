@@ -1054,6 +1054,90 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertEqual(9999, expected_msg["ttl"])
         self.assertEqual({"key": "value"}, expected_msg["body"])
 
+    def test_delay_queue(self):
+        meta = {'ttl': 1, 'grace': 0}
+        # Set default message delay for queue.
+        metadata = {'_default_message_delay': 2}
+        self.queue_controller.set_metadata(self.queue_name,
+                                           metadata,
+                                           project=self.project)
+        # Scenarios 1: Normal message sent to delayed queue
+        new_messages = [{'ttl': 3600, 'body': {'key': 'value'}}]
+        queue_meta = self.queue_controller.get_metadata(self.queue_name,
+                                                        project=self.project)
+        delay = queue_meta.get('_default_message_delay', 0)
+        for msg in new_messages:
+            if delay and 'delay' not in new_messages:
+                msg['delay'] = delay
+        ids = self.message_controller.post(self.queue_name, new_messages,
+                                           client_uuid=str(uuid.uuid1()),
+                                           project=self.project)
+        interaction = self.message_controller.list(self.queue_name,
+                                                   project=self.project,
+                                                   include_delayed=True)
+        delay_messages = list(next(interaction))
+        self.assertEqual(1, len(list(delay_messages)))
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNone(claim_id)
+        self.assertEqual(0, len(list(messages)))
+        time.sleep(2)
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNotNone(claim_id)
+        self.assertEqual(1, len(list(messages)))
+        time.sleep(1)
+        self.message_controller.delete(self.queue_name, ids[0],
+                                       project=self.project)
+
+        # Scenarios 2: Delay message sent to delayed queue
+        new_messages = [{'ttl': 3600, 'delay': 1,
+                         'body': {'key': 'value'}}]
+
+        ids = self.message_controller.post(self.queue_name, new_messages,
+                                           client_uuid=str(uuid.uuid1()),
+                                           project=self.project)
+        interaction = self.message_controller.list(self.queue_name,
+                                                   project=self.project,
+                                                   include_delayed=True)
+        delay_messages = list(next(interaction))
+        self.assertEqual(1, len(list(delay_messages)))
+
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNone(claim_id)
+        self.assertEqual(0, len(list(messages)))
+        time.sleep(1)
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNotNone(claim_id)
+        self.assertEqual(1, len(list(messages)))
+        time.sleep(1)
+        self.message_controller.delete(self.queue_name, ids[0],
+                                       project=self.project)
+
+        # Scenarios 3: Message sent to normal queue
+        new_messages = [{'ttl': 3600, 'body': {'key': 'value'}}]
+        self.queue_controller.set_metadata(self.queue_name,
+                                           {},
+                                           project=self.project)
+        ids = self.message_controller.post(self.queue_name, new_messages,
+                                           client_uuid=str(uuid.uuid1()),
+                                           project=self.project)
+        interaction = self.message_controller.list(self.queue_name,
+                                                   project=self.project,
+                                                   include_delayed=True)
+        delay_messages = list(next(interaction))
+        self.assertEqual(1, len(list(delay_messages)))
+        claim_id, messages = self.controller.create(self.queue_name, meta,
+                                                    project=self.project)
+        self.assertIsNotNone(claim_id)
+        self.assertEqual(1, len(list(messages)))
+        time.sleep(1)
+        self.message_controller.delete(self.queue_name, ids[0],
+                                       project=self.project)
+
 
 @ddt.ddt
 class SubscriptionControllerTest(ControllerBaseTest):

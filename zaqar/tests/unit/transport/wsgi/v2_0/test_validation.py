@@ -143,6 +143,12 @@ class TestValidation(base.V2Base):
                           body='{"_default_message_ttl": 1209601}')
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+        # Delay TTL over max
+        self.simulate_put(queue_1,
+                          self.project_id,
+                          body='{"_default_message_delay": 901}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
         # Test _max_messages_post_size
         # Size normal case
         queue_2 = self.url_prefix + '/queues/queue2'
