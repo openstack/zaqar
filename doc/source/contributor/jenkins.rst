@@ -26,7 +26,7 @@ automatically and comments are put on the reviews automatically with the
 results.
 
 You can also get a view of the jobs that are currently running from the Zuul
-status dashboard, http://status.openstack.org/zuul/.
+status dashboard, http://zuulv3.openstack.org/.
 
 .. _Jenkins: http://jenkins-ci.org
 .. _Launchpad: http://launchpad.net
