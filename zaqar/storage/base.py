@@ -414,7 +414,7 @@ class Message(ControllerBase):
     def list(self, queue, project=None, marker=None,
              limit=DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None,
-             include_claimed=False):
+             include_claimed=False, include_delayed=False):
         """Base method for listing messages.
 
         :param queue: Name of the queue to get the
@@ -428,6 +428,8 @@ class Message(ControllerBase):
         :param client_uuid: A UUID object. Required when echo=False.
         :param include_claimed: omit claimed messages from listing?
         :type include_claimed: bool
+        :param include_delayed: omit delayed messages from listing
+        :type include_delayed: bool
 
         :returns: An iterator giving a sequence of messages and
             the marker of the next page.

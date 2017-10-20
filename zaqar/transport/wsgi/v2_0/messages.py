@@ -92,8 +92,26 @@ class CollectionResource(object):
         req.get_param_as_int('limit', store=kwargs)
         req.get_param_as_bool('echo', store=kwargs)
         req.get_param_as_bool('include_claimed', store=kwargs)
+        req.get_param_as_bool('include_delayed', store=kwargs)
 
         try:
+            queue_meta = {}
+            try:
+                # NOTE(cdyangzhenyu): In order to determine whether the
+                # queue has a delay attribute, the metadata of the queue
+                # is obtained here. This may have a little performance impact.
+                # So maybe a refactor is needed in the future.
+                queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                                 project_id)
+            except storage_errors.DoesNotExist as ex:
+                LOG.exception(ex)
+            queue_delay = queue_meta.get('_default_message_delay')
+            if not queue_delay:
+                # NOTE(cdyangzhenyu): If the queue without the metadata
+                # attribute _default_message_delay, we don't filter
+                # for delay messages.
+                kwargs['include_delayed'] = True
+
             self._validate.message_listing(**kwargs)
             results = self._message_controller.list(
                 queue_name,
@@ -168,6 +186,7 @@ class CollectionResource(object):
 
             queue_max_msg_size = queue_meta.get('_max_messages_post_size')
             queue_default_ttl = queue_meta.get('_default_message_ttl')
+            queue_delay = queue_meta.get('_default_message_delay')
 
             if queue_default_ttl:
                 message_post_spec = (('ttl', int, queue_default_ttl),
@@ -175,6 +194,8 @@ class CollectionResource(object):
             else:
                 message_post_spec = (('ttl', int, self._default_message_ttl),
                                      ('body', '*', None),)
+            if queue_delay:
+                message_post_spec += (('delay', int, queue_delay),)
             # Place JSON size restriction before parsing
             self._validate.message_length(req.content_length,
                                           max_msg_post_size=queue_max_msg_size)

@@ -172,6 +172,10 @@ def get_headers(req):
         kwargs['include_claimed'] = strutils.bool_from_string(
             req._body.get('include_claimed'))
 
+    if req._body.get('include_delayed') is not None:
+        kwargs['include_delayed'] = strutils.bool_from_string(
+            req._body.get('include_delayed'))
+
     if req._body.get('ttl') is not None:
         kwargs['ttl'] = int(req._body.get('ttl'))
 

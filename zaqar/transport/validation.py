@@ -28,6 +28,7 @@ from zaqar.i18n import _
 MIN_MESSAGE_TTL = 60
 MIN_CLAIM_TTL = 60
 MIN_CLAIM_GRACE = 60
+MIN_DELAY_TTL = 0
 MIN_SUBSCRIPTION_TTL = 60
 _PURGBLE_RESOURCE_TYPES = {'messages', 'subscriptions'}
 
@@ -67,6 +68,9 @@ _TRANSPORT_LIMITS_OPTIONS = (
                deprecated_name='message_ttl_max',
                deprecated_group='limits:transport',
                help='Maximum amount of time a message will be available.'),
+
+    cfg.IntOpt('max_message_delay', default=900,
+               help='Maximum delay seconds for messages can be claimed.'),
 
     cfg.IntOpt('max_claim_ttl', default=43200,
                deprecated_name='claim_ttl_max',
@@ -389,6 +393,21 @@ class Validator(object):
             raise ValidationFailed(msg, self._limits_conf.max_message_ttl,
                                    MIN_MESSAGE_TTL)
 
+        queue_delay = queue_metadata.get('_default_message_delay',
+                                         None)
+        if queue_delay and not isinstance(queue_delay, int):
+            msg = _(u'_default_message_delay must be integer.')
+            raise ValidationFailed(msg)
+
+        if queue_delay is not None:
+            if not (MIN_DELAY_TTL <= queue_delay <=
+                    self._limits_conf.max_message_delay):
+                msg = _(u'The TTL can not exceed {0} seconds, and must '
+                        'be at least {1} seconds long.')
+                raise ValidationFailed(
+                    msg, self._limits_conf.max_message_delay,
+                    MIN_DELAY_TTL)
+
         self._validate_retry_policy(queue_metadata)
 
     def queue_purging(self, document):
@@ -465,6 +484,17 @@ class Validator(object):
 
             raise ValidationFailed(
                 msg, self._limits_conf.max_message_ttl, MIN_MESSAGE_TTL)
+
+        delay = message.get('delay', 0)
+
+        if not (MIN_DELAY_TTL <= delay <=
+                self._limits_conf.max_message_delay):
+            msg = _(u'The Delay TTL for a message may not exceed {0} seconds,'
+                    'and must be at least {1} seconds long.')
+
+            raise ValidationFailed(
+                msg, self._limits_conf.max_message_delay,
+                MIN_DELAY_TTL)
 
     def message_listing(self, limit=None, **kwargs):
         """Restrictions involving a list of messages.

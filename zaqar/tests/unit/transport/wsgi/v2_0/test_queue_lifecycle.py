@@ -109,6 +109,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         ref_doc = jsonutils.loads(doc)
         ref_doc['_default_message_ttl'] = 3600
         ref_doc['_max_messages_post_size'] = 262144
+        ref_doc['_default_message_delay'] = 0
         self.assertEqual(ref_doc, result_doc)
 
         # Stats empty queue
@@ -186,6 +187,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                          result_doc.get('_max_messages_post_size'))
         self.assertEqual(3600,
                          result_doc.get('_default_message_ttl'))
+        self.assertEqual(0,
+                         result_doc.get('_default_message_delay'))
 
     @ddt.data('{', '[]', '.', '  ')
     def test_bad_metadata(self, document):
@@ -243,6 +246,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         ref_doc = jsonutils.loads(doc)
         ref_doc['_default_message_ttl'] = 3600
         ref_doc['_max_messages_post_size'] = 262144
+        ref_doc['_default_message_delay'] = 0
         self.assertEqual(ref_doc, result_doc)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
@@ -296,7 +300,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result_doc = jsonutils.loads(result[0])
         self.assertEqual({'key1': 2, 'key2': 1,
                           '_default_message_ttl': 300,
-                          '_max_messages_post_size': 262144}, result_doc)
+                          '_max_messages_post_size': 262144,
+                          '_default_message_delay': 0}, result_doc)
 
         # remove metadata
         doc3 = '[{"op":"remove", "path": "/metadata/key1"}]'
@@ -317,7 +322,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                                    headers=headers)
         result_doc = jsonutils.loads(result[0])
         self.assertEqual({'key2': 1, '_default_message_ttl': 3600,
-                          '_max_messages_post_size': 262144}, result_doc)
+                          '_max_messages_post_size': 262144,
+                          '_default_message_delay': 0}, result_doc)
 
         # replace non-existent metadata
         doc4 = '[{"op":"replace", "path": "/metadata/key3", "value":2}]'
@@ -431,7 +437,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(queue['metadata'], result_doc)
         self.assertEqual({'node': 31, '_default_message_ttl': 3600,
-                          '_max_messages_post_size': 262144},  result_doc)
+                          '_max_messages_post_size': 262144,
+                          '_default_message_delay': 0},  result_doc)
 
         # List tail
         self.simulate_get(target, headers=header, query_string=params)

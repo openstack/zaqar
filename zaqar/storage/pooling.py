@@ -305,13 +305,15 @@ class MessageController(storage.Message):
 
     def list(self, queue, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,
-             echo=False, client_uuid=None, include_claimed=False):
+             echo=False, client_uuid=None, include_claimed=False,
+             include_delayed=False):
         control = self._get_controller(queue, project)
         if control:
             return control.list(queue, project=project,
                                 marker=marker, limit=limit,
                                 echo=echo, client_uuid=client_uuid,
-                                include_claimed=include_claimed)
+                                include_claimed=include_claimed,
+                                include_delayed=include_delayed)
         return iter([[]])
 
     def get(self, queue, message_id, project=None):

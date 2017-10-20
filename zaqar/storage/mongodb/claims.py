@@ -130,7 +130,9 @@ class ClaimController(storage.Claim):
         """
         msg_ctrl = self.driver.message_controller
         queue_ctrl = self.driver.queue_controller
-
+        # Get the maxClaimCount, deadLetterQueue and DelayTTL
+        # from current queue's meta
+        queue_meta = queue_ctrl.get(queue, project=project)
         ttl = metadata['ttl']
         grace = metadata['grace']
         oid = objectid.ObjectId()
@@ -150,11 +152,17 @@ class ClaimController(storage.Claim):
             'c': 0   # NOTE(flwang): A placeholder which will be updated later
         }
 
+        # NOTE(cdyangzhenyu): If the ``_default_message_delay`` is 0 means
+        # queue is not delayed queue, So we don't filter for delay messages.
+        include_delayed = False if queue_meta.get('_default_message_delay',
+                                                  0) else True
+
         # Get a list of active, not claimed nor expired
         # messages that could be claimed.
         msgs = msg_ctrl._active(queue, projection={'_id': 1, 'c': 1},
                                 project=project,
-                                limit=limit)
+                                limit=limit,
+                                include_delayed=include_delayed)
 
         messages = iter([])
         be_claimed = [(msg['_id'], msg['c'].get('c', 0)) for msg in msgs]
@@ -162,9 +170,6 @@ class ClaimController(storage.Claim):
 
         if len(ids) == 0:
             return None, messages
-
-        # Get the maxClaimCount and deadLetterQueue from current queue's meta
-        queue_meta = queue_ctrl.get(queue, project=project)
 
         # NOTE(kgriffs): Set the claim field for
         # the active message batch, while also

@@ -135,6 +135,7 @@ class MessageController(storage.Message):
             claim            ->     c
             client uuid      ->     u
             transaction      ->    tx
+            delay            ->     d
     """
 
     def __init__(self, *args, **kwargs):
@@ -230,7 +231,8 @@ class MessageController(storage.Message):
 
     def _list(self, queue_name, project=None, marker=None,
               echo=False, client_uuid=None, projection=None,
-              include_claimed=False, sort=1, limit=None):
+              include_claimed=False, include_delayed=False,
+              sort=1, limit=None):
         """Message document listing helper.
 
         :param queue_name: Name of the queue to list
@@ -248,6 +250,8 @@ class MessageController(storage.Message):
             include or exclude
         :param include_claimed: (Default False) Whether to include
             claimed messages, not just active ones
+        :param include_delayed: (Default False) Whether to include
+            delayed messages, not just active ones
         :param sort: (Default 1) Sort order for the listing. Pass 1 for
             ascending (oldest message first), or -1 for descending (newest
             message first).
@@ -289,6 +293,14 @@ class MessageController(storage.Message):
             # Only include messages that are not part of
             # any claim, or are part of an expired claim.
             query['c.e'] = {'$lte': now}
+
+        if not include_delayed:
+            # NOTE(cdyangzhenyu): Only include messages that are not
+            # part of any delay, or are part of an expired delay. if
+            # the message has no attribute 'd', it will also be obtained.
+            # This is for compatibility with old data.
+            query['$or'] = [{'d': {'$lte': now}},
+                            {'d': {'$exists': False}}]
 
         # Construct the request
         cursor = collection.find(query,
@@ -338,12 +350,12 @@ class MessageController(storage.Message):
 
     def _active(self, queue_name, marker=None, echo=False,
                 client_uuid=None, projection=None, project=None,
-                limit=None):
+                limit=None, include_delayed=False):
 
         return self._list(queue_name, project=project, marker=marker,
                           echo=echo, client_uuid=client_uuid,
                           projection=projection, include_claimed=False,
-                          limit=limit)
+                          include_delayed=include_delayed, limit=limit)
 
     def _claimed(self, queue_name, claim_id,
                  expires=None, limit=None, project=None):
@@ -517,7 +529,8 @@ class MessageController(storage.Message):
 
     def list(self, queue_name, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,
-             echo=False, client_uuid=None, include_claimed=False):
+             echo=False, client_uuid=None, include_claimed=False,
+             include_delayed=False):
 
         if marker is not None:
             try:
@@ -527,7 +540,8 @@ class MessageController(storage.Message):
 
         messages = self._list(queue_name, project=project, marker=marker,
                               client_uuid=client_uuid, echo=echo,
-                              include_claimed=include_claimed, limit=limit)
+                              include_claimed=include_claimed,
+                              include_delayed=include_delayed, limit=limit)
 
         marker_id = {}
 
@@ -638,6 +652,7 @@ class MessageController(storage.Message):
                 'e': now_dt + datetime.timedelta(seconds=message['ttl']),
                 'u': client_uuid,
                 'c': {'id': None, 'e': now, 'c': 0},
+                'd': now + message.get('delay', 0),
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
                 'tx': None,
@@ -815,6 +830,7 @@ class FIFOMessageController(MessageController):
                 'e': now_dt + datetime.timedelta(seconds=message['ttl']),
                 'u': client_uuid,
                 'c': {'id': None, 'e': now, 'c': 0},
+                'd': now + message.get('delay', 0),
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
                 'tx': transaction,

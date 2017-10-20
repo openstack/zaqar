@@ -30,7 +30,8 @@ LOG = logging.getLogger(__name__)
 
 
 def _get_reserved_metadata(validate):
-    _reserved_metadata = ['max_messages_post_size', 'default_message_ttl']
+    _reserved_metadata = ['max_messages_post_size', 'default_message_ttl',
+                          'default_message_delay']
     reserved_metadata = {
         '_%s' % meta:
             validate.get_limit_conf_value(meta)

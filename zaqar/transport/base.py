@@ -30,6 +30,9 @@ _GENERAL_TRANSPORT_OPTIONS = (
 _RESOURCE_DEFAULTS = (
     cfg.IntOpt('default_message_ttl', default=3600,
                help=('Defines how long a message will be accessible.')),
+    cfg.IntOpt('default_message_delay', default=0,
+               help=('Defines the defautl value for queue delay seconds.'
+                     'The 0 means the delayed queues feature is close.')),
     cfg.IntOpt('default_claim_ttl', default=300,
                help=('Defines how long a message will be in claimed state.')),
     cfg.IntOpt('default_claim_grace', default=60,
