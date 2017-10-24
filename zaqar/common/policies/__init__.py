@@ -13,11 +13,13 @@
 import itertools
 
 from zaqar.common.policies import base
+from zaqar.common.policies import messages
 from zaqar.common.policies import queues
 
 
 def list_rules():
     return itertools.chain(
         base.list_rules(),
+        messages.list_rules(),
         queues.list_rules()
     )
