@@ -21,6 +21,7 @@ import mock
 
 from zaqar.common import urls
 from zaqar.notification import notifier
+from zaqar.notification.tasks import webhook
 from zaqar import tests as testing
 
 
@@ -433,3 +434,16 @@ class NotifierTest(testing.TestBase):
     @ddt.data(False, True)
     def test_send_confirm_notification_with_email(self, is_unsub):
         self._send_confirm_notification_with_email(is_unsubscribed=is_unsub)
+
+    def test_webhook_backoff_function(self):
+        expect = [10, 12, 14, 18, 22, 27, 33, 40, 49, 60]
+        sec = webhook._Exponential_function(10, 60, 5)
+        self.assertEqual(expect, sec)
+
+        expect = [20, 22, 25, 29, 33, 37, 42, 48, 54, 62, 70, 80]
+        sec = webhook._Geometric_function(20, 80, 5)
+        self.assertEqual(expect, sec)
+
+        expect = [30, 30, 32, 34, 37, 41, 46, 51, 57, 64, 72, 80, 90, 100]
+        sec = webhook._Arithmetic_function(30, 100, 5)
+        self.assertEqual(expect, sec)

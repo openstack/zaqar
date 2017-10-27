@@ -1,0 +1,7 @@
+---
+features:
+  - Support more retry backoff function in webhook type. It will work
+    when Zaqar failed to send the notification to the subscriber.
+    Users can define the retry backoff function in metadata of queue.
+    There are four retry backoff functions including  'linear',
+    'arithmetic', 'geometric' and 'exponential'.

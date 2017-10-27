@@ -46,7 +46,8 @@ Webhook
 -  'minimum_delay' and 'maximum_delay' mean delay time in seconds.
 -  'retry_backoff_function' mean name of retry backoff function.
    There will be a enum in Zaqar that contain all valid values.
-   At first step, Zaqar only supports one function: 'linear'.
+   Zaqar now supports retry backoff function including 'linear',
+   'arithmetic','geometric' and 'exponential'.
 -  'minimum_delay_retries' and 'maximum_delay_retries' mean the number of
    retries with 'minimum_delay' or 'maximum_delay' delay time.
 

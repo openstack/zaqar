@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import time
 
 import json
@@ -27,7 +28,33 @@ LOG = logging.getLogger(__name__)
 def _Linear_function(minimum_delay, maximum_delay, times):
     return range(minimum_delay, maximum_delay, times)
 
-RETRY_BACKOFF_FUNCTION_MAP = {'linear': _Linear_function}
+
+def _Geometric_function(minimum_delay, maximum_delay, times):
+    x_max = int((maximum_delay - minimum_delay) / times)
+    k = math.pow(10, math.log10(maximum_delay/minimum_delay)/(x_max-1))
+    xarray = range(1, x_max+1)
+    return [int(minimum_delay*math.pow(k, a-1)) for a in xarray]
+
+
+def _Exponential_function(minimum_delay, maximum_delay, times):
+    x_max = int((maximum_delay - minimum_delay) / times)
+    k = math.pow(10, math.log10(maximum_delay/minimum_delay)/(x_max-1))
+    p = minimum_delay/k
+    xarray = range(1, x_max+1)
+    return [int(p*math.pow(k, a)) for a in xarray]
+
+
+def _Arithmetic_function(minimum_delay, maximum_delay, times):
+    x_max = int((maximum_delay - minimum_delay) / times)
+    d = 2.0 * (maximum_delay - minimum_delay) / (x_max * (x_max - 1))
+    xarray = range(1, x_max+1)
+    return [int(minimum_delay+(a-1)*a*d/2) for a in xarray]
+
+
+RETRY_BACKOFF_FUNCTION_MAP = {'linear': _Linear_function,
+                              'arithmetic': _Arithmetic_function,
+                              'geometric': _Geometric_function,
+                              'exponential': _Exponential_function}
 
 
 class WebhookTask(object):
@@ -65,9 +92,8 @@ class WebhookTask(object):
             time.sleep(retry_policy.get('minimum_delay', consts.MINIMUM_DELAY))
             if self._post_request_success(subscriber, data, headers):
                 return
-        # Backoff Phase: Linear retry
-        # TODO(wanghao): Now we only support the linear function, we should
-        # support more in Queens.
+        # Now we support linear,arithmetic,
+        # exponential and geometric retry backoff function.
         retry_function = retry_policy.get('retry_backoff_function', 'linear')
         backoff_function = RETRY_BACKOFF_FUNCTION_MAP[retry_function]
         for i in backoff_function(retry_policy.get('minimum_delay',
@@ -75,8 +101,8 @@ class WebhookTask(object):
                                   retry_policy.get('maximum_delay',
                                                    consts.MAXIMUM_DELAY),
                                   consts.LINEAR_INTERVAL):
-            LOG.debug('Retry with retry_backoff_function, sleep: %s seconds',
-                      i)
+            LOG.debug('Retry with function:%s, sleep: %s seconds',
+                      retry_function, i)
             time.sleep(i)
             if self._post_request_success(subscriber, data, headers):
                 return
