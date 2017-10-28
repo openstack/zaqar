@@ -41,7 +41,14 @@ _COMMON_REDIS_OPTIONS = (
                      'forms, the "socket_timeout" option may be '
                      'specified in the query string. Its value is '
                      'given in seconds. If not provided, '
-                     '"socket_timeout" defaults to 0.1 seconds.')),
+                     '"socket_timeout" defaults to 0.1 seconds.'
+                     'There are multiple database instances in redis '
+                     'database, for example in the /etc/redis/redis.conf, '
+                     'if the parameter is "database 16", there are 16 '
+                     'database instances. By default, the data is stored '
+                     'in db = 0 database, if you want to use db = 1 '
+                     'database, you can use the following form: '
+                     '"redis://host[:port][?dbid=1]".')),
 
     cfg.IntOpt('max_reconnect_attempts', default=10,
                deprecated_opts=[cfg.DeprecatedOpt(
