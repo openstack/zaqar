@@ -162,6 +162,7 @@ class SubscriptionController(base.Subscription):
     @utils.raises_conn_error
     def get_with_subscriber(self, queue, subscriber, project=None):
         res = self._collection.find_one({'u': subscriber,
+                                         's': queue,
                                          'p': project})
         now = timeutils.utcnow_ts()
         return _basic_subscription(res, now)
