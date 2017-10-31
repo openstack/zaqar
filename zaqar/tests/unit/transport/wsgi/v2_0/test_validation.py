@@ -125,6 +125,12 @@ class TestValidation(base.V2Base):
                         headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
+        # TTL value is zero
+        self.simulate_put(queue_1,
+                          self.project_id,
+                          body='{"_default_message_ttl": 0}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
         # TTL under min
         self.simulate_put(queue_1,
                           self.project_id,
@@ -153,6 +159,12 @@ class TestValidation(base.V2Base):
                           body='{"_max_messages_post_size": 257}')
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+        # Size value is zero
+        self.simulate_put(queue_2,
+                          self.project_id,
+                          body='{"_max_messages_post_size": 0}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
         # _dead_letter_queue_messages_ttl is not integer
         self.simulate_put(queue_2,
                           self.project_id,
@@ -169,6 +181,12 @@ class TestValidation(base.V2Base):
         self.simulate_put(queue_2,
                           self.project_id,
                           body='{"_dead_letter_queue_messages_ttl": 59}')
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        # _dead_letter_queue_messages_ttl value is zero
+        self.simulate_put(queue_2,
+                          self.project_id,
+                          body='{"_dead_letter_queue_messages_ttl": 0}')
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_queue_patching(self):
