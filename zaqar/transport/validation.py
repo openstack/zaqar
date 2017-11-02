@@ -350,7 +350,7 @@ class Validator(object):
             msg = _(u'_default_message_ttl must be integer.')
             raise ValidationFailed(msg)
 
-        if queue_default_ttl:
+        if queue_default_ttl is not None:
             if not (MIN_MESSAGE_TTL <= queue_default_ttl <=
                     self._limits_conf.max_message_ttl):
                 msg = _(u'_default_message_ttl can not exceed {0} '
@@ -364,7 +364,7 @@ class Validator(object):
             msg = _(u'_max_messages_post_size must be integer.')
             raise ValidationFailed(msg)
 
-        if queue_max_msg_size:
+        if queue_max_msg_size is not None:
             if not (0 < queue_max_msg_size <=
                     self._limits_conf.max_messages_post_size):
                 raise ValidationFailed(
@@ -382,8 +382,8 @@ class Validator(object):
             msg = _(u'_dead_letter_queue_messages_ttl must be integer.')
             raise ValidationFailed(msg)
 
-        if dlq_ttl and not (MIN_MESSAGE_TTL <= dlq_ttl <=
-                            self._limits_conf.max_message_ttl):
+        if dlq_ttl is not None and not (MIN_MESSAGE_TTL <= dlq_ttl <=
+                                        self._limits_conf.max_message_ttl):
             msg = _(u'The TTL for a message may not exceed {0} seconds, '
                     'and must be at least {1} seconds long.')
             raise ValidationFailed(msg, self._limits_conf.max_message_ttl,
