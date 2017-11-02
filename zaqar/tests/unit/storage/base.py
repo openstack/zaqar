@@ -1218,6 +1218,39 @@ class SubscriptionControllerTest(ControllerBaseTest):
                                                    project=self.project)
         self.assertIsNone(s_id)
 
+    def test_create_existed_and_get_correct_id(self):
+        queue_name1 = 'test_queue1'
+        queue_name2 = 'test_queue2'
+        subscriber = 'http://fake'
+        self.queue_controller.create(queue_name1, project=self.project)
+        self.queue_controller.create(queue_name2, project=self.project)
+
+        self.subscription_controller.create(queue_name1,
+                                            subscriber,
+                                            self.ttl,
+                                            self.options,
+                                            project=self.project)
+
+        s_id_2 = self.subscription_controller.create(queue_name2,
+                                                     subscriber,
+                                                     self.ttl,
+                                                     self.options,
+                                                     project=self.project)
+
+        s_id_3 = self.subscription_controller.create(queue_name2,
+                                                     subscriber,
+                                                     self.ttl,
+                                                     self.options,
+                                                     project=self.project)
+        self.assertIsNone(s_id_3)
+
+        s_id = self.subscription_controller. \
+            get_with_subscriber(queue_name2,
+                                subscriber,
+                                project=self.project)['id']
+
+        self.assertEqual(str(s_id_2), s_id)
+
     def test_get_update_delete_on_non_existing_queue(self):
         self._precreate_queue(precreate_queue=True)
         s_id = self.subscription_controller.create(
