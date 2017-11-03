@@ -6,14 +6,5 @@
     "subscription:get": "",
     "subscription:delete": "",
     "subscription:update": "",
-    "subscription:confirm": "",
-
-    "pools:get_all": "rule:context_is_admin",
-    "pools:create": "rule:context_is_admin",
-    "pools:get": "rule:context_is_admin",
-    "pools:delete": "rule:context_is_admin",
-    "pools:update": "rule:context_is_admin",
-
-    "ping:get": "",
-    "health:get": "rule:context_is_admin"
+    "subscription:confirm": ""
 }
