@@ -11,12 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from osprofiler import profiler
 from six.moves import urllib
 
 from keystoneauth1.identity import generic
 from keystoneauth1 import session as keystone_session
-from oslo_log import log as logging
+from oslo_log import log as oslo_logging
 import swiftclient
 
 from zaqar.common import decorators
@@ -24,7 +25,7 @@ from zaqar import storage
 from zaqar.storage.swift import controllers
 from zaqar.storage.swift import options
 
-LOG = logging.getLogger(__name__)
+LOG = oslo_logging.getLogger(__name__)
 
 
 class DataDriver(storage.DataDriverBase):
@@ -34,6 +35,9 @@ class DataDriver(storage.DataDriverBase):
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
         self.swift_conf = self.conf[options.MESSAGE_SWIFT_GROUP]
+        if not self.conf.debug:
+            # Reduce swiftclient logging, in particular to remove 404s
+            logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
     @property
     def capabilities(self):
