@@ -23,6 +23,7 @@ from osprofiler import profiler
 from zaqar.common import decorators
 from zaqar.common import errors as cerrors
 from zaqar.common.storage import select
+from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage import pipeline
@@ -246,6 +247,14 @@ class QueueController(storage.Queue):
         return self._mgt_queue_ctrl.get_metadata(name, project=project)
 
     def set_metadata(self, name, metadata, project=None):
+        # NOTE(gengchc2): If  flavor metadata is modified in queue,
+        # The queue needs to be re-registered to pools, otherwise
+        # the queue flavor parameter is not consistent with the pool.
+        flavor = None
+        if isinstance(metadata, dict):
+            flavor = metadata.get('_flavor')
+        self._pool_catalog.register(name, project=project, flavor=flavor)
+
         return self._mgt_queue_ctrl.set_metadata(name, metadata=metadata,
                                                  project=project)
 
@@ -502,22 +511,40 @@ class Catalog(object):
 
         """
 
-        # NOTE(cpp-cabrera): only register a queue if the entry
-        # doesn't exist
-        if not self._catalogue_ctrl.exists(project, queue):
+        # NOTE(gengchc): if exist, get queue's pool.flavor:
+        # if queue's pool.flavor is different, first delete it and add it.
+        #  Otherwise, if the flavor in the meteredata of the queue is
+        #  modified, the catalog will be inconsistent.
+        if self._catalogue_ctrl.exists(project, queue):
+            catalogue = self._catalogue_ctrl.get(project, queue)
+            oldpoolids = catalogue['pool']
+            oldpool = self._pools_ctrl.get(oldpoolids)
+            oldflavor = oldpool['flavor']
+            msgtmpl = _(u'regiester queue to pool: old flavor: %(oldflavor)s '
+                        ', new flavor: %(flavor)s')
+            LOG.info(msgtmpl,
+                     {'oldflavor': oldflavor, 'flavor': flavor})
+            if oldpool['flavor'] != flavor:
+                self._catalogue_ctrl.delete(project, queue)
 
+        if not self._catalogue_ctrl.exists(project, queue):
             if flavor is not None:
                 flavor = self._flavor_ctrl.get(flavor, project=project)
-                pools = self._pools_ctrl.get_pools_by_group(
-                    group=flavor['pool_group'],
+                pools = self._pools_ctrl.get_pools_by_flavor(
+                    flavor=flavor,
                     detailed=True)
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
+                msgtmpl = _(u'regiester queue to pool: new flavor:%(flavor)s'
+                            ' pool_group:%(pool_group)s')
+                LOG.info(msgtmpl,
+                         {'flavor': flavor.get('name', None),
+                          'pool_group': flavor.get('pool_group', None)})
             else:
                 # NOTE(flaper87): Get pools assigned to the default
                 # group `None`. We should consider adding a `default_group`
                 # option in the future.
-                pools = self._pools_ctrl.get_pools_by_group(detailed=True)
+                pools = self._pools_ctrl.get_pools_by_flavor(detailed=True)
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
 
@@ -531,7 +558,15 @@ class Catalog(object):
                     if self.lookup(queue, project) is not None:
                         return
                     raise errors.NoPoolFound()
+                    msgtmpl = _(u'regiester queue to pool: new flavor: None')
+                    LOG.info(msgtmpl)
 
+            msgtmpl = _(u'regiester queue: project:%(project)s'
+                        ' queue:%(queue)s pool:%(pool)s')
+            LOG.info(msgtmpl,
+                     {'project': project,
+                      'queue': queue,
+                      'pool': pool})
             self._catalogue_ctrl.insert(project, queue, pool)
 
     @_pool_id.purges

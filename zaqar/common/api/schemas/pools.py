@@ -49,6 +49,17 @@ patch_group = {
     }
 }
 
+# NOTE(gengchc): remove pool_group add flavor
+patch_flavor = {
+    'type': 'object', 'properties': {
+        'flavor': {
+            'type': 'string',
+            'minLength': 0,
+            'maxLength': 255
+        },
+        'additionalProperties': False
+    }
+}
 
 patch_weight = {
     'type': 'object', 'properties': {
@@ -63,6 +74,7 @@ create = {
     'type': 'object', 'properties': {
         'weight': patch_weight['properties']['weight'],
         'group': patch_group['properties']['uri'],
+        'flavor': patch_flavor['properties']['flavor'],
         'uri': patch_uri['properties']['uri'],
         'options': patch_options['properties']['options']
     },

@@ -72,18 +72,29 @@ class FlavorsController(base.FlavorsBase):
         return _normalize(flavor, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, pool_group, project=None, capabilities=None):
+    def create(self, name, pool_group=None, project=None, capabilities=None):
         cap = None if capabilities is None else utils.json_encode(capabilities)
 
         try:
-            stmt = sa.sql.expression.insert(tables.Flavors).values(
-                name=name, pool_group=pool_group, project=project,
-                capabilities=cap
-            )
+            if pool_group is not None:
+                stmt = sa.sql.expression.insert(tables.Flavors).values(
+                    name=name, pool_group=pool_group, project=project,
+                    capabilities=cap
+                )
+            else:
+                stmt = sa.sql.expression.insert(tables.Flavors).values(
+                    name=name, project=project,
+                    capabilities=cap
+                )
             self.driver.run(stmt)
         except oslo_db.exception.DBDuplicateEntry:
-            if not self._pools_ctrl.get_pools_by_group(pool_group):
-                raise errors.PoolGroupDoesNotExist(pool_group)
+            # NOTE(gengchc2): If you do not use the removal group scheme to
+            # configure flavor, pool_group can be None..
+            if pool_group is not None:
+                flavor_obj = {}
+                flavor_obj["pool_group"] = pool_group
+                if not list(self._pools_ctrl.get_pools_by_flavor(flavor_obj)):
+                    raise errors.PoolGroupDoesNotExist(pool_group)
 
             # TODO(flaper87): merge update/create into a single
             # method with introduction of upsert

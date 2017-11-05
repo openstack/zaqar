@@ -507,10 +507,14 @@ class MongodbPoolsTests(base.PoolsControllerTest):
 
     def setUp(self):
         super(MongodbPoolsTests, self).setUp()
+        self.pools_controller.create(self.pool, 100, 'localhost',
+                                     group=self.pool_group, options={})
 
     def tearDown(self):
         super(MongodbPoolsTests, self).tearDown()
 
+    # NOTE(gengchc2): remove test_delete_pool_used_by_flavor in Rocky release
+    # and use test_delete_pool_used_by_flavor1 instead for pool_group removal.
     def test_delete_pool_used_by_flavor(self):
         self.flavors_controller.create('durable', self.pool_group,
                                        project=self.project,
@@ -519,6 +523,19 @@ class MongodbPoolsTests(base.PoolsControllerTest):
         with testing.expect(errors.PoolInUseByFlavor):
             self.pools_controller.delete(self.pool)
 
+    # NOTE(gengchc2): Unittest for new flavor configure scenario.
+    def test_delete_pool_used_by_flavor1(self):
+        self.flavors_controller.create(self.flavor,
+                                       project=self.project,
+                                       capabilities={})
+        self.pools_controller.update(self.pool1, flavor=self.flavor)
+
+        with testing.expect(errors.PoolInUseByFlavor):
+            self.pools_controller.delete(self.pool1)
+
+    # NOTE(gengchc2): remove test_mismatching_capabilities_fifo in Rocky
+    # release and use test_mismatching_capabilities_fifo1 instead for
+    # pool_group removal.
     def test_mismatching_capabilities_fifo(self):
         with testing.expect(errors.PoolCapabilitiesMismatch):
             self.pools_controller.create(str(uuid.uuid1()),
@@ -526,12 +543,50 @@ class MongodbPoolsTests(base.PoolsControllerTest):
                                          group=self.pool_group,
                                          options={})
 
+    # NOTE(gengchc2): Unittest for new flavor configure scenario.
+    def test_mismatching_capabilities_fifo1(self):
+        with testing.expect(errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'mongodb.fifo://localhost',
+                                         flavor=self.flavor,
+                                         options={})
+
+    # NOTE(gengchc2): remove test_mismatching_capabilities in Rocky release
+    #  and use test_mismatching_capabilities1 instead for pool_group removal.
+    def test_mismatching_capabilities(self):
+        # NOTE(gengchc2): This test is used for testing mismatchming
+        # capabilities in pool with group
+        with testing.expect(errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'redis://localhost',
+                                         group=self.pool_group,
+                                         options={})
+
+    def test_mismatching_capabilities1(self):
+        # NOTE(gengchc2): This test is used for testing mismatchming
+        # capabilities in pool with flavor
+        with testing.expect(errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'redis://localhost',
+                                         flavor=self.flavor,
+                                         options={})
+
+    # NOTE(gengchc2): remove test_duplicate_uri in Rocky release and
+    #  use test_duplicate_uri1 instead for pool_group removal.
     def test_duplicate_uri(self):
         with testing.expect(errors.PoolAlreadyExists):
             # The url 'localhost' is used in setUp(). So reusing the uri
             # 'localhost' here will raise PoolAlreadyExists.
             self.pools_controller.create(str(uuid.uuid1()), 100, 'localhost',
                                          group=str(uuid.uuid1()), options={})
+
+    # NOTE(gengchc2): Unittest for new flavor configure scenario.
+    def test_duplicate_uri1(self):
+        with testing.expect(errors.PoolAlreadyExists):
+            # The url 'localhost' is used in setUp(). So reusing the uri
+            # 'localhost' here will raise PoolAlreadyExists.
+            self.pools_controller.create(str(uuid.uuid1()), 100, 'localhost',
+                                         flavor=str(uuid.uuid1()), options={})
 
 
 @testing.requires_mongodb
@@ -577,6 +632,8 @@ class PooledClaimsTests(base.ClaimControllerTest):
         self.skip("Fix sqlalchemy driver")
 
 
+# NOTE(gengchc2): remove MongodbFlavorsTest in Rocky release and
+# use MongodbFlavorsTest1 instead for pool_group removal.
 @testing.requires_mongodb
 class MongodbFlavorsTest(base.FlavorsControllerTest):
     driver_class = mongodb.ControlDriver
@@ -586,4 +643,17 @@ class MongodbFlavorsTest(base.FlavorsControllerTest):
 
     def setUp(self):
         super(MongodbFlavorsTest, self).setUp()
+        self.addCleanup(self.controller.drop_all)
+
+
+# NOTE(gengchc2): Unittest for new flavor configure scenario.
+@testing.requires_mongodb
+class MongodbFlavorsTest1(base.FlavorsControllerTest1):
+    driver_class = mongodb.ControlDriver
+    controller_class = controllers.FlavorsController
+    control_driver_class = mongodb.ControlDriver
+    config_file = 'wsgi_mongodb.conf'
+
+    def setUp(self):
+        super(MongodbFlavorsTest1, self).setUp()
         self.addCleanup(self.controller.drop_all)

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Rackspace, Inc.
+# Copyright (c) 2017 ZTE Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License.  You may obtain a copy
@@ -23,9 +23,8 @@ from zaqar import tests as testing
 from zaqar.tests.unit.transport.wsgi import base
 
 
-# NOTE(gengchc2): remove pool_group in Rocky release.
 @contextlib.contextmanager
-def pool(test, name, weight, uri, group=None, options={}):
+def pool(test, name, weight, uri, flavor=None, options={}):
     """A context manager for constructing a pool for use in testing.
 
     Deletes the pool after exiting the context.
@@ -41,20 +40,20 @@ def pool(test, name, weight, uri, group=None, options={}):
     """
     uri = "%s/%s" % (uri, uuidutils.generate_uuid())
     doc = {'weight': weight, 'uri': uri,
-           'group': group, 'options': options}
+           'flavor': flavor, 'options': options}
     path = test.url_prefix + '/pools/' + name
 
     test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
-        yield name, weight, uri, group, options
+        yield name, weight, uri, flavor, options
 
     finally:
         test.simulate_delete(path)
 
 
 @contextlib.contextmanager
-def pools(test, count, uri, group):
+def pools(test, count, uri, flavor):
     """A context manager for constructing pools for use in testing.
 
     Deletes the pools after exiting the context.
@@ -73,13 +72,17 @@ def pools(test, count, uri, group):
     for path, weight, option in args:
         uri = "%s/%s" % (mongo_url, uuidutils.generate_uuid())
         doc = {'weight': weight, 'uri': uri,
-               'group': group, 'options': option}
+               'flavor': flavor, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
 
     try:
         yield args
     finally:
         for path, _, _ in args:
+            # (gengchc): Remove flavor from the pool,
+            #  so we can delete the pool.
+            test.simulate_patch(path,
+                                body=jsonutils.dumps({'flavor': ''}))
             test.simulate_delete(path)
 
 
@@ -92,7 +95,7 @@ class TestPoolsMongoDB(base.V2Base):
     def setUp(self):
         super(TestPoolsMongoDB, self).setUp()
         self.doc = {'weight': 100,
-                    'group': 'mygroup',
+                    'flavor': 'my-flavor',
                     'uri': self.mongodb_url}
         self.pool = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(self.pool, body=jsonutils.dumps(self.doc))
@@ -106,14 +109,13 @@ class TestPoolsMongoDB(base.V2Base):
     def test_put_pool_works(self):
         name = uuidutils.generate_uuid()
         weight, uri = self.doc['weight'], self.doc['uri']
-        with pool(self, name, weight, uri, group='my-group'):
+        with pool(self, name, weight, uri, flavor='my-flavor'):
             self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_put_raises_if_missing_fields(self):
         path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(path, body=jsonutils.dumps({'weight': 100}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
-
         self.simulate_put(path,
                           body=jsonutils.dumps(
                               {'uri': self.mongodb_url}))
@@ -168,7 +170,7 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
         redis_doc = {'weight': 100,
-                     'group': 'mygroup',
+                     'flavor': 'my-flavor',
                      'uri': 'redis://127.0.0.1:6379'}
 
         self.simulate_put(self.pool,
@@ -176,6 +178,8 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
     def test_delete_works(self):
+        # (gengchc): Remove flavor from the pool, so we can delete the pool.
+        self.simulate_patch(self.pool, body=jsonutils.dumps({'flavor': ''}))
         self.simulate_delete(self.pool)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
@@ -274,6 +278,8 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
 
     def test_empty_listing(self):
+        # (gengchc): Remove flavor from the pool, so we can delete the pool.
+        self.simulate_patch(self.pool, body=jsonutils.dumps({'flavor': ''}))
         self.simulate_delete(self.pool)
         result = self.simulate_get(self.url_prefix + '/pools')
         results = jsonutils.loads(result[0])
@@ -285,12 +291,14 @@ class TestPoolsMongoDB(base.V2Base):
                       marker=None, detailed=False):
         # NOTE(cpp-cabrera): delete initial pool - it will interfere
         # with listing tests
+        # (gengchc): Remove flavor from the pool, so we can delete the pool.
+        self.simulate_patch(self.pool, body=jsonutils.dumps({'flavor': ''}))
         self.simulate_delete(self.pool)
         query = 'limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
             query += '&marker={0}'.format(marker)
 
-        with pools(self, count, self.doc['uri'], 'my-group') as expected:
+        with pools(self, count, self.doc['uri'], 'my-flavor') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string=query)
             self.assertEqual(falcon.HTTP_200, self.srmock.status)
@@ -334,7 +342,7 @@ class TestPoolsMongoDB(base.V2Base):
                 # pool weight and the index of pools fixture to get the
                 # right pool to verify.
                 expect = expected[s['weight']]
-                path, weight, group = expect[:3]
+                path, weight, options = expect[:3]
                 self._pool_expect(s, path, weight, self.doc['uri'])
                 if detailed:
                     self.assertIn('options', s)
@@ -353,9 +361,11 @@ class TestPoolsMongoDB(base.V2Base):
         self._listing_test(count=15, limit=limit)
 
     def test_listing_marker_is_respected(self):
+        # (gengchc): Remove flavor from the pool, so we can delete the pool.
+        self.simulate_patch(self.pool, body=jsonutils.dumps({'flavor': ''}))
         self.simulate_delete(self.pool)
 
-        with pools(self, 10, self.doc['uri'], 'my-group') as expected:
+        with pools(self, 10, self.doc['uri'], 'my-flavor') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
                                        query_string='marker=3')
             self.assertEqual(falcon.HTTP_200, self.srmock.status)
@@ -368,6 +378,6 @@ class TestPoolsMongoDB(base.V2Base):
         self.simulate_delete(self.pool)
         query = 'limit={0}&detailed={1}'.format(0, True)
 
-        with pools(self, 10, self.doc['uri'], 'my-group'):
+        with pools(self, 10, self.doc['uri'], 'my-flavor'):
             self.simulate_get(self.url_prefix + '/pools', query_string=query)
             self.assertEqual(falcon.HTTP_400, self.srmock.status)

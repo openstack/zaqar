@@ -66,7 +66,8 @@ class TestBase(testtools.TestCase):
         opts.set_defaults(self.conf)
         self.conf.register_opts(configs._PROFILER_OPTIONS,
                                 group=configs._PROFILER_GROUP)
-
+        self.redis_url = os.environ.get('ZAQAR_TEST_REDIS_URL',
+                                        'redis://127.0.0.1:6379')
         self.mongodb_url = os.environ.get('ZAQAR_TEST_MONGODB_URL',
                                           'mongodb://127.0.0.1:27017')
 
