@@ -28,6 +28,8 @@ from zaqar.storage import errors
 LOG = logging.getLogger(__name__)
 MESSAGE_IDS_SUFFIX = 'messages'
 SUBSCRIPTION_IDS_SUFFIX = 'subscriptions'
+FLAVORS_IDS_SUFFIX = 'flavors'
+POOLS_IDS_SUFFIX = 'pools'
 
 
 def descope_queue_name(scoped_name):
@@ -272,6 +274,148 @@ class SubscriptionListCursor(object):
         if not subscription[0]:
             return self.next()
         return self.denormalizer(subscription, encodeutils.safe_decode(curr))
+
+    def __next__(self):
+        return self.next()
+
+
+def scope_flavors_ids_set(flavors_suffix=''):
+    """Scope flavors set with '.'
+
+    Returns a scoped name for the list of flavors in the form
+    suffix
+    """
+
+    return flavors_suffix
+
+
+def scope_project_flavors_ids_set(project=None,
+                                  flavors_suffix=''):
+    """Scope flavors set with '.'
+
+    Returns a scoped name for the list of flavors in the form
+    project-id_suffix
+    """
+
+    return (normalize_none_str(project) + '.' + flavors_suffix)
+
+
+def scope_name_flavors_ids_set(name=None,
+                               flavors_suffix=''):
+    """Scope flavors set with '.'
+
+    Returns a scoped name for the list of flavors in the form
+    flavors_name_suffix
+    """
+
+    return (normalize_none_str(name) + '.' + flavors_suffix)
+
+
+def flavor_set_key():
+    return scope_flavors_ids_set(FLAVORS_IDS_SUFFIX)
+
+
+def flavor_project_subset_key(project=None):
+    return scope_project_flavors_ids_set(project,
+                                         FLAVORS_IDS_SUFFIX)
+
+
+def flavor_name_hash_key(name=None):
+    return scope_name_flavors_ids_set(name,
+                                      FLAVORS_IDS_SUFFIX)
+
+
+class FlavorListCursor(object):
+
+    def __init__(self, client, flavors, denormalizer):
+        self.flavor_iter = flavors
+        self.denormalizer = denormalizer
+        self.client = client
+
+    def __iter__(self):
+        return self
+
+    @raises_conn_error
+    def next(self):
+        curr = next(self.flavor_iter)
+        flavor = self.client.hmget(curr, ['f', 'p', 'c'])
+        flavor_dict = {}
+        flavor_dict['f'] = flavor[0]
+        flavor_dict['p'] = flavor[1]
+        flavor_dict['c'] = flavor[2]
+        return self.denormalizer(flavor_dict)
+
+    def __next__(self):
+        return self.next()
+
+
+def scope_pools_ids_set(pools_suffix=''):
+    """Scope pools set with '.'
+
+    Returns a scoped name for the list of pools in the form
+    suffix
+    """
+
+    return pools_suffix
+
+
+def scope_flavor_pools_ids_set(flavor=None,
+                               pools_suffix=''):
+    """Scope pools set with '.'
+
+    Returns a scoped name for the list of pools in the form
+    project-id_suffix
+    """
+    return (normalize_none_str(flavor) + '.' +
+            pools_suffix)
+
+
+def scope_name_pools_ids_set(name=None,
+                             pools_suffix=''):
+    """Scope pools set with '.'
+
+    Returns a scoped name for the list of pools in the form
+    pools_name_suffix
+    """
+    return (normalize_none_str(name) + '.' +
+            pools_suffix)
+
+
+def pools_set_key():
+    return scope_pools_ids_set(POOLS_IDS_SUFFIX)
+
+
+def pools_subset_key(flavor=None):
+    return scope_flavor_pools_ids_set(flavor,
+                                      POOLS_IDS_SUFFIX)
+
+
+def pools_name_hash_key(name=None):
+    return scope_name_pools_ids_set(name,
+                                    POOLS_IDS_SUFFIX)
+
+
+class PoolsListCursor(object):
+
+    def __init__(self, client, pools, denormalizer):
+        self.pools_iter = pools
+        self.denormalizer = denormalizer
+        self.client = client
+
+    def __iter__(self):
+        return self
+
+    @raises_conn_error
+    def next(self):
+        curr = next(self.pools_iter)
+        pools = self.client.hmget(curr, ['pl', 'u', 'w', 'f', 'o'])
+        pool_dict = {}
+        pool_dict['pl'] = pools[0]
+        pool_dict['u'] = pools[1]
+        pool_dict['w'] = pools[2]
+        pool_dict['f'] = pools[3]
+        pool_dict['o'] = pools[4]
+        return self.denormalizer(pool_dict)
 
     def __next__(self):
         return self.next()

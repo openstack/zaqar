@@ -258,15 +258,31 @@ class ControlDriver(storage.ControlDriverBase):
 
     @property
     def pools_controller(self):
-        raise NotImplementedError()
+        controller = controllers.PoolsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("redis_pools_controller")(controller)
+        else:
+            return controller
 
     @property
     def catalogue_controller(self):
-        raise NotImplementedError()
+        controller = controllers.CatalogueController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("redis_catalogue_"
+                                      "controller")(controller)
+        else:
+            return controller
 
     @property
     def flavors_controller(self):
-        raise NotImplementedError()
+        controller = controllers.FlavorsController(self)
+        if (self.conf.profiler.enabled and
+                self.conf.profiler.trace_management_store):
+            return profiler.trace_cls("redis_flavors_controller")(controller)
+        else:
+            return controller
 
 
 def _get_redis_client(driver):

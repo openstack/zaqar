@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from zaqar.storage.redis import catalogue
 from zaqar.storage.redis import claims
+from zaqar.storage.redis import flavors
 from zaqar.storage.redis import messages
+from zaqar.storage.redis import pools
 from zaqar.storage.redis import queues
 from zaqar.storage.redis import subscriptions
 
-
-QueueController = queues.QueueController
-MessageController = messages.MessageController
+CatalogueController = catalogue.CatalogueController
 ClaimController = claims.ClaimController
+FlavorsController = flavors.FlavorsController
+MessageController = messages.MessageController
+QueueController = queues.QueueController
+PoolsController = pools.PoolsController
 SubscriptionController = subscriptions.SubscriptionController
