@@ -137,6 +137,8 @@ class TestFlavorsMongoDB(base.V2Base):
         doc = {'pool_group': self.pool_group}
         self.simulate_put(path, body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
+        # NOTE(gengchc2): Delete it, otherwise exist garbage flavor.
+        self.simulate_delete(path)
 
     def test_put_existing_overwrites(self):
         # NOTE(cabrera): setUp creates default flavor
