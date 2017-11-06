@@ -1,0 +1,8 @@
+To generate the sample policy.yaml file, run the following command from the top
+level of the zaqar directory:
+    tox -egenpolicy
+
+Or run the command directly:
+    oslopolicy-sample-generator --config-file etc/oslo-config-generator/zaqar-policy-generator.conf
+The output file will be in etc folder, named "zaqar.policy.yaml.sample" by
+default.

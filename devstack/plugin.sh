@@ -75,10 +75,6 @@ function configure_zaqar {
     [ ! -d $ZAQAR_CONF_DIR ] && sudo mkdir -m 755 -p $ZAQAR_CONF_DIR
     sudo chown $USER $ZAQAR_CONF_DIR
 
-    if [[ -f $ZAQAR_DIR/etc/policy.json.sample ]]; then
-        cp -p $ZAQAR_DIR/etc/policy.json.sample $ZAQAR_POLICY_CONF
-    fi
-
     [ ! -d $ZAQAR_API_LOG_DIR ] && sudo mkdir -m 755 -p $ZAQAR_API_LOG_DIR
     sudo chown $USER $ZAQAR_API_LOG_DIR
 
