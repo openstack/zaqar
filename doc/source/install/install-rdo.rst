@@ -262,7 +262,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
 
    .. code-block:: console
 
-      # yum -y install python-pip
+      # yum install python-pip
       # git clone https://git.openstack.org/openstack/zaqar.git
       # cd zaqar
       # pip install . -r ./requirements.txt --upgrade --log /tmp/zaqar-pip.log
