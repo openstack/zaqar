@@ -325,7 +325,7 @@ class TestMessagesMongoDB(base.V2Base):
 
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(None, '[', '[]', '{}', '.')
+    @ddt.data(None, '[', '[]', '{}', '.', '123')
     def test_post_bad_message(self, document):
         self.simulate_post(self.queue_path + '/messages',
                            body=document,

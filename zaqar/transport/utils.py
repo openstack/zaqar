@@ -45,7 +45,10 @@ def read_json(stream, len):
     """
     try:
         content = encodeutils.safe_decode(stream.read(len), 'utf-8')
-        return json.loads(content, parse_int=_json_int)
+        result = json.loads(content, parse_int=_json_int)
+        if not isinstance(result, dict) and not isinstance(result, list):
+            raise MalformedJSON()
+        return result
     except UnicodeDecodeError as ex:
         raise MalformedJSON(ex)
     except ValueError as ex:
