@@ -37,7 +37,6 @@ class CollectionResource(object):
         '_queue_controller',
         '_wsgi_conf',
         '_validate',
-        '_message_post_spec',
         '_default_message_ttl'
     )
 
@@ -50,11 +49,6 @@ class CollectionResource(object):
         self._message_controller = message_controller
         self._queue_controller = queue_controller
         self._default_message_ttl = default_message_ttl
-
-        self._message_post_spec = (
-            ('ttl', int, self._default_message_ttl),
-            ('body', '*', None),
-        )
 
     # ----------------------------------------------------------------------
     # Helpers
@@ -175,9 +169,6 @@ class CollectionResource(object):
             queue_max_msg_size = queue_meta.get('_max_messages_post_size')
             queue_default_ttl = queue_meta.get('_default_message_ttl')
 
-            # TODO(flwang): To avoid any unexpected regression issue, we just
-            # leave the _message_post_spec attribute of class as it's. It
-            # should be removed in Newton release.
             if queue_default_ttl:
                 message_post_spec = (('ttl', int, queue_default_ttl),
                                      ('body', '*', None),)

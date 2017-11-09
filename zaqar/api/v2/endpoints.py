@@ -444,9 +444,6 @@ class Endpoints(object):
                                                 None)
             queue_default_ttl = queue_meta.get('_default_message_ttl')
 
-            # TODO(flwang): To avoid any unexpected regression issue, we just
-            # leave the _message_post_spec attribute of class as it's. It
-            # should be removed in Newton release.
             if queue_default_ttl:
                 _message_post_spec = (('ttl', int, queue_default_ttl),
                                       ('body', '*', None),)
