@@ -46,7 +46,7 @@ function run_tempest_tests() {
 
     cd $BASE/new/tempest/
     sudo -E testr init
-    sudo -E tox -eall-plugin zaqar
+    sudo -E  tox -evenv-tempest -- tempest run -r zaqar_tempest_plugin
 }
 
 function run_zaqarclient_tests() {
