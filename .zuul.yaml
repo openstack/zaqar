@@ -1,0 +1,98 @@
+- job:
+    name: grenade-devstack-zaqar-base
+    parent: legacy-dsvm-base
+    branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+    required-projects:
+      - openstack-dev/grenade
+      - openstack-infra/devstack-gate
+      - openstack/python-zaqarclient
+      - openstack/zaqar
+      - openstack/zaqar-tempest-plugin
+    run: playbooks/legacy/grenade-devstack-zaqar-base/run
+    post-run: playbooks/legacy/grenade-devstack-zaqar-base/post
+    timeout: 7800
+
+- job:
+    name: tempest-devstack-zaqar-base
+    parent: legacy-dsvm-base
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/python-zaqarclient
+      - openstack/tempest
+      - openstack/zaqar
+      - openstack/zaqar-tempest-plugin
+    run: playbooks/legacy/tempest-devstack-zaqar-base/run
+    post-run: playbooks/legacy/tempest-devstack-zaqar-base/post
+    timeout: 7800
+
+- job:
+    name: grenade-devstack-mongodb-zaqar
+    parent: grenade-devstack-zaqar-base
+    voting: false
+    vars:
+      database_backend: mongodb
+
+- job:
+    name: grenade-devstack-redis-zaqar
+    parent: grenade-devstack-zaqar-base
+    voting: false
+    vars:
+      database_backend: redis
+
+- job:
+    name: grenade-devstack-swift-zaqar
+    parent: grenade-devstack-zaqar-base
+    voting: false
+    vars:
+      database_backend: swift
+
+- job:
+    name: tempest-devstack-mongodb-zaqar
+    parent: tempest-devstack-zaqar-base
+    vars:
+      database_backend: mongodb
+
+- job:
+    name: tempest-devstack-redis-zaqar
+    parent: tempest-devstack-zaqar-base
+    vars:
+      database_backend: redis
+
+- job:
+    name: tempest-devstack-swift-zaqar
+    parent: tempest-devstack-zaqar-base
+    vars:
+      database_backend: swift
+
+- job:
+    name: zaqar-tox-integration
+    parent: legacy-base
+    post-run: playbooks/legacy/zaqar-tox-integration/post
+    required-projects:
+      - openstack/requirements
+    run: playbooks/legacy/zaqar-tox-integration/run
+    timeout: 2400
+
+- project:
+    name: openstack/zaqar
+    check:
+      jobs:
+        - zaqar-tox-integration
+        - tempest-devstack-redis-zaqar
+        - tempest-devstack-swift-zaqar
+        - tempest-devstack-mongodb-zaqar
+        - grenade-devstack-mongodb-zaqar
+        - grenade-devstack-redis-zaqar
+        - grenade-devstack-swift-zaqar
+    gate:
+      jobs:
+        - zaqar-tox-integration
+        - tempest-devstack-mongodb-zaqar
+        - tempest-devstack-redis-zaqar
+        - tempest-devstack-swift-zaqar
