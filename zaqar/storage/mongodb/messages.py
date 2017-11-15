@@ -984,6 +984,7 @@ def _basic_message(msg, now):
         'id': str(oid),
         'age': int(age),
         'ttl': msg['t'],
+        'claim_count': msg['c'].get('c', 0),
         'body': msg['b'],
         'claim_id': str(msg['c']['id']) if msg['c']['id'] else None
     }

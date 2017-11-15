@@ -433,8 +433,8 @@ class MessageControllerTest(ControllerBaseTest):
         # Test Message Get
         message_out = self.controller.get(queue_name, message_id,
                                           project=self.project)
-        self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_id'},
-                         set(message_out))
+        self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_count',
+                          'claim_id'}, set(message_out))
         self.assertEqual(message_id, message_out['id'])
         self.assertEqual(message['body'], message_out['body'])
         self.assertEqual(message['ttl'], message_out['ttl'])
@@ -489,8 +489,8 @@ class MessageControllerTest(ControllerBaseTest):
                                                 project=self.project)
 
         for idx, message in enumerate(messages_out):
-            self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_id'},
-                             set(message))
+            self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_count',
+                              'claim_id'}, set(message))
             self.assertEqual(idx, message['body'])
 
         self.controller.bulk_delete(self.queue_name, ids,
