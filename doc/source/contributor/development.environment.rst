@@ -39,7 +39,7 @@ virtual environment, instead of installing the packages at the system level.
    full integration testing or production usage. If you want to learn about
    production best practices, check out the `OpenStack Operations Guide`_.
 
-   .. _`OpenStack Operations Guide`: https://docs.openstack.org/ops-guide/
+   .. _`OpenStack Operations Guide`: https://wiki.openstack.org/wiki/OpsGuide
 
 Install GNU/Linux system dependencies
 #####################################
