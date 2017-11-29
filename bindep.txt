@@ -1,0 +1,15 @@
+# This is the fallback list for packages to install. Do not add
+# additional packages here. Repositories should use bindep and create
+# their own bindep.txt files if the list below is not
+# working for them.
+
+mongodb [platform:dpkg]
+mongodb-server [platform:rpm !platform:opensuseproject]
+dev-db/mongodb [platform:gentoo]
+redis [platform:rpm]
+redis-server [platform:dpkg]
+dev-db/redis [platform:gentoo]
+libmysqlclient-dev [platform:dpkg]
+libmysqlclient-devel [platform:suse]
+mysql-client [platform:dpkg]
+mysql-server [platform:dpkg]
