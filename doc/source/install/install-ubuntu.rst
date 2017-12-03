@@ -333,8 +333,8 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
    Replace ``ZAQARUSER`` with the name of the user in system under which the
    Messaging service will run.
 
-#. Create Messaging service's configuration file ``/etc/zaqar/zaqar.conf`` with the
-   following content:
+#. Create Messaging service's configuration file ``/etc/zaqar/zaqar.conf``
+   with the following content:
 
    .. code-block:: ini
 
