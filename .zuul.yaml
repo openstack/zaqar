@@ -11,8 +11,8 @@
       - openstack/python-zaqarclient
       - openstack/zaqar
       - openstack/zaqar-tempest-plugin
-    run: playbooks/legacy/grenade-devstack-zaqar-base/run
-    post-run: playbooks/legacy/grenade-devstack-zaqar-base/post
+    run: playbooks/legacy/grenade-devstack-zaqar-base/run.yaml
+    post-run: playbooks/legacy/grenade-devstack-zaqar-base/post.yaml
     timeout: 7800
 
 - job:
@@ -27,8 +27,8 @@
       - openstack/tempest
       - openstack/zaqar
       - openstack/zaqar-tempest-plugin
-    run: playbooks/legacy/tempest-devstack-zaqar-base/run
-    post-run: playbooks/legacy/tempest-devstack-zaqar-base/post
+    run: playbooks/legacy/tempest-devstack-zaqar-base/run.yaml
+    post-run: playbooks/legacy/tempest-devstack-zaqar-base/post.yaml
     timeout: 7800
 
 - job:
@@ -73,10 +73,10 @@
 - job:
     name: zaqar-tox-integration
     parent: legacy-base
-    post-run: playbooks/legacy/zaqar-tox-integration/post
+    post-run: playbooks/legacy/zaqar-tox-integration/post.yaml
     required-projects:
       - openstack/requirements
-    run: playbooks/legacy/zaqar-tox-integration/run
+    run: playbooks/legacy/zaqar-tox-integration/run.yaml
     timeout: 2400
 
 - project:
