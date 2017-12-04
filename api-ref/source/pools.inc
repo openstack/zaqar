@@ -43,9 +43,17 @@ Response Parameters
   - pools: pools
   - links: pool_links
 
+Response Example
+----------------
+NOTE: Suggest config flavor in stead of group from the beginning of Queens.
+
+.. literalinclude:: samples/pool-list-response-new.json
+   :language: javascript
+
 
 Response Example
 ----------------
+NOTE: Remove group in Rocky release and use flavor instead for pool
 
 .. literalinclude:: samples/pool-list-response.json
    :language: javascript
@@ -83,10 +91,20 @@ Request Parameters
   - weight: pool_weight
   - uri: pool_uri
   - group: pool_group
+  - flavor: pool_flavor
   - options: pool_options
 
 Request Example
 ---------------
+NOTE: Suggest config flavor in stead of group from the beginning of Queens.
+
+.. literalinclude:: samples/pool-create-request-new.json
+   :language: javascript
+
+
+Request Example
+---------------
+NOTE: Remove group in Rocky release and use flavor instead for pool
 
 .. literalinclude:: samples/pool-create-request.json
    :language: javascript
@@ -121,11 +139,28 @@ Request Parameters
   - weight: pool_weight
   - uri: pool_uri
   - group: pool_group
+  - flavor: pool_flavor
   - options: pool_options
+
+Request Example
+---------------
+NOTE: Suggest config flavor in stead of group from the beginning of Queens.
+
+.. literalinclude:: samples/pool-update-request-new.json
+   :language: javascript
+
+
+Response Example
+----------------
+NOTE: Suggest config flavor in stead of group from the beginning of Queens.
+
+.. literalinclude:: samples/pool-update-response-new.json
+   :language: javascript
 
 
 Request Example
 ---------------
+NOTE: Remove group in Rocky release and use flavor instead for pool
 
 .. literalinclude:: samples/pool-update-request.json
    :language: javascript
@@ -133,6 +168,7 @@ Request Example
 
 Response Example
 ----------------
+NOTE: Remove group in Rocky release and use flavor instead for pool
 
 .. literalinclude:: samples/pool-update-response.json
    :language: javascript
@@ -169,10 +205,20 @@ Response Parameters
   - weight: pool_weight
   - uri: pool_uri
   - group: pool_group
+  - flavor: pool_flavor
   - href: pool_href
 
 Response Example
 ----------------
+NOTE: Suggest config flavor in stead of group from the beginning of Queens.
+
+.. literalinclude:: samples/pool-show-response-new.json
+   :language: javascript
+
+
+Response Example
+----------------
+NOTE: Remove group in Rocky release and use flavor instead for pool
 
 .. literalinclude:: samples/pool-show-response.json
    :language: javascript

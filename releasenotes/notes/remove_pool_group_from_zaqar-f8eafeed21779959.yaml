@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Since we have introduced the 'pool_list' instead of pool_group in Queens,
+    Now we will update the APIs to suggest users use new argument.

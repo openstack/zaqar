@@ -265,6 +265,16 @@ flavor_pool_group:
   description: |
     The ``pool_group`` attribute specifies the name of the pool group
     this flavor sits on top of.
+    NOTE: Remove pool_group in Rocky release and use pool_list instead
+    for flavor.
+
+flavor_pool_list:
+  type: list
+  in: body
+  description: |
+    A list of pools in the flavor.
+    NOTE: Suggest config pool_list in stead of pool_group from the
+    beginning of Queens.
 
 flavors:
   type: list
@@ -305,6 +315,16 @@ operation_status:
     indicate if the actions was successful or not. Ref may contain the
     information if the succeeded is False, otherwise it's null.
 
+pool_flavor:
+  type: string
+  in: body
+  required: false
+  description: |
+    The ``flavor`` attribute specifies a tag to given to more than one pool
+    so that it keeps user remind the purpose/capabilities of all pools that
+    falls under that flavor.
+    NOTE: Suggest config flavor in stead of group from the beginning of queen.
+
 pool_group:
   type: string
   in: body
@@ -313,6 +333,7 @@ pool_group:
     The ``group`` attribute specifies a tag to given to more than one pool
     so that it keeps user remind the purpose/capabilities of all pools that
     falls under that group.
+    NOTE: Remove group in Rocky release and use flavor instead for pool.
 
 pool_href:
   type: string

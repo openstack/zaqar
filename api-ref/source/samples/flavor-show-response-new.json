@@ -7,7 +7,7 @@
     "AOD",
     "HIGH_THROUGHPUT"
   ],
-  "pool_group": "testgroup",
-  "pool_list": ""
+  "pool_group": "",
+  "pool_list": "[testpool1, testpool2]"
   "name": "testflavor"
 }
