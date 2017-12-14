@@ -96,6 +96,8 @@ class MessageController(storage.Message, scripting.Mixin):
         +---------------------+---------+
         |  created time       |  cr     |
         +---------------------+---------+
+        |  delay expiry time  |  d      |
+        +---------------------+---------+
 
     4. Messages rank counter (Redis Hash):
 
@@ -223,7 +225,7 @@ class MessageController(storage.Message, scripting.Mixin):
     def _list(self, queue, project=None, marker=None,
               limit=storage.DEFAULT_MESSAGES_PER_PAGE,
               echo=False, client_uuid=None,
-              include_claimed=False,
+              include_claimed=False, include_delayed=False,
               to_basic=True):
 
         if not self._queue_ctrl.exists(queue, project):
@@ -260,6 +262,10 @@ class MessageController(storage.Message, scripting.Mixin):
 
         if not include_claimed:
             filters.append(functools.partial(utils.msg_claimed_filter,
+                                             now=now))
+
+        if not include_delayed:
+            filters.append(functools.partial(utils.msg_delayed_filter,
                                              now=now))
 
         if not echo:
@@ -344,10 +350,11 @@ class MessageController(storage.Message, scripting.Mixin):
     def list(self, queue, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,
              echo=False, client_uuid=None,
-             include_claimed=False):
+             include_claimed=False, include_delayed=False):
 
         return self._list(queue, project, marker, limit, echo,
-                          client_uuid, include_claimed)
+                          client_uuid, include_claimed,
+                          include_delayed)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
@@ -419,6 +426,7 @@ class MessageController(storage.Message, scripting.Mixin):
                     claim_id=None,
                     claim_expires=now,
                     claim_count=0,
+                    delay_expires=now + msg.get('delay', 0),
                     body=msg.get('body', {}),
                 )
 

@@ -55,13 +55,16 @@ while (#claimed_msgs < limit) do
         -- unclaimed as well.
 
         if not found_unclaimed then
-            local msg = redis.call('HMGET', mid, 'c', 'c.e')
+            local msg = redis.call('HMGET', mid, 'c', 'c.e', 'd')
             if msg[1] == false and msg[2] == false then
                 -- NOTE(Eva-i): It means the message expired and does not
                 -- actually exist anymore, we must later garbage collect it's
                 -- ID from the set and move on.
                 msg_ids_to_cleanup[#msg_ids_to_cleanup + 1] = mid
-            elseif msg[1] == '' or tonumber(msg[2]) <= now then
+            elseif (msg[1] == '' or tonumber(msg[2]) <= now)
+                and tonumber(msg[3]) <= now then
+                -- NOTE(cdyangzhenyu): If the message's delay time has not
+                -- expired, the message can not be claimed.
                 found_unclaimed = true
             end
         end
