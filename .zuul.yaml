@@ -72,12 +72,11 @@
 
 - job:
     name: zaqar-tox-integration
-    parent: legacy-base
-    post-run: playbooks/legacy/zaqar-tox-integration/post.yaml
-    required-projects:
-      - openstack/requirements
-    run: playbooks/legacy/zaqar-tox-integration/run.yaml
-    timeout: 2400
+    parent: openstack-tox
+    description: |
+      Run Zaqar integration tests using tox with environment ``integration``.
+    vars:
+      tox_envlist: integration
 
 - project:
     name: openstack/zaqar
