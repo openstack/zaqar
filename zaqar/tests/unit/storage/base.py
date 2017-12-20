@@ -25,6 +25,7 @@ import ddt
 import mock
 from oslo_utils import timeutils
 import six
+import testtools
 from testtools import matchers
 
 from zaqar.common import cache as oslo_cache
@@ -741,6 +742,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         self.assertEqual(1, len(popped_messages))
 
+    @testtools.skip("Skip until fixed bug 1739332")
     def test_message_period(self):
         self.queue_controller.create(self.queue_name, project=self.project)
         messages = [
