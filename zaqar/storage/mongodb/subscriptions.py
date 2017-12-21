@@ -108,14 +108,14 @@ class SubscriptionController(base.Subscription):
         confirmed = False
 
         try:
-            subscription_id = self._collection.insert({'s': source,
-                                                       'u': subscriber,
-                                                       't': ttl,
-                                                       'e': expires,
-                                                       'o': options,
-                                                       'p': project,
-                                                       'c': confirmed})
-            return subscription_id
+            res = self._collection.insert_one({'s': source,
+                                               'u': subscriber,
+                                               't': ttl,
+                                               'e': expires,
+                                               'o': options,
+                                               'p': project,
+                                               'c': confirmed})
+            return res.inserted_id
         except pymongo.errors.DuplicateKeyError:
             return None
 
