@@ -2,6 +2,7 @@
   "messages": [
     {
       "ttl": 300,
+      "delay": 20,
       "body": {
         "event": "BackupStarted",
         "backup_id": "c378813c-3f0b-11e2-ad92-7823d2b0f3ce"

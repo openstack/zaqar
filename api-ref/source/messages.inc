@@ -53,6 +53,8 @@ be between 60 and 1209600 seconds (14 days). Note that the server might not
 actually delete the message until its age has reached up to (ttl + 60) seconds,
 to allow for flexibility in storage implementations.
 
+The ``delay`` attribute specifies how long the message can be claimed.
+The value of ``delay`` must be between 0 and 900 seconds (15 mins).
 
 Normal response codes: 201
 
@@ -133,6 +135,7 @@ Request Parameters
   - limit: limit
   - echo: echo
   - include_claimed: include_claimed
+  - include_delayed: include_delayed
 
 
 Response Parameters

@@ -76,6 +76,8 @@ When create queue, user can specify metadata for the queue. Currently, Zaqar
 supports below metadata: _flavor, _max_claim_count, _dead_letter_queue and
 _dead_letter_queue_messages_ttl.
 
+In order to support the delayed queues, now add a metadata
+``_default_message_delay``.
 
 Normal response codes: 201, 204
 
@@ -94,6 +96,7 @@ Request Parameters
   - queue_name: queue_name
   - _dead_letter_queue: _dead_letter_queue
   - _dead_letter_queue_messages_ttl: _dead_letter_queue_messages_ttl
+  - _default_message_delay: _default_message_delay
   - _default_message_ttl: _default_message_ttl
   - _flavor: _flavor
   - _max_claim_count: _max_claim_count
@@ -189,6 +192,7 @@ Response Parameters
 .. rest_parameters:: parameters.yaml
 
   - _max_messages_post_size: _max_messages_post_size
+  - _default_message_delay: _default_message_delay
   - _default_message_ttl: _default_message_ttl
 
 Response Example
