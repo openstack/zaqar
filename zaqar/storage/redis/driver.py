@@ -53,6 +53,13 @@ class ConnectionURI(object):
             path, sep, query = path.partition('?')
         else:
             query = parsed_url.query
+        # NOTE(gengchc2): Redis connection support password configure.
+        self.password = None
+        if '@' in path:
+            self.password, sep, path = path.partition('@')
+        netloc = parsed_url.netloc
+        if '@' in netloc:
+            self.password, sep, netloc = netloc.partition('@')
 
         query_params = dict(urllib.parse.parse_qsl(query))
 
@@ -80,7 +87,7 @@ class ConnectionURI(object):
 
             # NOTE(kgriffs): Have to parse list of sentinel hosts ourselves
             # since urllib doesn't support it.
-            for each_host in parsed_url.netloc.split(','):
+            for each_host in netloc.split(','):
                 name, sep, port = each_host.partition(':')
 
                 if port:
@@ -101,8 +108,8 @@ class ConnectionURI(object):
                         'sentinel hosts')
                 raise errors.ConfigurationError(msg)
 
-        elif parsed_url.netloc:
-            if ',' in parsed_url.netloc:
+        elif netloc:
+            if ',' in netloc:
                 # NOTE(kgriffs): They probably were specifying
                 # a list of sentinel hostnames, but forgot to
                 # add 'master' to the query string.
@@ -276,6 +283,8 @@ def _get_redis_client(driver):
     if connection_uri.strategy == STRATEGY_SENTINEL:
         sentinel = redis.sentinel.Sentinel(
             connection_uri.sentinels,
+            db=connection_uri.dbid,
+            password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
 
         # NOTE(prashanthr_): The socket_timeout parameter being generic
@@ -288,8 +297,11 @@ def _get_redis_client(driver):
             host=connection_uri.hostname,
             port=connection_uri.port,
             db=connection_uri.dbid,
+            password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
     else:
         return redis.StrictRedis(
             unix_socket_path=connection_uri.unix_socket_path,
+            db=connection_uri.dbid,
+            password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
