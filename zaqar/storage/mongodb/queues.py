@@ -196,10 +196,11 @@ class QueueController(storage.Queue):
         except errors.QueueDoesNotExist:
             return {}
 
-    def _list(self, project=None, marker=None,
-              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project=None, kfilter={}, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False,
+              name=None):
 
-        query = utils.scoped_query(marker, project)
+        query = utils.scoped_query(marker, project, name, kfilter)
 
         projection = {'p_q': 1, '_id': 0}
         if detailed:

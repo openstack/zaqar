@@ -172,15 +172,18 @@ class QueueController(storage.Queue):
         self._mgt_queue_ctrl = self._pool_catalog.control.queue_controller
         self._get_controller = self._pool_catalog.get_queue_controller
 
-    def _list(self, project=None, marker=None,
-              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project=None, kfilter={}, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False,
+              name=None):
 
         def all_pages():
             yield next(self._mgt_queue_ctrl.list(
                 project=project,
+                kfilter=kfilter,
                 marker=marker,
                 limit=limit,
-                detailed=detailed))
+                detailed=detailed,
+                name=name))
 
         # make a heap compared with 'name'
         ls = heapq.merge(*[

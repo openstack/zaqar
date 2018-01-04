@@ -23,6 +23,10 @@ instead of 200, because there was no information to send back.
 This operation lists queues for the project. The queues are sorted
 alphabetically by name.
 
+When queue listing , we can add filter in query string parameter
+to filter queue, like name and metadata. If metadata or name of queue is
+consistent with the filter,the queue will be listed to the user,
+otherwise the queue will be filtered.
 
 Normal response codes: 200
 

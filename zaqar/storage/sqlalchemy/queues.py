@@ -23,8 +23,9 @@ from zaqar.storage.sqlalchemy import utils
 
 class QueueController(storage.Queue):
 
-    def _list(self, project, marker=None,
-              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project, kfilter={}, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False,
+              name=None):
 
         if project is None:
             project = ''

@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Support for queue filter when queue listing. With this feature, users can
+    add filter of name or metadata in query string parameters in queue list
+    to filter queues.

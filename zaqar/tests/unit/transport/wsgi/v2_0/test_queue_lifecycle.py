@@ -455,6 +455,13 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           '_dead_letter_queue_messages_ttl': None,
                           '_max_claim_count': None},  result_doc)
 
+        # queue filter
+        result = self.simulate_get(self.queue_path, headers=header,
+                                   query_string='node=34')
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(0, len(result_doc['queues']))
+
         # List tail
         self.simulate_get(target, headers=header, query_string=params)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
@@ -487,6 +494,50 @@ class TestQueueLifecycleMongoDB(base.V2Base):
             mock_queue_list.return_value = fake_generator()
             self.simulate_get(self.queue_path, headers=header)
             self.assertEqual(falcon.HTTP_503, self.srmock.status)
+
+    def test_list_with_filter(self):
+        arbitrary_number = 644079696574693
+        project_id = str(arbitrary_number)
+        client_id = uuidutils.generate_uuid()
+        header = {
+            'X-Project-ID': project_id,
+            'Client-ID': client_id
+        }
+
+        # Create some
+        def create_queue(name, project_id, body):
+            altheader = {'Client-ID': client_id}
+            if project_id is not None:
+                altheader['X-Project-ID'] = project_id
+            uri = self.queue_path + '/' + name
+            self.simulate_put(uri, headers=altheader, body=body)
+
+        create_queue('q1', project_id, '{"test_metadata_key1": "value1"}')
+        create_queue('q2', project_id, '{"_max_messages_post_size": 2000}')
+        create_queue('q3', project_id, '{"test_metadata_key2": 30}')
+
+        # List (filter query)
+        result = self.simulate_get(self.queue_path, headers=header,
+                                   query_string='name=q&test_metadata_key2=30')
+
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(1, len(result_doc['queues']))
+        self.assertEqual('q3', result_doc['queues'][0]['name'])
+
+        # List (filter query)
+        result = self.simulate_get(self.queue_path, headers=header,
+                                   query_string='_max_messages_post_size=2000')
+
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(1, len(result_doc['queues']))
+        self.assertEqual('q2', result_doc['queues'][0]['name'])
+
+        # List (filter query)
+        result = self.simulate_get(self.queue_path, headers=header,
+                                   query_string='name=q')
+
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(3, len(result_doc['queues']))
 
 
 class TestQueueLifecycleFaultyDriver(base.V2BaseFaulty):

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import falcon
 from oslo_log import log as logging
 import six
@@ -252,20 +253,11 @@ class CollectionResource(object):
         self._queue_controller = queue_controller
         self._validate = validate
 
-    @decorators.TransportLog("Queues collection")
-    @acl.enforce("queues:get_all")
-    def on_get(self, req, resp, project_id):
-        kwargs = {}
-
-        # NOTE(kgriffs): This syntax ensures that
-        # we don't clobber default values with None.
-        req.get_param('marker', store=kwargs)
-        req.get_param_as_int('limit', store=kwargs)
-        req.get_param_as_bool('detailed', store=kwargs)
-
+    def _queue_list(self, project_id, path, kfilter, **kwargs):
         try:
             self._validate.queue_listing(**kwargs)
-            results = self._queue_controller.list(project=project_id, **kwargs)
+            results = self._queue_controller.list(project=project_id,
+                                                  kfilter=kfilter, **kwargs)
 
             # Buffer list of queues
             queues = list(next(results))
@@ -283,13 +275,29 @@ class CollectionResource(object):
         kwargs['marker'] = next(results) or kwargs.get('marker', '')
         reserved_metadata = _get_reserved_metadata(self._validate).items()
         for each_queue in queues:
-            each_queue['href'] = req.path + '/' + each_queue['name']
+            each_queue['href'] = path + '/' + each_queue['name']
             if kwargs.get('detailed'):
                 for meta, value in reserved_metadata:
                     if not each_queue.get('metadata', {}).get(meta):
                         each_queue['metadata'][meta] = value
 
+        return queues, kwargs['marker']
+
+    def _on_get_with_kfilter(self, req, resp, project_id, kfilter={}):
+        kwargs = {}
+
+        # NOTE(kgriffs): This syntax ensures that
+        # we don't clobber default values with None.
+        req.get_param('marker', store=kwargs)
+        req.get_param_as_int('limit', store=kwargs)
+        req.get_param_as_bool('detailed', store=kwargs)
+        req.get_param('name', store=kwargs)
+
+        queues, marker = self._queue_list(project_id,
+                                          req.path, kfilter, **kwargs)
+
         links = []
+        kwargs['marker'] = marker
         if queues:
             links = [
                 {
@@ -304,4 +312,25 @@ class CollectionResource(object):
         }
 
         resp.body = utils.to_json(response_body)
+        # status defaults to 200
+
+    @decorators.TransportLog("Queues collection")
+    @acl.enforce("queues:get_all")
+    def on_get(self, req, resp, project_id):
+        field = ('marker', 'limit', 'detailed', 'name')
+        kfilter = copy.deepcopy(req.params)
+
+        for key in req.params.keys():
+            if key in field:
+                kfilter.pop(key)
+
+        kfilter = kfilter if len(kfilter) > 0 else {}
+        for key in kfilter.keys():
+            # Since we get the filter value from URL, so need to
+            # turn the string to integer if using integer filter value.
+            try:
+                kfilter[key] = int(kfilter[key])
+            except ValueError:
+                continue
+        self._on_get_with_kfilter(req, resp, project_id, kfilter)
         # status defaults to 200

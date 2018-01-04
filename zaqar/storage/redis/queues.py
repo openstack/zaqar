@@ -83,8 +83,9 @@ class QueueController(storage.Queue):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def _list(self, project=None, marker=None,
-              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def _list(self, project=None, kfilter={}, marker=None,
+              limit=storage.DEFAULT_QUEUES_PER_PAGE, detailed=False,
+              name=None):
         client = self._client
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
         marker = utils.scope_queue_name(marker, project)

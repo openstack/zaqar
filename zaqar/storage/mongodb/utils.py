@@ -191,7 +191,7 @@ def parse_scoped_project_queue(scoped_name):
     return scoped_name.split('/')
 
 
-def scoped_query(queue, project):
+def scoped_query(queue, project, name=None, kfilter={}):
     """Returns a dict usable for querying for scoped project/queues.
 
     :param queue: name of queue to seek
@@ -207,14 +207,28 @@ def scoped_query(queue, project):
 
     if not scoped_name.startswith('/'):
         # NOTE(kgriffs): scoped queue, e.g., 'project-id/queue-name'
-        project_prefix = '^' + project + '/'
+        if name:
+            project_prefix = '^' + project + '/.*' + name + '.*'
+        else:
+            project_prefix = '^' + project + '/'
         query[key] = {'$regex': project_prefix, '$gt': scoped_name}
     elif scoped_name == '/':
         # NOTE(kgriffs): list global queues, but exclude scoped ones
-        query[key] = {'$regex': '^/'}
+        if name:
+            query[key] = {'$regex': '^/.*' + name + '.*'}
+        else:
+            query[key] = {'$regex': '^/'}
     else:
         # NOTE(kgriffs): unscoped queue, e.g., '/my-global-queue'
-        query[key] = {'$regex': '^/', '$gt': scoped_name}
+        if name:
+            query[key] = {'$regex': '^/.*' + name + '.*', '$gt': scoped_name}
+        else:
+            query[key] = {'$regex': '^/', '$gt': scoped_name}
+
+    # Handler the metadata filter in request.
+    for key, value in kfilter.items():
+        key = 'm.' + key
+        query[key] = {'$eq': value}
 
     return query
 

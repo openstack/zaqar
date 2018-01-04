@@ -309,8 +309,8 @@ class Queue(ControllerBase):
     numbers of queues.
     """
 
-    def list(self, project=None, marker=None,
-             limit=DEFAULT_QUEUES_PER_PAGE, detailed=False):
+    def list(self, project=None, kfilter={}, marker=None,
+             limit=DEFAULT_QUEUES_PER_PAGE, detailed=False, name=None):
         """Base method for listing queues.
 
         :param project: Project id
@@ -321,7 +321,7 @@ class Queue(ControllerBase):
         :returns: An iterator giving a sequence of queues
             and the marker of the next page.
         """
-        return self._list(project, marker, limit, detailed)
+        return self._list(project, kfilter, marker, limit, detailed, name)
 
     _list = abc.abstractmethod(lambda x: None)
 

@@ -109,7 +109,8 @@ class PoolCatalogTest(testing.TestBase):
                           flavor='fake')
 
     def test_queues_list_on_multi_pools(self):
-        def fake_list(project=None, marker=None, limit=10, detailed=False):
+        def fake_list(project=None, kfilter={}, marker=None, limit=10,
+                      detailed=False, name=None):
             yield iter([{'name': 'fake_queue'}])
 
         list_str = 'zaqar.storage.mongodb.queues.QueueController.list'
