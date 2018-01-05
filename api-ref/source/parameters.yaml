@@ -171,7 +171,8 @@ _default_message_delay:
     the queue, it will be delayed for some times and means it can not be
     claimed until the delay expired. And user can define a queue's level
     value for delay, also can define a message's level. The latter has
-    a higher priority.
+    a higher priority. It is one of the ``reserved attributes`` of Zaqar
+    queues.
 
 _default_message_ttl:
   type: integer
