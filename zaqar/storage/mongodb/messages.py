@@ -35,6 +35,7 @@ from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
+from zaqar.storage import utils as s_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -137,6 +138,7 @@ class MessageController(storage.Message):
             client uuid      ->     u
             transaction      ->    tx
             delay            ->     d
+            checksum         ->    cs
     """
 
     def __init__(self, *args, **kwargs):
@@ -657,6 +659,7 @@ class MessageController(storage.Message):
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
                 'tx': None,
+                'cs': s_utils.get_checksum(message.get('body', None))
             }
 
             for index, message in enumerate(messages)
@@ -836,6 +839,7 @@ class FIFOMessageController(MessageController):
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
                 'tx': transaction,
+                'cs': s_utils.get_checksum(message.get('body', None))
             }
 
             for index, message in enumerate(messages)
@@ -1009,7 +1013,8 @@ def _basic_message(msg, now):
         'ttl': msg['t'],
         'claim_count': msg['c'].get('c', 0),
         'body': msg['b'],
-        'claim_id': str(msg['c']['id']) if msg['c']['id'] else None
+        'claim_id': str(msg['c']['id']) if msg['c']['id'] else None,
+        'checksum': msg.get('cs', '')
     }
 
 

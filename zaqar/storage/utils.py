@@ -13,6 +13,8 @@
 # the License.
 
 import copy
+import hashlib
+import json
 
 from oslo_config import cfg
 from oslo_log import log
@@ -210,3 +212,30 @@ def can_connect(uri, conf=None):
     except Exception as exc:
         LOG.debug('Can\'t connect to: %s \n%s', (uri, exc))
         return False
+
+
+def get_checksum(body, algorithm='MD5'):
+    """According to the algorithm to get the message body checksum.
+
+    :param body: The message body.
+    :type body: six.text_type
+    :param algorithm: The algorithm type, default is MD5.
+    :type algorithm: six.text_type
+    :returns: The message body checksum.
+    :rtype: six.text_type
+    """
+
+    checksum = '%s:' % algorithm
+
+    if body is None:
+        return ''
+    else:
+        checksum_body = json.dumps(body).encode('utf-8')
+    # TODO(yangzhenyu): We may support other algorithms in future
+    # versions, including SHA1, SHA256, SHA512, and so on.
+    if algorithm == 'MD5':
+        md5 = hashlib.md5()
+        md5.update(checksum_body)
+        checksum += md5.hexdigest()
+
+    return checksum

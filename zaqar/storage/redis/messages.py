@@ -25,6 +25,7 @@ from zaqar.storage import errors
 from zaqar.storage.redis import models
 from zaqar.storage.redis import scripting
 from zaqar.storage.redis import utils
+from zaqar.storage import utils as s_utils
 
 Message = models.Message
 MessageEnvelope = models.MessageEnvelope
@@ -97,6 +98,8 @@ class MessageController(storage.Message, scripting.Mixin):
         |  created time       |  cr     |
         +---------------------+---------+
         |  delay expiry time  |  d      |
+        +---------------------+---------+
+        |  body checksum      |  cs      |
         +---------------------+---------+
 
     4. Messages rank counter (Redis Hash):
@@ -428,6 +431,7 @@ class MessageController(storage.Message, scripting.Mixin):
                     claim_count=0,
                     delay_expires=now + msg.get('delay', 0),
                     body=msg.get('body', {}),
+                    checksum=s_utils.get_checksum(msg.get('body', None))
                 )
 
                 prepared_msg.to_redis(pipe)
