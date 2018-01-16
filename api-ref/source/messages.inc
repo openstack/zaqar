@@ -174,7 +174,8 @@ URI that the client can use to uniquely identify a message resource and
 interact with it. ``ttl`` is the TTL that was set on the message when it was
 posted. The message expires after (ttl - age) seconds. ``age`` is the number
 of seconds relative to the server's clock. ``body`` is the arbitrary document
-that was submitted with the original request to post the message.
+that was submitted with the original request to post the message. ``checksum``
+is the hash digest of the ``body``, default algorithm is MD5.
 
 
 
@@ -268,7 +269,8 @@ the client can use to uniquely identify a message resource and interact with
 it. ``ttl`` is the TTL that was set on the message when it was posted. The
 message expires after (ttl - age) seconds. ``age`` is the number of seconds
 relative to the server's clock. ``body`` is the arbitrary document that was
-submitted with the original request to post the message.
+submitted with the original request to post the message. ``checksum`` is the
+hash digest of the ``body``, default algorithm is MD5.
 
 
 

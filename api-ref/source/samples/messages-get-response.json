@@ -7,5 +7,6 @@
     "age": 1110,
     "href": "/v2/queues/beijing/messages/578f0055508f153f256f717f",
     "id": "578f0055508f153f256f717f",
-    "ttl": 3600
+    "ttl": 3600,
+    "checksum": "MD5:abf7213555626e29c3cb3e5dc58b3515"
 }

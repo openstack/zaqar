@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Support non-URL encoded message body checksum function, the default algorithm
+    is MD5. Back-end support for MongoDB, Redis and Swift. With this feature, when
+    a user sends a message to the queue, Zaqar calculates a "checksum" value for
+    the body of the non-URL encoded message, which the user can then get after the
+    message is got or claimed. Finally, the user can use it to verify that the
+    body of the newly obtained message is correct.

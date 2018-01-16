@@ -9,7 +9,8 @@
             "age": 482,
             "href": "/v2/queues/beijing/messages/578edfe6508f153f256f717b",
             "id": "578edfe6508f153f256f717b",
-            "ttl": 3600
+            "ttl": 3600,
+            "checksum": "MD5:abf7213555626e29c3cb3e5dc58b3515"
         },
         {
             "body": {
@@ -20,7 +21,8 @@
             "age": 456,
             "href": "/v2/queues/beijing/messages/578ee000508f153f256f717d",
             "id": "578ee000508f153f256f717d",
-            "ttl": 3600
+            "ttl": 3600,
+            "checksum": "MD5:abf7213555626e29c3cb3e5dc58b3515"
         }
     ],
     "links": [
