@@ -23,7 +23,7 @@ from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 
 MSGENV_FIELD_KEYS = (b'id', b't', b'cr', b'e', b'u', b'c', b'c.e',
-                     b'c.c', b'd')
+                     b'c.c', b'd', b'cs')
 SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p', b'c')
 
 
@@ -51,6 +51,7 @@ class MessageEnvelope(object):
         'claim_expires',
         'claim_count',
         'delay_expires',
+        'checksum',
     ]
 
     def __init__(self, **kwargs):
@@ -67,6 +68,7 @@ class MessageEnvelope(object):
         self.claim_expires = kwargs['claim_expires']
         self.claim_count = kwargs.get('claim_count', 0)
         self.delay_expires = kwargs.get('delay_expires', 0)
+        self.checksum = kwargs.get('checksum')
 
     @staticmethod
     def from_hmap(hmap):
@@ -238,7 +240,8 @@ class Message(MessageEnvelope):
             created_iso = datetime.datetime.utcfromtimestamp(
                 self.created).strftime('%Y-%m-%dT%H:%M:%SZ')
             basic_msg['created'] = created_iso
-
+        if self.checksum:
+            basic_msg['checksum'] = self.checksum
         return basic_msg
 
 
@@ -266,7 +269,7 @@ def _hmap_to_msgenv_kwargs(hmap):
 
     # NOTE(kgriffs): Under Py3K, redis-py converts all strings
     # into binary. Woohoo!
-    return {
+    res = {
         'id': encodeutils.safe_decode(hmap[b'id']),
         'ttl': int(hmap[b't']),
         'created': int(hmap[b'cr']),
@@ -277,12 +280,18 @@ def _hmap_to_msgenv_kwargs(hmap):
         'claim_id': claim_id,
         'claim_expires': int(hmap[b'c.e']),
         'claim_count': int(hmap[b'c.c']),
-        'delay_expires': int(hmap.get(b'd', 0)),
+        'delay_expires': int(hmap.get(b'd', 0))
     }
+
+    checksum = hmap.get(b'cs')
+    if checksum:
+        res['checksum'] = encodeutils.safe_decode(hmap[b'cs'])
+
+    return res
 
 
 def _msgenv_to_hmap(msg):
-    return {
+    res = {
         'id': msg.id,
         't': msg.ttl,
         'cr': msg.created,
@@ -291,8 +300,11 @@ def _msgenv_to_hmap(msg):
         'c': msg.claim_id or '',
         'c.e': msg.claim_expires,
         'c.c': msg.claim_count,
-        'd': msg.delay_expires,
-    }
+        'd': msg.delay_expires
+        }
+    if msg.checksum:
+        res['cs'] = msg.checksum
+    return res
 
 
 def _hmap_kv_to_subenv(keys, values):

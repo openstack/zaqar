@@ -235,10 +235,13 @@ def format_message_v1(message, base_path, claim_id=None):
 
 def format_message_v1_1(message, base_path, claim_id=None):
     url = message_url(message, base_path, claim_id)
-    return {
+    res = {
         'id': message['id'],
         'href': url,
         'ttl': message['ttl'],
         'age': message['age'],
-        'body': message['body'],
+        'body': message['body']
     }
+    if message.get('checksum'):
+        res['checksum'] = message.get('checksum')
+    return res

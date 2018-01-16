@@ -35,6 +35,7 @@ from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
+from zaqar.storage import utils as s_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -137,6 +138,7 @@ class MessageController(storage.Message):
             client uuid      ->     u
             transaction      ->    tx
             delay            ->     d
+            checksum         ->    cs
     """
 
     def __init__(self, *args, **kwargs):
@@ -646,8 +648,9 @@ class MessageController(storage.Message):
                                         project,
                                         amount=msgs_n) - msgs_n
 
-        prepared_messages = [
-            {
+        prepared_messages = []
+        for index, message in enumerate(messages):
+            msg = {
                 PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
                 't': message['ttl'],
                 'e': now_dt + datetime.timedelta(seconds=message['ttl']),
@@ -656,11 +659,12 @@ class MessageController(storage.Message):
                 'd': now + message.get('delay', 0),
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
-                'tx': None,
-            }
+                'tx': None
+                }
+            if self.driver.conf.enable_checksum:
+                msg['cs'] = s_utils.get_checksum(message.get('body', None))
 
-            for index, message in enumerate(messages)
-        ]
+            prepared_messages.append(msg)
 
         res = collection.insert_many(prepared_messages,
                                      bypass_document_validation=True)
@@ -825,8 +829,9 @@ class FIFOMessageController(MessageController):
         # Unique transaction ID to facilitate atomic batch inserts
         transaction = objectid.ObjectId()
 
-        prepared_messages = [
-            {
+        prepared_messages = []
+        for index, message in enumerate(messages):
+            msg = {
                 PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
                 't': message['ttl'],
                 'e': now_dt + datetime.timedelta(seconds=message['ttl']),
@@ -835,11 +840,12 @@ class FIFOMessageController(MessageController):
                 'd': now + message.get('delay', 0),
                 'b': message['body'] if 'body' in message else {},
                 'k': next_marker + index,
-                'tx': transaction,
-            }
+                'tx': None
+                }
+            if self.driver.conf.enable_checksum:
+                msg['cs'] = s_utils.get_checksum(message.get('body', None))
 
-            for index, message in enumerate(messages)
-        ]
+            prepared_messages.append(msg)
 
         # NOTE(kgriffs): Don't take the time to do a 2-phase insert
         # if there is no way for it to partially succeed.
@@ -1002,15 +1008,18 @@ def _is_claimed(msg, now):
 def _basic_message(msg, now):
     oid = msg['_id']
     age = now - utils.oid_ts(oid)
-
-    return {
+    res = {
         'id': str(oid),
         'age': int(age),
         'ttl': msg['t'],
         'claim_count': msg['c'].get('c', 0),
         'body': msg['b'],
         'claim_id': str(msg['c']['id']) if msg['c']['id'] else None
-    }
+        }
+    if msg.get('cs'):
+        res['checksum'] = msg.get('cs')
+
+    return res
 
 
 class MessageQueueHandler(object):

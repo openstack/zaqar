@@ -35,6 +35,9 @@ _GENERAL_OPTIONS = (
                 item_type=cfg.types.List(item_type=cfg.types.String(
                     choices=('1', '1.1'))),
                 help='List of deprecated API versions to enable.'),
+    cfg.BoolOpt('enable_checksum', default=False,
+                help='Enable a checksum for message body. The default value '
+                     'is False.'),
 )
 
 _DRIVER_OPTIONS = (
