@@ -1,0 +1,649 @@
+# Andi Chandler <andi@gowling.com>, 2017. #zanata
+# Andi Chandler <andi@gowling.com>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: zaqar VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2018-01-19 04:09+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-01-19 07:13+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid ""
+"%(attempts)d attempt(s) required to post %(num_messages)d messages to queue "
+"\"%(queue)s\" under project %(project)s"
+msgstr ""
+"%(attempts)d attempt(s) required to post %(num_messages)d messages to queue "
+"\"%(queue)s\" under project %(project)s"
+
+msgid "A claim was specified, but the message is not currently claimed."
+msgstr "A claim was specified, but the message is not currently claimed."
+
+#, python-format
+msgid "Accepted media type for PATCH: %s."
+msgstr "Accepted media type for PATCH: %s."
+
+msgid "Can't make confirmation email body, need a valid confirm url."
+msgstr "Can't make confirmation email body, need a valid confirm URL."
+
+#, python-format
+msgid "Can't remove non-existent object %s."
+msgstr "Can't remove non-existent object %s."
+
+#, python-format
+msgid "Can't replace non-existent object %s."
+msgstr "Can't replace non-existent object %s."
+
+#, python-format
+msgid "Cannot retrieve queue %s stats."
+msgstr "Cannot retrieve queue %s stats."
+
+#, python-format
+msgid "Cannot retrieve queue %s."
+msgstr "Cannot retrieve queue %s."
+
+#, python-format
+msgid "Cannot retrieve subscription %s."
+msgstr "Cannot retrieve subscription %s."
+
+#, python-format
+msgid "Claim %s deleted."
+msgstr "Claim %s deleted."
+
+#, python-format
+msgid "Claim %s does not exist."
+msgstr "Claim %s does not exist."
+
+#, python-format
+msgid "Claim %s updated."
+msgstr "Claim %s updated."
+
+msgid "Claim could not be created."
+msgstr "Claim could not be created."
+
+msgid "Claim could not be deleted."
+msgstr "Claim could not be deleted."
+
+msgid "Claim could not be queried."
+msgstr "Claim could not be queried."
+
+msgid "Claim could not be updated."
+msgstr "Claim could not be updated."
+
+msgid "Doctype must be either a JSONObject or JSONArray"
+msgstr "Doctype must be either a JSONObject or JSONArray"
+
+msgid "Document type not supported."
+msgstr "Document type not supported."
+
+msgid ""
+"Either a replica set or a mongos is required to guarantee message delivery"
+msgstr ""
+"Either a replica set or a mongos is required to guarantee message delivery"
+
+msgid ""
+"Endpoint does not accept `application/x-www-form-urlencoded` content; "
+"currently supported media type is `application/json`; specify proper client-"
+"side media type with the \"Content-Type\" header."
+msgstr ""
+"Endpoint does not accept `application/x-www-form-urlencoded` content; "
+"currently supported media type is `application/json`; specify proper client-"
+"side media type with the \"Content-Type\" header."
+
+#, python-format
+msgid ""
+"Failed to increment the message counter for queue %(name)s and project "
+"%(project)s"
+msgstr ""
+"Failed to increment the message counter for queue %(name)s and project "
+"%(project)s"
+
+#, python-format
+msgid ""
+"First attempt failed while adding messages to queue \"%(queue)s\" under "
+"project %(project)s"
+msgstr ""
+"First attempt failed while adding messages to queue \"%(queue)s\" under "
+"project %(project)s"
+
+#, python-format
+msgid ""
+"Flavor %(flavor)s could not be created. Pool group %(pool_group)s does not "
+"exist"
+msgstr ""
+"Flavour %(flavor)s could not be created. Pool group %(pool_group)s does not "
+"exist"
+
+msgid "Health status could not be read."
+msgstr "Health status could not be read."
+
+msgid "Invalid API request"
+msgstr "Invalid API request"
+
+msgid "Invalid Content-Type"
+msgstr "Invalid Content-Type"
+
+#, python-format
+msgid "Invalid JSON pointer for this resource: '/%s, e.g /metadata/key'"
+msgstr "Invalid JSON pointer for this resource: '/%s, e.g /metadata/key'"
+
+#, python-format
+msgid ""
+"Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
+msgstr ""
+"Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
+
+msgid "Invalid queue identification"
+msgstr "Invalid queue identification"
+
+msgid "Invalid request body"
+msgstr "Invalid request body"
+
+msgid "Invalid request."
+msgstr "Invalid request."
+
+msgid "Invalid scheme in Redis URI"
+msgstr "Invalid scheme in Redis URI"
+
+msgid "JSON contains integer that is too large."
+msgstr "JSON contains integer that is too large."
+
+msgid "Limit must be at least 1 and may not be greater than {0}."
+msgstr "Limit must be at least 1 and may not be greater than {0}."
+
+msgid "Limit must be at least 1 and no greater than {0}."
+msgstr "Limit must be at least 1 and no greater than {0}."
+
+msgid "Malformed Redis URI"
+msgstr "Malformed Redis URI"
+
+msgid "Malformed hexadecimal UUID."
+msgstr "Malformed hexadecimal UUID."
+
+msgid "Message collection size is too large. Max size {0}"
+msgstr "Message collection size is too large. Max size {0}"
+
+msgid ""
+"Message collection size is too large. The max size for current queue is {0}. "
+"It is calculated by max size = min(max_messages_post_size_config: {1}, "
+"max_messages_post_size_queue: {2})."
+msgstr ""
+"Message collection size is too large. The max size for current queue is {0}. "
+"It is calculated by max size = min(max_messages_post_size_config: {1}, "
+"max_messages_post_size_queue: {2})."
+
+msgid "Message could not be deleted."
+msgstr "Message could not be deleted."
+
+msgid "Message could not be retrieved."
+msgstr "Message could not be retrieved."
+
+msgid "Messages could not be deleted."
+msgstr "Messages could not be deleted."
+
+msgid "Messages could not be enqueued."
+msgstr "Messages could not be enqueued."
+
+msgid "Messages could not be listed."
+msgstr "Messages could not be listed."
+
+msgid "Messages could not be popped."
+msgstr "Messages could not be popped."
+
+msgid "Metadata could not be updated."
+msgstr "Metadata could not be updated."
+
+#, python-format
+msgid "Method %s not found in any of the registered stages"
+msgstr "Method %s not found in any of the registered stages"
+
+msgid "Missing \"{name}\" field."
+msgstr "Missing \"{name}\" field."
+
+msgid "Missing host name in Redis URI"
+msgstr "Missing host name in Redis URI"
+
+#, python-format
+msgid "Missing parameter %s in body."
+msgstr "Missing parameter %s in body."
+
+msgid "Missing path in Redis URI"
+msgstr "Missing path in Redis URI"
+
+msgid "No messages could be enqueued."
+msgstr "No messages could be enqueued."
+
+msgid "No messages to enqueu."
+msgstr "No messages to enqueue."
+
+msgid "No messages were found in the request body."
+msgstr "No messages were found in the request body."
+
+msgid ""
+"No messages with IDs: {ids} found in the queue {queue} for project {project}."
+msgstr ""
+"No messages with IDs: {ids} found in the queue {queue} for project {project}."
+
+msgid "No subscription to create."
+msgstr "No subscription to create."
+
+msgid "Not authorized"
+msgstr "Not authorised"
+
+msgid "Not found"
+msgstr "Not found"
+
+msgid "Operation \"{0}\" requires a member named \"value\"."
+msgstr "Operation \"{0}\" requires a member named \"value\"."
+
+msgid "Operations must be JSON objects."
+msgstr "Operations must be JSON objects."
+
+msgid "Options must be a dict."
+msgstr "Options must be a dict."
+
+msgid "PATCH body could not be empty for update."
+msgstr "PATCH body could not be empty for update."
+
+msgid ""
+"Pipeline to use for processing {0} operations. This pipeline will be "
+"consumed before calling the storage driver's controller methods."
+msgstr ""
+"Pipeline to use for processing {0} operations. This pipeline will be "
+"consumed before calling the storage driver's controller methods."
+
+msgid "Please try again in a few seconds."
+msgstr "Please try again in a few seconds."
+
+#, python-format
+msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
+msgstr "Pointer `%s` contains \"~\" not part of a recognised escape sequence."
+
+#, python-format
+msgid "Pointer `%s` contains adjacent \"/\"."
+msgstr "Pointer `%s` contains adjacent \"/\"."
+
+#, python-format
+msgid "Pointer `%s` does not contains valid token."
+msgstr "Pointer `%s` does not contains valid token."
+
+#, python-format
+msgid "Pointer `%s` does not start with \"/\"."
+msgstr "Pointer `%s` does not start with \"/\"."
+
+#, python-format
+msgid "Pointer `%s` end with \"/\"."
+msgstr "Pointer `%s` end with \"/\"."
+
+msgid "Pop value must be at least 1 and may not be greater than {0}."
+msgstr "Pop value must be at least 1 and may not be greater than {0}."
+
+msgid "Post body must contain key \"resource_types\"."
+msgstr "Post body must contain key \"resource_types\"."
+
+msgid "Project ids may not be more than {0} characters long."
+msgstr "Project ids may not be more than {0} characters long."
+
+#, python-format
+msgid "Queue %s could not be created."
+msgstr "Queue %s could not be created."
+
+#, python-format
+msgid "Queue %s could not be deleted."
+msgstr "Queue %s could not be deleted."
+
+#, python-format
+msgid "Queue %s created."
+msgstr "Queue %s created."
+
+#, python-format
+msgid "Queue %s does not exist."
+msgstr "Queue %s does not exist."
+
+#, python-format
+msgid "Queue %s removed."
+msgstr "Queue %s removed."
+
+msgid "Queue could not be created."
+msgstr "Queue could not be created."
+
+msgid "Queue could not be deleted."
+msgstr "Queue could not be deleted."
+
+msgid "Queue could not be purged."
+msgstr "Queue could not be purged."
+
+msgid "Queue could not be updated."
+msgstr "Queue could not be updated."
+
+msgid "Queue metadata could not be retrieved."
+msgstr "Queue metadata could not be retrieved."
+
+msgid "Queue metadata is too large. Max size: {0}"
+msgstr "Queue metadata is too large. Max size: {0}"
+
+msgid "Queue names may not be more than {0} characters long."
+msgstr "Queue names may not be more than {0} characters long."
+
+msgid ""
+"Queue names may only contain ASCII letters, digits, underscores, and dashes."
+msgstr ""
+"Queue names may only contain ASCII letters, digits, underscores, and dashes."
+
+msgid "Queue stats could not be read."
+msgstr "Queue stats could not be read."
+
+msgid "Queues could not be listed."
+msgstr "Queues could not be listed."
+
+msgid "Request body can not be empty"
+msgstr "Request body can not be empty"
+
+msgid "Request body could not be parsed."
+msgstr "Request body could not be parsed."
+
+msgid "Request body could not be read."
+msgstr "Request body could not be read."
+
+msgid "Request body must be a JSON array of operation objects."
+msgstr "Request body must be a JSON array of operation objects."
+
+msgid ""
+"Reserved queue attributes in metadata (which names start with \"_\") can not "
+"be set in API v1."
+msgstr ""
+"Reserved queue attributes in metadata (which names start with \"_\") can not "
+"be set in API v1."
+
+msgid "Resource conflict"
+msgstr "Resource conflict"
+
+msgid "Resource types must be a sub set of {0}."
+msgstr "Resource types must be a sub set of {0}."
+
+#, python-format
+msgid "Retry policy: %s must be a integer."
+msgstr "Retry policy: %s must be a integer."
+
+msgid "Service temporarily unavailable"
+msgstr "Service temporarily unavailable"
+
+#, python-format
+msgid "Serving on host %(bind)s:%(port)s"
+msgstr "Serving on host %(bind)s:%(port)s"
+
+#, python-format
+msgid "Stage %(stage)s does not implement %(method)s"
+msgstr "Stage %(stage)s does not implement %(method)s"
+
+#, python-format
+msgid "Subscription %(subscription)s for queue %(queue)s could not be deleted."
+msgstr ""
+"Subscription %(subscription)s for queue %(queue)s could not be deleted."
+
+#, python-format
+msgid "Subscription %(subscription)s for queue %(queue)s does not exist."
+msgstr "Subscription %(subscription)s for queue %(queue)s does not exist."
+
+#, python-format
+msgid "Subscription %(subscription_id)s could not be confirmed."
+msgstr "Subscription %(subscription_id)s could not be confirmed."
+
+#, python-format
+msgid "Subscription %(subscription_id)s could not be updated."
+msgstr "Subscription %(subscription_id)s could not be updated."
+
+#, python-format
+msgid "Subscription %s could not be created."
+msgstr "Subscription %s could not be created."
+
+#, python-format
+msgid "Subscription %s created."
+msgstr "Subscription %s created."
+
+#, python-format
+msgid "Subscription %s not created."
+msgstr "Subscription %s not created."
+
+#, python-format
+msgid "Subscription %s removed."
+msgstr "Subscription %s removed."
+
+msgid "Subscription could not be created."
+msgstr "Subscription could not be created."
+
+msgid "Subscription could not be deleted."
+msgstr "Subscription could not be deleted."
+
+msgid "Subscription could not be retrieved."
+msgstr "Subscription could not be retrieved."
+
+msgid "Subscriptions could not be listed."
+msgstr "Subscriptions could not be listed."
+
+msgid "Subscriptions must be a dict."
+msgstr "Subscriptions must be a dict."
+
+msgid ""
+"Such subscription already exists.Subscriptions are unique by project + queue "
+"+ subscriber URI."
+msgstr ""
+"Such subscription already exists.Subscriptions are unique by project + queue "
+"+ subscriber URI."
+
+msgid "TTL must be an integer."
+msgstr "TTL must be an integer."
+
+msgid "The 'confirmed' should be boolean."
+msgstr "The 'confirmed' should be boolean."
+
+msgid ""
+"The Delay TTL for a message may not exceed {0} seconds,and must be at least "
+"{1} seconds long."
+msgstr ""
+"The Delay TTL for a message may not exceed {0} seconds,and must be at least "
+"{1} seconds long."
+
+msgid ""
+"The Redis URI specifies multiple sentinel hosts, but is missing the \"master"
+"\" query string parameter. Please set \"master\" to the name of the Redis "
+"master server as specified in the sentinel configuration file."
+msgstr ""
+"The Redis URI specifies multiple sentinel hosts, but is missing the \"master"
+"\" query string parameter. Please set \"master\" to the name of the Redis "
+"master server as specified in the sentinel configuration file."
+
+msgid "The Redis configuration URI contains an invalid port"
+msgstr "The Redis configuration URI contains an invalid port"
+
+msgid "The Redis configuration URI does not define any sentinel hosts"
+msgstr "The Redis configuration URI does not define any sentinel hosts"
+
+#, python-format
+msgid "The Redis driver requires redis-server>=2.6, %s found"
+msgstr "The Redis driver requires redis-server>=2.6, %s found"
+
+msgid ""
+"The TTL can not exceed {0} seconds, and must be at least {1} seconds long."
+msgstr ""
+"The TTL can not exceed {0} seconds, and must be at least {1} seconds long."
+
+msgid ""
+"The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"The TTL for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+
+msgid ""
+"The TTL for a message may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"The TTL for a message may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+
+msgid "The TTL for a subscription must be at least {0} seconds long."
+msgstr "The TTL for a subscription must be at least {0} seconds long."
+
+msgid ""
+"The TTL seconds for a subscription plus current time must be less than {0}."
+msgstr ""
+"The TTL seconds for a subscription plus current time must be less than {0}."
+
+msgid "The format of the submitted queue name or project id is not valid."
+msgstr "The format of the submitted queue name or project id is not valid."
+
+msgid ""
+"The grace for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"The grace for a claim may not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+
+msgid "The header X-PROJECT-ID was missing"
+msgstr "The header X-PROJECT-ID was missing"
+
+#, python-format
+msgid "The mongodb driver requires mongodb>=2.2, %s found"
+msgstr "The MongoDB driver requires mongodb>=2.2, %s found"
+
+msgid ""
+"The request should have either \"ids\" or \"pop\" parameter in the request, "
+"to be able to delete."
+msgstr ""
+"The request should have either \"ids\" or \"pop\" parameter in the request, "
+"to be able to delete."
+
+msgid "The root of path must be metadata, e.g /metadata/key."
+msgstr "The root of path must be metadata, e.g /metadata/key."
+
+msgid "The specified claim does not exist or has expired."
+msgstr "The specified claim does not exist or has expired."
+
+msgid "The subscriber type of subscription must be supported in the list {0}."
+msgstr "The subscriber type of subscription must be supported in the list {0}."
+
+msgid "The value of the \"{name}\" field must be a {vtype}."
+msgstr "The value of the \"{name}\" field must be a {vtype}."
+
+msgid "This message is claimed; it cannot be deleted without a valid claim ID."
+msgstr ""
+"This message is claimed; it cannot be deleted without a valid claim ID."
+
+msgid "This pool is used by flavors {flavor}; It cannot be deleted."
+msgstr "This pool is used by flavours {flavor}; It cannot be deleted."
+
+msgid "Unable to confirm subscription"
+msgstr "Unable to confirm subscription"
+
+msgid "Unable to create"
+msgstr "Unable to create"
+
+msgid "Unable to create pool"
+msgstr "Unable to create pool"
+
+msgid "Unable to delete"
+msgstr "Unable to delete"
+
+#, python-format
+msgid "Unable to find '%s' in JSON Schema change"
+msgstr "Unable to find '%s' in JSON Schema change"
+
+#, python-format
+msgid ""
+"Unable to find `op` in JSON Schema change. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"Unable to find `op` in JSON Schema change. It must be one of the following: "
+"%(available)s."
+
+msgid "Unable to update subscription"
+msgstr "Unable to update subscription"
+
+msgid "Unexpected error."
+msgstr "Unexpected error."
+
+msgid "Unrecognized JSON Schema draft version"
+msgstr "Unrecognised JSON Schema draft version"
+
+msgid ""
+"Using a write concern other than `majority` or > 2 makes the service "
+"unreliable. Please use a different write concern or set `unreliable` to True "
+"in the config file."
+msgstr ""
+"Using a write concern other than `majority` or > 2 makes the service "
+"unreliable. Please use a different write concern or set `unreliable` to True "
+"in the config file."
+
+msgid ""
+"X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-"
+"ID and retry."
+msgstr ""
+"X-PROJECT-ID cannot be an empty string. Specify the right header X-PROJECT-"
+"ID and retry."
+
+msgid "You are not authorized to complete this action."
+msgstr "You are not authorised to complete this action."
+
+msgid "_dead_letter_queue_messages_ttl must be integer."
+msgstr "_dead_letter_queue_messages_ttl must be integer."
+
+msgid "_default_message_delay must be integer."
+msgstr "_default_message_delay must be integer."
+
+msgid ""
+"_default_message_ttl can not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+msgstr ""
+"_default_message_ttl can not exceed {0} seconds, and must be at least {1} "
+"seconds long."
+
+msgid "_default_message_ttl must be integer."
+msgstr "_default_message_ttl must be integer."
+
+msgid "_max_claim_count must be integer."
+msgstr "_max_claim_count must be integer."
+
+msgid ""
+"_max_messages_post_size can not exceed {0},  and must be at least greater "
+"than 0."
+msgstr ""
+"_max_messages_post_size can not exceed {0},  and must be at least greater "
+"than 0."
+
+msgid "_max_messages_post_size must be integer."
+msgstr "_max_messages_post_size must be integer."
+
+msgid "ids parameter should have at least 1 and not greater than {0} values."
+msgstr "ids parameter should have at least 1 and not greater than {0} values."
+
+msgid "ignore_subscription_override must be a boolean."
+msgstr "ignore_subscription_override must be a boolean."
+
+msgid "invalid minimum_delay and maximum_delay."
+msgstr "invalid minimum_delay and maximum_delay."
+
+msgid "invalid retry_backoff_function."
+msgstr "invalid retry_backoff_function."
+
+msgid "minimum_delay must less than maximum_delay."
+msgstr "minimum_delay must less than maximum_delay."
+
+msgid "pop and id params cannot be present together in the delete request."
+msgstr "pop and id params cannot be present together in the delete request."
+
+msgid "retry_backoff_function must be a string."
+msgstr "retry_backoff_function must be a string."
+
+msgid "retry_policy must be a dict."
+msgstr "retry_policy must be a dict."
+
+msgid "{0} is not a valid action"
+msgstr "{0} is not a valid action"
