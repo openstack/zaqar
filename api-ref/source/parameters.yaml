@@ -398,7 +398,7 @@ pre_signed_queue_methods:
   required: False
   description: |
     A list of HTTP methods. The HTTP method(s) this URL was created for. By
-    selecting the HTTP method, it’s possible to give either read or read/write
+    selecting the HTTP method, it's possible to give either read or read/write
     access to a specific resource.
 
 pre_signed_queue_paths:

@@ -19,7 +19,7 @@ Messaging Service Concepts
 ==========================
 The Messaging Service is a multi-tenant, message queue implementation that
 utilizes a RESTful HTTP interface to provide an asynchronous communications
-protocol, which is one of the main requirements in today’s scalable
+protocol, which is one of the main requirements in today's scalable
 applications.
 
 .. glossary::

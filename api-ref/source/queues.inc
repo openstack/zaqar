@@ -283,11 +283,11 @@ Create a pre-signed URL for a given queue.
 
    In the case of pre-signed URLs, the queue cannot be created lazily. This
    is to prevent cases where queues are deleted and users still have a valid
-   URL. This is not a big issues in cases where there’s just 1 pool. However,
-   if there’s a deployment using more than 1 type of pool, the lazily created
-   queue may end up in an undesired pool and it’d be possible for an attacker
+   URL. This is not a big issues in cases where there's just 1 pool. However,
+   if there's a deployment using more than 1 type of pool, the lazily created
+   queue may end up in an undesired pool and it'd be possible for an attacker
    to try a DoS on that pool. Therefore, whenever a pre-signed URL is created,
-   if a pool doesn’t exist, it needs to be created.
+   if a pool doesn't exist, it needs to be created.
 
 Normal response codes: 200
 
