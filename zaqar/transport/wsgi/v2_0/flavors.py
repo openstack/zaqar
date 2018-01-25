@@ -20,7 +20,6 @@ import six
 
 from zaqar.common.api.schemas import flavors as schema
 from zaqar.common import decorators
-from zaqar.common import utils as common_utils
 from zaqar.i18n import _
 from zaqar.storage import errors
 from zaqar.transport import acl
@@ -52,7 +51,8 @@ class Listing(object):
 
             {
                 "flavors": [
-                    {"href": "", "capabilities": {}, "pool_group": ""},
+                    {"href": "", "capabilities": {}, "pool_group": "",
+                     "pool_list": ""},
                     ...
                 ],
                 "links": [
@@ -87,11 +87,10 @@ class Listing(object):
 
             for entry in flavors:
                 entry['href'] = request.path + '/' + entry['name']
-                pool_group = entry['pool_group']
-                # NOTE(wanghao): remove this in Newton.
+                # NOTE(gengchc): Remove pool_group in Rocky
                 entry['pool'] = entry['pool_group']
                 if detailed:
-                    caps = self._pools_ctrl.capabilities(group=pool_group)
+                    caps = self._pools_ctrl.capabilities(flavor=entry)
                     entry['capabilities'] = [str(cap).split('.')[-1]
                                              for cap in caps]
 
@@ -125,9 +124,10 @@ class Resource(object):
         validator_type = jsonschema.Draft4Validator
         self._validators = {
             'create': validator_type(schema.create),
+            # NOTE(gengchc): Remove pool_group in Rocky.
             'pool_group': validator_type(schema.patch_pool_group),
-            # NOTE(wanghao): Remove this in Newton.
             'pool': validator_type(schema.patch_pool),
+            'pool_list': validator_type(schema.patch_pool_list),
             'capabilities': validator_type(schema.patch_capabilities),
         }
 
@@ -138,7 +138,7 @@ class Resource(object):
 
         ::
 
-            {"pool": "", capabilities: {...}}
+            {"pool": "", "pool_list": [], capabilities: {...}}
 
         :returns: HTTP | [200, 404]
         """
@@ -148,12 +148,17 @@ class Resource(object):
 
         try:
             data = self._ctrl.get(flavor, project=project_id)
-            pool_group = data['pool_group']
-            # NOTE(wanghao): remove this in Newton.
-            data['pool'] = data['pool_group']
-            capabilities = self._pools_ctrl.capabilities(group=pool_group)
+            capabilities = self._pools_ctrl.capabilities(flavor=data)
             data['capabilities'] = [str(cap).split('.')[-1]
                                     for cap in capabilities]
+            # NOTE(gengchc): Remove pool_group in Rocky.
+            data['pool'] = data['pool_group']
+            pool_list =\
+                list(self._pools_ctrl.get_pools_by_flavor(flavor=data))
+            pool_name_list = []
+            if len(pool_list) > 0:
+                pool_name_list = [x['name'] for x in pool_list]
+            data['pool_list'] = pool_name_list
 
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
@@ -163,26 +168,75 @@ class Resource(object):
 
         response.body = transport_utils.to_json(data)
 
-    @decorators.TransportLog("Flavors item")
-    @acl.enforce("flavors:create")
-    def on_put(self, request, response, project_id, flavor):
-        """Registers a new flavor. Expects the following input:
+    def _check_pools_exists(self, pool_list):
+        if pool_list is not None:
+            for pool in pool_list:
+                if not self._pools_ctrl.exists(pool):
+                    raise errors.PoolDoesNotExist(pool)
 
-        ::
+    def _update_pools_by_flavor(self, flavor, pool_list):
+        if pool_list is not None:
+            for pool in pool_list:
+                self._pools_ctrl.update(pool, flavor=flavor)
 
-            {"pool_group": "my-pool-group", "capabilities": {}}
+    def _clean_pools_by_flavor(self, flavor, pool_list=None):
+        if pool_list is None:
+            flavor_obj = {}
+            flavor_obj['name'] = flavor
+            pllt = list(self._pools_ctrl.get_pools_by_flavor(
+                flavor=flavor_obj))
+            pool_list = [x['name'] for x in pllt]
+        if pool_list is not None:
+            for pool in pool_list:
+                self._pools_ctrl.update(pool, flavor="")
 
-        A capabilities object may also be provided.
+    def _on_put_by_pool_list(self, request, response, project_id,
+                             flavor, pool_list):
+        LOG.debug(u'PUT flavor - name by flavor: %s', flavor)
+        # NOTE(gengchc2): If configuration flavor is used by the new schema,
+        # a list of pools is required.
+        if len(pool_list) == 0:
+            response.status = falcon.HTTP_400
+            response.location = request.path
+            raise falcon.HTTPBadRequest(_('Unable to create'), 'Bad Request')
+        # NOTE(gengchc2): Check if pools in the pool_list exist.
+        try:
+            self._check_pools_exists(pool_list)
+        except errors.PoolDoesNotExist as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be created, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+        capabilities = self._pools_ctrl.capabilities(name=pool_list[0])
+        try:
+            self._ctrl.create(flavor,
+                              project=project_id,
+                              capabilities=capabilities)
+            response.status = falcon.HTTP_201
+            response.location = request.path
+        except errors.ConnectionError as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be created, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+        # NOTE(gengchc2): Update the 'flavor' field in pools tables.
+        try:
+            self._update_pools_by_flavor(flavor, pool_list)
+        except errors.ConnectionError as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be created, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
-        :returns: HTTP | [201, 400]
-        """
-
-        LOG.debug(u'PUT flavor - name: %s', flavor)
-
-        data = wsgi_utils.load(request)
-        wsgi_utils.validate(self._validators['create'], data)
-        pool_group = data.get('pool_group') or data.get('pool')
-        capabilities = self._pools_ctrl.capabilities(pool_group)
+    def _on_put_by_group(self, request, response, project_id,
+                         flavor, pool_group):
+        LOG.debug(u'PUT flavor - name: %s by group', flavor)
+        flavor_obj = {}
+        flavor_obj["pool_group"] = pool_group
+        capabilities = self._pools_ctrl.capabilities(flavor_obj)
         try:
             self._ctrl.create(flavor,
                               pool_group=pool_group,
@@ -198,6 +252,35 @@ class Resource(object):
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
     @decorators.TransportLog("Flavors item")
+    @acl.enforce("flavors:create")
+    def on_put(self, request, response, project_id, flavor):
+        """Registers a new flavor. Expects the following input:
+
+        ::
+
+            {"pool_group": "my-pool-group",
+              "pool_list": [], "capabilities": {}}
+
+        A capabilities object may also be provided.
+
+        :returns: HTTP | [201, 400]
+        """
+
+        LOG.debug(u'PUT flavor - name: %s', flavor)
+
+        data = wsgi_utils.load(request)
+        wsgi_utils.validate(self._validators['create'], data)
+        LOG.debug(u'The pool_group will be removed in Rocky release.')
+        pool_group = data.get('pool_group') or data.get('pool')
+        pool_list = data.get('pool_list')
+        if pool_list is not None:
+            self._on_put_by_pool_list(request, response, project_id,
+                                      flavor, pool_list)
+        else:
+            self._on_put_by_group(request, response, project_id,
+                                  flavor, pool_group)
+
+    @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:delete")
     def on_delete(self, request, response, project_id, flavor):
         """Deregisters a flavor.
@@ -206,49 +289,96 @@ class Resource(object):
         """
 
         LOG.debug(u'DELETE flavor - name: %s', flavor)
+        # NOTE(gengchc2): If configuration flavor is
+        # used by the new schema, the flavor field in pools
+        # need to be cleaned.
+        try:
+            self._clean_pools_by_flavor(flavor)
+        except errors.ConnectionError as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be deleted.') %
+                           dict(flavor=flavor))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
         self._ctrl.delete(flavor, project=project_id)
         response.status = falcon.HTTP_204
 
-    @decorators.TransportLog("Flavors item")
-    @acl.enforce("flavors:update")
-    def on_patch(self, request, response, project_id, flavor):
-        """Allows one to update a flavors's pool_group.
+    def _on_patch_by_pool_list(self, request, response, project_id,
+                               flavor, pool_list):
 
-        This method expects the user to submit a JSON object
-        containing 'pool_group'. If none is found, the request is flagged
-        as bad. There is also strict format checking through the use of
-        jsonschema. Appropriate errors are returned in each case for
-        badly formatted input.
+        if len(pool_list) == 0:
+            response.status = falcon.HTTP_400
+            response.location = request.path
+            raise falcon.HTTPBadRequest(_('Unable to create'), 'Bad Request')
+        # NOTE(gengchc2): If the flavor does not exist, return
+        try:
+            self._ctrl.get(flavor, project=project_id)
+        except errors.FlavorDoesNotExist as ex:
+            LOG.debug(ex)
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        :returns: HTTP | [200, 400]
-        """
+        flavor_obj = {}
+        flavor_obj['name'] = flavor
+        # NOTE(gengchc2): Get the pools list with flavor.
+        pool_list_old = list(self._pools_ctrl.get_pools_by_flavor(
+            flavor=flavor_obj))
+        # NOTE(gengchc2): Check if the new pool in the pool_list exist.
+        try:
+            self._check_pools_exists(pool_list)
+        except errors.PoolDoesNotExist as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s cant be updated, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('updatefail'), description)
+        capabilities = self._pools_ctrl.capabilities(name=pool_list[0])
+        try:
+            self._ctrl.update(flavor, project=project_id,
+                              capabilities=capabilities)
+            resp_data = self._ctrl.get(flavor, project=project_id)
+            resp_data['capabilities'] = [str(cap).split('.')[-1]
+                                         for cap in capabilities]
+        except errors.FlavorDoesNotExist as ex:
+            LOG.exception(ex)
+            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        LOG.debug(u'PATCH flavor - name: %s', flavor)
-        data = wsgi_utils.load(request)
+        # (gengchc) Update flavor field in new pool list.
+        try:
+            self._update_pools_by_flavor(flavor, pool_list)
+        except errors.ConnectionError as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be updated, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+        # (gengchc) Remove flavor from old pool list.
+        try:
+            pool_list_removed = []
+            for pool_old in pool_list_old:
+                if pool_old['name'] not in pool_list:
+                    pool_list_removed.append(pool_old['name'])
+            self._clean_pools_by_flavor(flavor, pool_list_removed)
+        except errors.ConnectionError as ex:
+            LOG.exception(ex)
+            description = (_(u'Flavor %(flavor)s could not be updated, '
+                             'error:%(msg)s') %
+                           dict(flavor=flavor, msg=str(ex)))
+            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+        resp_data['pool_list'] = pool_list
+        resp_data['href'] = request.path
+        response.body = transport_utils.to_json(resp_data)
 
-        EXPECT = ('pool_group', 'pool')
-        if not any([(field in data) for field in EXPECT]):
-            LOG.debug(u'PATCH flavor, bad params')
-            raise wsgi_errors.HTTPBadRequestBody(
-                '`pool_group` or `pool` needs to be specified'
-            )
-
-        for field in EXPECT:
-            wsgi_utils.validate(self._validators[field], data)
-
-        fields = common_utils.fields(data, EXPECT,
-                                     pred=lambda v: v is not None)
-        # NOTE(wanghao): remove this in Newton.
-        if fields.get('pool') and fields.get('pool_group') is None:
-            fields['pool_group'] = fields.get('pool')
-            fields.pop('pool')
-
+    def _on_patch_by_group(self, request, response, project_id,
+                           flavor, pool_group):
+        LOG.debug(u'PATCH flavor - name: %s by group', flavor)
         resp_data = None
         try:
-            self._ctrl.update(flavor, project=project_id, **fields)
+            flvor_obj = {}
+            flvor_obj['pool_group'] = pool_group
+            capabilities = self._pools_ctrl.capabilities(flavor=flvor_obj)
+            self._ctrl.update(flavor, project=project_id,
+                              pool_group=pool_group,
+                              capabilities=capabilities)
             resp_data = self._ctrl.get(flavor, project=project_id)
-            capabilities = self._pools_ctrl.capabilities(
-                group=resp_data['pool_group'])
             resp_data['capabilities'] = [str(cap).split('.')[-1]
                                          for cap in capabilities]
         except errors.FlavorDoesNotExist as ex:
@@ -256,3 +386,42 @@ class Resource(object):
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
         resp_data['href'] = request.path
         response.body = transport_utils.to_json(resp_data)
+
+    @decorators.TransportLog("Flavors item")
+    @acl.enforce("flavors:update")
+    def on_patch(self, request, response, project_id, flavor):
+        """Allows one to update a flavors'pool list.
+
+        This method expects the user to submit a JSON object
+        containing 'pool_group' or 'pool list'. If none is found,
+        the request is flagged as bad. There is also strict format
+        checking through the use of jsonschema. Appropriate errors
+        are returned in each case for badly formatted input.
+
+        :returns: HTTP | [200, 400]
+        """
+
+        LOG.debug(u'PATCH flavor - name: %s', flavor)
+        data = wsgi_utils.load(request)
+        # NOTE(gengchc2): remove pool_group in R release.
+        EXPECT = ('pool_group', 'pool', 'pool_list')
+        if not any([(field in data) for field in EXPECT]):
+            LOG.debug(u'PATCH flavor, bad params')
+            raise wsgi_errors.HTTPBadRequestBody(
+                '`pool_group` or `pool` or `pool_list` needs to be specified'
+            )
+
+        for field in EXPECT:
+            wsgi_utils.validate(self._validators[field], data)
+        LOG.debug(u'The pool_group will be removed in Rocky release.')
+        pool_group = data.get('pool_group') or data.get('pool')
+        pool_list = data.get('pool_list')
+        # NOTE(gengchc2): If pool_list is not None, configuration flavor is
+        # used by the new schema.
+        # a list of pools is required.
+        if pool_list is not None:
+            self._on_patch_by_pool_list(request, response, project_id,
+                                        flavor, pool_list)
+        else:
+            self._on_patch_by_group(request, response, project_id,
+                                    flavor, pool_group)

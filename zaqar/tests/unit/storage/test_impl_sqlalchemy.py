@@ -13,7 +13,9 @@
 # the License.
 
 import six
+import uuid
 
+from zaqar import storage
 from zaqar.storage import sqlalchemy
 from zaqar.storage.sqlalchemy import controllers
 from zaqar.storage.sqlalchemy import tables
@@ -41,6 +43,31 @@ class SqlalchemyPoolsTest(DBCreateMixin, base.PoolsControllerTest):
     controller_class = controllers.PoolsController
     control_driver_class = sqlalchemy.ControlDriver
 
+    def setUp(self):
+        super(SqlalchemyPoolsTest, self).setUp()
+        self.pools_controller.create(self.pool, 100, 'localhost',
+                                     group=self.pool_group, options={})
+
+    # NOTE(gengchc2): remove test_mismatching_capabilities in Rocky release
+    # and use test_mismatching_capabilities1 instead for pool_group removal.
+    def test_mismatching_capabilities(self):
+        # NOTE(gengchc2): This test is used for testing mismatchming
+        # capabilities in pool with group
+        with testing.expect(storage.errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'redis://localhost',
+                                         group=self.pool_group,
+                                         options={})
+
+    def test_mismatching_capabilities1(self):
+        # NOTE(gengchc2): This test is used for testing mismatchming
+        # capabilities in pool with flavor
+        with testing.expect(storage.errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'redis://localhost',
+                                         flavor=self.flavor,
+                                         options={})
+
 
 class SqlalchemyCatalogueTest(DBCreateMixin, base.CatalogueControllerTest):
     config_file = 'wsgi_sqlalchemy.conf'
@@ -49,7 +76,17 @@ class SqlalchemyCatalogueTest(DBCreateMixin, base.CatalogueControllerTest):
     control_driver_class = sqlalchemy.ControlDriver
 
 
+# NOTE(gengchc2): remove SqlalchemyFlavorsTest in Rocky release and
+# use SqlalchemyFlavorsTest1 instead for pool_group removal.
 class SqlalchemyFlavorsTest(DBCreateMixin, base.FlavorsControllerTest):
+    config_file = 'wsgi_sqlalchemy.conf'
+    driver_class = sqlalchemy.ControlDriver
+    controller_class = controllers.FlavorsController
+    control_driver_class = sqlalchemy.ControlDriver
+
+
+# NOTE(gengchc2): Unittest for new flavor configure scenario.
+class SqlalchemyFlavorsTest1(DBCreateMixin, base.FlavorsControllerTest1):
     config_file = 'wsgi_sqlalchemy.conf'
     driver_class = sqlalchemy.ControlDriver
     controller_class = controllers.FlavorsController

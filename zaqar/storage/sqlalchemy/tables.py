@@ -28,7 +28,6 @@ Queues = sa.Table('Queues', metadata,
 PoolGroup = sa.Table('PoolGroup', metadata,
                      sa.Column('name', sa.String(64), primary_key=True))
 
-
 Pools = sa.Table('Pools', metadata,
                  sa.Column('name', sa.String(64), primary_key=True),
                  sa.Column('group', sa.ForeignKey('PoolGroup.name',
@@ -37,17 +36,19 @@ Pools = sa.Table('Pools', metadata,
                  sa.Column('uri', sa.String(255),
                            unique=True, nullable=False),
                  sa.Column('weight', sa.INTEGER, nullable=False),
-                 sa.Column('options', sa.Text()))
+                 sa.Column('options', sa.Text()),
+                 sa.Column('flavor', sa.String(64), nullable=True))
 
-
+# NOTE(gengchc2): Modify pool_group define: turn NOT NULL into DEFAULT NULL:
+# [alter table Flavors change column pool_group pool_group varchar(64)
+# default null;]
 Flavors = sa.Table('Flavors', metadata,
                    sa.Column('name', sa.String(64), primary_key=True),
                    sa.Column('project', sa.String(64)),
                    sa.Column('pool_group', sa.ForeignKey('PoolGroup.name',
                                                          ondelete='CASCADE'),
-                             nullable=False),
+                             nullable=True),
                    sa.Column('capabilities', sa.Text()))
-
 
 Catalogue = sa.Table('Catalogue', metadata,
                      sa.Column('pool', sa.String(64),

@@ -737,9 +737,9 @@ class Subscription(ControllerBase):
 class PoolsBase(ControllerBase):
     """A controller for managing pools."""
 
-    def _check_capabilities(self, uri, group=None, name=None):
+    def _check_capabilities(self, uri, flavor=None, name=None):
         default_store = self.driver.conf.drivers.message_store
-        pool_caps = self.capabilities(group=group, name=name)
+        pool_caps = self.capabilities(flavor=flavor, name=name)
 
         if not pool_caps:
             return True
@@ -747,30 +747,32 @@ class PoolsBase(ControllerBase):
         new_store = utils.load_storage_impl(uri,
                                             default_store=default_store)
 
-        # NOTE(flaper87): Since all pools in a pool group
+        # NOTE(flaper87): Since all pools in a pool flavor
         # are assumed to have the same capabilities, it's
         # fine to check against just 1
         return pool_caps == new_store.BASE_CAPABILITIES
 
-    def capabilities(self, group=None, name=None):
-        """Gets the set of capabilities for this group/name
+    def capabilities(self, flavor=None, name=None):
+        """Gets the set of capabilities for this flavor/name
 
-        :param group: The pool group to get capabilities for
-        :type group: six.text_type
+        :param flavor: The pool flavor to get capabilities for
+        :type flavor: six.text_type
         :param name: The pool name to get capabilities for
         :type name: six.text_type
         """
+        pllt = []
         if name:
-            group = list(self._get_pools_by_group(self._get(name)['group']))
+            pool = self.get(name)
+            pllt.append(pool)
         else:
-            group = list(self._get_pools_by_group(group))
+            pllt = list(self._get_pools_by_flavor(flavor))
 
-        if not len(group) > 0:
+        if not len(pllt) > 0:
             return ()
 
         default_store = self.driver.conf.drivers.message_store
 
-        pool_store = utils.load_storage_impl(group[0]['uri'],
+        pool_store = utils.load_storage_impl(pllt[0]['uri'],
                                              default_store=default_store)
 
         return pool_store.BASE_CAPABILITIES
@@ -793,7 +795,7 @@ class PoolsBase(ControllerBase):
 
     _list = abc.abstractmethod(lambda x: None)
 
-    def create(self, name, weight, uri, group=None, options=None):
+    def create(self, name, weight, uri, group=None, flavor=None, options=None):
         """Registers a pool entry.
 
         :param name: The name of this pool
@@ -803,33 +805,38 @@ class PoolsBase(ControllerBase):
         :param uri: A URI that can be used by a storage client
             (e.g., pymongo) to access this pool.
         :type uri: six.text_type
-        :param group: The group of this pool
-        :type group: six.text_type
+        :param flavor: The flavor of this pool
+        :type flavor: six.text_type
         :param options: Options used to configure this pool
         :type options: dict
         """
-        if not self._check_capabilities(uri, group=group):
+        flavor_obj = {}
+        if flavor is not None:
+            flavor_obj["name"] = flavor
+        if group is not None:
+            flavor_obj["pool_group"] = group
+        if not self._check_capabilities(uri, flavor=flavor_obj):
             raise errors.PoolCapabilitiesMismatch()
 
-        return self._create(name, weight, uri, group, options)
+        return self._create(name, weight, uri, group, flavor, options)
 
     _create = abc.abstractmethod(lambda x: None)
 
-    def get_pools_by_group(self, group=None, detailed=False):
-        """Returns a pool list filtered by given pool group.
+    def get_pools_by_flavor(self, flavor=None, detailed=False):
+        """Returns a pool list filtered by given pool flavor.
 
-        :param group: The group to filter on. `None` returns
-            pools that are not assigned to any pool group.
-        :type group: six.text_type
+        :param flavor: The flavor to filter on. `None` returns
+            pools that are not assigned to any pool flavor.
+        :type flavor: six.text_type
         :param detailed: Should the options data be included?
         :type detailed: bool
         :returns: weight, uri, and options for this pool
         :rtype: {}
         :raises PoolDoesNotExist: if not found
         """
-        return self._get_pools_by_group(group, detailed)
+        return self._get_pools_by_flavor(flavor, detailed)
 
-    _get_pools_by_group = abc.abstractmethod(lambda x: None)
+    _get_pools_by_flavor = abc.abstractmethod(lambda x: None)
 
     def get(self, name, detailed=False):
         """Returns a single pool entry.
@@ -1010,7 +1017,7 @@ class FlavorsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, name, pool, project=None, capabilities=None):
+    def create(self, name, pool_group=None, project=None, capabilities=None):
         """Registers a flavor entry.
 
         :param name: The name of this flavor

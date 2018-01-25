@@ -97,14 +97,19 @@ class FlavorsController(base.FlavorsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, pool_group, project=None, capabilities=None):
+    def create(self, name, pool_group=None, project=None, capabilities=None):
 
         # NOTE(flaper87): Check if there are pools in this group.
         # Should there be a `group_exists` method?
         # NOTE(wanghao): Since we didn't pass the group name just pool name,
         # so we don't need to get the pool by group.
-        if not list(self._pools_ctrl.get_pools_by_group(pool_group)):
-            raise errors.PoolGroupDoesNotExist(pool_group)
+        # NOTE(gengchc2): If you do not use the removal group scheme to
+        # configure flavor, pool_group can be None..
+        if pool_group is not None:
+            flavor_obj = {}
+            flavor_obj["pool_group"] = pool_group
+            if not list(self._pools_ctrl.get_pools_by_flavor(flavor_obj)):
+                raise errors.PoolGroupDoesNotExist(pool_group)
 
         capabilities = {} if capabilities is None else capabilities
         self._col.update_one({'n': name, 'p': project},
@@ -124,7 +129,8 @@ class FlavorsController(base.FlavorsBase):
 
         if pool_group is not None:
             fields['s'] = pool_group
-
+        # NOTE(gengchc2): If you do not use the removal group scheme to
+        # configure flavor, pool_group can be None, pool_group can be remove.
         assert fields, '`pool_group` or `capabilities` not found in kwargs'
         res = self._col.update_one({'n': name, 'p': project},
                                    {'$set': fields},

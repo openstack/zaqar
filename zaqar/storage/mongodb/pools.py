@@ -20,6 +20,7 @@ Schema:
   'u': uri :: six.text_type
   'w': weight :: int
   'o': options :: dict
+  'f': flavor :: six.text_type
 """
 
 import functools
@@ -90,13 +91,22 @@ class PoolsController(base.PoolsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def _get_pools_by_group(self, group=None, detailed=False):
-        cursor = self._col.find({'g': group}, projection=_field_spec(detailed))
+    def _get_pools_by_flavor(self, flavor=None, detailed=False):
+        query = None
+        if flavor is None:
+            query = {'f': None}
+        elif flavor.get("pool_group") is not None:
+            query = {'g': flavor.get("pool_group")}
+        elif flavor.get('name') is not None:
+            query = {'f': flavor.get('name')}
+        cursor = self._col.find(query,
+                                projection=_field_spec(detailed))
         normalizer = functools.partial(_normalize, detailed=detailed)
         return utils.HookedCursor(cursor, normalizer)
 
     @utils.raises_conn_error
-    def _create(self, name, weight, uri, group=None, options=None):
+    def _create(self, name, weight, uri, group=None, flavor=None,
+                options=None):
         options = {} if options is None else options
         try:
             self._col.update_one({'n': name},
@@ -104,6 +114,7 @@ class PoolsController(base.PoolsBase):
                                            'w': weight,
                                            'u': uri,
                                            'g': group,
+                                           'f': flavor,
                                            'o': options}},
                                  upsert=True)
         except mongo_error.DuplicateKeyError:
@@ -115,12 +126,19 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def _update(self, name, **kwargs):
-        names = ('uri', 'weight', 'group', 'options')
+        names = ('uri', 'weight', 'group', 'flavor', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None,
                                      key_transform=lambda x: x[0])
         assert fields, ('`weight`, `uri`, `group`, '
                         'or `options` not found in kwargs')
+
+        flavor = fields.get('f')
+        if flavor is not None and len(flavor) == 0:
+            fields['f'] = None
+        group = fields.get('g')
+        if group is not None and len(group) == 0:
+            fields['g'] = None
 
         res = self._col.update_one({'n': name},
                                    {'$set': fields},
@@ -135,17 +153,31 @@ class PoolsController(base.PoolsBase):
         # recursion error.
         try:
             pool = self.get(name)
-            pools_group = self.get_pools_by_group(pool['group'])
-            flavor_ctl = self.driver.flavors_controller
-            res = list(flavor_ctl._list_by_pool_group(pool['group']))
+            if pool['group'] is not None:
+                flavor = {}
+                flavor['pool_group'] = pool['group']
+                pools_group = self.get_pools_by_flavor(flavor=flavor)
+                flavor_ctl = self.driver.flavors_controller
+                res = list(flavor_ctl._list_by_pool_group(pool['group']))
 
-            # NOTE(flaper87): If this is the only pool in the
-            # group and it's being used by a flavor, don't allow
-            # it to be deleted.
-            if res and len(pools_group) == 1:
-                flavors = ', '.join([x['name'] for x in res])
-                raise errors.PoolInUseByFlavor(name, flavors)
+                # NOTE(flaper87): If this is the only pool in the
+                # group and it's being used by a flavor, don't allow
+                # it to be deleted.
+                if res and len(pools_group) == 1:
+                    flavors = ', '.join([x['name'] for x in res])
+                    raise errors.PoolInUseByFlavor(name, flavors)
 
+            pools_in_flavor = []
+            flavor = pool.get("flavor", None)
+            if flavor is not None:
+                # NOTE(gengchc2): If this is the only pool in the
+                # flavor and it's being used by a flavor, don't allow
+                # it to be deleted.
+                flavor1 = {}
+                flavor1['name'] = flavor
+                pools_in_flavor = self.get_pools_by_flavor(flavor=flavor1)
+                if len(pools_in_flavor) == 1:
+                    raise errors.PoolInUseByFlavor(name, flavor)
             self._col.delete_one({'n': name})
         except errors.PoolDoesNotExist:
             pass
@@ -160,6 +192,7 @@ def _normalize(pool, detailed=False):
     ret = {
         'name': pool['n'],
         'group': pool['g'],
+        'flavor': pool['f'],
         'uri': pool['u'],
         'weight': pool['w'],
     }

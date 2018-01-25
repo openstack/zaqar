@@ -229,6 +229,9 @@ class ResponseSchema(api.Api):
                                 'group': {
                                     'type': ['string', 'null']
                                 },
+                                'flavor': {
+                                    'type': ['string', 'null']
+                                },
                                 'options': {
                                     'type': 'object',
                                     'additionalProperties': True
@@ -282,6 +285,9 @@ class ResponseSchema(api.Api):
                         'type': 'string'
                     },
                     'group': {
+                        'type': ['string', 'null']
+                    },
+                    'flavor': {
                         'type': ['string', 'null']
                     },
                     'weight': {

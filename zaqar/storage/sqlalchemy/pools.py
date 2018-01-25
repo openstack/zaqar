@@ -56,10 +56,22 @@ class PoolsController(base.PoolsBase):
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
-    def _get_pools_by_group(self, group=None, detailed=False):
-        stmt = sa.sql.select([tables.Pools]).where(
-            tables.Pools.c.group == group
-        )
+    def _get_pools_by_flavor(self, flavor=None, detailed=False):
+        pool_group = flavor.get("pool_group", None) if flavor is not None\
+            else None
+        flavor_name = flavor.get("name", None) if flavor is not None\
+            else None
+        if pool_group is not None:
+            stmt = sa.sql.select([tables.Pools]).where(
+                tables.Pools.c.group == pool_group
+            )
+        elif flavor_name is not None:
+            stmt = sa.sql.select([tables.Pools]).where(
+                tables.Pools.c.flavor == flavor_name
+            )
+        else:
+            stmt = sa.sql.select([tables.Pools])
+
         cursor = self.driver.run(stmt)
 
         normalizer = functools.partial(_normalize, detailed=detailed)
@@ -87,7 +99,8 @@ class PoolsController(base.PoolsBase):
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
-    def _create(self, name, weight, uri, group=None, options=None):
+    def _create(self, name, weight, uri, group=None, flavor=None,
+                options=None):
         opts = None if options is None else utils.json_encode(options)
 
         if group is not None:
@@ -95,7 +108,8 @@ class PoolsController(base.PoolsBase):
 
         try:
             stmt = sa.sql.expression.insert(tables.Pools).values(
-                name=name, weight=weight, uri=uri, group=group, options=opts
+                name=name, weight=weight, uri=uri, group=group,
+                flavor=flavor, options=opts
             )
             self.driver.run(stmt)
 
@@ -103,7 +117,7 @@ class PoolsController(base.PoolsBase):
             # TODO(cpp-cabrera): merge update/create into a single
             # method with introduction of upsert
             self._update(name, weight=weight, uri=uri,
-                         group=group, options=options)
+                         group=group, flavor=flavor, options=options)
 
     @utils.raises_conn_error
     def _exists(self, name):
@@ -117,11 +131,11 @@ class PoolsController(base.PoolsBase):
         # NOTE(cpp-cabrera): by pruning None-valued kwargs, we avoid
         # overwriting the existing options field with None, since that
         # one can be null.
-        names = ('uri', 'weight', 'group', 'options')
+        names = ('uri', 'weight', 'group', 'flavor', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None)
 
-        assert fields, ('`weight`, `uri`, `group`, '
+        assert fields, ('`weight`, `uri`, `group`, `flavor`, '
                         'or `options` not found in kwargs')
 
         if 'options' in fields:
@@ -158,6 +172,7 @@ def _normalize(pool, detailed=False):
         'group': pool[1],
         'uri': pool[2],
         'weight': pool[3],
+        'flavor': pool[5],
     }
     if detailed:
         opts = pool[4]

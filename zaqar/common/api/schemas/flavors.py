@@ -27,6 +27,7 @@ patch_capabilities = {
     }
 }
 
+# TODO(gengchc2): remove pool_group in R release.
 # NOTE(flaper87): a string valid
 patch_pool = {
     'type': 'object',
@@ -38,6 +39,7 @@ patch_pool = {
     }
 }
 
+# TODO(gengchc2): remove pool_group in R release.
 patch_pool_group = {
     'type': 'object',
     'properties': {
@@ -48,16 +50,29 @@ patch_pool_group = {
     }
 }
 
+# NOTE(gengchc): Add pool_list in flavor creation for removing pool_group
+patch_pool_list = {
+    'type': 'object',
+    'properties': {
+        'pool_list': {
+            'type': 'array'
+        },
+        'additionalProperties': False
+    }
+}
+
 create = {
     'type': 'object',
     'properties': {
         'pool_group': patch_pool_group['properties']['pool_group'],
         'pool': patch_pool['properties']['pool'],
+        'pool_list': patch_pool_list['properties']['pool_list'],
         'capabilities': patch_capabilities['properties']['capabilities']
     },
     # NOTE(flaper87): capabilities need not be present. Storage drivers
     # must provide reasonable defaults.
     # NOTE(wanghao): remove pool in Newton release.
-    'oneOf': [{'required': ['pool_group']}, {'required': ['pool']}],
+    'oneOf': [{'required': ['pool_group']}, {'required': ['pool']},
+              {'required': ['pool_list']}],
     'additionalProperties': False
 }
