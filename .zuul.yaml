@@ -1,5 +1,5 @@
 - job:
-    name: grenade-devstack-zaqar-base
+    name: zaqar-grenade-base
     parent: legacy-dsvm-base
     branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
     irrelevant-files:
@@ -16,7 +16,7 @@
     timeout: 7800
 
 - job:
-    name: tempest-devstack-zaqar-base
+    name: zaqar-tempest-base
     parent: legacy-dsvm-base
     irrelevant-files:
       - ^(test-|)requirements.txt$
@@ -32,41 +32,41 @@
     timeout: 7800
 
 - job:
-    name: grenade-devstack-mongodb-zaqar
-    parent: grenade-devstack-zaqar-base
+    name: zaqar-grenade-mongodb
+    parent: zaqar-grenade-base
     voting: false
     vars:
       database_backend: mongodb
 
 - job:
-    name: grenade-devstack-redis-zaqar
-    parent: grenade-devstack-zaqar-base
+    name: zaqar-grenade-redis
+    parent: zaqar-grenade-base
     voting: false
     vars:
       database_backend: redis
 
 - job:
-    name: grenade-devstack-swift-zaqar
-    parent: grenade-devstack-zaqar-base
+    name: zaqar-grenade-swift
+    parent: zaqar-grenade-base
     voting: false
     vars:
       database_backend: swift
 
 - job:
-    name: tempest-devstack-mongodb-zaqar
-    parent: tempest-devstack-zaqar-base
+    name: zaqar-tempest-mongodb
+    parent: zaqar-tempest-base
     vars:
       database_backend: mongodb
 
 - job:
-    name: tempest-devstack-redis-zaqar
-    parent: tempest-devstack-zaqar-base
+    name: zaqar-tempest-redis
+    parent: zaqar-tempest-base
     vars:
       database_backend: redis
 
 - job:
-    name: tempest-devstack-swift-zaqar
-    parent: tempest-devstack-zaqar-base
+    name: zaqar-tempest-swift
+    parent: zaqar-tempest-base
     vars:
       database_backend: swift
 
@@ -79,16 +79,15 @@
       tox_envlist: integration
 
 - project:
-    name: openstack/zaqar
     check:
       jobs:
         - zaqar-tox-integration
-        - tempest-devstack-redis-zaqar
-        - tempest-devstack-swift-zaqar
-        - tempest-devstack-mongodb-zaqar
-        - grenade-devstack-mongodb-zaqar
-        - grenade-devstack-redis-zaqar
-        - grenade-devstack-swift-zaqar
+        - zaqar-tempest-redis
+        - zaqar-tempest-swift
+        - zaqar-tempest-mongodb
+        - zaqar-grenade-mongodb
+        - zaqar-grenade-redis
+        - zaqar-grenade-swift
         # TripleO jobs that deploy Zaqar.
         # Note we don't use a project-template here, so it's easier
         # to disable voting on one specific job if things go wrong.
@@ -102,8 +101,8 @@
     gate:
       jobs:
         - zaqar-tox-integration
-        - tempest-devstack-mongodb-zaqar
-        - tempest-devstack-redis-zaqar
-        - tempest-devstack-swift-zaqar
+        - zaqar-tempest-mongodb
+        - zaqar-tempest-redis
+        - zaqar-tempest-swift
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
