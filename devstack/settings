@@ -42,9 +42,6 @@ ZAQAR_TRUSTEE_USER=${ZAQAR_TRUSTEE_USER:-zaqar}
 ZAQAR_TRUSTEE_PASSWORD=${ZAQAR_TRUSTEE_PASSWORD:-$SERVICE_PASSWORD}
 ZAQAR_TRUSTEE_DOMAIN=${ZAQAR_TRUSTEE_DOMAIN:-default}
 
-# Tell Tempest this project is present
-TEMPEST_SERVICES+=,zaqar
-
 GITREPO["zaqar-tempest-plugin"]=${ZAQARTEMPEST_REPO:-${GIT_BASE}/openstack/zaqar-tempest-plugin.git}
 GITBRANCH["zaqar-tempest-plugin"]=${ZAQARTEMPEST_BRANCH:-master}
 GITDIR["zaqar-tempest-plugin"]=$DEST/zaqar-tempest-plugin
