@@ -34,8 +34,21 @@ Supported Features
 .. [1] This depends on the backing Redis store performance. For more
 information, see `Redis' benchmarks <http://redis.io/topics/benchmarks>`_.
 
-Redis is only a storage driver, and can't be used as the sole backend for a
-Zaqar deployment.
+Redis can be used both a storage driver and management driver.
+For the management driver, you need to enable the redis storage options
+in redis.conf. Redis persistent storage supports two ways: RDB and AOF.
+The following is RDB way:
+The configuration is as follows:
+save <seconds> <changes>
+E.g
+save 900 1
+save 300 10
+save 60 10000
+
+NOTE: save time, the above means that a changed key interval 900s
+for persistent storage; 10 changed  keys 300s for storage;
+10000 changed keys 60s for storage.
+
 
 Unsupported Features
 --------------------
@@ -45,9 +58,11 @@ Unsupported Features
 .. [2] As an in-memory store, Redis doesn't support the durability guarantees
        the MongoDB or SQLAlchemy backends do.
 
-Redis is not supported as the backend for the Management Store, which means
-either MongoDB or SQLAlchemy are required in addition to Redis for a working
-deployment.
-
 
 """
+
+from zaqar.storage.redis import driver
+
+# Hoist classes into package namespace
+ControlDriver = driver.ControlDriver
+DataDriver = driver.DataDriver

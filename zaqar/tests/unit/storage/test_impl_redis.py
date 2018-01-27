@@ -24,7 +24,7 @@ import redis
 from zaqar.common import cache as oslo_cache
 from zaqar.common import errors
 from zaqar import storage
-from zaqar.storage import mongodb
+from zaqar.storage import pooling
 from zaqar.storage.redis import controllers
 from zaqar.storage.redis import driver
 from zaqar.storage.redis import messages
@@ -313,7 +313,7 @@ class RedisQueuesTest(base.QueueControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.QueueController
-    control_driver_class = mongodb.ControlDriver
+    control_driver_class = driver.ControlDriver
 
     def setUp(self):
         super(RedisQueuesTest, self).setUp()
@@ -330,7 +330,7 @@ class RedisMessagesTest(base.MessageControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.MessageController
-    control_driver_class = mongodb.ControlDriver
+    control_driver_class = driver.ControlDriver
     gc_interval = 1
 
     def setUp(self):
@@ -397,7 +397,7 @@ class RedisClaimsTest(base.ClaimControllerTest):
     driver_class = driver.DataDriver
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.ClaimController
-    control_driver_class = mongodb.ControlDriver
+    control_driver_class = driver.ControlDriver
 
     def setUp(self):
         super(RedisClaimsTest, self).setUp()
@@ -498,3 +498,104 @@ class RedisSubscriptionTests(base.SubscriptionControllerTest):
     config_file = 'wsgi_redis.conf'
     controller_class = controllers.SubscriptionController
     control_driver_class = driver.ControlDriver
+
+
+@testing.requires_redis
+class RedisPoolsTests(base.PoolsControllerTest):
+    config_file = 'wsgi_redis.conf'
+    driver_class = driver.ControlDriver
+    controller_class = controllers.PoolsController
+    control_driver_class = driver.ControlDriver
+
+    def setUp(self):
+        super(RedisPoolsTests, self).setUp()
+        self.pools_controller = self.driver.pools_controller
+        # Let's create one pool
+        self.pool = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, 'localhost', options={})
+        self.pool1 = str(uuid.uuid1())
+        self.flavor = str(uuid.uuid1())
+        self.flavors_controller.create(self.flavor,
+                                       project=self.project,
+                                       capabilities={})
+        self.pools_controller.create(self.pool1, 100, 'localhost1',
+                                     flavor=self.flavor, options={})
+        self.flavors_controller = self.driver.flavors_controller
+
+    def tearDown(self):
+        self.pools_controller.drop_all()
+        super(RedisPoolsTests, self).tearDown()
+
+    def test_delete_pool_used_by_flavor(self):
+        with testing.expect(storage.errors.PoolInUseByFlavor):
+            self.pools_controller.delete(self.pool1)
+
+    def test_mismatching_capabilities_fifo(self):
+        # NOTE(gengchc2): The fifo function is not implemented
+        # in redis, we skip it.
+        self.skip("The fifo function is not implemented")
+
+    def test_mismatching_capabilities1(self):
+        # NOTE(gengchc2): This test is used for testing mismatchming
+        # capabilities in pool with flavor
+        with testing.expect(storage.errors.PoolCapabilitiesMismatch):
+            self.pools_controller.create(str(uuid.uuid1()),
+                                         100, 'mongodb://localhost',
+                                         flavor=self.flavor,
+                                         options={})
+
+
+@testing.requires_redis
+class RedisCatalogueTests(base.CatalogueControllerTest):
+    driver_class = driver.ControlDriver
+    controller_class = controllers.CatalogueController
+    control_driver_class = driver.ControlDriver
+    config_file = 'wsgi_redis.conf'
+
+    def setUp(self):
+        super(RedisCatalogueTests, self).setUp()
+        self.addCleanup(self.controller.drop_all)
+
+
+@testing.requires_redis
+class PooledMessageTests(base.MessageControllerTest):
+    config_file = 'wsgi_redis_pooled.conf'
+    controller_class = pooling.MessageController
+    driver_class = pooling.DataDriver
+    control_driver_class = driver.ControlDriver
+    controller_base_class = storage.Message
+
+    # NOTE(kgriffs): Redis's TTL scavenger only runs once a minute
+    gc_interval = 60
+
+
+@testing.requires_redis
+class PooledClaimsTests(base.ClaimControllerTest):
+    config_file = 'wsgi_redis_pooled.conf'
+    controller_class = pooling.ClaimController
+    driver_class = pooling.DataDriver
+    control_driver_class = driver.ControlDriver
+    controller_base_class = storage.Claim
+
+    def setUp(self):
+        super(PooledClaimsTests, self).setUp()
+        self.connection = self.controller._pool_catalog.lookup(
+            self.queue_name, self.project)._storage.\
+            claim_controller.driver.connection
+
+    def tearDown(self):
+        super(PooledClaimsTests, self).tearDown()
+        self.connection.flushdb()
+
+
+# NOTE(gengchc2): Unittest for new flavor configure scenario.
+@testing.requires_redis
+class RedisFlavorsTest1(base.FlavorsControllerTest1):
+    driver_class = driver.ControlDriver
+    controller_class = controllers.FlavorsController
+    control_driver_class = driver.ControlDriver
+    config_file = 'wsgi_redis.conf'
+
+    def setUp(self):
+        super(RedisFlavorsTest1, self).setUp()
+        self.addCleanup(self.controller.drop_all)

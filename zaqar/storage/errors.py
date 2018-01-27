@@ -206,6 +206,11 @@ class PoolAlreadyExists(Conflict):
     msg_format = u'The database URI is in use by another pool.'
 
 
+class PoolRedisNotSupportGroup(ExceptionBase):
+
+    msg_format = (u'Redis not support pool_goup, please use flavor ')
+
+
 class SubscriptionAlreadyExists(Conflict):
 
     msg_format = (u'Such subscription already exists. Subscriptions '
