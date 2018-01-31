@@ -18,8 +18,6 @@ import os
 
 import collections
 import datetime
-import hashlib
-import json
 import math
 import random
 import time
@@ -450,7 +448,7 @@ class MessageControllerTest(ControllerBaseTest):
         message_out = self.controller.get(queue_name, message_id,
                                           project=self.project)
         self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_count',
-                          'claim_id', 'checksum'}, set(message_out))
+                          'claim_id'}, set(message_out))
         self.assertEqual(message_id, message_out['id'])
         self.assertEqual(message['body'], message_out['body'])
         self.assertEqual(message['ttl'], message_out['ttl'])
@@ -461,39 +459,6 @@ class MessageControllerTest(ControllerBaseTest):
         # Test does not exist
         with testing.expect(errors.DoesNotExist):
             self.controller.get(queue_name, message_id, project=self.project)
-
-    def test_message_body_checksum(self):
-        queue_name = self.queue_name
-
-        message = {
-            'ttl': 60,
-            'body': {
-                'event': 'BackupStarted',
-                'backupId': 'c378813c-3f0b-11e2-ad92-7823d2b0f3ce'
-            }
-        }
-
-        # Test Message Creation
-        created = list(self.controller.post(queue_name, [message],
-                                            project=self.project,
-                                            client_uuid=uuid.uuid4()))
-        self.assertEqual(1, len(created))
-        message_id = created[0]
-
-        # Test Message Get
-        message_out = self.controller.get(queue_name, message_id,
-                                          project=self.project)
-        self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_count',
-                          'claim_id', 'checksum'}, set(message_out))
-
-        algorithm, checksum = message_out['checksum'].split(':')
-        expected_checksum = ''
-        if algorithm == 'MD5':
-            md5 = hashlib.md5()
-            md5.update(json.dumps(message['body']).encode('utf-8'))
-            expected_checksum = md5.hexdigest()
-
-        self.assertEqual(expected_checksum, checksum)
 
     def test_get_multi(self):
         client_uuid = uuid.uuid4()
@@ -539,7 +504,7 @@ class MessageControllerTest(ControllerBaseTest):
 
         for idx, message in enumerate(messages_out):
             self.assertEqual({'id', 'body', 'ttl', 'age', 'claim_count',
-                              'claim_id', 'checksum'}, set(message))
+                              'claim_id'}, set(message))
             self.assertEqual(idx, message['body'])
 
         self.controller.bulk_delete(self.queue_name, ids,

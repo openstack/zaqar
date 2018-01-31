@@ -24,7 +24,6 @@ from zaqar.common import decorators
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage.swift import utils
-from zaqar.storage import utils as s_utils
 
 
 class MessageController(storage.Message):
@@ -53,8 +52,6 @@ class MessageController(storage.Message):
        | Delay Expires| Object content 'delay_expires'          |
        +--------------+-----------------------------------------+
        | Expires      | Object Delete-After header              |
-       +--------------------------------------------------------+
-       | Checksum     | Object content 'body' checksum          |
        +--------------------------------------------------------+
     """
 
@@ -229,8 +226,7 @@ class MessageController(storage.Message):
         contents = jsonutils.dumps(
             {'body': msg.get('body', {}), 'claim_id': None,
              'ttl': msg['ttl'], 'claim_count': 0,
-             'delay_expires': now + msg.get('delay', 0),
-             'checksum': s_utils.get_checksum(msg.get('body', None))})
+             'delay_expires': now + msg.get('delay', 0)})
         utils._put_or_create_container(
             self._client,
             utils._message_container(queue, project),

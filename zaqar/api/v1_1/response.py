@@ -49,10 +49,7 @@ class ResponseSchema(api.Api):
 
                 "body": {
                     "type": "object"
-                },
-                "checksum": {
-                    "type": "string",
-                },
+                }
             },
             "required": ["href", "ttl", "age", "body", "id"],
             "additionalProperties": False,
@@ -331,10 +328,7 @@ class ResponseSchema(api.Api):
                                 "age": age,
                                 "body": {
                                     "type": "object"
-                                },
-                                "checksum": {
-                                    "type": "string",
-                                },
+                                }
                             },
                             "required": ["href", "ttl", "age", "body", "id"],
                             "additionalProperties": False,
