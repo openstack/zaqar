@@ -98,6 +98,8 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
+        # Heat job that deploy Zaqar
+        - heat-functional-convg-mysql-lbaasv2
     gate:
       jobs:
         - zaqar-tox-integration
@@ -106,3 +108,4 @@
         - zaqar-tempest-swift
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
+        - heat-functional-convg-mysql-lbaasv2
