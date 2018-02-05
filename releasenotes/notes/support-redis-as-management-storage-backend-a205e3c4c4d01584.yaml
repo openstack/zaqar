@@ -1,0 +1,5 @@
+---
+features:
+  - Support Redis as management storage backend to improve the performance
+    and ease of deployment. For the management driver, user needs to enable
+    the redis storage options in redis.conf to persistent data.

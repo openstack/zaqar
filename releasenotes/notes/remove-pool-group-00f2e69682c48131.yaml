@@ -1,0 +1,5 @@
+---
+features:
+  - Zaqar supports a new way to directly use pool resource without pool_group
+    when creating Flavor. The old way will be kept in Queens and be marked
+    useless. Zaqar will remove the pool_group totally in Rocky.
