@@ -92,7 +92,7 @@ def _filter_messages(messages, filters, marker, get_object, list_objects,
     """Create a filtering iterator over a list of messages.
 
     The function accepts a list of filters to be filtered
-    before the the message can be included as a part of the reply.
+    before the message can be included as a part of the reply.
     """
     now = timeutils.utcnow_ts(True)
 
