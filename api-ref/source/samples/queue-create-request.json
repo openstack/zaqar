@@ -2,5 +2,8 @@
     "_max_messages_post_size": 262144,
     "_default_message_ttl": 3600,
     "_default_message_delay": 30,
+    "_dead_letter_queue": "dead_letter",
+    "_dead_letter_queue_messages_ttl": 3600,
+    "_max_claim_count": 10,
     "description": "Queue for international traffic billing."
 }

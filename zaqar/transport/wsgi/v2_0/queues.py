@@ -37,6 +37,10 @@ def _get_reserved_metadata(validate):
             validate.get_limit_conf_value(meta)
         for meta in _reserved_metadata
     }
+
+    for metadata in ['_dead_letter_queue', '_dead_letter_queue_messages_ttl',
+                     '_max_claim_count']:
+        reserved_metadata.update({metadata: None})
     return reserved_metadata
 
 

@@ -1,0 +1,6 @@
+---
+features:
+  - Add three new reserved metdata in response body of querying queue.
+   "_dead_letter_queue", "_dead_letter_queue_messages_ttl" and
+   "_max_claim_count". Those metadata will help user to know better about
+   dead letter queue.
