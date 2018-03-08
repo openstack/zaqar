@@ -48,7 +48,7 @@ class SubscriptionTest(base.V1_1Base):
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
-            self.assertEqual(resp['headers']['status'], 201)
+            self.assertIn(resp['headers']['status'], [201, 204])
 
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
             msg_mock.side_effect = validator

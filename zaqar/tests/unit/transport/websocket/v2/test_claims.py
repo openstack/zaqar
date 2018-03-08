@@ -47,7 +47,7 @@ class ClaimsBaseTest(base.V1_1Base):
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
             self.protocol.onMessage(req, False)
             resp = json.loads(msg_mock.call_args[0][0])
-            self.assertEqual(201, resp['headers']['status'])
+            self.assertIn(resp['headers']['status'], [201, 204])
 
         action = consts.MESSAGE_POST
         body = {"queue_name": "skittle",
