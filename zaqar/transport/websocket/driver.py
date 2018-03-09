@@ -130,7 +130,7 @@ class Driver(base.DriverBase):
             else:
                 host = socket.gethostname()
             self.notification_factory.set_subscription_url(
-                'http://%s:%s/' % (host, port))
+                'http://%s:%s/' % (_escape_ipv6(host), port))
             self._api.set_subscription_factory(self.notification_factory)
 
         task = asyncio.Task(coro_notification)
