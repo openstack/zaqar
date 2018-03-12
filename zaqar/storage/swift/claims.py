@@ -94,7 +94,10 @@ class ClaimController(storage.Claim):
                limit=storage.DEFAULT_MESSAGES_PER_CLAIM):
         message_ctrl = self.driver.message_controller
         queue_ctrl = self.driver.queue_controller
-        queue_meta = queue_ctrl.get(queue, project=project)
+        try:
+            queue_meta = queue_ctrl.get_metadata(queue, project=project)
+        except errors.QueueDoesNotExist:
+            return None, iter([])
         ttl = metadata['ttl']
         grace = metadata['grace']
         msg_ts = ttl + grace
