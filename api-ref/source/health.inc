@@ -16,11 +16,16 @@ A request to ping Zaqar server when server is working returns 204, otherwise
 returns 503. This can be a handy API for end user to check if the messaging
 service is in working status.
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 503
 
 
 This operation does not accept a request body and does not return a response
@@ -42,13 +47,18 @@ default, there is no pool created. Then the response body will only
 contain the ``catalog_reachable``. Otherwise, the response body will have
 ``catalog_reachable`` and the health status for each pool.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized (401)
-- Forbidden (403)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 503
 
 
 Response Parameters

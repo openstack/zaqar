@@ -17,13 +17,18 @@ This operation lists subscriptions for a queue. The subscriptions are sorted
 alphabetically by name.
 
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -69,13 +74,18 @@ Creates a subscription.
 This operation creates a new subscription.
 
 
-Normal response codes: 201
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 201
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -121,15 +131,20 @@ Update Subscription
 
 Updates a subscription.
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- Conflict (409)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 409
+   - 503
 
 
 Request Parameters
@@ -161,13 +176,18 @@ Show Subscription Details
 
 Shows details for a subscription.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -207,13 +227,18 @@ Delete Subscription
 Deletes the specified subscription.
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters

@@ -21,10 +21,16 @@ The home document lets you write clients by using relational links, so clients d
 For more information about home documents, see `http://tools.ietf.org/html/draft-nottingham-json-home-02 <http://tools.ietf.org/html/draft-nottingham-json-home-02>`__.
 
 
-Normal response codes: 300
-Error response codes:
+Response codes
+--------------
 
-- serviceUnavailable (503)
+.. rest_status_code:: success status.yaml
+
+   - 300
+
+.. rest_status_code:: error status.yaml
+
+   - 503
 
 Response Parameters
 -------------------

@@ -56,14 +56,19 @@ to allow for flexibility in storage implementations.
 The ``delay`` attribute specifies how long the message can be claimed.
 The value of ``delay`` must be between 0 and 900 seconds (15 mins).
 
-Normal response codes: 201
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 201
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 Request Parameters
 ------------------
@@ -115,14 +120,19 @@ implementations.
 
 Results are ordered by age, oldest message first.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -179,14 +189,19 @@ is the hash digest of the ``body``, default algorithm is MD5.
 
 
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -229,14 +244,20 @@ contain at least one id and not greater than ``max_messages_per_page`` in conf.
 
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -274,14 +295,19 @@ hash digest of the ``body``, default algorithm is MD5.
 
 
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -321,14 +347,19 @@ fails. You can only delete claimed messages by providing an appropriate
 
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 Request
 -------
