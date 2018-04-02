@@ -209,6 +209,7 @@ class NotifierTest(testing.TestBase):
         queue_ctlr.get = mock.Mock(return_value={})
         driver = notifier.NotifierDriver(subscription_controller=ctlr,
                                          queue_controller=queue_ctlr)
+        ctlr.driver.conf.notification.smtp_mode = 'third_part'
         called = set()
         msg = ('Content-Type: text/plain; charset="us-ascii"\n'
                'MIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nto:'

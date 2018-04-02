@@ -16,6 +16,7 @@
 from email.mime import text
 import json
 from six.moves import urllib_parse
+import smtplib
 import subprocess
 
 from oslo_log import log as logging
@@ -67,8 +68,6 @@ class MailtoTask(object):
         conf_n = kwargs.get('conf').notification
         try:
             for message in messages:
-                p = subprocess.Popen(conf_n.smtp_command.split(' '),
-                                     stdin=subprocess.PIPE)
                 # Send confirmation email to subscriber.
                 if (message.get('Message_Type') ==
                         MessageType.SubscriptionConfirmation.name):
@@ -98,7 +97,23 @@ class MailtoTask(object):
                     msg["from"] = subscription['options'].get('from', '')
                     subject_opt = subscription['options'].get('subject', '')
                     msg["subject"] = params.get('subject', subject_opt)
-                p.communicate(msg.as_string())
+                if conf_n.smtp_mode == 'third_part':
+                    p = subprocess.Popen(conf_n.smtp_command.split(' '),
+                                         stdin=subprocess.PIPE)
+                    p.communicate(msg.as_string())
+                elif conf_n.smtp_mode == 'self_local':
+                    sender = smtplib.SMTP_SSL(conf_n.smtp_host,
+                                              conf_n.smtp_port)
+                    sender.set_debuglevel(1)
+
+                    sender.ehlo(conf_n.smtp_host)
+                    try:
+                        sender.login(conf_n.smtp_user_name,
+                                     conf_n.smtp_user_password)
+                    except smtplib.SMTPException:
+                        LOG.error("Failed to connect to the SMTP service")
+                        continue
+                    sender.sendmail(msg['from'], msg['to'], msg.as_string())
                 LOG.debug("Send mail successfully: %s", msg.as_string())
         except OSError as err:
             LOG.exception('Failed to create process for sendmail, '

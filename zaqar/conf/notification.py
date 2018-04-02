@@ -14,6 +14,39 @@
 from oslo_config import cfg
 
 
+smtp_mode = cfg.StrOpt(
+    'smtp_mode', default='third_part',
+    choices=('third_part', 'self_local'),
+    help='There are two values can be chosen: third_part or '
+         'self_local. third_part means Zaqar will use the tools '
+         'from config option smtp_commnd. self_local means the '
+         'smtp python library will be used.')
+
+
+smtp_host = cfg.HostAddressOpt(
+    'smtp_host',
+    help='The host IP for the email system. It should be '
+         'set when smtp_mode is set to self_local.')
+
+
+smtp_port = cfg.PortOpt(
+    'smtp_port',
+    help='The port for the email system. It should be set when '
+         'smtp_mode is set to self_local.')
+
+
+smtp_user_name = cfg.StrOpt(
+    'smtp_user_name',
+    help='The user name for the email system to login. It should '
+    'be set when smtp_mode is set to self_local.')
+
+
+smtp_user_password = cfg.StrOpt(
+    'smtp_user_password',
+    help='The user password for the email system to login. It '
+         'should be set when smtp_mode is set to self_local.')
+
+
 smtp_command = cfg.StrOpt(
     'smtp_command', default='/usr/sbin/sendmail -t -oi',
     help=(
@@ -76,6 +109,11 @@ unsubscribe_confirmation_email_template = cfg.DictOpt(
 
 GROUP_NAME = 'notification'
 ALL_OPTS = [
+    smtp_mode,
+    smtp_host,
+    smtp_port,
+    smtp_user_name,
+    smtp_user_password,
     smtp_command,
     max_notifier_workers,
     require_confirmation,

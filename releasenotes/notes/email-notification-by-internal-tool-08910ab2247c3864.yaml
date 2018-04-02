@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Currently the email subscription in Zaqar relay on the third part
+    tools, such as "sendmail". It means that deployer should install
+    it out of Zaqar. If he forgets, Zaqar will raise internal error.
+    This work let Zaqar support email subscription by itself using
+    the ``smtp`` python library.
