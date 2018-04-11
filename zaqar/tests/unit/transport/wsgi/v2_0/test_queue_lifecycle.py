@@ -429,7 +429,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
         result_doc = jsonutils.loads(result[0])
         [target, params] = result_doc['links'][0]['href'].split('?')
-
+        self.simulate_get(target, headers=header, query_string=params)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         # Ensure we didn't pick up the queue from the alt project.
