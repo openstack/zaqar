@@ -247,8 +247,8 @@ function start_zaqar {
     run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
-    local auth_uri=http://${ZAQAR_SERVICE_HOST}/identity
-    token=$(openstack token issue -c id -f value --os-auth-url ${auth_uri})
+    local www_authenticate_uri=http://${ZAQAR_SERVICE_HOST}/identity
+    token=$(openstack token issue -c id -f value --os-auth-url ${www_authenticate_uri})
     if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
