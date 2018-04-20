@@ -28,13 +28,18 @@ to filter queue, like name and metadata. If metadata or name of queue is
 consistent with the filter,the queue will be listed to the user,
 otherwise the queue will be filtered.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 Request Parameters
 ------------------
@@ -83,13 +88,19 @@ _dead_letter_queue_messages_ttl.
 In order to support the delayed queues, now add a metadata
 ``_default_message_delay``.
 
-Normal response codes: 201, 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 201
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -123,15 +134,20 @@ Update queue
 
 Updates a queue.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- Conflict (409)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 409
+   - 503
 
 
 Request Parameters
@@ -175,13 +191,18 @@ Show queue details
 
 Shows details for a queue.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 Request Parameters
 ------------------
@@ -220,13 +241,18 @@ exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -253,13 +279,18 @@ the queue, categorized by status.
 If the value of the ``total`` attribute is 0, then ``oldest`` and ``newest``
 message statistics are not included in the response.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters
@@ -293,14 +324,19 @@ Create a pre-signed URL for a given queue.
    to try a DoS on that pool. Therefore, whenever a pre-signed URL is created,
    if a pool doesn't exist, it needs to be created.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -350,13 +386,18 @@ Purge particular resource of the queue.
    Now Zaqar supports to purge "messages" and "subscriptions" resource from
    a queue.
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 
 Request Parameters

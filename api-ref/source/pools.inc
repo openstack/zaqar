@@ -19,12 +19,17 @@ This operation lists pools for the project. The pools are sorted
 alphabetically by name.
 
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Not Found (404)
-- Unauthorized (401)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 404
+   - 401
 
 Query Parameters
 -----------------
@@ -65,13 +70,18 @@ exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
 
-Normal response codes: 201
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Conflict (409)
+   - 201
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 409
 
 
 Request Parameters
@@ -102,14 +112,19 @@ Update pool
 
 Updates a pool.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- Not Found (404)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 404
+   - 503
 
 
 Request Parameters
@@ -145,13 +160,18 @@ Show pool details
 
 Shows details for a pool.
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- BadRequest (400)
-- Unauthorized (401)
-- ServiceUnavailable (503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
 
 Request Parameters
 ------------------
@@ -192,13 +212,18 @@ exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized (401)
-- Forbidden (403)
-- ServiceUnavailable (503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 503
 
 
 Request Parameters

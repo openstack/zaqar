@@ -50,14 +50,20 @@ live period, its expiration is not adjusted.
 
 
 
-Normal response codes: 201, 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized(401)
-- Forbidden(403)
-- itemNotFound(404)
-- ServiceUnavailable(503)
+   - 201
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 404
+   - 503
 
 Request Parameters
 ------------------
@@ -101,14 +107,19 @@ with malformed IDs or claims that are not found by ID are ignored.
 
 
 
-Normal response codes: 200
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized(401)
-- Forbidden(403)
-- itemNotFound(404)
-- ServiceUnavailable(503)
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 404
+   - 503
 
 Request Parameters
 ------------------
@@ -147,14 +158,19 @@ TTL). The server resets the age of the claim and applies the new TTL.
 
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized(401)
-- Forbidden(403)
-- itemNotFound(404)
-- ServiceUnavailable(503)
+   - 204
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 404
+   - 503
 
 Request Parameters
 ------------------
@@ -195,14 +211,20 @@ to other workers.
 
 
 
-Normal response codes: 204
+Response codes
+--------------
 
-Error response codes:
+.. rest_status_code:: success status.yaml
 
-- Unauthorized(401)
-- Forbidden(403)
-- itemNotFound(404)
-- ServiceUnavailable(503)
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+   - 404
+   - 503
 
 Request Parameters
 ------------------
