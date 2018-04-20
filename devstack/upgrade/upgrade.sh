@@ -65,8 +65,8 @@ source $ZAQAR_DEVSTACK_DIR/plugin.sh
 set -o xtrace
 
 function wait_for_keystone {
-    local auth_uri=http://${ZAQAR_SERVICE_HOST}/identity
-    if ! wait_for_service $SERVICE_TIMEOUT ${auth_uri}/v$IDENTITY_API_VERSION/; then
+    local www_authenticate_uri=http://${ZAQAR_SERVICE_HOST}/identity
+    if ! wait_for_service $SERVICE_TIMEOUT ${www_authenticate_uri}/v$IDENTITY_API_VERSION/; then
         die $LINENO "keystone did not start"
     fi
 }

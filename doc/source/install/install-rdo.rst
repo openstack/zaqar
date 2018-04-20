@@ -393,7 +393,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       password = ZAQARIDENTITYPASSWORD
       # Complete public Identity API endpoint (HTTPS protocol is more preferable
       # than HTTP).
-      auth_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:5000
+      www_authenticate_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:5000
       # Complete admin Identity API endpoint (HTTPS protocol is more preferable
       # than HTTP).
       identity_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:35357
