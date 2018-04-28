@@ -21,20 +21,21 @@ from oslo_log import log as oslo_logging
 import swiftclient
 
 from zaqar.common import decorators
+from zaqar.conf import drivers_message_store_swift
 from zaqar import storage
 from zaqar.storage.swift import controllers
-from zaqar.storage.swift import options
 
 LOG = oslo_logging.getLogger(__name__)
 
 
 class DataDriver(storage.DataDriverBase):
 
-    _DRIVER_OPTIONS = options._config_options()
+    _DRIVER_OPTIONS = [(drivers_message_store_swift.GROUP_NAME,
+                        drivers_message_store_swift.ALL_OPTS)]
 
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
-        self.swift_conf = self.conf[options.MESSAGE_SWIFT_GROUP]
+        self.swift_conf = self.conf[drivers_message_store_swift.GROUP_NAME]
         if not self.conf.debug:
             # Reduce swiftclient logging, in particular to remove 404s
             logging.getLogger("swiftclient").setLevel(logging.WARNING)

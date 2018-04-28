@@ -21,7 +21,11 @@ from oslo_log import log
 from osprofiler import opts
 import testtools
 
-from zaqar.common import configs
+from zaqar.conf import default
+from zaqar.conf import drivers
+from zaqar.conf import notification
+from zaqar.conf import profiler
+from zaqar.conf import signed_url
 from zaqar.tests import helpers
 
 
@@ -54,18 +58,16 @@ class TestBase(testtools.TestCase):
         else:
             self.conf = cfg.ConfigOpts()
 
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
-        self.conf.register_opts(configs._DRIVER_OPTIONS,
-                                group=configs._DRIVER_GROUP)
-        self.conf.register_opts(configs._NOTIFICATION_OPTIONS,
-                                group=configs._NOTIFICATION_GROUP)
-        self.conf.register_opts(configs._NOTIFICATION_OPTIONS,
-                                group=configs._NOTIFICATION_GROUP)
-        self.conf.register_opts(configs._SIGNED_URL_OPTIONS,
-                                group=configs._SIGNED_URL_GROUP)
+        self.conf.register_opts(default.ALL_OPTS)
+        self.conf.register_opts(drivers.ALL_OPTS,
+                                group=drivers.GROUP_NAME)
+        self.conf.register_opts(notification.ALL_OPTS,
+                                group=notification.GROUP_NAME)
+        self.conf.register_opts(signed_url.ALL_OPTS,
+                                group=signed_url.GROUP_NAME)
         opts.set_defaults(self.conf)
-        self.conf.register_opts(configs._PROFILER_OPTIONS,
-                                group=configs._PROFILER_GROUP)
+        self.conf.register_opts(profiler.ALL_OPTS,
+                                group=profiler.GROUP_NAME)
         self.redis_url = os.environ.get('ZAQAR_TEST_REDIS_URL',
                                         'redis://127.0.0.1:6379')
         self.mongodb_url = os.environ.get('ZAQAR_TEST_MONGODB_URL',

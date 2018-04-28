@@ -15,7 +15,7 @@
 
 import ddt
 
-from zaqar.common import configs
+from zaqar.conf import default
 from zaqar.storage import utils
 from zaqar import tests as testing
 
@@ -25,7 +25,7 @@ class TestUtils(testing.TestBase):
 
     def setUp(self):
         super(TestUtils, self).setUp()
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
+        self.conf.register_opts(default.ALL_OPTS)
 
     @testing.requires_mongodb
     def test_can_connect_succeeds_if_good_uri_mongo(self):

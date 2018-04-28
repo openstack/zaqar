@@ -20,10 +20,10 @@ from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from zaqar import bootstrap
-from zaqar.common import configs
+from zaqar.conf import default
+from zaqar.conf import drivers_transport_wsgi
+from zaqar.conf import transport
 from zaqar import tests as testing
-from zaqar.transport import validation
-from zaqar.transport.wsgi import driver
 
 
 class TestBase(testing.TestBase):
@@ -36,14 +36,14 @@ class TestBase(testing.TestBase):
         if not self.config_file:
             self.skipTest("No config specified")
 
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
-        self.conf.register_opts(validation._TRANSPORT_LIMITS_OPTIONS,
-                                group=validation._TRANSPORT_LIMITS_GROUP)
-        self.transport_cfg = self.conf[validation._TRANSPORT_LIMITS_GROUP]
+        self.conf.register_opts(default.ALL_OPTS)
+        self.conf.register_opts(transport.ALL_OPTS,
+                                group=transport.GROUP_NAME)
+        self.transport_cfg = self.conf[transport.GROUP_NAME]
 
-        self.conf.register_opts(driver._WSGI_OPTIONS,
-                                group=driver._WSGI_GROUP)
-        self.wsgi_cfg = self.conf[driver._WSGI_GROUP]
+        self.conf.register_opts(drivers_transport_wsgi.ALL_OPTS,
+                                group=drivers_transport_wsgi.GROUP_NAME)
+        self.wsgi_cfg = self.conf[drivers_transport_wsgi.GROUP_NAME]
 
         self.conf.unreliable = True
         self.conf.admin_mode = True

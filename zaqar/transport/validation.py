@@ -17,11 +17,11 @@
 import datetime
 import re
 
-from oslo_config import cfg
 from oslo_utils import timeutils
 import six
 
 from zaqar.common import consts
+from zaqar.conf import transport
 from zaqar.i18n import _
 
 
@@ -31,79 +31,11 @@ MIN_CLAIM_GRACE = 60
 MIN_DELAY_TTL = 0
 MIN_SUBSCRIPTION_TTL = 60
 _PURGBLE_RESOURCE_TYPES = {'messages', 'subscriptions'}
-
-_TRANSPORT_LIMITS_OPTIONS = (
-    cfg.IntOpt('max_queues_per_page', default=20,
-               deprecated_name='queue_paging_uplimit',
-               deprecated_group='limits:transport',
-               help='Defines the maximum number of queues per page.'),
-
-    cfg.IntOpt('max_messages_per_page', default=20,
-               deprecated_name='message_paging_uplimit',
-               deprecated_group='limits:transport',
-               help='Defines the maximum number of messages per page.'),
-
-    cfg.IntOpt('max_subscriptions_per_page', default=20,
-               deprecated_name='subscription_paging_uplimit',
-               deprecated_group='limits:transport',
-               help='Defines the maximum number of subscriptions per page.'),
-
-    cfg.IntOpt('max_messages_per_claim_or_pop', default=20,
-               deprecated_name='max_messages_per_claim',
-               help='The maximum number of messages that can be claimed (OR) '
-                    'popped in a single request'),
-
-    cfg.IntOpt('max_queue_metadata', default=64 * 1024,
-               deprecated_name='metadata_size_uplimit',
-               deprecated_group='limits:transport',
-               help='Defines the maximum amount of metadata in a queue.'),
-
-    cfg.IntOpt('max_messages_post_size', default=256 * 1024,
-               deprecated_name='message_size_uplimit',
-               deprecated_group='limits:transport',
-               deprecated_opts=[cfg.DeprecatedOpt('max_message_size')],
-               help='Defines the maximum size of message posts.'),
-
-    cfg.IntOpt('max_message_ttl', default=1209600,
-               deprecated_name='message_ttl_max',
-               deprecated_group='limits:transport',
-               help='Maximum amount of time a message will be available.'),
-
-    cfg.IntOpt('max_message_delay', default=900,
-               help='Maximum delay seconds for messages can be claimed.'),
-
-    cfg.IntOpt('max_claim_ttl', default=43200,
-               deprecated_name='claim_ttl_max',
-               deprecated_group='limits:transport',
-               help='Maximum length of a message in claimed state.'),
-
-    cfg.IntOpt('max_claim_grace', default=43200,
-               deprecated_name='claim_grace_max',
-               deprecated_group='limits:transport',
-               help='Defines the maximum message grace period in seconds.'),
-
-    cfg.ListOpt('subscriber_types', default=['http', 'https', 'mailto',
-                                             'trust+http', 'trust+https'],
-                help='Defines supported subscriber types.'),
-
-    cfg.IntOpt('max_flavors_per_page', default=20,
-               help='Defines the maximum number of flavors per page.'),
-
-    cfg.IntOpt('max_pools_per_page', default=20,
-               help='Defines the maximum number of pools per page.'),
-)
-
-_TRANSPORT_LIMITS_GROUP = 'transport'
-
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.
 QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-.]+$')
 QUEUE_NAME_MAX_LEN = 64
 PROJECT_ID_MAX_LEN = 256
-
-
-def _config_options():
-    return [(_TRANSPORT_LIMITS_GROUP, _TRANSPORT_LIMITS_OPTIONS)]
 
 
 class ValidationFailed(ValueError):
@@ -117,9 +49,9 @@ class ValidationFailed(ValueError):
 class Validator(object):
     def __init__(self, conf):
         self._conf = conf
-        self._conf.register_opts(_TRANSPORT_LIMITS_OPTIONS,
-                                 group=_TRANSPORT_LIMITS_GROUP)
-        self._limits_conf = self._conf[_TRANSPORT_LIMITS_GROUP]
+        self._conf.register_opts(transport.ALL_OPTS,
+                                 group=transport.GROUP_NAME)
+        self._limits_conf = self._conf[transport.GROUP_NAME]
         self._supported_operations = ('add', 'remove', 'replace')
 
     def queue_identification(self, queue, project):

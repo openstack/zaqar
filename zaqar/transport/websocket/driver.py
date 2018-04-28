@@ -15,7 +15,6 @@
 
 import socket
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import netutils
 
@@ -25,39 +24,14 @@ except ImportError:
     import trollius as asyncio
 
 from zaqar.common import decorators
+from zaqar.conf import drivers_transport_websocket
 from zaqar.i18n import _
 from zaqar.transport import base
 from zaqar.transport.middleware import auth
 from zaqar.transport.websocket import factory
 
 
-_WS_OPTIONS = (
-    cfg.HostAddressOpt('bind', default='127.0.0.1',
-                       help='Address on which the self-hosting server will '
-                            'listen.'),
-
-    cfg.PortOpt('port', default=9000,
-                help='Port on which the self-hosting server will listen.'),
-
-    cfg.PortOpt('external-port',
-                help='Port on which the service is provided to the user.'),
-
-    cfg.HostAddressOpt('notification-bind',
-                       help='Address on which the notification server will '
-                            'listen.'),
-
-    cfg.PortOpt('notification-port', default=0,
-                help='Port on which the notification server will listen.'),
-
-)
-
-_WS_GROUP = 'drivers:transport:websocket'
-
 LOG = logging.getLogger(__name__)
-
-
-def _config_options():
-    return [(_WS_GROUP, _WS_OPTIONS)]
 
 
 # TODO(derekh): use escape_ipv6 from oslo.utils once available
@@ -75,8 +49,9 @@ class Driver(base.DriverBase):
         self._api = api
         self._cache = cache
 
-        self._conf.register_opts(_WS_OPTIONS, group=_WS_GROUP)
-        self._ws_conf = self._conf[_WS_GROUP]
+        self._conf.register_opts(drivers_transport_websocket.ALL_OPTS,
+                                 group=drivers_transport_websocket.GROUP_NAME)
+        self._ws_conf = self._conf[drivers_transport_websocket.GROUP_NAME]
 
         if self._conf.auth_strategy:
             auth_strategy = auth.strategy(self._conf.auth_strategy)

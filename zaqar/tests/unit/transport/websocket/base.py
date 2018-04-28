@@ -15,10 +15,10 @@
 from oslo_serialization import jsonutils
 
 from zaqar import bootstrap
-from zaqar.common import configs
+from zaqar.conf import default
+from zaqar.conf import drivers_transport_websocket
+from zaqar.conf import transport
 from zaqar import tests as testing
-from zaqar.transport import validation
-from zaqar.transport.websocket import driver
 
 
 class TestBase(testing.TestBase):
@@ -31,14 +31,14 @@ class TestBase(testing.TestBase):
         if not self.config_file:
             self.skipTest("No config specified")
 
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
-        self.conf.register_opts(validation._TRANSPORT_LIMITS_OPTIONS,
-                                group=validation._TRANSPORT_LIMITS_GROUP)
-        self.transport_cfg = self.conf[validation._TRANSPORT_LIMITS_GROUP]
+        self.conf.register_opts(default.ALL_OPTS)
+        self.conf.register_opts(transport.ALL_OPTS,
+                                group=transport.GROUP_NAME)
+        self.transport_cfg = self.conf[transport.GROUP_NAME]
 
-        self.conf.register_opts(driver._WS_OPTIONS,
-                                group=driver._WS_GROUP)
-        self.ws_cfg = self.conf[driver._WS_GROUP]
+        self.conf.register_opts(drivers_transport_websocket.ALL_OPTS,
+                                group=drivers_transport_websocket.GROUP_NAME)
+        self.ws_cfg = self.conf[drivers_transport_websocket.GROUP_NAME]
 
         self.conf.unreliable = True
         self.conf.admin_mode = True

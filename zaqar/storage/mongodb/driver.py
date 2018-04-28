@@ -22,10 +22,11 @@ import pymongo
 import pymongo.errors
 
 from zaqar.common import decorators
+from zaqar.conf import drivers_management_store_mongodb
+from zaqar.conf import drivers_message_store_mongodb
 from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage.mongodb import controllers
-from zaqar.storage.mongodb import options
 
 
 def _connection(conf):
@@ -71,14 +72,17 @@ class DataDriver(storage.DataDriverBase):
 
     BASE_CAPABILITIES = tuple(storage.Capabilities)
 
-    _DRIVER_OPTIONS = options._config_options()
+    _DRIVER_OPTIONS = [(drivers_management_store_mongodb.GROUP_NAME,
+                        drivers_management_store_mongodb.ALL_OPTS),
+                       (drivers_message_store_mongodb.GROUP_NAME,
+                        drivers_message_store_mongodb.ALL_OPTS)]
 
     _COL_SUFIX = "_messages_p"
 
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
 
-        self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
+        self.mongodb_conf = self.conf[drivers_message_store_mongodb.GROUP_NAME]
 
         conn = self.connection
         server_info = conn.server_info()['version']
@@ -236,10 +240,12 @@ class ControlDriver(storage.ControlDriverBase):
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(options.MANAGEMENT_MONGODB_OPTIONS,
-                                group=options.MANAGEMENT_MONGODB_GROUP)
+        self.conf.register_opts(
+            drivers_management_store_mongodb.ALL_OPTS,
+            group=drivers_management_store_mongodb.GROUP_NAME)
 
-        self.mongodb_conf = self.conf[options.MANAGEMENT_MONGODB_GROUP]
+        self.mongodb_conf = self.conf[
+            drivers_management_store_mongodb.GROUP_NAME]
 
     def close(self):
         self.connection.close()

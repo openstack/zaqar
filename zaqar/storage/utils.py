@@ -128,9 +128,9 @@ def load_storage_driver(conf, cache, storage_type=None,
 
     driver_type = 'zaqar.{0}.storage'.format(mode)
 
-    _invoke_args = [conf, cache]
+    _invoke_args = (conf, cache)
     if control_driver is not None:
-        _invoke_args.append(control_driver)
+        _invoke_args = (conf, cache, control_driver)
 
     try:
         mgr = driver.DriverManager(driver_type,

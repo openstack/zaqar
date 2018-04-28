@@ -79,8 +79,6 @@ class FunctionalTestBase(testing.TestBase):
         validator = validation.Validator(self.mconf)
         self.limits = validator._limits_conf
 
-        transport_base._config_options()
-
         self.resource_defaults = transport_base.ResourceDefaults(self.mconf)
 
         # Always register options
