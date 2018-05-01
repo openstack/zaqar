@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "body": {
+        "current_bytes": "0",
+        "event": "BackupProgress",
+        "total_bytes": "99614720"
+      },
+      "age": 443,
+      "claim_count": 1,
+      "claim_id": "51db7067821e727dc24df754",
+      "id": "578f0055508f153f256f717f",
+      "ttl": 3600
+    }
+  ]
+}
