@@ -249,6 +249,7 @@ Response codes
 
 .. rest_status_code:: success status.yaml
 
+   - 200
    - 204
 
 
@@ -263,6 +264,8 @@ Response codes
 Request Parameters
 ------------------
 
+This operation does not accept a request body.
+
 .. rest_parameters:: parameters.yaml
 
   - queue_name: queue_name
@@ -270,8 +273,14 @@ Request Parameters
   - pop: pop
 
 
-This operation does not accept a request body and does not return a response
-body.
+Response Example
+----------------
+
+This operation only returns a response body when the ``pop`` query parameter
+is used.
+
+.. literalinclude:: samples/messages-delete-bypop-response.json
+   :language: javascript
 
 
 Get A Specific Message
