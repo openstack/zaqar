@@ -26,16 +26,14 @@ import os
 import subprocess
 import sys
 
-import openstackdocstheme
-
 html_theme = 'openstackdocs'
-html_theme_path = [openstackdocstheme.get_html_theme_path()]
 html_theme_options = {
     "sidebar_mode": "toc",
 }
 
 extensions = [
     'os_api_ref',
+    'openstackdocstheme',
 ]
 
 # If extensions (or modules to document with autodoc) are in another directory,
