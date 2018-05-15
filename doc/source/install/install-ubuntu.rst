@@ -384,7 +384,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
       www_authenticate_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:5000
       # Complete admin Identity API endpoint (HTTPS protocol is more preferable
       # than HTTP).
-      identity_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:35357
+      identity_uri = HTTPS://IDENTITY.EXAMPLE-MESSAGES.NET:5000
       # Token cache time in seconds.
       token_cache_time = TOKEN_CACHE_TIME
       memcached_servers = 127.0.0.1:11211
