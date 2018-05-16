@@ -26,6 +26,9 @@ MESSAGE_SWIFT_OPTIONS = (
     cfg.StrOpt("project_domain_name", help="Domain name containing project"),
     cfg.StrOpt("user_domain_id", default="default", help="User's domain id"),
     cfg.StrOpt("user_domain_name", help="User's domain name"),
+    cfg.StrOpt("region_name", help="Region name"),
+    cfg.StrOpt("interface", default="publicURL",
+               help="The default interface for endpoint URL discovery."),
 )
 
 

@@ -104,6 +104,7 @@ class _ClientWrapper(object):
 
     def __init__(self, conf):
         self.conf = conf
+        self.endpoint = None
         self.parsed_url = urllib.parse.urlparse(conf.uri)
         self.session = None
 
@@ -118,10 +119,19 @@ class _ClientWrapper(object):
             project_domain_name=self.conf.project_domain_name,
             auth_url=self.conf.auth_url)
         self.session = keystone_session.Session(auth=auth)
+        self.endpoint = self.session.get_endpoint(
+            service_type='object-store',
+            interface=self.conf.interface,
+            region_name=self.conf.region_name
+        )
 
     def __getattr__(self, attr):
         if self.session is None:
             self._init_auth()
+        os_options = {
+            'object_storage_url': self.endpoint
+        }
         client = swiftclient.Connection(session=self.session,
-                                        insecure=self.conf.insecure)
+                                        insecure=self.conf.insecure,
+                                        os_options=os_options)
         return getattr(client, attr)
