@@ -293,6 +293,7 @@ class Endpoints(object):
         try:
             kwargs = api_utils.get_headers(req)
 
+            self._validate.client_id_uuid_safe(req._headers.get('Client-ID'))
             client_uuid = api_utils.get_client_uuid(req)
 
             self._validate.message_listing(**kwargs)
@@ -468,6 +469,7 @@ class Endpoints(object):
             return api_utils.error_response(req, ex, headers)
 
         try:
+            self._validate.client_id_uuid_safe(req._headers.get('Client-ID'))
             client_uuid = api_utils.get_client_uuid(req)
 
             self._validate.message_posting(messages)
@@ -477,7 +479,8 @@ class Endpoints(object):
                 messages=messages,
                 project=project_id,
                 client_uuid=client_uuid)
-        except (api_errors.BadRequest, validation.ValidationFailed) as ex:
+        except (ValueError, api_errors.BadRequest,
+                validation.ValidationFailed) as ex:
             LOG.debug(ex)
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)

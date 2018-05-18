@@ -127,6 +127,54 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         self.simulate_get(gumshoe_queue_path_stats, headers=headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
+    @ddt.data('1234567890', '11111111111111111111111111111111111')
+    def test_basics_thoroughly_with_different_client_id(self, client_id):
+        self.conf.set_override('client_id_uuid_safe', 'off', 'transport')
+        headers = {
+            'Client-ID': client_id,
+            'X-Project-ID': '480924'
+        }
+        gumshoe_queue_path_stats = self.gumshoe_queue_path + '/stats'
+
+        # Stats are empty - queue not created yet
+        self.simulate_get(gumshoe_queue_path_stats, headers=headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        # Create
+        doc = '{"messages": {"ttl": 600}}'
+        self.simulate_put(self.gumshoe_queue_path,
+                          headers=headers, body=doc)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+
+        location = self.srmock.headers_dict['Location']
+        self.assertEqual(location, self.gumshoe_queue_path)
+
+        # Fetch metadata
+        result = self.simulate_get(self.gumshoe_queue_path,
+                                   headers=headers)
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        ref_doc = jsonutils.loads(doc)
+        ref_doc['_default_message_ttl'] = 3600
+        ref_doc['_max_messages_post_size'] = 262144
+        ref_doc['_default_message_delay'] = 0
+        ref_doc['_dead_letter_queue'] = None
+        ref_doc['_dead_letter_queue_messages_ttl'] = None
+        ref_doc['_max_claim_count'] = None
+        self.assertEqual(ref_doc, result_doc)
+
+        # Stats empty queue
+        self.simulate_get(gumshoe_queue_path_stats, headers=headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        # Delete
+        self.simulate_delete(self.gumshoe_queue_path, headers=headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+        # Get non-existent stats
+        self.simulate_get(gumshoe_queue_path_stats, headers=headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
     def test_name_restrictions(self):
         self.simulate_put(self.queue_path + '/Nice-Boat_2',
                           headers=self.headers)

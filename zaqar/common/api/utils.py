@@ -136,16 +136,13 @@ def get_client_uuid(req):
     """Read a required Client-ID from a request.
 
     :param req: Request object
-    :raises BadRequest: if the Client-ID header is missing or
-        does not represent a valid UUID
-    :returns: A UUID object
+    :returns: A UUID object or A string of client id
     """
 
     try:
         return uuid.UUID(req._headers.get('Client-ID'))
     except ValueError:
-        description = _(u'Malformed hexadecimal UUID.')
-        raise api_errors.BadRequest(description)
+        return req._headers.get('Client-ID')
 
 
 def get_headers(req):
