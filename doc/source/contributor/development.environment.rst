@@ -31,7 +31,7 @@ testing Zaqar.
 Using virtualenv_ enables you to install Python dependencies in an isolated
 virtual environment, instead of installing the packages at the system level.
 
-.. _virtualenv: http://pypi.python.org/pypi/virtualenv
+.. _virtualenv: https://pypi.org/project/virtualenv
 
 .. note::
 
