@@ -75,9 +75,7 @@ This is an example of small package with a stage that can process queue-related
 requests in Zaqar. The stage does not do anything useful, but is good as
 example.
 
-File tree structure of the package:
-
-.. code-block:: none
+File tree structure of the package::
 
    .
    ├── setup.py
