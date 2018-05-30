@@ -137,10 +137,12 @@ Using a custom MongoDB instance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you need to run functional tests against a non-default MongoDB installation,
-you can set the ``ZAQAR_TEST_MONGODB_URL`` environment variable. For example:
+you can set the ``ZAQAR_TEST_MONGODB_URL`` and ``ZAQAR_TEST_MONGODB``
+environment variables. For example:
 
 .. code-block:: console
 
+    $ export ZAQAR_TEST_MONGODB=True
     $ export ZAQAR_TEST_MONGODB_URL=mongodb://remote-server:27017
 
 Using custom parameters
