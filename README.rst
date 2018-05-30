@@ -40,6 +40,7 @@ available at:
     https://docs.openstack.org/zaqar/latest
 
 Zaqar's Release notes is available at:
+
     https://docs.openstack.org/releasenotes/zaqar/
 
 Contributors are encouraged to join IRC (``#openstack-zaqar`` channel on
