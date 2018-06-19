@@ -173,7 +173,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
-            self.assertEqual(201, resp['headers']['status'])
+            self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
         self.protocol.onMessage(req, False)
@@ -218,7 +218,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
-            self.assertEqual(201, resp['headers']['status'])
+            self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
         self.protocol.onMessage(req, False)
@@ -268,7 +268,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         def validator(resp, isBinary):
             resp = json.loads(resp)
-            self.assertEqual(201, resp['headers']['status'])
+            self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
         self.protocol.onMessage(req, False)
