@@ -18,8 +18,8 @@ from oslo_cache import core
 from oslo_config import cfg
 
 from zaqar.common import cache as oslo_cache
-from zaqar.common import configs
 from zaqar.common import decorators
+from zaqar.conf import default
 from zaqar.tests import base
 
 
@@ -27,7 +27,7 @@ class TestDecorators(base.TestBase):
 
     def setUp(self):
         super(TestDecorators, self).setUp()
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
+        self.conf.register_opts(default.ALL_OPTS)
 
     def test_memoized_getattr(self):
 

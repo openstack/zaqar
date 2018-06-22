@@ -22,10 +22,11 @@ from stevedore import driver
 
 from zaqar.api import handler
 from zaqar.common import cache as oslo_cache
-from zaqar.common import configs
 from zaqar.common import consts
 from zaqar.common import decorators
 from zaqar.common import errors
+from zaqar.conf import drivers as driver_opts
+from zaqar.conf import opts as opts_tool
 from zaqar.storage import pipeline
 from zaqar.storage import pooling
 from zaqar.storage import utils as storage_utils
@@ -46,7 +47,7 @@ class Bootstrap(object):
     def __init__(self, conf):
         self.conf = conf
 
-        for group, opts in configs._config_options():
+        for group, opts in opts_tool.list_opts_by_group():
             self.conf.register_opts(opts, group=group)
         profiler_opts.set_defaults(self.conf)
 
@@ -54,7 +55,7 @@ class Bootstrap(object):
         # wsgi. Websocket part will be added in the future.
         profile.setup(self.conf, 'Zaqar-server', socket.gethostname())
 
-        self.driver_conf = self.conf[configs._DRIVER_GROUP]
+        self.driver_conf = self.conf[driver_opts.GROUP_NAME]
 
     @decorators.lazy_property(write=False)
     def api(self):

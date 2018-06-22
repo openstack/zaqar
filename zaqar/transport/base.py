@@ -15,40 +15,10 @@
 
 import abc
 
-from oslo_config import cfg
 import six
 
-
-_GENERAL_TRANSPORT_OPTIONS = (
-    cfg.StrOpt('auth_strategy', default='',
-               help=('Backend to use for authentication. '
-                     'For no auth, keep it empty. '
-                     'Existing strategies: keystone. '
-                     'See also the keystone_authtoken section below')),
-)
-
-_RESOURCE_DEFAULTS = (
-    cfg.IntOpt('default_message_ttl', default=3600,
-               help=('Defines how long a message will be accessible.')),
-    cfg.IntOpt('default_message_delay', default=0,
-               help=('Defines the defautl value for queue delay seconds.'
-                     'The 0 means the delayed queues feature is close.')),
-    cfg.IntOpt('default_claim_ttl', default=300,
-               help=('Defines how long a message will be in claimed state.')),
-    cfg.IntOpt('default_claim_grace', default=60,
-               help=('Defines the message grace period in seconds.')),
-    cfg.IntOpt('default_subscription_ttl', default=3600,
-               help=('Defines how long a subscription will be available.')),
-)
-
-_TRANSPORT_GROUP = 'transport'
-
-
-def _config_options():
-    return [
-        (None, _GENERAL_TRANSPORT_OPTIONS),
-        (_TRANSPORT_GROUP, _RESOURCE_DEFAULTS),
-    ]
+from zaqar.conf import default
+from zaqar.conf import transport
 
 
 class ResourceDefaults(object):
@@ -56,8 +26,9 @@ class ResourceDefaults(object):
 
     def __init__(self, conf):
         self._conf = conf
-        self._conf.register_opts(_RESOURCE_DEFAULTS, group=_TRANSPORT_GROUP)
-        self._defaults = self._conf[_TRANSPORT_GROUP]
+        self._conf.register_opts(transport.ALL_OPTS,
+                                 group=transport.GROUP_NAME)
+        self._defaults = self._conf[transport.GROUP_NAME]
 
     @property
     def message_ttl(self):
@@ -96,7 +67,7 @@ class DriverBase(object):
         self._cache = cache
         self._control = control
 
-        self._conf.register_opts(_GENERAL_TRANSPORT_OPTIONS)
+        self._conf.register_opts([default.auth_strategy])
         self._defaults = ResourceDefaults(self._conf)
 
     @abc.abstractmethod

@@ -19,10 +19,11 @@ from six.moves import urllib
 
 from zaqar.common import decorators
 from zaqar.common import errors
+from zaqar.conf import drivers_management_store_redis
+from zaqar.conf import drivers_message_store_redis
 from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage.redis import controllers
-from zaqar.storage.redis import options
 
 REDIS_DEFAULT_PORT = 6379
 SENTINEL_DEFAULT_PORT = 26379
@@ -156,11 +157,14 @@ class DataDriver(storage.DataDriverBase):
                          storage.Capabilities.AOD,
                          storage.Capabilities.HIGH_THROUGHPUT)
 
-    _DRIVER_OPTIONS = options._config_options()
+    _DRIVER_OPTIONS = [(drivers_management_store_redis.GROUP_NAME,
+                        drivers_management_store_redis.ALL_OPTS),
+                       (drivers_message_store_redis.GROUP_NAME,
+                        drivers_message_store_redis.ALL_OPTS)]
 
     def __init__(self, conf, cache, control_driver):
         super(DataDriver, self).__init__(conf, cache, control_driver)
-        self.redis_conf = self.conf[options.MESSAGE_REDIS_GROUP]
+        self.redis_conf = self.conf[drivers_message_store_redis.GROUP_NAME]
 
         server_version = self.connection.info()['redis_version']
         if tuple(map(int, server_version.split('.'))) < (2, 6):
@@ -240,10 +244,11 @@ class ControlDriver(storage.ControlDriverBase):
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
 
-        self.conf.register_opts(options.MANAGEMENT_REDIS_OPTIONS,
-                                group=options.MANAGEMENT_REDIS_GROUP)
+        self.conf.register_opts(
+            drivers_management_store_redis.ALL_OPTS,
+            group=drivers_management_store_redis.GROUP_NAME)
 
-        self.redis_conf = self.conf[options.MANAGEMENT_REDIS_GROUP]
+        self.redis_conf = self.conf[drivers_management_store_redis.GROUP_NAME]
 
     def close(self):
         self.connection.close()

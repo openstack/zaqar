@@ -1,0 +1,6 @@
+other:
+  - |
+    The code structure for configuration files are changed. This is insensitvie
+    for end users, but the persons who work for downstream changes should pay
+    attention. Please refactor your private configurations to ``zaqar/conf/``
+    folder as well.

@@ -266,7 +266,7 @@ Install and configure ``memcached``, ``uWSGI`` and Messaging on the web server
 
     .. code-block:: console
 
-      # oslopolicy-sample-generator --config-file etc/oslo-config-generator/zaqar-policy-generator.conf
+      # oslopolicy-sample-generator --config-file etc/zaqar-policy-generator.conf
       # cp etc/zaqar.policy.yaml.sample /etc/zaqar/policy.yaml
 
     Edit any item as needed in policy.yaml.

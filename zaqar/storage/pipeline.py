@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from osprofiler import profiler
 from stevedore import driver
@@ -20,27 +19,10 @@ from stevedore import extension
 
 from zaqar import common
 from zaqar.common import decorators
-from zaqar.i18n import _
+from zaqar.conf import storage
 from zaqar.storage import base
 
 LOG = logging.getLogger(__name__)
-
-_PIPELINE_RESOURCES = ('queue', 'message', 'claim', 'subscription')
-
-_PIPELINE_CONFIGS = tuple((
-    cfg.ListOpt(resource + '_pipeline', default=[],
-                help=_('Pipeline to use for processing {0} operations. '
-                       'This pipeline will be consumed before calling '
-                       'the storage driver\'s controller methods.')
-                .format(resource))
-    for resource in _PIPELINE_RESOURCES
-))
-
-_PIPELINE_GROUP = 'storage'
-
-
-def _config_options():
-    return [(_PIPELINE_GROUP, _PIPELINE_CONFIGS)]
 
 
 def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
@@ -64,10 +46,10 @@ def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
     :returns: A pipeline to use.
     :rtype: `Pipeline`
     """
-    conf.register_opts(_PIPELINE_CONFIGS,
-                       group=_PIPELINE_GROUP)
+    conf.register_opts(storage.ALL_OPTS,
+                       group=storage.GROUP_NAME)
 
-    storage_conf = conf[_PIPELINE_GROUP]
+    storage_conf = conf[storage.GROUP_NAME]
 
     pipeline = []
     for ns in storage_conf[resource_name + '_pipeline']:

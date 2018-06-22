@@ -3,6 +3,6 @@ level of the zaqar directory:
     tox -egenpolicy
 
 Or run the command directly:
-    oslopolicy-sample-generator --config-file etc/oslo-config-generator/zaqar-policy-generator.conf
+    oslopolicy-sample-generator --config-file etc/zaqar-policy-generator.conf
 The output file will be in etc folder, named "zaqar.policy.yaml.sample" by
 default.

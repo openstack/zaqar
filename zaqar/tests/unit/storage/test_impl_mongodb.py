@@ -26,12 +26,13 @@ import six
 from testtools import matchers
 
 from zaqar.common import cache as oslo_cache
-from zaqar.common import configs
+from zaqar.conf import default
+from zaqar.conf import drivers_management_store_mongodb
+from zaqar.conf import drivers_message_store_mongodb
 from zaqar import storage
 from zaqar.storage import errors
 from zaqar.storage import mongodb
 from zaqar.storage.mongodb import controllers
-from zaqar.storage.mongodb import options
 from zaqar.storage.mongodb import utils
 from zaqar.storage import pooling
 from zaqar import tests as testing
@@ -51,12 +52,12 @@ class MongodbSetupMixin(object):
             self.driver.connection.drop_database(db)
 
     def _prepare_conf(self):
-        if options.MESSAGE_MONGODB_GROUP in self.conf:
-            self.config(options.MESSAGE_MONGODB_GROUP,
+        if drivers_message_store_mongodb.GROUP_NAME in self.conf:
+            self.config(drivers_message_store_mongodb.GROUP_NAME,
                         database=uuid.uuid4().hex)
 
-        if options.MANAGEMENT_MONGODB_GROUP in self.conf:
-            self.config(options.MANAGEMENT_MONGODB_GROUP,
+        if drivers_management_store_mongodb.GROUP_NAME in self.conf:
+            self.config(drivers_management_store_mongodb.GROUP_NAME,
                         database=uuid.uuid4().hex)
 
 
@@ -67,10 +68,10 @@ class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
     def setUp(self):
         super(MongodbUtilsTest, self).setUp()
 
-        self.conf.register_opts(options.MESSAGE_MONGODB_OPTIONS,
-                                group=options.MESSAGE_MONGODB_GROUP)
+        self.conf.register_opts(drivers_message_store_mongodb.ALL_OPTS,
+                                group=drivers_message_store_mongodb.GROUP_NAME)
 
-        self.mongodb_conf = self.conf[options.MESSAGE_MONGODB_GROUP]
+        self.mongodb_conf = self.conf[drivers_message_store_mongodb.GROUP_NAME]
 
         MockDriver = collections.namedtuple('MockDriver', 'mongodb_conf')
 
@@ -152,7 +153,7 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
     def setUp(self):
         super(MongodbDriverTest, self).setUp()
 
-        self.conf.register_opts(configs._GENERAL_OPTIONS)
+        self.conf.register_opts(default.ALL_OPTS)
         self.config(unreliable=False)
         oslo_cache.register_config(self.conf)
 

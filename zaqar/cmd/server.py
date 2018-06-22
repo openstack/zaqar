@@ -21,12 +21,12 @@ from oslo_reports import opts as gmr_opts
 
 from zaqar import bootstrap
 from zaqar.common import cli
-from zaqar.common import configs
+from zaqar.conf import default
 from zaqar import version
 
 # NOTE(eggmaster): define command line options for zaqar-server
 _CLI_OPTIONS = (
-    configs._ADMIN_MODE_OPT,
+    default.admin_mode,
     cfg.BoolOpt('daemon', default=False,
                 help='Run Zaqar server in the background.'),
 )

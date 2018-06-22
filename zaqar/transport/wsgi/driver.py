@@ -19,12 +19,12 @@ import six
 import socket
 from wsgiref import simple_server
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import netutils
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers
+from zaqar.conf import drivers_transport_wsgi
 from zaqar.i18n import _
 from zaqar import transport
 from zaqar.transport import acl
@@ -37,22 +37,8 @@ from zaqar.transport.wsgi import v1_1
 from zaqar.transport.wsgi import v2_0
 from zaqar.transport.wsgi import version
 
-_WSGI_OPTIONS = (
-    cfg.HostAddressOpt('bind', default='127.0.0.1',
-                       help='Address on which the self-hosting server will '
-                            'listen.'),
-
-    cfg.PortOpt('port', default=8888,
-                help='Port on which the self-hosting server will listen.'),
-)
-
-_WSGI_GROUP = 'drivers:transport:wsgi'
 
 LOG = logging.getLogger(__name__)
-
-
-def _config_options():
-    return [(_WSGI_GROUP, _WSGI_OPTIONS)]
 
 
 class FuncMiddleware(object):
@@ -69,8 +55,9 @@ class Driver(transport.DriverBase):
     def __init__(self, conf, storage, cache, control):
         super(Driver, self).__init__(conf, storage, cache, control)
 
-        self._conf.register_opts(_WSGI_OPTIONS, group=_WSGI_GROUP)
-        self._wsgi_conf = self._conf[_WSGI_GROUP]
+        self._conf.register_opts(drivers_transport_wsgi.ALL_OPTS,
+                                 group=drivers_transport_wsgi.GROUP_NAME)
+        self._wsgi_conf = self._conf[drivers_transport_wsgi.GROUP_NAME]
         self._validate = validation.Validator(self._conf)
 
         self.app = None

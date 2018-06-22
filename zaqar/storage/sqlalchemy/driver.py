@@ -19,18 +19,20 @@ from osprofiler import sqlalchemy as sa_tracer
 import sqlalchemy as sa
 
 from zaqar.common import decorators
+from zaqar.conf import drivers_management_store_sqlalchemy
 from zaqar import storage
 from zaqar.storage.sqlalchemy import controllers
-from zaqar.storage.sqlalchemy import options
 
 
 class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
         super(ControlDriver, self).__init__(conf, cache)
-        self.conf.register_opts(options.MANAGEMENT_SQLALCHEMY_OPTIONS,
-                                group=options.MANAGEMENT_SQLALCHEMY_GROUP)
-        self.sqlalchemy_conf = self.conf[options.MANAGEMENT_SQLALCHEMY_GROUP]
+        self.conf.register_opts(
+            drivers_management_store_sqlalchemy.ALL_OPTS,
+            group=drivers_management_store_sqlalchemy.GROUP_NAME)
+        self.sqlalchemy_conf = self.conf[
+            drivers_management_store_sqlalchemy.GROUP_NAME]
 
     def _mysql_on_connect(self, conn, record):
         # NOTE(flaper87): This is necessary in order

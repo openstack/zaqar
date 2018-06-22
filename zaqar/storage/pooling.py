@@ -16,13 +16,13 @@
 import heapq
 import itertools
 
-from oslo_config import cfg
 from oslo_log import log
 from osprofiler import profiler
 
 from zaqar.common import decorators
 from zaqar.common import errors as cerrors
 from zaqar.common.storage import select
+from zaqar.conf import pooling_catalog
 from zaqar.i18n import _
 from zaqar import storage
 from zaqar.storage import errors
@@ -31,13 +31,6 @@ from zaqar.storage import utils
 
 LOG = log.getLogger(__name__)
 
-_CATALOG_OPTIONS = (
-    cfg.BoolOpt('enable_virtual_pool', default=False,
-                help=('If enabled, the message_store will be used '
-                      'as the storage for the virtual pool.')),
-)
-
-_CATALOG_GROUP = 'pooling:catalog'
 
 # NOTE(kgriffs): E.g.: 'zaqar-pooling:5083853/my-queue'
 _POOL_CACHE_PREFIX = 'pooling:'
@@ -49,10 +42,6 @@ _POOL_CACHE_PREFIX = 'pooling:'
 #
 # TODO(kgriffs): Make configurable?
 _POOL_CACHE_TTL = 10
-
-
-def _config_options():
-    return [(_CATALOG_GROUP, _CATALOG_OPTIONS)]
 
 
 def _pool_cache_key(queue, project=None):
@@ -452,8 +441,9 @@ class Catalog(object):
         self._cache = cache
         self.control = control
 
-        self._conf.register_opts(_CATALOG_OPTIONS, group=_CATALOG_GROUP)
-        self._catalog_conf = self._conf[_CATALOG_GROUP]
+        self._conf.register_opts(pooling_catalog.ALL_OPTS,
+                                 group=pooling_catalog.GROUP_NAME)
+        self._catalog_conf = self._conf[pooling_catalog.GROUP_NAME]
 
         self._pools_ctrl = control.pools_controller
         self._flavor_ctrl = control.flavors_controller

@@ -23,12 +23,12 @@ import redis
 
 from zaqar.common import cache as oslo_cache
 from zaqar.common import errors
+from zaqar.conf import drivers_message_store_redis
 from zaqar import storage
 from zaqar.storage import pooling
 from zaqar.storage.redis import controllers
 from zaqar.storage.redis import driver
 from zaqar.storage.redis import messages
-from zaqar.storage.redis import options
 from zaqar.storage.redis import utils
 from zaqar import tests as testing
 from zaqar.tests.unit.storage import base
@@ -65,10 +65,10 @@ class RedisUtilsTest(testing.TestBase):
     def setUp(self):
         super(RedisUtilsTest, self).setUp()
 
-        self.conf.register_opts(options.MESSAGE_REDIS_OPTIONS,
-                                group=options.MESSAGE_REDIS_GROUP)
+        self.conf.register_opts(drivers_message_store_redis.ALL_OPTS,
+                                group=drivers_message_store_redis.GROUP_NAME)
 
-        self.redis_conf = self.conf[options.MESSAGE_REDIS_GROUP]
+        self.redis_conf = self.conf[drivers_message_store_redis.GROUP_NAME]
 
         MockDriver = collections.namedtuple('MockDriver', 'redis_conf')
 

@@ -48,10 +48,9 @@ extensions = ['sphinx.ext.coverage',
               'openstackdocstheme',
               ]
 
-config_generator_config_file = [
-    ('../../etc/oslo-config-generator/zaqar.conf',
-     '_static/zaqar'),
-]
+config_generator_config_file = '../../etc/oslo-config-generator/zaqar.conf'
+sample_config_basename = '_static/zaqar'
+
 
 # autodoc generation is a bit aggressive and a nuisance
 # when doing heavy text edit cycles. Execute "export SPHINX_DEBUG=1"
