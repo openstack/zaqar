@@ -314,9 +314,11 @@ class Queue(ControllerBase):
         """Base method for listing queues.
 
         :param project: Project id
+        :param kfilter: The key-value of metadata which user want to filter
         :param marker: The last queue name
         :param limit: (Default 10) Max number of queues to return
         :param detailed: Whether metadata is included
+        :param name: The queue name which user want to filter
 
         :returns: An iterator giving a sequence of queues
             and the marker of the next page.
