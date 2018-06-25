@@ -39,7 +39,7 @@ available at:
 
     https://docs.openstack.org/zaqar/latest
 
-Zaqar's Release notes is available at:
+Zaqar's Release notes are available at:
 
     https://docs.openstack.org/releasenotes/zaqar/
 
