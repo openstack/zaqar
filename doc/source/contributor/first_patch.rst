@@ -162,10 +162,10 @@ Here are some details you might want to include when filling out a bug report:
 In the bug comments, you can contribute instructions on how to fix a given bug,
 and set the status to "Triaged".
 
-You can read more about `Launchpad bugs`_ in the wiki.
+You can read more about `Launchpad bugs`_ in the official guide.
 
 .. _`bugs list in Launchpad`: https://bugs.launchpad.net/zaqar
-.. _`Launchpad bugs`: https://wiki.openstack.org/wiki/Bugs
+.. _`Launchpad bugs`:  https://docs.openstack.org/project-team-guide/bugs.html
 
 Workflow
 ########
