@@ -97,7 +97,7 @@ class MsgidTests(testing.TestBase):
 
     def test_encode(self):
         if six.PY2:
-            ids = [3, long(1), 0]
+            ids = [3, long(1), 0]  # noqa
         elif six.PY3:
             ids = [3, 1, 0]
         msgids = ['5c693a50', '5c693a52', '5c693a53']
