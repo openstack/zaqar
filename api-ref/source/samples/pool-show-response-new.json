@@ -1,7 +1,7 @@
 {
   "href": "/v2/pools/test_pool",
-  "group": "testpoolgroup",
-  "flavor": "",
+  "group": "",
+  "flavor": "testpoolflavor",
   "name": "test_pool",
   "weight": 100,
   "uri": "mongodb://127.0.0.1:27017"

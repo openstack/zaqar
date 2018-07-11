@@ -47,9 +47,18 @@ Response Parameters
   - flavors: flavors
   - links: flavor_links
 
+Response Example
+----------------
+NOTE: Suggest config pool_list in stead of pool_group from the
+beginning of Queens.
+
+.. literalinclude:: samples/flavor-list-response-new.json
+   :language: javascript
+
 
 Response Example
 ----------------
+NOTE: Remove pool_group in Rocky release and use pool_list instead for pool
 
 .. literalinclude:: samples/flavor-list-response.json
    :language: javascript
@@ -90,9 +99,20 @@ Request Parameters
 
   - flavor_name: flavor_name_path
   - pool_group: flavor_pool_group
+  - pool_list: flavor_pool_list
 
 Request Example
 ---------------
+NOTE: Suggest config pool_list in stead of pool_group from the
+beginning of Queens.
+
+.. literalinclude:: samples/flavor-create-request-new.json
+   :language: javascript
+
+
+Request Example
+---------------
+NOTE: Remove pool_group in Rocky release and use pool_list instead for pool
 
 .. literalinclude:: samples/flavor-create-request.json
    :language: javascript
@@ -131,10 +151,29 @@ Request Parameters
 
   - flavor_name: flavor_name_path
   - pool_group: flavor_pool_group
+  - pool_list: flavor_pool_list
+
+Request Example
+---------------
+NOTE: Suggest config pool_list in stead of pool_group from the
+beginning of Queens.
+
+.. literalinclude:: samples/flavor-update-request-new.json
+   :language: javascript
+
+
+Response Example
+----------------
+NOTE: Suggest config pool_list in stead of pool_group from the
+beginning of Queens.
+
+.. literalinclude:: samples/flavor-update-response-new.json
+   :language: javascript
 
 
 Request Example
 ---------------
+NOTE: Remove pool_group in Rocky release and use pool_list instead for pool
 
 .. literalinclude:: samples/flavor-update-request.json
    :language: javascript
@@ -142,6 +181,7 @@ Request Example
 
 Response Example
 ----------------
+NOTE: Remove pool_group in Rocky release and use pool_list instead for pool
 
 .. literalinclude:: samples/flavor-update-response.json
    :language: javascript
@@ -184,10 +224,21 @@ Response Parameters
   - name: flavor_name
   - capabilities: capabilities
   - pool_group: flavor_pool_group
+  - pool_list: flavor_pool_list
   - href: flavor_href
 
 Response Example
 ----------------
+NOTE: Suggest config pool_list in stead of pool_group from the
+beginning of Queens.
+
+.. literalinclude:: samples/flavor-show-response-new.json
+   :language: javascript
+
+
+Response Example
+----------------
+NOTE: Remove pool_group in Rocky release and use pool_list instead for pool
 
 .. literalinclude:: samples/flavor-show-response.json
    :language: javascript

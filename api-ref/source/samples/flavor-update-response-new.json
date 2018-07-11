@@ -1,13 +1,12 @@
 {
   "href": "/v2/flavors/testflavor",
+  "pool_list": "[testpool1, testpool3]",
+  "name": "testflavor",
   "capabilities": [
     "FIFO",
     "CLAIMS",
     "DURABILITY",
     "AOD",
     "HIGH_THROUGHPUT"
-  ],
-  "pool_group": "testgroup",
-  "pool_list": ""
-  "name": "testflavor"
+  ]
 }
