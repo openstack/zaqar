@@ -1,0 +1,9 @@
+---
+features:
+  - Since some clients use different format of client id not only uuid, like
+    user id of ldap, so Zaqar will remove the format contrain of client id.
+    Add one option 'client_id_uuid_safe' to allow user to control the
+    validation of client id. Add two options 'min_length_client_id' and
+    'max_length_client_id' to allow user to control the length of client id
+    if not using uuid. This also requires user to ensure the client id is
+    immutable.

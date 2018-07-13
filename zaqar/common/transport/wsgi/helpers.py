@@ -67,17 +67,13 @@ def get_client_uuid(req):
     """Read a required Client-ID from a request.
 
     :param req: A falcon.Request object
-    :raises HTTPBadRequest: if the Client-ID header is missing or
-        does not represent a valid UUID
-    :returns: A UUID object
+    :returns: A UUID object or A string of client id
     """
 
     try:
         return uuid.UUID(req.get_header('Client-ID', required=True))
-
     except ValueError:
-        description = _(u'Malformed hexadecimal UUID.')
-        raise falcon.HTTPBadRequest('Wrong UUID value', description)
+        return req.get_header('Client-ID', required=True)
 
 
 def extract_project_id(req, resp, params):
@@ -112,10 +108,13 @@ def extract_project_id(req, resp, params):
                                     _(u'The header X-PROJECT-ID was missing'))
 
 
-def require_client_id(req, resp, params):
+def require_client_id(validate, req, resp, params):
     """Makes sure the header `Client-ID` is present in the request
 
     Use as a before hook.
+    :param validate: A validator function that will
+        be used to check the format of client id against configured
+        limits.
     :param req: request sent
     :type req: falcon.request.Request
     :param resp: response object to return
@@ -126,9 +125,24 @@ def require_client_id(req, resp, params):
     """
 
     if req.path.startswith('/v1.1/') or req.path.startswith('/v2/'):
-        # NOTE(flaper87): `get_client_uuid` already raises 400
-        # it the header is missing.
-        get_client_uuid(req)
+        try:
+            validate(req.get_header('Client-ID', required=True))
+        except ValueError:
+            description = _(u'Malformed hexadecimal UUID.')
+            raise falcon.HTTPBadRequest('Wrong UUID value', description)
+        except validation.ValidationFailed as ex:
+            raise falcon.HTTPBadRequest(six.text_type(ex))
+    else:
+        # NOTE(wanghao): Since we changed the get_client_uuid to support
+        # other format of client id, so need to check the uuid here for
+        # v1 API.
+        try:
+            client_id = req.get_header('Client-ID')
+            if client_id or client_id == '':
+                uuid.UUID(client_id)
+        except ValueError:
+            description = _(u'Malformed hexadecimal UUID.')
+            raise falcon.HTTPBadRequest('Wrong UUID value', description)
 
 
 def validate_queue_identification(validate, req, resp, params):

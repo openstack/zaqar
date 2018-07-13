@@ -72,6 +72,10 @@ class Driver(transport.DriverBase):
         return helpers.validate_queue_identification(
             self._validate.queue_identification, req, resp, params)
 
+    def _require_client_id(self, req, resp, params):
+        return helpers.require_client_id(
+            self._validate.client_id_uuid_safe, req, resp, params)
+
     @decorators.lazy_property(write=False)
     def before_hooks(self):
         """Exposed to facilitate unit testing."""
@@ -79,7 +83,7 @@ class Driver(transport.DriverBase):
             self._verify_pre_signed_url,
             helpers.require_content_type_be_non_urlencoded,
             helpers.require_accepts_json,
-            helpers.require_client_id,
+            self._require_client_id,
             helpers.extract_project_id,
 
             # NOTE(jeffrey4l): Depends on the project_id and client_id being

@@ -1,16 +1,21 @@
 #### variables in header #####################################################
 
 client_id:
-  type: UUID
+  type: string
   in: header
   description: |
-    A UUID for each client instance. The UUID must be submitted in its
+    The identification for each client instance. The format of client id is
+    UUID by default, but Zaqar also supports a Non-UUID string by setting
+    configuration "client_id_uuid_safe=off". The UUID must be submitted in its
     canonical form (for example, 3381af92-2b9e-11e3-b191-71861300734c). The
-    client generates the Client-ID once. Client-ID persists between restarts
-    of the client so the client should reuse that same Client-ID. Note: All
-    message-related operations require the use of ``Client-ID`` in the headers
-    to ensure that messages are not echoed back to the client that posted
-    them, unless the client explicitly requests this.
+    string must be longer than "min_length_client_id=20" and smaller than
+    "max_length_client_id=300" by default. User can control the length of
+    client id by using those two options. The client generates the Client-ID
+    once. Client-ID persists between restarts of the client so the client
+    should reuse that same Client-ID. Note: All message-related operations
+    require the use of ``Client-ID`` in the headers to ensure that messages
+    are not echoed back to the client that posted them, unless the client
+    explicitly requests this.
 
 #### variables in path #######################################################
 

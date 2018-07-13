@@ -16,6 +16,7 @@
 
 import datetime
 import re
+import uuid
 
 from oslo_utils import timeutils
 import six
@@ -649,3 +650,21 @@ class Validator(object):
         if limit is not None and not (0 < limit <= uplimit):
             msg = _(u'Limit must be at least 1 and no greater than {0}.')
             raise ValidationFailed(msg, self._limits_conf.max_pools_per_page)
+
+    def client_id_uuid_safe(self, client_id):
+        """Restrictions the format of client id
+
+        :param client_id: the client id of request
+        :raises ValidationFailed: if the limit is exceeded
+        """
+
+        if self._limits_conf.client_id_uuid_safe == 'off':
+            if (len(client_id) < self._limits_conf.min_length_client_id) or \
+               (len(client_id) > self._limits_conf.max_length_client_id):
+                msg = _(u'Length of client id must be at least {0} and no '
+                        'greater than {1}.')
+                raise ValidationFailed(msg,
+                                       self._limits_conf.min_length_client_id,
+                                       self._limits_conf.max_length_client_id)
+        if self._limits_conf.client_id_uuid_safe == 'strict':
+            uuid.UUID(client_id)

@@ -124,6 +124,25 @@ max_pools_per_page = cfg.IntOpt(
     help='Defines the maximum number of pools per page.')
 
 
+client_id_uuid_safe = cfg.StrOpt(
+    'client_id_uuid_safe', default='strict', choices=['strict', 'off'],
+    help='Defines the format of client id, the value could be '
+         '"strict" or "off". "strict" means the format of client id'
+         ' must be uuid, "off" means the restriction be removed.')
+
+
+min_length_client_id = cfg.IntOpt(
+    'min_length_client_id', default='10',
+    help='Defines the minimum length of client id if remove the '
+         'uuid restriction. Default is 10.')
+
+
+max_length_client_id = cfg.IntOpt(
+    'max_length_client_id', default='36',
+    help='Defines the maximum length of client id if remove the '
+         'uuid restriction. Default is 36.')
+
+
 GROUP_NAME = 'transport'
 ALL_OPTS = [
     default_message_ttl,
@@ -143,7 +162,10 @@ ALL_OPTS = [
     max_claim_grace,
     subscriber_types,
     max_flavors_per_page,
-    max_pools_per_page
+    max_pools_per_page,
+    client_id_uuid_safe,
+    min_length_client_id,
+    max_length_client_id
 ]
 
 
