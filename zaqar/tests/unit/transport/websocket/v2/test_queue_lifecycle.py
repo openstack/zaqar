@@ -47,7 +47,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
@@ -71,7 +71,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(404, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -90,7 +90,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(201, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -107,7 +107,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
             self.assertEqual(meta, resp['body'])
 
@@ -120,7 +120,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -132,7 +132,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(204, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -144,7 +144,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(404, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -172,7 +172,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
@@ -182,7 +182,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -207,7 +207,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -217,7 +217,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
@@ -241,7 +241,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -267,14 +267,14 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertIn(resp['headers']['status'], [201, 204])
 
         sender.side_effect = validator
         self.protocol.onMessage(req, False)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(204, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -297,7 +297,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -324,7 +324,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -351,7 +351,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -374,7 +374,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(201, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -387,7 +387,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(204, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -400,7 +400,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(204, resp['headers']['status'])
             self.assertEqual(meta1, resp['body'])
 
@@ -415,7 +415,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(204, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -428,7 +428,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
             self.assertEqual(meta2, resp['body'])
 
@@ -461,7 +461,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
             self.assertEqual([], resp['body']['queues'])
 
@@ -473,7 +473,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(400, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -491,7 +491,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             req = test_utils.create_request(action, body, altheaders)
 
             def validator(resp, isBinary):
-                resp = json.loads(resp)
+                resp = json.loads(resp.decode())
                 self.assertEqual(201, resp['headers']['status'])
 
             sender.side_effect = validator
@@ -508,7 +508,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(2, len(resp['body']['queues']))
 
         sender.side_effect = validator
@@ -519,7 +519,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
             # Ensure we didn't pick up the queue from the alt project.
             self.assertEqual(3, len(resp['body']['queues']))
@@ -532,7 +532,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -543,7 +543,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
             self.assertEqual({"node": 31}, resp['body'])
 
@@ -556,7 +556,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(200, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -582,7 +582,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp)
+            resp = json.loads(resp.decode())
             self.assertEqual(503, resp['headers']['status'])
 
         sender.side_effect = validator
@@ -616,7 +616,7 @@ class QueueLifecycleBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        return json.loads(send_mock.call_args[0][0])
+        return json.loads(send_mock.call_args[0][0].decode())
 
     def test_purge(self):
         arbitrary_number = 644079696574693
@@ -637,14 +637,14 @@ class QueueLifecycleBaseTest(base.V2Base):
             body = {"queue_name": queue_name, "message_id": msg_id}
             req = test_utils.create_request(action, body, headers)
             self.protocol.onMessage(req, False)
-            resp = json.loads(send_mock.call_args[0][0])
+            resp = json.loads(send_mock.call_args[0][0].decode())
             self.assertEqual(200, resp['headers']['status'])
 
         action = consts.QUEUE_PURGE
         body = {"queue_name": queue_name, "resource_types": ["messages"]}
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(204, resp['headers']['status'])
 
         for msg_id in msg_ids:
@@ -652,7 +652,7 @@ class QueueLifecycleBaseTest(base.V2Base):
             body = {"queue_name": queue_name, "message_id": msg_id}
             req = test_utils.create_request(action, body, headers)
             self.protocol.onMessage(req, False)
-            resp = json.loads(send_mock.call_args[0][0])
+            resp = json.loads(send_mock.call_args[0][0].decode())
             self.assertEqual(404, resp['headers']['status'])
 
 

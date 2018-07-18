@@ -82,6 +82,8 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             if isBinary:
                 payload = msgpack.unpackb(payload, encoding='utf-8')
             else:
+                if isinstance(payload, bytes):
+                    payload = payload.decode()
                 payload = json.loads(payload)
         except Exception:
             if isBinary:
@@ -207,7 +209,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             self.sendMessage(msgpack.packb(resp.get_response()), True)
         else:
             pack_name = 'txt'
-            self.sendMessage(json.dumps(resp.get_response()), False)
+            self.sendMessage(json.dumps(resp.get_response()).encode(), False)
         if LOG.isEnabledFor(logging.INFO):
             api = resp._request._api
             status = resp._headers['status']

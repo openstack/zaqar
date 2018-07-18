@@ -43,13 +43,13 @@ class TestMessagingProtocol(base.TestBase):
         self.protocol.sendMessage = send_mock
 
         self.protocol.onMessage(payload, False)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(400, resp['headers']['status'])
 
         payload = "123"
 
         self.protocol.onMessage(payload, False)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(400, resp['headers']['status'])
 
     def test_on_message_with_invalid_input_binary(self):
@@ -91,7 +91,10 @@ class TestMessagingProtocol(base.TestBase):
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
         self.protocol.onMessage(req, in_binary)
-        resp = loads(send_mock.call_args[0][0])
+        arg = send_mock.call_args[0][0]
+        if not in_binary:
+            arg = arg.decode()
+        resp = loads(arg)
         self.assertEqual(200, resp['headers']['status'])
 
     @mock.patch.object(zaqar.transport.websocket.factory, 'ProtocolFactory')

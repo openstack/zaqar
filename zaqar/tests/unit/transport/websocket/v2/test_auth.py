@@ -94,7 +94,7 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, msg_mock.call_count)
-        resp = json.loads(msg_mock.call_args[0][0])
+        resp = json.loads(msg_mock.call_args[0][0].decode())
         self.assertEqual(403, resp['headers']['status'])
 
     def test_failed_auth(self):
@@ -104,7 +104,7 @@ class AuthTest(base.V2Base):
         self.protocol._auth_in_binary = False
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
-        resp = json.loads(msg_mock.call_args[0][0])
+        resp = json.loads(msg_mock.call_args[0][0].decode())
         self.assertEqual(401, resp['headers']['status'])
         self.assertEqual('authenticate', resp['request']['action'])
 
@@ -149,7 +149,7 @@ class AuthTest(base.V2Base):
         # request will raise 401 error.
         self.protocol.onMessage(req, False)
         self.protocol._auth_response('401 error', 'Failed')
-        resp = json.loads(msg_mock.call_args[0][0])
+        resp = json.loads(msg_mock.call_args[0][0].decode())
 
         self.assertEqual(401, resp['headers']['status'])
         self.assertEqual('authenticate', resp['request']['action'])
@@ -162,7 +162,7 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.protocol._auth_response('200 OK', 'authenticate success')
-        resp = json.loads(msg_mock.call_args[0][0])
+        resp = json.loads(msg_mock.call_args[0][0].decode())
         self.assertEqual(200, resp['headers']['status'])
 
     @ddt.data(True, False)
@@ -181,7 +181,10 @@ class AuthTest(base.V2Base):
         self.assertEqual(in_binary, self.protocol._auth_in_binary)
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
-        resp = loads(msg_mock.call_args[0][0])
+        arg = msg_mock.call_args[0][0]
+        if not in_binary:
+            arg = arg.decode()
+        resp = loads(arg)
         self.assertEqual(401, resp['headers']['status'])
 
     def test_signed_url(self):
@@ -205,7 +208,7 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(200, resp['headers']['status'])
 
     def test_signed_url_wrong_queue(self):
@@ -229,7 +232,7 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(403, resp['headers']['status'])
 
     def test_signed_url_wrong_method(self):
@@ -254,5 +257,5 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0])
+        resp = json.loads(send_mock.call_args[0][0].decode())
         self.assertEqual(403, resp['headers']['status'])
