@@ -34,6 +34,6 @@ class Resource(object):
         self.versions = utils.to_json(VERSIONS)
 
     def on_get(self, req, resp, project_id):
-        resp.data = self.versions
+        resp.body = self.versions
 
         resp.status = falcon.HTTP_300
