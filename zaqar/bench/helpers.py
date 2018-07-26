@@ -16,7 +16,7 @@
 import os
 import sys
 
-import os_client_config
+import openstack.config
 from zaqarclient.queues import client
 
 from zaqar.bench import config
@@ -40,7 +40,7 @@ def _get_credential_args():
     credentials for 'devstack' cloud. If no 'devstack' cloud found, throws
     an error and stops the application.
     """
-    os_cfg = os_client_config.OpenStackConfig()
+    os_cfg = openstack.config.OpenStackConfig()
 
     cloud = os_cfg.get_one_cloud()
     cred_args = cloud.get_auth_args()
