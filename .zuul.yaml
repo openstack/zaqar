@@ -1,4 +1,11 @@
 - project:
+    templates:
+      - openstack-python35-jobs
+      - openstack-python-jobs
+      - periodic-stable-jobs
+      - check-requirements
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
     name: openstack/zaqar
     check:
       jobs:
@@ -12,7 +19,10 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
+        - legacy-rally-dsvm-zaqar-zaqar:
+            voting: false
     gate:
+      queue: zaqar
       jobs:
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
