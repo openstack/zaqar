@@ -81,6 +81,7 @@
 - project:
     templates:
       - openstack-python35-jobs
+      - openstack-python36-jobs
       - openstack-python-jobs
       - periodic-stable-jobs
       - check-requirements
