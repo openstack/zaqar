@@ -9,7 +9,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-from zaqarclient.queues.v1 import client
+from zaqarclient.queues.v2 import client
 
 client = client.Client('http://localhost:8888', conf={
     'auth_opts': {
@@ -20,7 +20,7 @@ client = client.Client('http://localhost:8888', conf={
             'os_project_id': '7530fad032ca431e9dc8ed4a5de5d99c'
         }
     }
-}, version=2)
+})
 
 queue = client.queue('SampleQueue')
 
