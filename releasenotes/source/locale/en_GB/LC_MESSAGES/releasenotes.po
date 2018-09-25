@@ -2,9 +2,9 @@
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Zaqar Release Notes\n"
+"Project-Id-Version: zaqar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-26 03:31+0000\n"
+"POT-Creation-Date: 2018-09-17 06:58+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -29,12 +29,6 @@ msgstr "4.0.0"
 
 msgid "5.0.0"
 msgstr "5.0.0"
-
-msgid "6.0.0.0b2"
-msgstr "6.0.0.0b2"
-
-msgid "6.0.0.0b3"
-msgstr "6.0.0.0b3"
 
 msgid ""
 "A new queue action is added so that users can purge a queue quickly. That "

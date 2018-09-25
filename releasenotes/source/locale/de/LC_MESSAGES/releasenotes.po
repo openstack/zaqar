@@ -1,0 +1,85 @@
+# Robert Simai <robert.simai@suse.com>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: zaqar\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-09-17 06:58+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-09-17 01:30+0000\n"
+"Last-Translator: Robert Simai <robert.simai@suse.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"X-Generator: Zanata 4.3.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "1.1.0"
+msgstr "1.1.0"
+
+msgid "2.0.0-10"
+msgstr "2.0.0-10"
+
+msgid "3.0.0"
+msgstr "3.0.0"
+
+msgid "4.0.0"
+msgstr "4.0.0"
+
+msgid "5.0.0"
+msgstr "5.0.0"
+
+msgid "6.0.0"
+msgstr "6.0.0"
+
+msgid "7.0.0"
+msgstr "7.0.0"
+
+msgid "7.0.0-7"
+msgstr "7.0.0-7"
+
+msgid "Add migration support for Zaqar's sqlalchemy storage driver."
+msgstr ""
+"Migrationsunterstützung zu Zaqars sqlalchemy Storage Treiber hinzugefügt."
+
+msgid "Bug Fixes"
+msgstr "Fehlerkorrekturen"
+
+msgid "Critical Issues"
+msgstr "Kritische Probleme"
+
+msgid "Current Series Release Notes"
+msgstr "Aktuelle Serie Releasenotes"
+
+msgid "Deprecation Notes"
+msgstr "Ablaufwarnungen"
+
+msgid "Liberty Series Release Notes"
+msgstr "Liberty Serie Releasenotes"
+
+msgid "Mitaka Series Release Notes"
+msgstr "Mitaka Serie Releasenotes"
+
+msgid "New Features"
+msgstr "Neue Funktionen"
+
+msgid "Newton Series Release Notes"
+msgstr "Newton Serie Releasenotes"
+
+msgid "Ocata Series Release Notes"
+msgstr "Ocata Serie Releasenotes"
+
+msgid "Other Notes"
+msgstr "Andere Notizen"
+
+msgid "Pike Series Release Notes"
+msgstr "Pike Serie Releasenotes"
+
+msgid "Queens Series Release Notes"
+msgstr "Queens Serie Releasenotes"
+
+msgid "Rocky Series Release Notes"
+msgstr "Rocky Serie Releasenotes"
+
+msgid "Zaqar Release Notes"
+msgstr "Zaqar Releasenotes"
