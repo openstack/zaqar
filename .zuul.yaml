@@ -1,7 +1,6 @@
 - job:
     name: zaqar-grenade-base
     parent: legacy-dsvm-base
-    branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
@@ -78,16 +77,47 @@
     vars:
       tox_envlist: integration
 
+- job:
+    name: zaqar-rally
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/rally-dsvm-zaqar-zaqar/run.yaml
+    post-run: playbooks/legacy/rally-dsvm-zaqar-zaqar/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/aodh
+      - openstack/ceilometer
+      - openstack/diskimage-builder
+      - openstack/ironic
+      - openstack/magnum
+      - openstack/networking-bgpvpn
+      - openstack/neutron
+      - openstack/neutron-fwaas
+      - openstack/neutron-lbaas
+      - openstack/neutron-vpnaas
+      - openstack/octavia
+      - openstack/panko
+      - openstack/python-magnumclient
+      - openstack/python-senlinclient
+      - openstack/python-watcherclient
+      - openstack/python-zaqarclient
+      - openstack/rally
+      - openstack/senlin
+      - openstack/tripleo-image-elements
+      - openstack/watcher
+      - openstack/zaqar
+      - openstack/zaqar-ui
+
 - project:
     templates:
+      - check-requirements
+      - openstack-lower-constraints-jobs
+      - openstack-python-jobs
       - openstack-python35-jobs
       - openstack-python36-jobs
-      - openstack-python-jobs
       - periodic-stable-jobs
-      - check-requirements
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
-      - install-guide-jobs
     check:
       jobs:
         - zaqar-tox-integration
@@ -100,17 +130,12 @@
         # TripleO jobs that deploy Zaqar.
         # Note we don't use a project-template here, so it's easier
         # to disable voting on one specific job if things go wrong.
-        # tripleo-ci-centos-7-scenario002-multinode-oooq will only
-        # run on stable/pike while the -container will run in Queens
-        # and beyond.
         # If you need any support to debug these jobs in case of
         # failures, please reach us on #tripleo IRC channel.
-        - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
         # Heat job that deploy Zaqar
         - heat-functional-convg-mysql-lbaasv2
-        - openstack-tox-lower-constraints
-        - legacy-rally-dsvm-zaqar-zaqar:
+        - zaqar-rally:
             voting: false
     gate:
       queue: zaqar
@@ -119,7 +144,5 @@
         - zaqar-tempest-mongodb
         - zaqar-tempest-redis
         - zaqar-tempest-swift
-        - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
         - heat-functional-convg-mysql-lbaasv2
-        - openstack-tox-lower-constraints
