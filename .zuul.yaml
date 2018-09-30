@@ -1,3 +1,34 @@
+- job:
+    name: zaqar-rally
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/rally-dsvm-zaqar-zaqar/run.yaml
+    post-run: playbooks/legacy/rally-dsvm-zaqar-zaqar/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/aodh
+      - openstack/ceilometer
+      - openstack/diskimage-builder
+      - openstack/ironic
+      - openstack/magnum
+      - openstack/networking-bgpvpn
+      - openstack/neutron
+      - openstack/neutron-fwaas
+      - openstack/neutron-lbaas
+      - openstack/neutron-vpnaas
+      - openstack/octavia
+      - openstack/panko
+      - openstack/python-magnumclient
+      - openstack/python-senlinclient
+      - openstack/python-watcherclient
+      - openstack/python-zaqarclient
+      - openstack/rally
+      - openstack/senlin
+      - openstack/tripleo-image-elements
+      - openstack/watcher
+      - openstack/zaqar
+      - openstack/zaqar-ui
+
 - project:
     templates:
       - openstack-python35-jobs
@@ -6,7 +37,6 @@
       - check-requirements
       - publish-openstack-sphinx-docs
       - release-notes-jobs
-    name: openstack/zaqar
     check:
       jobs:
         # TripleO jobs that deploy Zaqar.
@@ -19,7 +49,7 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario002-multinode-oooq
         - tripleo-ci-centos-7-scenario002-multinode-oooq-container
-        - legacy-rally-dsvm-zaqar-zaqar:
+        - zaqar-rally:
             voting: false
     gate:
       queue: zaqar
