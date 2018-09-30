@@ -1,7 +1,6 @@
 - job:
     name: zaqar-grenade-base
     parent: legacy-dsvm-base
-    branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
@@ -78,6 +77,37 @@
     vars:
       tox_envlist: integration
 
+- job:
+    name: zaqar-rally
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/rally-dsvm-zaqar-zaqar/run.yaml
+    post-run: playbooks/legacy/rally-dsvm-zaqar-zaqar/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/aodh
+      - openstack/ceilometer
+      - openstack/diskimage-builder
+      - openstack/ironic
+      - openstack/magnum
+      - openstack/networking-bgpvpn
+      - openstack/neutron
+      - openstack/neutron-fwaas
+      - openstack/neutron-lbaas
+      - openstack/neutron-vpnaas
+      - openstack/octavia
+      - openstack/panko
+      - openstack/python-magnumclient
+      - openstack/python-senlinclient
+      - openstack/python-watcherclient
+      - openstack/python-zaqarclient
+      - openstack/rally
+      - openstack/senlin
+      - openstack/tripleo-image-elements
+      - openstack/watcher
+      - openstack/zaqar
+      - openstack/zaqar-ui
+
 - project:
     templates:
       - openstack-python35-jobs
@@ -108,7 +138,7 @@
         # Heat job that deploy Zaqar
         - heat-functional-convg-mysql-lbaasv2
         - openstack-tox-lower-constraints
-        - legacy-rally-dsvm-zaqar-zaqar:
+        - zaqar-rally:
             voting: false
     gate:
       queue: zaqar
