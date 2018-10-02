@@ -182,6 +182,6 @@ applications to get started.
 .. _`Zaqar's Contributor Documentation` : https://docs.openstack.org/zaqar/latest/
 .. _`Zaqar's Wiki` : https://wiki.openstack.org/wiki/Zaqar
 .. _`"openstack-manuals" project` : https://wiki.openstack.org/wiki/Documentation
-.. _`integrate Zaqar to the OpenStack Dashboard (Horizon)` : https://blueprints.launchpad.net/zaqar/+spec/zaqar-horizon-integration
+.. _`integrate Zaqar to the OpenStack Dashboard (Horizon)` : https://blueprints.launchpad.net/zaqar-ui/
 .. _`Translation wiki page` : https://wiki.openstack.org/wiki/Translations#Translation_.26_Management
 .. _`OpenStack Zanata site` : https://translate.openstack.org/
