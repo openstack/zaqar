@@ -94,6 +94,7 @@ Contents
    install/index
    configuration/index
    contributor/index
+   cli/index
 
 .. toctree::
    :maxdepth: 1

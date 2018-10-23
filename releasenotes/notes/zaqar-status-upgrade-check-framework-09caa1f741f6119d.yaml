@@ -1,0 +1,13 @@
+---
+prelude: >
+    Added new tool ``zaqar-status upgrade check``.
+features:
+  - |
+    New framework for ``zaqar-status upgrade check`` command is added.
+    This framework allows adding various checks which can be run before a
+    Zaqar upgrade to ensure if the upgrade can be performed safely.
+upgrade:
+  - |
+    Operator can now use new CLI tool ``zaqar-status upgrade check``
+    to check if Zaqar deployment can be safely upgraded from
+    N-1 to N release.
