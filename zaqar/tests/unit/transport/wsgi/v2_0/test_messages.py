@@ -410,6 +410,36 @@ class TestMessagesMongoDB(base.V2Base):
         self.simulate_delete(target, query_string=params, headers=self.headers)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
+    def test_bulk_delete_with_claim_ids(self):
+        self.conf.set_override('message_delete_with_claim_id', True,
+                               'transport')
+        path = self.queue_path
+        self._post_messages(path + '/messages', repeat=5)
+        [target, params] = self.srmock.headers_dict['location'].split('?')
+
+        body = self.simulate_post(path + '/claims',
+                                  body='{"ttl": 100, "grace": 100}',
+                                  headers=self.headers)
+        self.assertEqual(falcon.HTTP_201, self.srmock.status)
+        claimed = jsonutils.loads(body[0])['messages']
+        claime_ids = '&claim_ids='
+        for claim in claimed:
+            claime_ids += claim['href'].split('claim_id=')[1] + ','
+
+        params = params + claime_ids
+        self.simulate_delete(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+    def test_bulk_delete_without_claim_ids(self):
+        self.conf.set_override('message_delete_with_claim_id', True,
+                               'transport')
+        path = self.queue_path
+        self._post_messages(path + '/messages', repeat=5)
+        [target, params] = self.srmock.headers_dict['location'].split('?')
+
+        self.simulate_delete(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
     def test_list(self):
         path = self.queue_path + '/messages'
         self._post_messages(path, repeat=10)

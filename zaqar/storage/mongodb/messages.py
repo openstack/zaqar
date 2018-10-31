@@ -724,14 +724,26 @@ class MessageController(storage.Message):
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
-    def bulk_delete(self, queue_name, message_ids, project=None):
+    def bulk_delete(self, queue_name, message_ids, project=None,
+                    claim_ids=None):
         message_ids = [mid for mid in map(utils.to_oid, message_ids) if mid]
+        if claim_ids:
+            claim_ids = [cid for cid in map(utils.to_oid, claim_ids) if cid]
         query = {
             '_id': {'$in': message_ids},
             PROJ_QUEUE: utils.scope_queue_name(queue_name, project),
         }
 
         collection = self._collection(queue_name, project)
+        if claim_ids:
+            message_claim_ids = []
+            messages = collection.find(query).hint(ID_INDEX_FIELDS)
+            for message in messages:
+                message_claim_ids.append(message['c']['id'])
+            for cid in claim_ids:
+                if cid not in message_claim_ids:
+                    raise errors.ClaimDoesNotExist(cid, queue_name, project)
+
         collection.delete_many(query)
 
     @utils.raises_conn_error

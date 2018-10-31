@@ -563,6 +563,9 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
         message_ids = req._body.get('message_ids')
+        claim_ids = None
+        if self._validate.get_limit_conf_value('message_delete_with_claim_id'):
+            claim_ids = req._body.get('claim_ids')
         pop_limit = req._body.get('pop')
 
         LOG.debug(u'Messages collection DELETE - queue: %(queue)s,'
@@ -571,7 +574,7 @@ class Endpoints(object):
                    'message_ids': message_ids})
 
         try:
-            self._validate.message_deletion(message_ids, pop_limit)
+            self._validate.message_deletion(message_ids, pop_limit, claim_ids)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
@@ -580,14 +583,16 @@ class Endpoints(object):
 
         if message_ids:
             return self._delete_messages_by_id(req, queue_name, message_ids,
-                                               project_id)
+                                               project_id, claim_ids)
         elif pop_limit:
             return self._pop_messages(req, queue_name, project_id, pop_limit)
 
     @api_utils.on_exception_sends_500
-    def _delete_messages_by_id(self, req, queue_name, ids, project_id):
+    def _delete_messages_by_id(self, req, queue_name, ids, project_id,
+                               claim_ids=None):
         self._message_controller.bulk_delete(queue_name, message_ids=ids,
-                                             project=project_id)
+                                             project=project_id,
+                                             claim_ids=claim_ids)
 
         headers = {'status': 204}
         body = {}

@@ -280,9 +280,12 @@ class CollectionResource(object):
     @acl.enforce("messages:delete_all")
     def on_delete(self, req, resp, project_id, queue_name):
         ids = req.get_param_as_list('ids')
+        claim_ids = None
+        if self._validate.get_limit_conf_value('message_delete_with_claim_id'):
+            claim_ids = req.get_param_as_list('claim_ids')
         pop_limit = req.get_param_as_int('pop')
         try:
-            self._validate.message_deletion(ids, pop_limit)
+            self._validate.message_deletion(ids, pop_limit, claim_ids)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
@@ -290,19 +293,21 @@ class CollectionResource(object):
 
         if ids:
             resp.status = self._delete_messages_by_id(queue_name, ids,
-                                                      project_id)
+                                                      project_id, claim_ids)
 
         elif pop_limit:
             resp.status, resp.body = self._pop_messages(queue_name,
                                                         project_id,
                                                         pop_limit)
 
-    def _delete_messages_by_id(self, queue_name, ids, project_id):
+    def _delete_messages_by_id(self, queue_name, ids, project_id,
+                               claim_ids=None):
         try:
             self._message_controller.bulk_delete(
                 queue_name,
                 message_ids=ids,
-                project=project_id)
+                project=project_id,
+                claim_ids=claim_ids)
 
         except Exception as ex:
             LOG.exception(ex)

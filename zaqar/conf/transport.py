@@ -143,6 +143,13 @@ max_length_client_id = cfg.IntOpt(
          'uuid restriction. Default is 36.')
 
 
+message_delete_with_claim_id = cfg.BoolOpt(
+    'message_delete_with_claim_id', default=False,
+    help='Enable delete messages must be with claim IDS. This will '
+         'improve the security of the message avoiding delete messages before'
+         ' they are claimed and handled.')
+
+
 GROUP_NAME = 'transport'
 ALL_OPTS = [
     default_message_ttl,
@@ -165,7 +172,8 @@ ALL_OPTS = [
     max_pools_per_page,
     client_id_uuid_safe,
     min_length_client_id,
-    max_length_client_id
+    max_length_client_id,
+    message_delete_with_claim_id
 ]
 
 

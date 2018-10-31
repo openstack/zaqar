@@ -108,6 +108,16 @@ class ClaimDoesNotExist(DoesNotExist):
                                                 project=project)
 
 
+class ClaimDoesNotMatch(ExceptionBase):
+
+    msg_format = (u'Claim {cid} does not exist in the claim_ids parameter in'
+                  u'queue {queue} for project {project}')
+
+    def __init__(self, cid, queue, project):
+        super(ClaimDoesNotMatch, self).__init__(cid=cid, queue=queue,
+                                                project=project)
+
+
 class MessageIsClaimed(NotPermitted):
 
     msg_format = u'Message {mid} is claimed'
