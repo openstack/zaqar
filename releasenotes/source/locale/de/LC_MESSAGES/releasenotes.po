@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: zaqar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-16 05:22+0000\n"
+"POT-Creation-Date: 2018-10-29 09:46+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -34,9 +34,6 @@ msgstr "6.0.0"
 
 msgid "7.0.0"
 msgstr "7.0.0"
-
-msgid "7.0.0-12"
-msgstr "7.0.0-12"
 
 msgid "Add migration support for Zaqar's sqlalchemy storage driver."
 msgstr ""
