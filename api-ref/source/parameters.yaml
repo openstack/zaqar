@@ -1,4 +1,4 @@
-#### variables in header #####################################################
+# variables in header
 
 client_id:
   type: string
@@ -17,7 +17,7 @@ client_id:
     are not echoed back to the client that posted them, unless the client
     explicitly requests this.
 
-#### variables in path #######################################################
+# variables in path
 
 claim_id:
   type: string
@@ -61,7 +61,7 @@ subscription_id_path:
   description: |
     The id of the subscription.
 
-#### variables in query ######################################################
+# variables in query
 
 claim_limit:
   type: integer
@@ -143,7 +143,7 @@ pop:
     ``pop`` & ``ids`` parameters are mutually exclusive. Using them together
     in a request will result in HTTP 400.
 
-#### variables in request ####################################################
+# variables in body
 
 _dead_letter_queue:
   type: string
@@ -167,6 +167,27 @@ _dead_letter_queue_messages_ttl:
     not set, current TTL will be kept. It is one of the ``reserved attributes``
     of Zaqar queues.
 
+_dead_letter_queue_messages_ttl_response:
+  type: integer
+  in: body
+  required: True
+  description: |
+    The new TTL setting for messages when moved to dead letter queue. If it's
+    not set, current TTL will be kept. It is one of the ``reserved attributes``
+    of Zaqar queues.
+
+_dead_letter_queue_response:
+  type: string
+  in: body
+  required: True
+  description: |
+    The target the message will be moved to when the message can't processed
+    successfully after meet the max claim count. It's not supported to add
+    queue C as the dead letter queue for queue B where queue B has been set
+    as a dead letter queue for queue A. There is no default value for this
+    attribute. If it's not set explicitly, then that means there is no dead
+    letter queue for current queue. It is one of the ``reserved attributes``
+
 _default_message_delay:
   type: string
   in: body
@@ -178,6 +199,17 @@ _default_message_delay:
     value for delay, also can define a message's level. The latter has
     a higher priority. It is one of the ``reserved attributes`` of Zaqar
     queues.
+
+_default_message_delay_response:
+  type: string
+  in: body
+  required: True
+  description: |
+    The delay of messages defined for a queue. When the messages send to
+    the queue, it will be delayed for some times and means it can not be
+    claimed until the delay expired. And user can define a queue's level
+    value for delay, also can define a message's level. The latter has
+    a higher priority. It is one of the ``reserved attributes`` of Zaqar
 
 _default_message_ttl:
   type: integer
@@ -204,6 +236,17 @@ _max_claim_count:
   type: integer
   in: body
   required: False
+  description: |
+    The max number the message can be claimed. Generally,
+    it means the message cannot be processed successfully. There is no default
+    value for this attribute. If it's not set, then that means this feature
+    won't be enabled for current queue. It is one of the
+    ``reserved attributes`` of Zaqar queues.
+
+_max_claim_count_response:
+  type: integer
+  in: body
+  required: True
   description: |
     The max number the message can be claimed. Generally,
     it means the message cannot be processed successfully. There is no default
@@ -528,7 +571,6 @@ subscription_ttl:
   description: |
     The ``ttl`` attribute specifies how long the subscription be alive. The ttl
     value must be great than 60 seconds. The default value is 3600 seconds.
-
 
 subscriptions:
   type: list
