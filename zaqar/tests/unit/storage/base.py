@@ -1130,7 +1130,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
         self.assertIsNone(claim_id)
         self.assertEqual(0, len(list(messages)))
-        time.sleep(2)
+        time.sleep(3)
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
         self.assertIsNotNone(claim_id)
