@@ -15,7 +15,10 @@ import functools
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 import swiftclient
-import urllib
+try:  # Python3
+    from urllib.parse import quote_plus
+except ImportError:  # Python2
+    from urllib import quote_plus
 
 from zaqar import storage
 from zaqar.storage import errors
@@ -82,7 +85,7 @@ class SubscriptionController(storage.Subscription):
             utils._put_or_create_container(
                 self._client,
                 sub_container,
-                urllib.quote_plus(subscriber),
+                quote_plus(subscriber),
                 contents=slug,
                 headers={'x-delete-after': ttl, 'if-none-match': '*'})
         except swiftclient.ClientException as exc:
@@ -111,7 +114,7 @@ class SubscriptionController(storage.Subscription):
             try:
                 self._client.put_object(
                     sub_container,
-                    urllib.quote_plus(kwargs['subscriber']),
+                    quote_plus(kwargs['subscriber']),
                     contents=subscription_id,
                     headers={'x-delete-after': ttl, 'if-none-match': '*'})
             except swiftclient.ClientException as exc:
@@ -119,7 +122,7 @@ class SubscriptionController(storage.Subscription):
                     raise errors.SubscriptionAlreadyExists()
                 raise
             self._client.delete_object(sub_container,
-                                       urllib.quote_plus(data['subscriber']))
+                                       quote_plus(data['subscriber']))
         data.update(kwargs)
         self._client.put_object(container,
                                 subscription_id,
@@ -139,7 +142,7 @@ class SubscriptionController(storage.Subscription):
         sub_container = utils._subscriber_container(queue, project)
         try:
             self._client.delete_object(sub_container,
-                                       urllib.quote_plus(data['subscriber']))
+                                       quote_plus(data['subscriber']))
         except swiftclient.ClientException as exc:
             if exc.http_status != 404:
                 raise
@@ -153,7 +156,7 @@ class SubscriptionController(storage.Subscription):
     def get_with_subscriber(self, queue, subscriber, project=None):
         sub_container = utils._subscriber_container(queue, project)
         headers, obj = self._client.get_object(sub_container,
-                                               urllib.quote_plus(subscriber))
+                                               quote_plus(subscriber))
         return self.get(queue, obj, project)
 
     def confirm(self, queue, subscription_id, project=None, confirmed=True):
