@@ -217,8 +217,11 @@ Response Parameters
 .. rest_parameters:: parameters.yaml
 
   - _max_messages_post_size: _max_messages_post_size
-  - _default_message_delay: _default_message_delay
+  - _default_message_delay: _default_message_delay_response
   - _default_message_ttl: _default_message_ttl
+  - _max_claim_count: _max_claim_count_response
+  - _dead_letter_queue: _dead_letter_queue_response
+  - _dead_letter_queue_messages_ttl: _dead_letter_queue_messages_ttl_response
 
 Response Example
 ----------------
