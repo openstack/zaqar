@@ -121,7 +121,7 @@ class ClaimController(storage.Claim):
                 jsonutils.dumps(
                     {'body': msg['body'], 'claim_id': None,
                      'ttl': msg['ttl'],
-                     'claim_count': claim_count}))
+                     'claim_count': claim_count}).encode('utf-8'))
             md5 = md5.hexdigest()
             msg_ttl = max(msg['ttl'], msg_ts)
             move_to_dlq = False
@@ -224,7 +224,7 @@ class ClaimController(storage.Claim):
                 except errors.MessageDoesNotExist:
                     continue
                 md5 = hashlib.md5()
-                md5.update(msg)
+                md5.update(msg.encode('utf-8'))
                 md5 = md5.hexdigest()
                 msg = jsonutils.loads(msg)
                 content = jsonutils.dumps(
