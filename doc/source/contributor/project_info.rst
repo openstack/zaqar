@@ -109,17 +109,17 @@ Where can I discuss and propose changes?
 - Our IRC channel: **#openstack-zaqar** on **irc.freenode.net**;
 - Bi-Weekly Zaqar team meeting (in IRC): **#openstack-meeting-3** on
   **irc.freenode.net**, held on Monday at 14:00 UTC;
-- OpenStack mailing list: **openstack-dev@lists.openstack.org** (see
-  `subscription and usage instructions`_);
+- OpenStack mailing list: **openstack-discuss@lists.openstack.org** (see
+  `Subscription and usage instructions`_);
 - `Zaqar team on Launchpad`_: Answers/Bugs/Blueprints.
 
 
 .. references:
 
 .. _Source code: https://github.com/openstack/zaqar
-.. _Project space: http://launchpad.net/zaqar
+.. _Project space: https://launchpad.net/zaqar
 .. _Bugs: https://bugs.launchpad.net/zaqar
 .. _Patches on review: https://review.openstack.org/#/q/status:open+zaqar,n,z
 .. _IRC logs: http://irclog.perlgeek.de/openstack-zaqar
-.. _subscription and usage instructions: http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-dev
+.. _Subscription and usage instructions: http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-discuss
 .. _Zaqar team on Launchpad: https://launchpad.net/zaqar
