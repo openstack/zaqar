@@ -48,7 +48,7 @@ python-subunit==1.0.0
 python-swiftclient==3.2.0
 pytz==2013.6
 PyYAML==3.12
-redis==2.10.0
+redis==3.0.0
 reno==2.5.0
 requests==2.14.2
 requestsexceptions==1.2.0

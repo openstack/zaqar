@@ -89,7 +89,10 @@ class QueueController(storage.Queue):
         client = self._client
         qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
         marker = utils.scope_queue_name(marker, project)
-        rank = client.zrank(qset_key, marker)
+        if marker:
+            rank = client.zrank(qset_key, marker)
+        else:
+            rank = None
         start = rank + 1 if rank else 0
 
         cursor = (q for q in client.zrange(qset_key, start,
@@ -133,7 +136,7 @@ class QueueController(storage.Queue):
 
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
-            pipe.zadd(qset_key, 1, queue_key).hmset(queue_key, queue)
+            pipe.zadd(qset_key, {queue_key: 1}).hmset(queue_key, queue)
 
             try:
                 pipe.execute()

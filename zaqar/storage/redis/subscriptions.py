@@ -59,7 +59,10 @@ class SubscriptionController(base.Subscription):
         subset_key = utils.scope_subscription_ids_set(queue,
                                                       project,
                                                       SUBSCRIPTION_IDS_SUFFIX)
-        rank = client.zrank(subset_key, marker)
+        if marker:
+            rank = client.zrank(subset_key, marker)
+        else:
+            rank = None
         start = rank + 1 if rank is not None else 0
 
         cursor = (q for q in client.zrange(subset_key, start,
@@ -71,9 +74,9 @@ class SubscriptionController(base.Subscription):
             ttl = int(record[2])
             expires = int(record[3])
             created = expires - ttl
-            is_confirmed = True
+            is_confirmed = 1
             if len(record) == 6:
-                is_confirmed = record[5] == str(True)
+                is_confirmed = record[5]
             ret = {
                 'id': sid,
                 'source': record[0],
@@ -114,7 +117,7 @@ class SubscriptionController(base.Subscription):
         source = queue
         now = timeutils.utcnow_ts()
         expires = now + ttl
-        confirmed = False
+        confirmed = 0
 
         subscription = {'id': subscription_id,
                         's': source,
@@ -131,9 +134,8 @@ class SubscriptionController(base.Subscription):
                 if not self._is_duplicated_subscriber(subscriber,
                                                       queue,
                                                       project):
-                    pipe.zadd(subset_key, 1,
-                              subscription_id).hmset(subscription_id,
-                                                     subscription)
+                    pipe.zadd(subset_key, {subscription_id: 1}).hmset(
+                        subscription_id, subscription)
                     pipe.expire(subscription_id, ttl)
                     pipe.execute()
                 else:
@@ -262,7 +264,7 @@ class SubscriptionController(base.Subscription):
         # Let's get our subscription by ID. If it does not exist,
         # SubscriptionDoesNotExist error will be raised internally.
         self.get(queue, subscription_id, project=project)
-
+        confirmed = 1 if confirmed else 0
         fields = {'c': confirmed}
         with self._client.pipeline() as pipe:
             pipe.hmset(subscription_id, fields)

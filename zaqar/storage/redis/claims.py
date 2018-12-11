@@ -315,7 +315,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
                 claims_set_key = utils.scope_claims_set(queue, project,
                                                         QUEUE_CLAIMS_SUFFIX)
 
-                pipe.zadd(claims_set_key, claim_expires, claim_id)
+                pipe.zadd(claims_set_key, {claim_id: claim_expires})
                 pipe.execute()
 
                 if ('_max_claim_count' in queue_meta and
@@ -430,7 +430,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
             claims_set_key = utils.scope_claims_set(queue, project,
                                                     QUEUE_CLAIMS_SUFFIX)
 
-            pipe.zadd(claims_set_key, claim_expires, claim_id)
+            pipe.zadd(claims_set_key, {claim_id: claim_expires})
 
             pipe.execute()
 

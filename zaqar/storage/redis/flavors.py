@@ -78,7 +78,10 @@ class FlavorsController(base.FlavorsBase):
         client = self._client
         subset_key = utils.flavor_project_subset_key(project)
         marker_key = utils.flavor_name_hash_key(marker)
-        rank = client.zrank(subset_key, marker_key)
+        if marker_key:
+            rank = client.zrank(subset_key, marker_key)
+        else:
+            rank = None
         start = rank + 1 if rank is not None else 0
 
         cursor = (f for f in client.zrange(subset_key, start,
@@ -119,8 +122,8 @@ class FlavorsController(base.FlavorsBase):
             }
             # Pipeline ensures atomic inserts.
             with self._client.pipeline() as pipe:
-                pipe.zadd(set_key, 1, hash_key)
-                pipe.zadd(subset_key, 1, hash_key)
+                pipe.zadd(set_key, {hash_key: 1})
+                pipe.zadd(subset_key, {hash_key: 1})
                 pipe.hmset(hash_key, flavors)
                 pipe.execute()
         else:

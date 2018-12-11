@@ -135,7 +135,7 @@ class MessageController(storage.Message, scripting.Mixin):
         return self._client.zcard(utils.msgset_key(queue, project))
 
     def _create_msgset(self, queue, project, pipe):
-        pipe.zadd(MSGSET_INDEX_KEY, 1, utils.msgset_key(queue, project))
+        pipe.zadd(MSGSET_INDEX_KEY, {utils.msgset_key(queue, project): 1})
 
     def _delete_msgset(self, queue, project, pipe):
         pipe.zrem(MSGSET_INDEX_KEY, utils.msgset_key(queue, project))
@@ -243,7 +243,10 @@ class MessageController(storage.Message, scripting.Mixin):
             # of the queue; otherwise we would just filter them all
             # out and likely end up with an empty list to return.
             marker = self._find_first_unclaimed(queue, project, limit)
-            start = client.zrank(msgset_key, marker) or 0
+            if marker:
+                start = client.zrank(msgset_key, marker) or 0
+            else:
+                start = 0
         else:
             rank = client.zrank(msgset_key, marker)
             start = rank + 1 if rank else 0

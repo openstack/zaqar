@@ -92,7 +92,7 @@ class CatalogueController(base.CatalogueBase):
         }
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
-            pipe.zadd(catalogue_project_key, 1, queue_key)
+            pipe.zadd(catalogue_project_key, {queue_key: 1})
             pipe.hmset(catalogue_queue_key, catalogue)
 
             try:

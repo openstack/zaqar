@@ -97,7 +97,10 @@ class PoolsController(base.PoolsBase):
         client = self._client
         set_key = utils.pools_set_key()
         marker_key = utils.pools_name_hash_key(marker)
-        rank = client.zrank(set_key, marker_key)
+        if marker_key:
+            rank = client.zrank(set_key, marker_key)
+        else:
+            rank = None
         start = rank + 1 if rank is not None else 0
 
         cursor = (f for f in client.zrange(set_key, start,
@@ -163,9 +166,9 @@ class PoolsController(base.PoolsBase):
         }
         # Pipeline ensures atomic inserts.
         with self._client.pipeline() as pipe:
-            pipe.zadd(set_key, 1, pool_key)
+            pipe.zadd(set_key, {pool_key: 1})
             if flavor is not None:
-                pipe.zadd(subset_key, 1, pool_key)
+                pipe.zadd(subset_key, {pool_key: 1})
             pipe.hmset(pool_key, pool)
             pipe.execute()
 
@@ -200,7 +203,7 @@ class PoolsController(base.PoolsBase):
                 if flavor_old != flavor_new:
                     if flavor_new is not None:
                         new_subset_key = utils.pools_subset_key(flavor_new)
-                        pipe.zadd(new_subset_key, 1, pool_key)
+                        pipe.zadd(new_subset_key, {pool_key: 1})
                     # (gengchc2) remove pool from flavor_old.pools subset
                     if flavor_old is not None:
                         old_subset_key = utils.pools_subset_key(flavor_old)
