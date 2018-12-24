@@ -49,6 +49,7 @@ Request Parameters
   - limit: limit
   - marker: marker
   - detailed: detailed
+  - name: name
 
 Response Parameters
 -------------------

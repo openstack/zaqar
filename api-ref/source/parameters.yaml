@@ -134,6 +134,14 @@ marker:
     initial limited request and use the ID of the last-seen item from the
     response as the ``marker`` parameter value in a subsequent limited request.
 
+name:
+  type: string
+  in: query
+  required: false
+  description: |
+    The 'name' specifies if filter the queues by queue's name when querying
+    queues.
+
 pop:
   type: integer
   in: query
