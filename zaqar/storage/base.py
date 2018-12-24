@@ -515,7 +515,7 @@ class Message(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def bulk_delete(self, queue, message_ids, project=None):
+    def bulk_delete(self, queue, message_ids, project=None, claim_ids=None):
         """Base method for deleting multiple messages.
 
         :param queue: Name of the queue to post
@@ -523,6 +523,7 @@ class Message(ControllerBase):
         :param message_ids: A sequence of message IDs
             to be deleted.
         :param project: Project id
+        :param claim_ids: claim IDs passed in by the delete request
         """
         raise NotImplementedError
 

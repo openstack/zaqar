@@ -200,10 +200,17 @@ class MessageController(storage.Message):
             else:
                 raise
 
-    def bulk_delete(self, queue, message_ids, project=None):
-        for id in message_ids:
+    def bulk_delete(self, queue, message_ids, project=None, claim_ids=None):
+        for message_id in message_ids:
             try:
-                self._delete(queue, id, project)
+                if claim_ids:
+                    msg = self._get(queue, message_id, project)
+                    if not msg['claim_id']:
+                        raise errors.MessageNotClaimed(message_id)
+                    if msg['claim_id'] not in claim_ids:
+                        raise errors.ClaimDoesNotMatch(msg['claim_id'],
+                                                       queue, project)
+                self._delete(queue, message_id, project)
             except errors.MessageDoesNotExist:
                 pass
 

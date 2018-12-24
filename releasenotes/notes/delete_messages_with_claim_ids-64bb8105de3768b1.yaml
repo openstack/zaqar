@@ -1,0 +1,5 @@
+---
+features:
+  - Add an new option named 'message_delete_with_claim_id', when it is True,
+    delete messages must need claim_ids and message_ids both in request
+    parameters. This will improve the security of the message.

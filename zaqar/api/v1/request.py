@@ -293,6 +293,7 @@ class RequestSchema(api.Api):
                     'properties': {
                         'queue_name': {'type': 'string'},
                         'message_ids': {'type': 'array'},
+                        'claim_ids': {'type': 'array'},
                         'pop': {'type': 'integer'}
                     },
                     'required': ['queue_name'],

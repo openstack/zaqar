@@ -445,11 +445,12 @@ class Validator(object):
             raise ValidationFailed(
                 msg, self._limits_conf.max_messages_per_page)
 
-    def message_deletion(self, ids=None, pop=None):
+    def message_deletion(self, ids=None, pop=None, claim_ids=None):
         """Restrictions involving deletion of messages.
 
         :param ids: message ids passed in by the delete request
         :param pop: count of messages to be POPped
+        :param claim_ids: claim ids passed in by the delete request
         :raises ValidationFailed: if,
             pop AND id params are present together
             neither pop or id params are present
@@ -467,6 +468,13 @@ class Validator(object):
                     'parameter in the request, to be able to delete.')
 
             raise ValidationFailed(msg)
+
+        if self._limits_conf.message_delete_with_claim_id:
+            if (ids and claim_ids is None) or (ids is None and claim_ids):
+                msg = _(u'The request should have both "ids" and "claim_ids" '
+                        'parameter in the request when '
+                        'message_delete_with_claim_id is True.')
+                raise ValidationFailed(msg)
 
         pop_uplimit = self._limits_conf.max_messages_per_claim_or_pop
         if pop is not None and not (0 < pop <= pop_uplimit):

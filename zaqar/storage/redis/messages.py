@@ -503,7 +503,7 @@ class MessageController(storage.Message, scripting.Mixin):
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error
-    def bulk_delete(self, queue, message_ids, project=None):
+    def bulk_delete(self, queue, message_ids, project=None, claim_ids=None):
         claim_ctrl = self.driver.claim_controller
         if not self._queue_ctrl.exists(queue, project):
             return
@@ -519,7 +519,14 @@ class MessageController(storage.Message, scripting.Mixin):
                 pipe.zrem(msgset_key, mid)
 
                 msg_claim = self._get_claim(mid)
+
+                if claim_ids and msg_claim is None:
+                    raise errors.MessageNotClaimed(mid)
+
                 if msg_claim is not None:
+                    if claim_ids and (msg_claim['id'] not in claim_ids):
+                        raise errors.ClaimDoesNotMatch(msg_claim['id'], queue,
+                                                       project)
                     claim_ctrl._del_message(queue, project, msg_claim['id'],
                                             mid, pipe)
             pipe.execute()
