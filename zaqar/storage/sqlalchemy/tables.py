@@ -24,15 +24,8 @@ Queues = sa.Table('Queues', metadata,
                   sa.UniqueConstraint('project', 'name'),
                   )
 
-
-PoolGroup = sa.Table('PoolGroup', metadata,
-                     sa.Column('name', sa.String(64), primary_key=True))
-
 Pools = sa.Table('Pools', metadata,
                  sa.Column('name', sa.String(64), primary_key=True),
-                 sa.Column('group', sa.ForeignKey('PoolGroup.name',
-                                                  ondelete='CASCADE'),
-                           nullable=True),
                  sa.Column('uri', sa.String(255),
                            unique=True, nullable=False),
                  sa.Column('weight', sa.INTEGER, nullable=False),
@@ -45,9 +38,6 @@ Pools = sa.Table('Pools', metadata,
 Flavors = sa.Table('Flavors', metadata,
                    sa.Column('name', sa.String(64), primary_key=True),
                    sa.Column('project', sa.String(64)),
-                   sa.Column('pool_group', sa.ForeignKey('PoolGroup.name',
-                                                         ondelete='CASCADE'),
-                             nullable=True),
                    sa.Column('capabilities', sa.Text()))
 
 Catalogue = sa.Table('Catalogue', metadata,

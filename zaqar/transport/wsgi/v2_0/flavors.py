@@ -51,7 +51,7 @@ class Listing(object):
 
             {
                 "flavors": [
-                    {"href": "", "capabilities": {}, "pool_group": "",
+                    {"href": "", "capabilities": {},
                      "pool_list": ""},
                     ...
                 ],
@@ -65,7 +65,6 @@ class Listing(object):
         """
 
         LOG.debug(u'LIST flavors for project_id %s', project_id)
-
         store = {}
         request.get_param('marker', store=store)
         request.get_param_as_int('limit', store=store)
@@ -87,8 +86,14 @@ class Listing(object):
 
             for entry in flavors:
                 entry['href'] = request.path + '/' + entry['name']
-                # NOTE(gengchc): Remove pool_group in Rocky
-                entry['pool'] = entry['pool_group']
+                data = {}
+                data['name'] = entry['name']
+                pool_list = \
+                    list(self._pools_ctrl.get_pools_by_flavor(flavor=data))
+                pool_name_list = []
+                if len(pool_list) > 0:
+                    pool_name_list = [x['name'] for x in pool_list]
+                    entry['pool_list'] = pool_name_list
                 if detailed:
                     caps = self._pools_ctrl.capabilities(flavor=entry)
                     entry['capabilities'] = [str(cap).split('.')[-1]
@@ -120,13 +125,9 @@ class Resource(object):
     def __init__(self, flavors_controller, pools_controller):
         self._ctrl = flavors_controller
         self._pools_ctrl = pools_controller
-
         validator_type = jsonschema.Draft4Validator
         self._validators = {
             'create': validator_type(schema.create),
-            # NOTE(gengchc): Remove pool_group in Rocky.
-            'pool_group': validator_type(schema.patch_pool_group),
-            'pool': validator_type(schema.patch_pool),
             'pool_list': validator_type(schema.patch_pool_list),
             'capabilities': validator_type(schema.patch_capabilities),
         }
@@ -151,8 +152,6 @@ class Resource(object):
             capabilities = self._pools_ctrl.capabilities(flavor=data)
             data['capabilities'] = [str(cap).split('.')[-1]
                                     for cap in capabilities]
-            # NOTE(gengchc): Remove pool_group in Rocky.
-            data['pool'] = data['pool_group']
             pool_list =\
                 list(self._pools_ctrl.get_pools_by_flavor(flavor=data))
             pool_name_list = []
@@ -231,26 +230,6 @@ class Resource(object):
                            dict(flavor=flavor, msg=str(ex)))
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
-    def _on_put_by_group(self, request, response, project_id,
-                         flavor, pool_group):
-        LOG.debug(u'PUT flavor - name: %s by group', flavor)
-        flavor_obj = {}
-        flavor_obj["pool_group"] = pool_group
-        capabilities = self._pools_ctrl.capabilities(flavor_obj)
-        try:
-            self._ctrl.create(flavor,
-                              pool_group=pool_group,
-                              project=project_id,
-                              capabilities=capabilities)
-            response.status = falcon.HTTP_201
-            response.location = request.path
-        except errors.PoolGroupDoesNotExist as ex:
-            LOG.exception(ex)
-            description = (_(u'Flavor %(flavor)s could not be created. '
-                             u'Pool group %(pool_group)s does not exist') %
-                           dict(flavor=flavor, pool_group=pool_group))
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
-
     @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:create")
     def on_put(self, request, response, project_id, flavor):
@@ -258,8 +237,7 @@ class Resource(object):
 
         ::
 
-            {"pool_group": "my-pool-group",
-              "pool_list": [], "capabilities": {}}
+            {"pool_list": [], "capabilities": {}}
 
         A capabilities object may also be provided.
 
@@ -270,15 +248,10 @@ class Resource(object):
 
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
-        LOG.debug(u'The pool_group will be removed in Rocky release.')
-        pool_group = data.get('pool_group') or data.get('pool')
         pool_list = data.get('pool_list')
         if pool_list is not None:
             self._on_put_by_pool_list(request, response, project_id,
                                       flavor, pool_list)
-        else:
-            self._on_put_by_group(request, response, project_id,
-                                  flavor, pool_group)
 
     @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:delete")
@@ -367,54 +340,29 @@ class Resource(object):
         resp_data['href'] = request.path
         response.body = transport_utils.to_json(resp_data)
 
-    def _on_patch_by_group(self, request, response, project_id,
-                           flavor, pool_group):
-        LOG.debug(u'PATCH flavor - name: %s by group', flavor)
-        resp_data = None
-        try:
-            flvor_obj = {}
-            flvor_obj['pool_group'] = pool_group
-            capabilities = self._pools_ctrl.capabilities(flavor=flvor_obj)
-            self._ctrl.update(flavor, project=project_id,
-                              pool_group=pool_group,
-                              capabilities=capabilities)
-            resp_data = self._ctrl.get(flavor, project=project_id)
-            resp_data['capabilities'] = [str(cap).split('.')[-1]
-                                         for cap in capabilities]
-        except errors.FlavorDoesNotExist as ex:
-            LOG.exception(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
-        resp_data['href'] = request.path
-        response.body = transport_utils.to_json(resp_data)
-
     @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:update")
     def on_patch(self, request, response, project_id, flavor):
         """Allows one to update a flavors'pool list.
 
         This method expects the user to submit a JSON object
-        containing 'pool_group' or 'pool list'. If none is found,
+        containing 'pool list'. If none is found,
         the request is flagged as bad. There is also strict format
         checking through the use of jsonschema. Appropriate errors
         are returned in each case for badly formatted input.
 
         :returns: HTTP | [200, 400]
         """
-
         LOG.debug(u'PATCH flavor - name: %s', flavor)
         data = wsgi_utils.load(request)
-        # NOTE(gengchc2): remove pool_group in R release.
-        EXPECT = ('pool_group', 'pool', 'pool_list')
-        if not any([(field in data) for field in EXPECT]):
+        field = 'pool_list'
+        if field not in data:
             LOG.debug(u'PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                '`pool_group` or `pool` or `pool_list` needs to be specified'
+                '`pool_list` needs to be specified'
             )
 
-        for field in EXPECT:
-            wsgi_utils.validate(self._validators[field], data)
-        LOG.debug(u'The pool_group will be removed in Rocky release.')
-        pool_group = data.get('pool_group') or data.get('pool')
+        wsgi_utils.validate(self._validators[field], data)
         pool_list = data.get('pool_list')
         # NOTE(gengchc2): If pool_list is not None, configuration flavor is
         # used by the new schema.
@@ -422,6 +370,3 @@ class Resource(object):
         if pool_list is not None:
             self._on_patch_by_pool_list(request, response, project_id,
                                         flavor, pool_list)
-        else:
-            self._on_patch_by_group(request, response, project_id,
-                                    flavor, pool_group)

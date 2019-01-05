@@ -531,11 +531,9 @@ class Catalog(object):
                     detailed=True)
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
-                msgtmpl = _(u'register queue to pool: new flavor:%(flavor)s'
-                            ' pool_group:%(pool_group)s')
+                msgtmpl = _(u'register queue to pool: new flavor:%(flavor)s')
                 LOG.info(msgtmpl,
-                         {'flavor': flavor.get('name', None),
-                          'pool_group': flavor.get('pool_group', None)})
+                         {'flavor': flavor.get('name', None)})
             else:
                 # NOTE(flaper87): Get pools assigned to the default
                 # group `None`. We should consider adding a `default_group`

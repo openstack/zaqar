@@ -1529,11 +1529,10 @@ class PoolsControllerTest(ControllerBaseTest):
 
         # Let's create one pool
         self.pool = str(uuid.uuid1())
-        # NOTE(gengchc2): remove pool_group in Rocky release.
-        self.pool_group = str(uuid.uuid1())
         self.pool1 = str(uuid.uuid1())
         self.flavor = str(uuid.uuid1())
-        self.pools_controller.create(self.pool1, 100, 'localhost1',
+        self.uri = str(uuid.uuid1())
+        self.pools_controller.create(self.pool1, 100, self.uri,
                                      flavor=self.flavor, options={})
         self.flavors_controller = self.driver.flavors_controller
 
@@ -1567,12 +1566,12 @@ class PoolsControllerTest(ControllerBaseTest):
         self.assertEqual(xlocation, pool['uri'])
 
     def test_get_returns_expected_content(self):
-        res = self.pools_controller.get(self.pool)
-        self._pool_expects(res, self.pool, 100, 'localhost')
+        res = self.pools_controller.get(self.pool1)
+        self._pool_expects(res, self.pool1, 100, self.uri)
         self.assertNotIn('options', res)
 
     def test_detailed_get_returns_expected_content(self):
-        res = self.pools_controller.get(self.pool, detailed=True)
+        res = self.pools_controller.get(self.pool1, detailed=True)
         self.assertIn('options', res)
         self.assertEqual({}, res['options'])
 
@@ -1581,7 +1580,7 @@ class PoolsControllerTest(ControllerBaseTest):
                           self.pools_controller.get, 'notexists')
 
     def test_exists(self):
-        self.assertTrue(self.pools_controller.exists(self.pool))
+        self.assertTrue(self.pools_controller.exists(self.pool1))
         self.assertFalse(self.pools_controller.exists('notexists'))
 
     def test_update_raises_assertion_error_on_bad_fields(self):
@@ -1591,19 +1590,20 @@ class PoolsControllerTest(ControllerBaseTest):
     def test_update_works(self):
         # NOTE(flaper87): This may fail for redis. Create
         # a dummy store for tests.
-        self.pools_controller.update(self.pool, weight=101,
-                                     uri='localhost3',
+        self.uri3 = str(uuid.uuid1())
+        self.pools_controller.update(self.pool1, weight=101,
+                                     uri=self.uri3,
                                      options={'a': 1})
-        res = self.pools_controller.get(self.pool, detailed=True)
-        self._pool_expects(res, self.pool, 101, 'localhost3')
+        res = self.pools_controller.get(self.pool1, detailed=True)
+        self._pool_expects(res, self.pool1, 101, self.uri3)
         self.assertEqual({'a': 1}, res['options'])
 
     def test_delete_works(self):
-        self.pools_controller.delete(self.pool)
+        # self.pools_controller.delete(self.pool)
         # (gengchc): Remove the flavor from pool, then testcase cleanup pool
         self.pools_controller.update(self.pool1, flavor="")
         self.pools_controller.delete(self.pool1)
-        self.assertFalse(self.pools_controller.exists(self.pool))
+        self.assertFalse(self.pools_controller.exists(self.pool1))
 
     def test_delete_nonexistent_is_silent(self):
         self.pools_controller.delete('nonexisting')
@@ -1692,15 +1692,21 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.project = six.text_type(uuid.uuid4())
 
         self.pool = str(uuid.uuid1())
-        self.pool_ctrl.create(self.pool, 100, 'localhost', options={})
+        self.flavor = str(uuid.uuid1())
+        self.uri = str(uuid.uuid1())
+        self.uri1 = str(uuid.uuid1())
+        self.pool_ctrl.create(self.pool, 100, self.uri,
+                              flavor=self.flavor, options={})
         self.addCleanup(self.pool_ctrl.delete, self.pool)
         self.pool1 = str(uuid.uuid1())
-        self.flavor = str(uuid.uuid1())
-        self.pool_ctrl.create(self.pool1, 100, 'localhost1',
-                              options={})
+        self.pool_ctrl.create(self.pool1, 100, self.uri1,
+                              flavor=self.flavor, options={})
         self.addCleanup(self.pool_ctrl.delete, self.pool1)
 
     def tearDown(self):
+        self.pool_ctrl.update(self.pool, flavor="")
+        self.pool_ctrl.update(self.pool1, flavor="")
+        self.pool_ctrl.drop_all()
         self.controller.drop_all()
         super(CatalogueControllerTest, self).tearDown()
 
@@ -1810,185 +1816,6 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.controller.insert(self.project, q2, u'a')
 
 
-# NOTE(gengchc2): remove FlavorsControllerTest in Rocky release
-# and use FlavorsControllerTest1 instead for pool_group removal.
-class FlavorsControllerTest(ControllerBaseTest):
-    """Flavors Controller base tests.
-
-    NOTE(flaper87): Implementations of this class should
-    override the tearDown method in order
-    to clean up storage's state.
-    """
-    controller_base_class = storage.FlavorsBase
-
-    def setUp(self):
-        super(FlavorsControllerTest, self).setUp()
-        self.pools_controller = self.driver.pools_controller
-        self.flavors_controller = self.driver.flavors_controller
-
-        # Let's create one pool
-        self.pool = str(uuid.uuid1())
-        self.pool_group = str(uuid.uuid1())
-        self.pools_controller.create(self.pool, 100, 'localhost',
-                                     group=self.pool_group, options={})
-        self.addCleanup(self.pools_controller.delete, self.pool)
-
-    def tearDown(self):
-        self.flavors_controller.drop_all()
-        super(FlavorsControllerTest, self).tearDown()
-
-    def test_create_succeeds(self):
-        self.flavors_controller.create('durable', self.pool_group,
-                                       project=self.project,
-                                       capabilities={})
-
-    def _flavors_expects(self, flavor, xname, xproject, xpool):
-        self.assertIn('name', flavor)
-        self.assertEqual(xname, flavor['name'])
-        self.assertNotIn('project', flavor)
-        self.assertIn('pool_group', flavor)
-        self.assertEqual(xpool, flavor['pool_group'])
-
-    def test_create_replaces_on_duplicate_insert(self):
-        name = str(uuid.uuid1())
-        self.flavors_controller.create(name, self.pool_group,
-                                       project=self.project,
-                                       capabilities={})
-
-        pool2 = 'another_pool'
-        self.pools_controller.create(pool2, 100, 'localhost:27017',
-                                     group=pool2, options={})
-        self.addCleanup(self.pools_controller.delete, pool2)
-
-        self.flavors_controller.create(name, pool2,
-                                       project=self.project,
-                                       capabilities={})
-        entry = self.flavors_controller.get(name, project=self.project)
-        self._flavors_expects(entry, name, self.project, pool2)
-
-    def test_get_returns_expected_content(self):
-        name = 'durable'
-        capabilities = {'fifo': True}
-        self.flavors_controller.create(name, self.pool_group,
-                                       project=self.project,
-                                       capabilities=capabilities)
-        res = self.flavors_controller.get(name, project=self.project)
-        self._flavors_expects(res, name, self.project, self.pool_group)
-        self.assertNotIn('capabilities', res)
-
-    def test_detailed_get_returns_expected_content(self):
-        name = 'durable'
-        capabilities = {'fifo': True}
-        self.flavors_controller.create(name, self.pool_group,
-                                       project=self.project,
-                                       capabilities=capabilities)
-        res = self.flavors_controller.get(name, project=self.project,
-                                          detailed=True)
-        self._flavors_expects(res, name, self.project, self.pool_group)
-        self.assertIn('capabilities', res)
-        self.assertEqual(capabilities, res['capabilities'])
-
-    def test_get_raises_if_not_found(self):
-        self.assertRaises(errors.FlavorDoesNotExist,
-                          self.flavors_controller.get, 'notexists')
-
-    def test_exists(self):
-        self.flavors_controller.create('exists', self.pool_group,
-                                       project=self.project,
-                                       capabilities={})
-        self.assertTrue(self.flavors_controller.exists('exists',
-                                                       project=self.project))
-        self.assertFalse(self.flavors_controller.exists('notexists',
-                                                        project=self.project))
-
-    def test_update_raises_assertion_error_on_bad_fields(self):
-        self.assertRaises(AssertionError, self.pools_controller.update,
-                          self.pool_group)
-
-    def test_update_works(self):
-        name = 'yummy'
-        self.flavors_controller.create(name, self.pool_group,
-                                       project=self.project,
-                                       capabilities={})
-
-        res = self.flavors_controller.get(name, project=self.project,
-                                          detailed=True)
-
-        p = 'olympic'
-        pool_group = 'sports'
-        self.pools_controller.create(p, 100, 'localhost2',
-                                     group=pool_group, options={})
-        self.addCleanup(self.pools_controller.delete, p)
-
-        new_capabilities = {'fifo': False}
-        self.flavors_controller.update(name, project=self.project,
-                                       pool_group=pool_group,
-                                       capabilities={'fifo': False})
-        res = self.flavors_controller.get(name, project=self.project,
-                                          detailed=True)
-        self._flavors_expects(res, name, self.project, pool_group)
-        self.assertEqual(new_capabilities, res['capabilities'])
-
-    def test_delete_works(self):
-        name = 'puke'
-        self.flavors_controller.create(name, self.pool_group,
-                                       project=self.project,
-                                       capabilities={})
-        self.flavors_controller.delete(name, project=self.project)
-        self.assertFalse(self.flavors_controller.exists(name))
-
-    def test_delete_nonexistent_is_silent(self):
-        self.flavors_controller.delete('nonexisting')
-
-    def test_drop_all_leads_to_empty_listing(self):
-        self.flavors_controller.drop_all()
-        cursor = self.flavors_controller.list()
-        flavors = next(cursor)
-        self.assertRaises(StopIteration, next, flavors)
-        self.assertFalse(next(cursor))
-
-    def test_listing_simple(self):
-        name_gen = lambda i: chr(ord('A') + i)
-        for i in range(15):
-            pool = str(i)
-            pool_group = pool
-            uri = 'localhost:2701' + pool
-            self.pools_controller.create(pool, 100, uri,
-                                         group=pool_group, options={})
-            self.addCleanup(self.pools_controller.delete, pool)
-
-            self.flavors_controller.create(name_gen(i), project=self.project,
-                                           pool_group=pool_group,
-                                           capabilities={})
-
-        def get_res(**kwargs):
-            cursor = self.flavors_controller.list(project=self.project,
-                                                  **kwargs)
-            res = list(next(cursor))
-            marker = next(cursor)
-            self.assertTrue(marker)
-            return res
-
-        res = get_res()
-        self.assertEqual(10, len(res))
-        for i, entry in enumerate(res):
-            self._flavors_expects(entry, name_gen(i), self.project, str(i))
-            self.assertNotIn('capabilities', entry)
-
-        res = get_res(limit=5)
-        self.assertEqual(5, len(res))
-
-        res = get_res(marker=name_gen(3))
-        self._flavors_expects(res[0], name_gen(4), self.project, '4')
-
-        res = get_res(detailed=True)
-        self.assertEqual(10, len(res))
-        for i, entry in enumerate(res):
-            self._flavors_expects(entry, name_gen(i), self.project, str(i))
-            self.assertIn('capabilities', entry)
-            self.assertEqual({}, entry['capabilities'])
-
-
 # NOTE(gengchc2): Unittest for new flavor configure scenario.
 class FlavorsControllerTest1(ControllerBaseTest):
     """Flavors Controller base tests.
@@ -2007,12 +1834,14 @@ class FlavorsControllerTest1(ControllerBaseTest):
         # Let's create one pool
         self.pool = str(uuid.uuid1())
         self.flavor = 'durable'
-        self.pools_controller.create(self.pool, 100, 'localhost',
-                                     options={})
+        self.uri = str(uuid.uuid1())
+        self.pools_controller.create(self.pool, 100, self.uri,
+                                     flavor=self.flavor, options={})
         self.addCleanup(self.pools_controller.delete, self.pool)
 
     def tearDown(self):
         self.pools_controller.update(self.pool, flavor="")
+        self.pools_controller.drop_all()
         self.flavors_controller.drop_all()
         super(FlavorsControllerTest1, self).tearDown()
 
@@ -2092,7 +1921,8 @@ class FlavorsControllerTest1(ControllerBaseTest):
 
         p = 'olympic'
         flavor = name
-        self.pools_controller.create(p, 100, 'localhost2',
+        self.uri2 = str(uuid.uuid1())
+        self.pools_controller.create(p, 100, self.uri2,
                                      flavor=flavor, options={})
         self.addCleanup(self.pools_controller.delete, p)
 

@@ -798,7 +798,7 @@ class PoolsBase(ControllerBase):
 
     _list = abc.abstractmethod(lambda x: None)
 
-    def create(self, name, weight, uri, group=None, flavor=None, options=None):
+    def create(self, name, weight, uri, flavor=None, options=None):
         """Registers a pool entry.
 
         :param name: The name of this pool
@@ -816,12 +816,10 @@ class PoolsBase(ControllerBase):
         flavor_obj = {}
         if flavor is not None:
             flavor_obj["name"] = flavor
-        if group is not None:
-            flavor_obj["pool_group"] = group
         if not self._check_capabilities(uri, flavor=flavor_obj):
             raise errors.PoolCapabilitiesMismatch()
 
-        return self._create(name, weight, uri, group, flavor, options)
+        return self._create(name, weight, uri, flavor, options)
 
     _create = abc.abstractmethod(lambda x: None)
 
@@ -1020,7 +1018,7 @@ class FlavorsBase(ControllerBase):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self, name, pool_group=None, project=None, capabilities=None):
+    def create(self, name, project=None, capabilities=None):
         """Registers a flavor entry.
 
         :param name: The name of this flavor

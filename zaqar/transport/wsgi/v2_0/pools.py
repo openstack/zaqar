@@ -136,7 +136,6 @@ class Resource(object):
         self._validators = {
             'weight': validator_type(schema.patch_weight),
             'uri': validator_type(schema.patch_uri),
-            'group': validator_type(schema.patch_group),
             'flavor': validator_type(schema.patch_flavor),
             'options': validator_type(schema.patch_options),
             'create': validator_type(schema.create)
@@ -195,7 +194,6 @@ class Resource(object):
         try:
             self._ctrl.create(pool, weight=data['weight'],
                               uri=data['uri'],
-                              group=data.get('group', None),
                               flavor=data.get('flavor', None),
                               options=data.get('options', {}))
             response.status = falcon.HTTP_201
@@ -236,7 +234,7 @@ class Resource(object):
         """Allows one to update a pool's weight, uri, and/or options.
 
         This method expects the user to submit a JSON object
-        containing at least one of: 'uri', 'weight', 'group', 'flavor',
+        containing at least one of: 'uri', 'weight', 'flavor',
         'options'.If none are found, the request is flagged as bad.
         There is also strict format checking through the use of
         jsonschema. Appropriate errors are returned in each case for
@@ -248,11 +246,11 @@ class Resource(object):
         LOG.debug(u'PATCH pool - name: %s', pool)
         data = wsgi_utils.load(request)
 
-        EXPECT = ('weight', 'uri', 'group', 'flavor', 'options')
+        EXPECT = ('weight', 'uri', 'flavor', 'options')
         if not any([(field in data) for field in EXPECT]):
             LOG.debug(u'PATCH pool, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                'One of `uri`, `weight`, `group`, `flavor`,'
+                'One of `uri`, `weight`, `flavor`,'
                 ' or `options` needs '
                 'to be specified'
             )
