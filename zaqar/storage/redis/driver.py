@@ -296,6 +296,10 @@ class ControlDriver(storage.ControlDriverBase):
         else:
             return controller
 
+    @decorators.lazy_property(write=False)
+    def topic_controller(self):
+        pass
+
 
 def _get_redis_client(driver):
     conf = driver.redis_conf

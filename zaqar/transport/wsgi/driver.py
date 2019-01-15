@@ -72,6 +72,10 @@ class Driver(transport.DriverBase):
         return helpers.validate_queue_identification(
             self._validate.queue_identification, req, resp, params)
 
+    def _validate_topic_identification(self, req, resp, params):
+        return helpers.validate_topic_identification(
+            self._validate.topic_identification, req, resp, params)
+
     def _require_client_id(self, req, resp, params):
         return helpers.require_client_id(
             self._validate.client_id_uuid_safe, req, resp, params)
@@ -91,7 +95,10 @@ class Driver(transport.DriverBase):
             helpers.inject_context,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
-            self._validate_queue_identification
+            self._validate_queue_identification,
+
+            # NOTE(kgriffs): Depends on project_id being extracted, above
+            self._validate_topic_identification
         ]
 
     def _init_routes(self):

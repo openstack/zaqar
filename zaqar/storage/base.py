@@ -35,6 +35,7 @@ DEFAULT_QUEUES_PER_PAGE = 10
 DEFAULT_MESSAGES_PER_PAGE = 10
 DEFAULT_POOLS_PER_PAGE = 10
 DEFAULT_SUBSCRIPTIONS_PER_PAGE = 10
+DEFAULT_TOPICS_PER_PAGE = 10
 
 DEFAULT_MESSAGES_PER_CLAIM = 10
 
@@ -242,6 +243,11 @@ class DataDriverBase(DriverBase):
         """Returns the driver's subscription controller."""
         raise NotImplementedError
 
+    @decorators.lazy_property(write=False)
+    def topic_controller(self):
+        """Returns the driver's topic controller."""
+        return self.control_driver.topic_controller
+
 
 @six.add_metaclass(abc.ABCMeta)
 class ControlDriverBase(DriverBase):
@@ -279,6 +285,11 @@ class ControlDriverBase(DriverBase):
     @abc.abstractproperty
     def queue_controller(self):
         """Returns the driver's queue controller."""
+        raise NotImplementedError
+
+    @abc.abstractproperty
+    def topic_controller(self):
+        """Returns the driver's topic controller."""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -1096,3 +1107,113 @@ class FlavorsBase(ControllerBase):
         """Deletes all flavors from storage."""
 
         raise NotImplementedError
+
+
+@six.add_metaclass(abc.ABCMeta)
+class Topic(ControllerBase):
+    """This class is responsible for managing topics.
+
+    Topic operations include CRUD, etc.
+
+    Storage driver implementations of this class should
+    be capable of handling high workloads and huge
+    numbers of topics.
+    """
+
+    def list(self, project=None, kfilter={}, marker=None,
+             limit=DEFAULT_TOPICS_PER_PAGE, detailed=False, name=None):
+        """Base method for listing topics.
+
+        :param project: Project id
+        :param kfilter: The key-value of metadata which user want to filter
+        :param marker: The last topic name
+        :param limit: (Default 10) Max number of topics to return
+        :param detailed: Whether metadata is included
+        :param name: The topic name which user want to filter
+
+        :returns: An iterator giving a sequence of topics
+            and the marker of the next page.
+        """
+        return self._list(project, kfilter, marker, limit, detailed, name)
+
+    _list = abc.abstractmethod(lambda x: None)
+
+    def get(self, name, project=None):
+        """Base method for topic metadata retrieval.
+
+        :param name: The topic name
+        :param project: Project id
+
+        :returns: Dictionary containing topic metadata
+        :raises DoesNotExist: if topic metadata does not exist
+        """
+        return self._get(name, project)
+
+    _get = abc.abstractmethod(lambda x: None)
+
+    def get_metadata(self, name, project=None):
+        """Base method for topic metadata retrieval.
+
+        :param name: The topic name
+        :param project: Project id
+
+        :returns: Dictionary containing topic metadata
+        :raises DoesNotExist: if topic metadata does not exist
+        """
+        raise NotImplementedError
+
+    def set_metadata(self, name, metadata, project=None):
+        """Base method for updating a topic metadata.
+
+        :param name: The topic name
+        :param metadata: Topic metadata as a dict
+        :param project: Project id
+        :raises DoesNotExist: if topic metadata can not be updated
+        """
+        raise NotImplementedError
+
+    def create(self, name, metadata=None, project=None):
+        """Base method for topic creation.
+
+        :param name: The topic name
+        :param project: Project id
+        :returns: True if a topic was created and False
+            if it was updated.
+        """
+        return self._create(name, metadata, project)
+
+    _create = abc.abstractmethod(lambda x: None)
+
+    def exists(self, name, project=None):
+        """Base method for testing topic existence.
+
+        :param name: The topic name
+        :param project: Project id
+        :returns: True if a topic exists and False
+            if it does not.
+        """
+        return self._exists(name, project)
+
+    _exists = abc.abstractmethod(lambda x: None)
+
+    def delete(self, name, project=None):
+        """Base method for deleting a topic.
+
+        :param name: The topic name
+        :param project: Project id
+        """
+        return self._delete(name, project)
+
+    _delete = abc.abstractmethod(lambda x: None)
+
+    def stats(self, name, project=None):
+        """Base method for topic stats.
+
+        :param name: The topic name
+        :param project: Project id
+        :returns: Dictionary with the
+            queue stats
+        """
+        return self._stats(name, project)
+
+    _stats = abc.abstractmethod(lambda x: None)

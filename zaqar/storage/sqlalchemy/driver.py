@@ -110,3 +110,7 @@ class ControlDriver(storage.ControlDriverBase):
                                       "controller")(controller)
         else:
             return controller
+
+    @property
+    def topic_controller(self):
+        pass

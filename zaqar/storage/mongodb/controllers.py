@@ -29,6 +29,7 @@ from zaqar.storage.mongodb import messages
 from zaqar.storage.mongodb import pools
 from zaqar.storage.mongodb import queues
 from zaqar.storage.mongodb import subscriptions
+from zaqar.storage.mongodb import topics
 
 
 CatalogueController = catalogue.CatalogueController
@@ -39,3 +40,4 @@ FIFOMessageController = messages.FIFOMessageController
 QueueController = queues.QueueController
 PoolsController = pools.PoolsController
 SubscriptionController = subscriptions.SubscriptionController
+TopicController = topics.TopicController

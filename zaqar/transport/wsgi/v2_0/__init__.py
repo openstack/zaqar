@@ -24,6 +24,9 @@ from zaqar.transport.wsgi.v2_0 import purge
 from zaqar.transport.wsgi.v2_0 import queues
 from zaqar.transport.wsgi.v2_0 import stats
 from zaqar.transport.wsgi.v2_0 import subscriptions
+from zaqar.transport.wsgi.v2_0 import topic
+from zaqar.transport.wsgi.v2_0 import topic_purge
+from zaqar.transport.wsgi.v2_0 import topic_stats
 from zaqar.transport.wsgi.v2_0 import urls
 
 
@@ -52,6 +55,7 @@ def public_endpoints(driver, conf):
     message_controller = driver._storage.message_controller
     claim_controller = driver._storage.claim_controller
     subscription_controller = driver._storage.subscription_controller
+    topic_controller = driver._storage.topic_controller
 
     defaults = driver._defaults
 
@@ -119,6 +123,42 @@ def public_endpoints(driver, conf):
 
         # Pre-Signed URL Endpoint
         ('/queues/{queue_name}/share', urls.Resource(driver)),
+
+        # Topics Endpoints
+        ('/topics',
+         topic.CollectionResource(driver._validate, topic_controller)),
+        ('/topics/{topic_name}',
+         topic.ItemResource(driver._validate, topic_controller,
+                            message_controller)),
+        ('/topics/{topic_name}/stats',
+         topic_stats.Resource(topic_controller)),
+        ('/topics/{topic_name}/purge',
+         topic_purge.Resource(driver)),
+        # Topic Messages Endpoints
+        ('/topics/{topic_name}/messages',
+         messages.CollectionResource(driver._wsgi_conf,
+                                     driver._validate,
+                                     message_controller,
+                                     topic_controller,
+                                     defaults.message_ttl)),
+        ('/topics/{topic_name}/messages/{message_id}',
+         messages.ItemResource(message_controller)),
+        # Topic Subscription Endpoints
+        ('/topics/{topic_name}/subscriptions',
+         subscriptions.CollectionResource(driver._validate,
+                                          subscription_controller,
+                                          defaults.subscription_ttl,
+                                          topic_controller,
+                                          conf)),
+
+        ('/topics/{topic_name}/subscriptions/{subscription_id}',
+         subscriptions.ItemResource(driver._validate,
+                                    subscription_controller)),
+
+        ('/topics/{topic_name}/subscriptions/{subscription_id}/confirm',
+         subscriptions.ConfirmResource(driver._validate,
+                                       subscription_controller,
+                                       conf)),
     ]
 
 

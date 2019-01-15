@@ -44,12 +44,20 @@ subscription_pipeline = cfg.ListOpt(
            'controller methods.'))
 
 
+topic_pipeline = cfg.ListOpt(
+    'topic_pipeline', default=[],
+    help=_('Pipeline to use for processing topic operations. This '
+           'pipeline will be consumed before calling the storage driver\'s '
+           'controller methods.'))
+
+
 GROUP_NAME = 'storage'
 ALL_OPTS = [
     queue_pipeline,
     message_pipeline,
     claim_pipeline,
-    subscription_pipeline
+    subscription_pipeline,
+    topic_pipeline
 ]
 
 

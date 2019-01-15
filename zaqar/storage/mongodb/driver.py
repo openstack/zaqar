@@ -272,6 +272,17 @@ class ControlDriver(storage.ControlDriverBase):
         return self.connection[name]
 
     @decorators.lazy_property(write=False)
+    def topics_database(self):
+        """Database dedicated to the "topics" collection.
+
+        The topics collection is separated out into its own database
+        to avoid writer lock contention with the messages collections.
+        """
+
+        name = self.mongodb_conf.database + '_topics'
+        return self.connection[name]
+
+    @decorators.lazy_property(write=False)
     def queue_controller(self):
         controller = controllers.QueueController(self)
         if (self.conf.profiler.enabled and
@@ -306,5 +317,15 @@ class ControlDriver(storage.ControlDriverBase):
         if (self.conf.profiler.enabled and
                 self.conf.profiler.trace_management_store):
             return profiler.trace_cls("mongodb_flavors_controller")(controller)
+        else:
+            return controller
+
+    @decorators.lazy_property(write=False)
+    def topic_controller(self):
+        controller = controllers.TopicController(self)
+        if (self.conf.profiler.enabled and
+                (self.conf.profiler.trace_message_store or
+                    self.conf.profiler.trace_management_store)):
+            return profiler.trace_cls("mongodb_topics_controller")(controller)
         else:
             return controller

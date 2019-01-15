@@ -277,3 +277,44 @@ def inject_context(req, resp, params):
                                   project_domain_id=project_domain_id,
                                   user_domain_id=user_domain_id)
     req.env['zaqar.context'] = ctxt
+
+
+def validate_topic_identification(validate, req, resp, params):
+    """Hook for validating the topic name and project id in requests.
+
+    The queue name validation is short-circuited if 'topic_name' does
+    not exist in `params`.
+
+    This hook depends on the `get_project` hook, which must be
+    installed upstream.
+
+
+    :param validate: A validator function that will
+        be used to check the topic name against configured
+        limits. functools.partial or a closure must be used to
+        set this first arg, and expose the remaining ones as
+        a Falcon hook interface.
+    :param req: Falcon request object
+    :param resp: Falcon response object
+    :param params: Responder params dict
+    """
+
+    try:
+        validate(params['topic_name'],
+                 params['project_id'])
+    except KeyError:
+        # NOTE(kgriffs): topic not in params, so nothing to do
+        pass
+    except validation.ValidationFailed:
+        project = params['project_id']
+        queue = params['topic_name']
+        if six.PY2:
+            queue = queue.decode('utf-8', 'replace')
+
+        LOG.debug(u'Invalid topic name "%(topic)s" submitted for '
+                  u'project: %(project)s',
+                  {'topic': queue, 'project': project})
+
+        raise falcon.HTTPBadRequest(_(u'Invalid topic identification'),
+                                    _(u'The format of the submitted topic '
+                                      u'name or project id is not valid.'))

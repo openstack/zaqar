@@ -147,6 +147,14 @@ class DataDriver(storage.DataDriverBase):
         else:
             return controller
 
+    @decorators.lazy_property(write=False)
+    def topic_controller(self):
+        controller = TopicController(self._pool_catalog)
+        if self.conf.profiler.enabled:
+            return profiler.trace_cls("pooling_topic_controller")(controller)
+        else:
+            return controller
+
 
 class QueueController(storage.Queue):
     """Routes operations to get the appropriate queue controller.
@@ -637,6 +645,20 @@ class Catalog(object):
         target = self.lookup(queue, project)
         return target and target.subscription_controller
 
+    def get_topic_controller(self, topic, project=None):
+        """Lookup the topic controller for the given queue and project.
+
+        :param topic: Name of the topic for which to find a pool
+        :param project: Project to which the topic belongs, or
+            None to specify the "global" or "generic" project.
+
+        :returns: The topic controller associated with the data driver for
+            the pool containing (queue, project) or None if this doesn't exist.
+        :rtype: Maybe TopicController
+        """
+        target = self.lookup(topic, project)
+        return target and target.topic_controller
+
     def get_default_pool(self, use_listing=True):
         if use_listing:
             cursor = self._pools_ctrl.list(limit=0)
@@ -716,3 +738,112 @@ class Catalog(object):
             self._drivers[pool_id] = self._init_driver(pool_id, pool_conf)
 
             return self._drivers[pool_id]
+
+
+class TopicController(storage.Topic):
+    """Routes operations to get the appropriate topic controller.
+
+    :param pool_catalog: a catalog of available pools
+    :type pool_catalog: queues.pooling.base.Catalog
+    """
+
+    def __init__(self, pool_catalog):
+        super(TopicController, self).__init__(None)
+        self._pool_catalog = pool_catalog
+        self._mgt_topic_ctrl = self._pool_catalog.control.topic_controller
+        self._get_controller = self._pool_catalog.get_topic_controller
+
+    def _list(self, project=None, kfilter={}, marker=None,
+              limit=storage.DEFAULT_TOPICS_PER_PAGE, detailed=False,
+              name=None):
+
+        def all_pages():
+            yield next(self._mgt_topic_ctrl.list(
+                project=project,
+                kfilter=kfilter,
+                marker=marker,
+                limit=limit,
+                detailed=detailed,
+                name=name))
+
+        # make a heap compared with 'name'
+        ls = heapq.merge(*[
+            utils.keyify('name', page)
+            for page in all_pages()
+        ])
+
+        marker_name = {}
+
+        # limit the iterator and strip out the comparison wrapper
+        def it():
+            for topic_cmp in itertools.islice(ls, limit):
+                marker_name['next'] = topic_cmp.obj['name']
+                yield topic_cmp.obj
+
+        yield it()
+        yield marker_name and marker_name['next']
+
+    def _get(self, name, project=None):
+        try:
+            return self.get_metadata(name, project)
+        except errors.TopicDoesNotExist:
+            return {}
+
+    def _create(self, name, metadata=None, project=None):
+        flavor = None
+        if isinstance(metadata, dict):
+            flavor = metadata.get('_flavor')
+
+        self._pool_catalog.register(name, project=project, flavor=flavor)
+
+        # NOTE(cpp-cabrera): This should always succeed since we just
+        # registered the project/topic. There is a race condition,
+        # however. If between the time we register a topic and go to
+        # look it up, the topic is deleted, then this assertion will
+        # fail.
+        pool = self._pool_catalog.lookup(name, project)
+        if not pool:
+            raise RuntimeError('Failed to register topic')
+        return self._mgt_topic_ctrl.create(name, metadata=metadata,
+                                           project=project)
+
+    def _delete(self, name, project=None):
+        mtHandler = self._get_controller(name, project)
+        if mtHandler:
+            # NOTE(cpp-cabrera): delete from the catalogue first. If
+            # zaqar crashes in the middle of these two operations,
+            # it is desirable that the entry be missing from the
+            # catalogue and present in storage, rather than the
+            # reverse. The former case leads to all operations
+            # behaving as expected: 404s across the board, and a
+            # functionally equivalent 204 on a create queue. The
+            # latter case is more difficult to reason about, and may
+            # yield 500s in some operations.
+            self._pool_catalog.deregister(name, project)
+            mtHandler.delete(name, project)
+
+        return self._mgt_topic_ctrl.delete(name, project)
+
+    def _exists(self, name, project=None):
+        return self._mgt_topic_ctrl.exists(name, project=project)
+
+    def get_metadata(self, name, project=None):
+        return self._mgt_topic_ctrl.get_metadata(name, project=project)
+
+    def set_metadata(self, name, metadata, project=None):
+        # NOTE(gengchc2): If flavor metadata is modified in topic,
+        # The topic needs to be re-registered to pools, otherwise
+        # the topic flavor parameter is not consistent with the pool.
+        flavor = None
+        if isinstance(metadata, dict):
+            flavor = metadata.get('_flavor')
+        self._pool_catalog.register(name, project=project, flavor=flavor)
+
+        return self._mgt_topic_ctrl.set_metadata(name, metadata=metadata,
+                                                 project=project)
+
+    def _stats(self, name, project=None):
+        mtHandler = self._get_controller(name, project)
+        if mtHandler:
+            return mtHandler.stats(name, project=project)
+        raise errors.TopicDoesNotExist(name, project)

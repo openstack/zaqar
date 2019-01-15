@@ -159,3 +159,11 @@ class DataDriver(base.DataDriverBase):
         stages.extend(_get_storage_pipeline('subscription', self.conf))
         stages.append(self._storage.subscription_controller)
         return common.Pipeline(stages)
+
+    @decorators.lazy_property(write=False)
+    def topic_controller(self):
+        stages = _get_builtin_entry_points('topic', self._storage,
+                                           self.control_driver, self.conf)
+        stages.extend(_get_storage_pipeline('topic', self.conf))
+        stages.append(self._storage.topic_controller)
+        return common.Pipeline(stages)
