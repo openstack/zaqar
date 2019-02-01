@@ -1,13 +1,14 @@
 # suhartono <cloudsuhartono@gmail.com>, 2018. #zanata
+# suhartono <cloudsuhartono@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: zaqar VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-09-17 06:59+0000\n"
+"POT-Creation-Date: 2019-01-08 11:33+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-09-02 04:56+0000\n"
+"PO-Revision-Date: 2019-01-29 01:08+0000\n"
 "Last-Translator: suhartono <cloudsuhartono@gmail.com>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -330,6 +331,9 @@ msgstr ""
 "dikonsumsi sebelum memanggil metode pengendali driver penyimpanan (storage "
 "driver's controller methods)."
 
+msgid "Placeholder"
+msgstr "Placeholder"
+
 msgid "Please try again in a few seconds."
 msgstr "Silakan coba lagi dalam beberapa detik."
 
@@ -587,6 +591,13 @@ msgid "The mongodb driver requires mongodb>=2.2, %s found"
 msgstr "Driver mongodb membutuhkan mongodb>=2.2, %s ditemukan"
 
 msgid ""
+"The request should have both \"ids\" and \"claim_ids\" parameter in the "
+"request when message_delete_with_claim_id is True."
+msgstr ""
+"Permintaan harus memiliki parameter \"ids\" dan \"claim_ids\" dalam "
+"permintaan ketika message_delete_with_claim_id True."
+
+msgid ""
 "The request should have either \"ids\" or \"pop\" parameter in the request, "
 "to be able to delete."
 msgstr ""
@@ -711,6 +722,24 @@ msgstr "minimum_delay harus kurang dari maximum_delay."
 
 msgid "pop and id params cannot be present together in the delete request."
 msgstr "pop dan id params tidak dapat hadir bersama dalam permintaan delete."
+
+msgid "register queue to pool: new flavor: None"
+msgstr "daftar antrian ke pool: new flavor: None"
+
+#, python-format
+msgid "register queue to pool: new flavor:%(flavor)s pool_group:%(pool_group)s"
+msgstr ""
+"daftar antrian ke pool: new flavor:%(flavor)s pool_group:%(pool_group)s"
+
+#, python-format
+msgid ""
+"register queue to pool: old flavor: %(oldflavor)s , new flavor: %(flavor)s"
+msgstr ""
+"daftar antrian ke pool: old flavor: %(oldflavor)s , new flavor: %(flavor)s"
+
+#, python-format
+msgid "register queue: project:%(project)s queue:%(queue)s pool:%(pool)s"
+msgstr "daftar antrian: project:%(project)s queue:%(queue)s pool:%(pool)s"
 
 msgid "retry_backoff_function must be a string."
 msgstr "retry_backoff_function harus berupa string."

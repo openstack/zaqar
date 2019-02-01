@@ -1,14 +1,15 @@
 # Frank Kloeker <eumel@arcor.de>, 2018. #zanata
 # Robert Simai <robert.simai@suse.com>, 2018. #zanata
+# Robert Simai <robert.simai@suse.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: zaqar VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-09-17 06:59+0000\n"
+"POT-Creation-Date: 2019-01-08 11:33+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-09-17 01:28+0000\n"
+"PO-Revision-Date: 2019-01-11 02:53+0000\n"
 "Last-Translator: Robert Simai <robert.simai@suse.com>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -337,6 +338,9 @@ msgstr ""
 "verbraucht, bevor die Controller-Methoden des Speichertreibers aufgerufen "
 "werden."
 
+msgid "Placeholder"
+msgstr "Platzhalter"
+
 msgid "Please try again in a few seconds."
 msgstr "Bitte versuchen Sie es in einigen Sekunden erneut."
 
@@ -600,6 +604,13 @@ msgstr "Die Kopfzeile X-PROJECT-ID fehlte"
 #, python-format
 msgid "The mongodb driver requires mongodb>=2.2, %s found"
 msgstr "Der mongodb-Treiber benötigt mongodb>= 2.2, %s gefunden"
+
+msgid ""
+"The request should have both \"ids\" and \"claim_ids\" parameter in the "
+"request when message_delete_with_claim_id is True."
+msgstr ""
+"Die Anfrage sollte beide \"ids\" und \"claim_ids\" Parameter enthalten, wenn "
+"message_delete_with_claim_id zutrifft."
 
 msgid ""
 "The request should have either \"ids\" or \"pop\" parameter in the request, "
