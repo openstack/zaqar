@@ -229,7 +229,14 @@ Installing and using virtualenv
 
    .. code-block:: console
 
-     $ curl -i -X PUT http://localhost:8888/v1/queues/samplequeue -H "Content-type: application/json"
+     $ curl -i -X PUT http://localhost:8888/v2/queues/samplequeue -H "Content-type: application/json" -H 'Client-ID: 123e4567-e89b-12d3-a456-426655440000' -H 'X-PROJECT-ID: 12345'
+
+   .. note::
+
+     ``Client-ID`` expects a valid UUID.
+
+     ``X-PROJECT-ID`` expects a user-defined project identifier.
+
 
 #. Get ready to code!
 
