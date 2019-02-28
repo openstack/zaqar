@@ -34,8 +34,8 @@ try:
     import mimetools
     Message = mimetools.Message
 except ImportError:
-    from email.mime import message
-    Message = message.MIMEMessage
+    import email
+    Message = email.message_from_binary_file
 
 from zaqar.common import consts
 
@@ -248,13 +248,16 @@ class NotificationProtocol(asyncio.Protocol):
                 self.write_status(b'405 Not Allowed')
                 return
             self._state = 'HEADERS'
-            self._subscriber_id = uri[1:]
+            self._subscriber_id = uri[1:].decode('utf-8')
 
         if self._state == 'HEADERS' and b'\r\n\r\n' in self._data:
             headers, self._data = self._data.split(b'\r\n\r\n', 1)
             headers = Message(io.BytesIO(headers))
-            length = headers.get(b'content-length')
+            # try both cases of content-length for backwards compatibility
+            length = headers.get(b'content-length',
+                                 headers.get('Content-Length'))
             if not length:
+                LOG.debug('Content-Length not provided in the data message')
                 self.write_status(b'400 Bad Request')
                 return
             self._length = int(length)
