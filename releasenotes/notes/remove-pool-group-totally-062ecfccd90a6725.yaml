@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    In Queens, we support the old way to use pool_group and the
+    new way without it in Flavor both. In Stein, we will remove
+    the pool_group totally and only keep the new way in Flavor
+    and Pool.
