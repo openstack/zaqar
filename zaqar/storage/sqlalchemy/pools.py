@@ -38,7 +38,10 @@ class PoolsController(base.PoolsBase):
         # TODO(cpp-cabrera): optimization - limit the columns returned
         # when detailed=False by specifying them in the select()
         # clause
-        stmt = sa.sql.select([tables.Pools]).where(
+        stmt = sa.sql.select([tables.Pools.c.name, tables.Pools.c.uri,
+                              tables.Pools.c.weight,
+                              tables.Pools.c.options,
+                              tables.Pools.c.flavor]).where(
             tables.Pools.c.name > marker
         )
         if limit > 0:
@@ -57,15 +60,9 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def _get_pools_by_flavor(self, flavor=None, detailed=False):
-        pool_group = flavor.get("pool_group", None) if flavor is not None\
-            else None
         flavor_name = flavor.get("name", None) if flavor is not None\
             else None
-        if pool_group is not None:
-            stmt = sa.sql.select([tables.Pools]).where(
-                tables.Pools.c.group == pool_group
-            )
-        elif flavor_name is not None:
+        if flavor_name is not None:
             stmt = sa.sql.select([tables.Pools]).where(
                 tables.Pools.c.flavor == flavor_name
             )
@@ -99,16 +96,13 @@ class PoolsController(base.PoolsBase):
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
-    def _create(self, name, weight, uri, group=None, flavor=None,
+    def _create(self, name, weight, uri, flavor=None,
                 options=None):
         opts = None if options is None else utils.json_encode(options)
 
-        if group is not None:
-            self._ensure_group_exists(group)
-
         try:
             stmt = sa.sql.expression.insert(tables.Pools).values(
-                name=name, weight=weight, uri=uri, group=group,
+                name=name, weight=weight, uri=uri,
                 flavor=flavor, options=opts
             )
             self.driver.run(stmt)
@@ -117,7 +111,7 @@ class PoolsController(base.PoolsBase):
             # TODO(cpp-cabrera): merge update/create into a single
             # method with introduction of upsert
             self._update(name, weight=weight, uri=uri,
-                         group=group, flavor=flavor, options=options)
+                         flavor=flavor, options=options)
 
     @utils.raises_conn_error
     def _exists(self, name):
@@ -131,18 +125,15 @@ class PoolsController(base.PoolsBase):
         # NOTE(cpp-cabrera): by pruning None-valued kwargs, we avoid
         # overwriting the existing options field with None, since that
         # one can be null.
-        names = ('uri', 'weight', 'group', 'flavor', 'options')
+        names = ('uri', 'weight', 'flavor', 'options')
         fields = common_utils.fields(kwargs, names,
                                      pred=lambda x: x is not None)
 
-        assert fields, ('`weight`, `uri`, `group`, `flavor`, '
+        assert fields, ('`weight`, `uri`, `flavor`, '
                         'or `options` not found in kwargs')
 
         if 'options' in fields:
             fields['options'] = utils.json_encode(fields['options'])
-
-        if fields.get('group') is not None:
-            self._ensure_group_exists(fields.get('group'))
 
         stmt = sa.sql.update(tables.Pools).where(
             tables.Pools.c.name == name).values(**fields)
@@ -162,20 +153,17 @@ class PoolsController(base.PoolsBase):
     def _drop_all(self):
         stmt = sa.sql.expression.delete(tables.Pools)
         self.driver.run(stmt)
-        stmt = sa.sql.expression.delete(tables.PoolGroup)
-        self.driver.run(stmt)
 
 
 def _normalize(pool, detailed=False):
     ret = {
         'name': pool[0],
-        'group': pool[1],
-        'uri': pool[2],
-        'weight': pool[3],
-        'flavor': pool[5],
+        'uri': pool[1],
+        'weight': pool[2],
+        'flavor': pool[4],
     }
     if detailed:
-        opts = pool[4]
+        opts = pool[3]
         ret['options'] = utils.json_decode(opts) if opts else {}
 
     return ret

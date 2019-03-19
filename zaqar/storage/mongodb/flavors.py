@@ -20,8 +20,6 @@ Schema:
   'c': capabilities :: dict
 """
 
-import functools
-
 from zaqar.storage import base
 from zaqar.storage import errors
 from zaqar.storage.mongodb import utils
@@ -61,15 +59,6 @@ class FlavorsController(base.FlavorsBase):
         self._pools_ctrl = self.driver.pools_controller
 
     @utils.raises_conn_error
-    def _list_by_pool_group(self, pool_group, limit=10, detailed=False):
-        query = {'s': pool_group}
-        cursor = self._col.find(query, projection=_field_spec(detailed),
-                                limit=limit).sort('n', 1)
-
-        normalizer = functools.partial(_normalize, detailed=detailed)
-        return utils.HookedCursor(cursor, normalizer)
-
-    @utils.raises_conn_error
     def list(self, project=None, marker=None, limit=10, detailed=False):
         query = {'p': project}
         if marker is not None:
@@ -97,7 +86,7 @@ class FlavorsController(base.FlavorsBase):
         return _normalize(res, detailed)
 
     @utils.raises_conn_error
-    def create(self, name, pool_group=None, project=None, capabilities=None):
+    def create(self, name, project=None, capabilities=None):
 
         # NOTE(flaper87): Check if there are pools in this group.
         # Should there be a `group_exists` method?
@@ -105,15 +94,9 @@ class FlavorsController(base.FlavorsBase):
         # so we don't need to get the pool by group.
         # NOTE(gengchc2): If you do not use the removal group scheme to
         # configure flavor, pool_group can be None..
-        if pool_group is not None:
-            flavor_obj = {}
-            flavor_obj["pool_group"] = pool_group
-            if not list(self._pools_ctrl.get_pools_by_flavor(flavor_obj)):
-                raise errors.PoolGroupDoesNotExist(pool_group)
-
         capabilities = {} if capabilities is None else capabilities
         self._col.update_one({'n': name, 'p': project},
-                             {'$set': {'s': pool_group, 'c': capabilities}},
+                             {'$set': {'c': capabilities}},
                              upsert=True)
 
     @utils.raises_conn_error
@@ -121,17 +104,15 @@ class FlavorsController(base.FlavorsBase):
         return self._col.find_one({'n': name, 'p': project}) is not None
 
     @utils.raises_conn_error
-    def update(self, name, project=None, pool_group=None, capabilities=None):
+    def update(self, name, project=None, capabilities=None):
         fields = {}
 
         if capabilities is not None:
             fields['c'] = capabilities
 
-        if pool_group is not None:
-            fields['s'] = pool_group
         # NOTE(gengchc2): If you do not use the removal group scheme to
         # configure flavor, pool_group can be None, pool_group can be remove.
-        assert fields, '`pool_group` or `capabilities` not found in kwargs'
+        assert fields, '`capabilities` not found in kwargs'
         res = self._col.update_one({'n': name, 'p': project},
                                    {'$set': fields},
                                    upsert=False)
@@ -152,7 +133,6 @@ class FlavorsController(base.FlavorsBase):
 def _normalize(flavor, detailed=False):
     ret = {
         'name': flavor['n'],
-        'pool_group': flavor['s'],
     }
 
     if detailed:

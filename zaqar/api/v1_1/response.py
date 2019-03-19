@@ -229,9 +229,6 @@ class ResponseSchema(api.Api):
                                 'uri': {
                                     'type': 'string'
                                 },
-                                'group': {
-                                    'type': ['string', 'null']
-                                },
                                 'flavor': {
                                     'type': ['string', 'null']
                                 },
@@ -240,7 +237,7 @@ class ResponseSchema(api.Api):
                                     'additionalProperties': True
                                 }
                             },
-                            'required': ['href', 'weight', 'uri', 'group'],
+                            'required': ['href', 'weight', 'uri'],
                             'additionalProperties': False,
                         },
                     }
@@ -286,9 +283,6 @@ class ResponseSchema(api.Api):
                     },
                     'uri': {
                         'type': 'string'
-                    },
-                    'group': {
-                        'type': ['string', 'null']
                     },
                     'flavor': {
                         'type': ['string', 'null']

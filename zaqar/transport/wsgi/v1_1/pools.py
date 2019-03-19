@@ -178,7 +178,6 @@ class Resource(object):
         try:
             self._ctrl.create(pool, weight=data['weight'],
                               uri=data['uri'],
-                              group=data.get('group'),
                               options=data.get('options', {}))
             response.status = falcon.HTTP_201
             response.location = request.path
@@ -226,11 +225,11 @@ class Resource(object):
         LOG.debug(u'PATCH pool - name: %s', pool)
         data = wsgi_utils.load(request)
 
-        EXPECT = ('weight', 'uri', 'group', 'options')
+        EXPECT = ('weight', 'uri', 'options')
         if not any([(field in data) for field in EXPECT]):
             LOG.debug(u'PATCH pool, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
-                'One of `uri`, `weight`, `group`, or `options` needs '
+                'One of `uri`, `weight`,or `options` needs '
                 'to be specified'
             )
 

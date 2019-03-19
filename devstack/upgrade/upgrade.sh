@@ -45,7 +45,7 @@ fi
 
 if grep -q 'message_store *= *redis' /etc/zaqar/zaqar.conf; then
     redis-cli save
-    cp /var/lib/redis/dump.rdb $SAVE_DIR/zaqar-redis-message-dump-$BASE_RELEASE.rdb
+    sudo cp /var/lib/redis/dump.rdb $SAVE_DIR/zaqar-redis-message-dump-$BASE_RELEASE.rdb
 fi
 
 # Upgrade Zaqar
