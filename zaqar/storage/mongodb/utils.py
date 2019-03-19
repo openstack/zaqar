@@ -38,6 +38,8 @@ EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)
 # NOTE(cpp-cabrera): the authoritative form of project/queue keys.
 PROJ_QUEUE_KEY = 'p_q'
 
+PROJ_TOPIC_KEY = 'p_t'
+
 LOG = logging.getLogger(__name__)
 
 
@@ -191,7 +193,8 @@ def parse_scoped_project_queue(scoped_name):
     return scoped_name.split('/')
 
 
-def scoped_query(queue, project, name=None, kfilter={}):
+def scoped_query(queue, project, name=None, kfilter={},
+                 key_value=PROJ_QUEUE_KEY):
     """Returns a dict usable for querying for scoped project/queues.
 
     :param queue: name of queue to seek
@@ -201,7 +204,7 @@ def scoped_query(queue, project, name=None, kfilter={}):
     :returns: query to issue
     :rtype: dict
     """
-    key = PROJ_QUEUE_KEY
+    key = key_value
     query = {}
     scoped_name = scope_queue_name(queue, project)
 

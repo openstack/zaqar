@@ -637,3 +637,53 @@ class MessageQueueHandler(object):
                 message_stats['oldest'] = oldest
 
         return {'messages': message_stats}
+
+
+class MessageTopicHandler(object):
+    def __init__(self, driver, control_driver):
+        self.driver = driver
+        self._client = self.driver.connection
+        self._topic_ctrl = self.driver.topic_controller
+        self._message_ctrl = self.driver.message_controller
+
+    @utils.raises_conn_error
+    def create(self, name, metadata=None, project=None):
+        with self._client.pipeline() as pipe:
+            self._message_ctrl._create_msgset(name, project, pipe)
+
+            try:
+                pipe.execute()
+            except redis.exceptions.ResponseError:
+                return False
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def delete(self, name, project=None):
+        with self._client.pipeline() as pipe:
+            self._message_ctrl._delete_msgset(name, project, pipe)
+            self._message_ctrl._delete_queue_messages(name, project, pipe)
+            pipe.execute()
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def stats(self, name, project=None):
+        if not self._topic_ctrl.exists(name, project=project):
+            raise errors.TopicDoesNotExist(name, project)
+
+        total = self._message_ctrl._count(name, project)
+
+        message_stats = {
+            'total': total
+        }
+
+        if total:
+            try:
+                newest = self._message_ctrl.first(name, project, -1)
+                oldest = self._message_ctrl.first(name, project, 1)
+            except errors.QueueIsEmpty:
+                pass
+            else:
+                message_stats['newest'] = newest
+                message_stats['oldest'] = oldest
+
+        return {'messages': message_stats}

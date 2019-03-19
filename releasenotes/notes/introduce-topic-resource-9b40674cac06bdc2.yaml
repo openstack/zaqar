@@ -1,0 +1,8 @@
+---
+features:
+  - Introduce a new resource called Topic into Zaqar.
+    Topic is a concept from AWS Simple Notification Service (SNS), it will has
+    relevance with subscriptions. User can send message to a topic, and then
+    the subscribers will get the message according to different protocols,
+    like http, email, sms, etc. This feature will help Zaqar to split
+    Messaging Queue Service and Notification Service clearly.

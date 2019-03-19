@@ -61,6 +61,10 @@ class DataDriver(storage.DataDriverBase):
     def subscription_controller(self):
         return None
 
+    @property
+    def topic_controller(self):
+        return self.control_driver.topic_controller
+
 
 class ControlDriver(storage.ControlDriverBase):
 
@@ -85,6 +89,10 @@ class ControlDriver(storage.ControlDriverBase):
     @property
     def flavors_controller(self):
         return None
+
+    @property
+    def topic_controller(self):
+        return TopicController(self)
 
 
 class QueueController(storage.Queue):
@@ -143,4 +151,33 @@ class MessageController(storage.Message):
         raise NotImplementedError()
 
     def bulk_delete(self, queue, message_ids, project=None, claim_ids=None):
+        raise NotImplementedError()
+
+
+class TopicController(storage.Topic):
+    def __init__(self, driver):
+        pass
+
+    def _list(self, project=None):
+        raise NotImplementedError()
+
+    def _get(self, name, project=None):
+        raise NotImplementedError()
+
+    def get_metadata(self, name, project=None):
+        raise NotImplementedError()
+
+    def _create(self, name, metadata=None, project=None):
+        raise NotImplementedError()
+
+    def _exists(self, name, project=None):
+        raise NotImplementedError()
+
+    def set_metadata(self, name, metadata, project=None):
+        raise NotImplementedError()
+
+    def _delete(self, name, project=None):
+        raise NotImplementedError()
+
+    def _stats(self, name, project=None):
         raise NotImplementedError()

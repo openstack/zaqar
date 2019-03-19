@@ -225,3 +225,19 @@ class SubscriptionAlreadyExists(Conflict):
 
     msg_format = (u'Such subscription already exists. Subscriptions '
                   u'are unique by project + queue + subscriber URI.')
+
+
+class TopicDoesNotExist(DoesNotExist):
+
+    msg_format = u'Topic {name} does not exist for project {project}'
+
+    def __init__(self, name, project):
+        super(TopicDoesNotExist, self).__init__(name=name, project=project)
+
+
+class TopicIsEmpty(ExceptionBase):
+
+    msg_format = u'Topic {name} in project {project} is empty'
+
+    def __init__(self, name, project):
+        super(TopicIsEmpty, self).__init__(name=name, project=project)

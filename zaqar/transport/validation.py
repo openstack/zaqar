@@ -676,3 +676,27 @@ class Validator(object):
                                        self._limits_conf.max_length_client_id)
         if self._limits_conf.client_id_uuid_safe == 'strict':
             uuid.UUID(client_id)
+
+    def topic_identification(self, topic, project):
+        """Restrictions on a project id & topic name pair.
+
+        :param queue: Name of the topic
+        :param project: Project id
+        :raises ValidationFailed: if the `name` is longer than 64
+            characters or contains anything other than ASCII digits and
+            letters, underscores, and dashes.  Also raises if `project`
+            is not None but longer than 256 characters.
+        """
+
+        if project is not None and len(project) > PROJECT_ID_MAX_LEN:
+            msg = _(u'Project ids may not be more than {0} characters long.')
+            raise ValidationFailed(msg, PROJECT_ID_MAX_LEN)
+
+        if len(topic) > QUEUE_NAME_MAX_LEN:
+            msg = _(u'Topic names may not be more than {0} characters long.')
+            raise ValidationFailed(msg, QUEUE_NAME_MAX_LEN)
+
+        if not QUEUE_NAME_REGEX.match(topic):
+            raise ValidationFailed(
+                _(u'Topic names may only contain ASCII letters, digits, '
+                  'underscores, and dashes.'))

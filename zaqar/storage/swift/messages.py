@@ -386,3 +386,89 @@ class MessageQueueHandler(object):
             raise
         else:
             return True
+
+
+class MessageTopicHandler(object):
+    def __init__(self, driver, control_driver):
+        self.driver = driver
+        self._client = self.driver.connection
+        self._topic_ctrl = self.driver.topic_controller
+        self._message_ctrl = self.driver.message_controller
+
+    def create(self, name, metadata=None, project=None):
+        self._client.put_container(utils._message_container(name, project))
+
+    def delete(self, name, project=None):
+        for container in [utils._message_container(name, project)]:
+            try:
+                headers, objects = self._client.get_container(container)
+            except swiftclient.ClientException as exc:
+                if exc.http_status != 404:
+                    raise
+            else:
+                for obj in objects:
+                    try:
+                        self._client.delete_object(container, obj['name'])
+                    except swiftclient.ClientException as exc:
+                        if exc.http_status != 404:
+                            raise
+                try:
+                    self._client.delete_container(container)
+                except swiftclient.ClientException as exc:
+                    if exc.http_status not in (404, 409):
+                        raise
+
+    def stats(self, name, project=None):
+        if not self._topic_ctrl.exists(name, project=project):
+            raise errors.TopicDoesNotExist(name, project)
+
+        total = 0
+        container = utils._message_container(name, project)
+
+        try:
+            _, objects = self._client.get_container(container)
+        except swiftclient.ClientException as exc:
+            if exc.http_status == 404:
+                raise errors.QueueIsEmpty(name, project)
+
+        newest = None
+        oldest = None
+        now = timeutils.utcnow_ts(True)
+        for obj in objects:
+            try:
+                headers = self._client.head_object(container, obj['name'])
+            except swiftclient.ClientException as exc:
+                if exc.http_status != 404:
+                    raise
+            else:
+                created = float(headers['x-timestamp'])
+                created_iso = datetime.datetime.utcfromtimestamp(
+                    created).strftime('%Y-%m-%dT%H:%M:%SZ')
+                newest = {
+                    'id': obj['name'],
+                    'age': now - created,
+                    'created': created_iso}
+                if oldest is None:
+                    oldest = copy.deepcopy(newest)
+                total += 1
+
+        msg_stats = {
+            'total': total,
+        }
+        if newest is not None:
+            msg_stats['newest'] = newest
+            msg_stats['oldest'] = oldest
+
+        return {'messages': msg_stats}
+
+    def exists(self, topic, project=None):
+        try:
+            self._client.head_container(utils._message_container(topic,
+                                                                 project))
+
+        except swiftclient.ClientException as exc:
+            if exc.http_status == 404:
+                return False
+            raise
+        else:
+            return True
