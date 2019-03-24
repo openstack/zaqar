@@ -103,7 +103,7 @@ Clone the Zaqar repository with the following git command:
 
 .. code-block:: console
 
-  $ git clone git://git.openstack.org/openstack/zaqar.git
+  $ git clone https://git.openstack.org/openstack/zaqar.git
 
 For information on how to set up the Zaqar development environment
 see :doc:`devref/development.environment`.
