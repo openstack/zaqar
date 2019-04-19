@@ -5,8 +5,8 @@
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/python-zaqarclient
       - openstack/zaqar
       - openstack/zaqar-tempest-plugin
@@ -21,7 +21,7 @@
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/python-zaqarclient
       - openstack/tempest
       - openstack/zaqar
@@ -84,7 +84,7 @@
     post-run: playbooks/legacy/rally-dsvm-zaqar-zaqar/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/aodh
       - openstack/ceilometer
       - openstack/diskimage-builder
