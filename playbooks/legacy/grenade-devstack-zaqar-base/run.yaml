@@ -13,12 +13,12 @@
           set -x
           cat > clonemap.yaml << EOF
           clonemap:
-            - name: openstack-infra/devstack-gate
+            - name: openstack/devstack-gate
               dest: devstack-gate
           EOF
           /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
-              https://git.openstack.org \
-              openstack-infra/devstack-gate
+              https://opendev.org \
+              openstack/devstack-gate
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
       environment: '{{ zuul | zuul_legacy_vars }}'
@@ -29,7 +29,7 @@
           set -x
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
-          enable_plugin zaqar https://git.openstack.org/openstack/zaqar
+          enable_plugin zaqar https://opendev.org/openstack/zaqar
           # Enable Zaqar Tempest plugin
           TEMPEST_PLUGINS='/opt/stack/new/zaqar-tempest-plugin'
 
@@ -42,7 +42,7 @@
         cmd: |
           set -e
           set -x
-          export PROJECTS="openstack-dev/grenade $PROJECTS"
+          export PROJECTS="openstack/grenade $PROJECTS"
           export PROJECTS="openstack/python-zaqarclient $PROJECTS"
           export PYTHONUNBUFFERED=true
           export ENABLED_SERVICES=tempest
@@ -50,7 +50,7 @@
           export DEVSTACK_GATE_TEMPEST_REGEX="zaqar_tempest_plugin.tests"
 
           export DEVSTACK_GATE_GRENADE=pullup
-          export GRENADE_PLUGINRC="enable_grenade_plugin zaqar https://git.openstack.org/openstack/zaqar"
+          export GRENADE_PLUGINRC="enable_grenade_plugin zaqar https://opendev.org/openstack/zaqar"
           export BRANCH_OVERRIDE=default
           if [ "$BRANCH_OVERRIDE" != "default" ] ; then
               export OVERRIDE_ZUUL_BRANCH=$BRANCH_OVERRIDE
