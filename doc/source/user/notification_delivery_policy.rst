@@ -33,14 +33,14 @@ Webhook
 .. code:: json
 
     {
-        '_retry_policy': {
-            'retries_with_no_delay': <Integer value, optional>,
-            'minimum_delay_retries': <Integer value, optional>,
-            'minimum_delay': <Interger value, optional>,
-            'maximum_delay': <Interger value, optional>,
-            'maximum_delay_retries': <Integer value, optional>,
-            'retry_backoff_function': <String value, optional>,
-            'ignore_subscription_override': <Bool value, optional>}
+        "_retry_policy": {
+            "retries_with_no_delay": "<Integer value, optional>",
+            "minimum_delay_retries": "<Integer value, optional>",
+            "minimum_delay": "<Interger value, optional>",
+            "maximum_delay": "<Interger value, optional>",
+            "maximum_delay_retries": "<Integer value, optional>",
+            "retry_backoff_function": "<String value, optional>",
+            "ignore_subscription_override": "<Bool value, optional>"}
     }
 
 -  'minimum_delay' and 'maximum_delay' mean delay time in seconds.
