@@ -64,7 +64,7 @@ The body of the PUT request is empty.
 
 The template is as follows:
 
-.. code:: json
+.. code:: rest
 
     PUT {endpoint}/queues/{queue_name}
 
@@ -81,7 +81,7 @@ Following are examples of a Create Queue request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: json
+.. code:: rest
 
     HTTP/1.1 201 Created
     Content-Length: 0
@@ -101,7 +101,7 @@ processing if needed.
 
 The template is as follows:
 
-.. code:: json
+.. code:: rest
 
     POST {endpoint}/queues/{queue_name}/messages
 
@@ -161,7 +161,7 @@ The following are examples of a Post Message request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: json
+.. code:: rest
 
     HTTP/1.1 201 Created
     Content-Length: 153
@@ -181,7 +181,7 @@ code.
 
 The template is as follows:
 
-.. code:: json
+.. code-block:: rest
 
     POST {endpoint}/queues/{queue_name}/claims{?limit}
     Content-Type: application/json
@@ -241,7 +241,7 @@ Following are examples of a Claim Messages request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: http
+.. code-block:: rest
 
     HTTP/1.1 201 OK
     Content-Length: 164
@@ -267,7 +267,7 @@ The Delete Message operations deletes messages.
 
 The template is as follows:
 
-.. code:: http
+.. code:: rest
 
     DELETE {endpoint}/queues/{queue_name}/messages/{message_id}{?claim_id}
 
@@ -292,7 +292,7 @@ Following are examples of a Delete Message request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: http
+.. code:: rest
 
     HTTP/1.1 204 No Content
 
@@ -305,7 +305,7 @@ other workers.
 
 The template is as follows:
 
-.. code:: http
+.. code:: rest
 
     DELETE {endpoint}/queues/{queue_name}/claims/{claim_id}
 
@@ -325,7 +325,7 @@ Following are examples of a Release Claim request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: http
+.. code:: rest
 
     HTTP/1.1 204 No Content
 
@@ -337,7 +337,7 @@ existing messages.
 
 The template is as follows:
 
-.. code:: http
+.. code:: rest
 
     DELETE {endpoint}/queues/{queue_name}
 
@@ -351,6 +351,6 @@ Following are examples of a Delete Queue request and response:
     -H "Accept: application/json" \
     -H "X-Project-Id: "
 
-.. code:: http
+.. code:: rest
 
     HTTP/1.1 204 No Content
