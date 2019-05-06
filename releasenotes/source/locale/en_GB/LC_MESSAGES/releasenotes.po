@@ -1,16 +1,15 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 # Andreas Jaeger <jaegerandi@gmail.com>, 2018. #zanata
-# Andi Chandler <andi@gowling.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: zaqar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-08 11:33+0000\n"
+"POT-Creation-Date: 2019-04-25 08:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-01-11 04:32+0000\n"
+"PO-Revision-Date: 2018-10-25 04:35+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -38,9 +37,6 @@ msgstr "6.0.0"
 msgid "7.0.0"
 msgstr "7.0.0"
 
-msgid "7.0.0-27"
-msgstr "7.0.0-27"
-
 msgid ""
 "A new queue action is added so that users can purge a queue quickly. That "
 "means all the messages and subscriptions will be deleted automatically but "
@@ -60,15 +56,6 @@ msgstr ""
 "+' URL prefix, Zaqar will create a Keystone trust for the user, and then use "
 "it when a notification happens to authenticate against Keystone and send the "
 "token to the endpoint."
-
-msgid ""
-"Add an new option named 'message_delete_with_claim_id', when it is True, "
-"delete messages must need claim_ids and message_ids both in request "
-"parameters. This will improve the security of the message."
-msgstr ""
-"Add an new option named 'message_delete_with_claim_id', when it is True, "
-"delete messages must need claim_ids and message_ids both in request "
-"parameters. This will improve the security of the message."
 
 msgid "Add migration support for Zaqar's sqlalchemy storage driver."
 msgstr "Add migration support for Zaqar's sqlalchemy storage driver."
@@ -95,9 +82,6 @@ msgstr ""
 "bind', address on which the notification server will listen. Another is "
 "'notification-port', port on which the notification server will listen."
 
-msgid "Added new tool ``zaqar-status upgrade check``."
-msgstr "Added new tool ``zaqar-status upgrade check``."
-
 msgid "Bug Fixes"
 msgstr "Bug Fixes"
 
@@ -119,17 +103,6 @@ msgstr ""
 "'max_message_ttl'. With this feature, when user query queues Zaqar will show "
 "those two attributes (read from config file if there is no customised value "
 "from user) in queue metadata so that user can know what value it is."
-
-msgid ""
-"Currently the email subscription in Zaqar relay on the third part tools, "
-"such as \"sendmail\". It means that deployer should install it out of Zaqar. "
-"If he forgets, Zaqar will raise internal error. This work let Zaqar support "
-"email subscription by itself using the ``smtp`` python library."
-msgstr ""
-"Currently the email subscriptions in Zaqar rely on the third part tools, "
-"such as \"sendmail\". It means that deployer should install it out of Zaqar. "
-"If he forgets, Zaqar will raise internal error. This work let Zaqar support "
-"email subscription by itself using the ``smtp`` python library."
 
 msgid ""
 "Currently, the v1 API is still accessible though it has been deprecated for "
@@ -178,15 +151,6 @@ msgstr "Mitaka Series Release Notes"
 msgid "New Features"
 msgstr "New Features"
 
-msgid ""
-"New framework for ``zaqar-status upgrade check`` command is added. This "
-"framework allows adding various checks which can be run before a Zaqar "
-"upgrade to ensure if the upgrade can be performed safely."
-msgstr ""
-"New framework for ``zaqar-status upgrade check`` command is added. This "
-"framework allows adding various checks which can be run before a Zaqar "
-"upgrade to ensure if the upgrade can be performed safely."
-
 msgid "Newton Series Release Notes"
 msgstr "Newton Series Release Notes"
 
@@ -210,21 +174,11 @@ msgstr ""
 msgid "Ocata Series Release Notes"
 msgstr "Ocata Series Release Notes"
 
-msgid ""
-"Operator can now use new CLI tool ``zaqar-status upgrade check`` to check if "
-"Zaqar deployment can be safely upgraded from N-1 to N release."
-msgstr ""
-"Operator can now use new CLI tool ``zaqar-status upgrade check`` to check if "
-"Zaqar deployment can be safely upgraded from N-1 to N release."
-
 msgid "Other Notes"
 msgstr "Other Notes"
 
 msgid "Pike Series Release Notes"
 msgstr "Pike Series Release Notes"
-
-msgid "Prelude"
-msgstr "Prelude"
 
 msgid "Queens Series Release Notes"
 msgstr "Queens Series Release Notes"
@@ -441,9 +395,6 @@ msgstr ""
 "topic, body and sender. The unsubscribe_confirmation_email_template let user "
 "to customise the unsubscribe confirmation email content, including topic, "
 "body and sender too."
-
-msgid "Upgrade Notes"
-msgstr "Upgrade Notes"
 
 msgid ""
 "When access the root path of Zaqar service, for example: curl GET "
