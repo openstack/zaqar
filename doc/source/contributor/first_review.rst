@@ -34,7 +34,7 @@ does.
 Step by step
 ------------
 
-Go to ``review.openstack.org`` and filter by `Open Zaqar fixes`_. Select a fix
+Go to ``review.opendev.org`` and filter by `Open Zaqar fixes`_. Select a fix
 from the list to review. Try to select an easy patch for your first review.
 That will help you to gain some confidence. Download the patch to your local
 repository and test it:
@@ -108,7 +108,7 @@ test the patch in your local environment.
 For more details on how to do a review, check out the `Gerrit Workflow
 Review section`_ document.
 
-.. _`Open Zaqar fixes`: https://review.openstack.org/#/q/status:open+zaqar,n,z
+.. _`Open Zaqar fixes`: https://review.opendev.org/#/q/status:open+zaqar,n,z
 .. _`Git Commit Messages`: https://wiki.openstack.org/wiki/GitCommitMessages
 .. _`Gerrit Workflow Review section`: https://docs.openstack.org/infra/manual/developers.html#code-review
 

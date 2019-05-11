@@ -37,7 +37,7 @@ Visit the `Gerrit Workflow's account setup`_ section in the wiki to get
 more information on setting up your accounts.
 
 .. _Launchpad: https://launchpad.net/
-.. _Gerrit: https://review.openstack.org/
+.. _Gerrit: https://review.opendev.org/
 .. _`Contributors License Agreement`: https://docs.openstack.org/infra/manual/developers.html#account-setup
 .. _`join the OpenStack Foundation`: https://www.openstack.org/join/
 .. _`Gerrit Workflow's account setup`: https://docs.openstack.org/infra/manual/developers.html#account-setup
@@ -62,7 +62,7 @@ View and copy your SSH key:
 
 Now you can `upload the SSH key to Gerrit`_.
 
-.. _`upload the SSH key to Gerrit`: https://review.openstack.org/#/settings/ssh-keys
+.. _`upload the SSH key to Gerrit`: https://review.opendev.org/#/settings/ssh-keys
 
 Git Review installation
 #######################
@@ -94,7 +94,7 @@ You can also save some time by entering your email and your name:
 
 You can view your Gerrit user name in the `settings page`_.
 
-.. _`settings page`: https://review.openstack.org/#/settings/
+.. _`settings page`: https://review.opendev.org/#/settings/
 
 Project setup
 #############
@@ -126,7 +126,7 @@ the new remote. It looks something like:
 
 .. code-block:: console
 
-   $ git remote add gerrit ssh://<username>@review.openstack.org:29418/openstack/zaqar.git
+   $ git remote add gerrit ssh://<username>@review.opendev.org:29418/openstack/zaqar.git
 
 In the project directory you have a hidden ``.git`` directory and a
 ``.gitreview`` file. You can view them with the following command:

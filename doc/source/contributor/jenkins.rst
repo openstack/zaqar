@@ -21,7 +21,7 @@ front-end is at http://jenkins.openstack.org. You must have an account on
 
 Jenkins performs tasks such as running static code analysis, running unit
 tests, and running functional tests.  For more details on the jobs being run by
-Jenkins, see the code reviews on https://review.openstack.org. Tests are run
+Jenkins, see the code reviews on https://review.opendev.org. Tests are run
 automatically and comments are put on the reviews automatically with the
 results.
 
