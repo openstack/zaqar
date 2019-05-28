@@ -6,7 +6,7 @@ ddt==1.0.1
 doc8==0.6.0
 dogpile.cache==0.6.2
 enum34==1.0.4;python_version=='2.7'
-falcon==1.0.0
+falcon==1.1.0
 fixtures==3.0.0
 flake8==2.5.5
 future==0.16.0

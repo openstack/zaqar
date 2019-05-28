@@ -43,7 +43,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
 
         self.client.put(self.queue_url)
 
-        self.subscriptions_url = self.queue_url + '/subscriptions/'
+        self.subscriptions_url = self.queue_url + '/subscriptions'
         self.client.set_base_url(self.subscriptions_url)
 
     def tearDown(self):
@@ -51,7 +51,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
         result = self.client.get(self.subscriptions_url)
         subscriptions = result.json()['subscriptions']
         for sub in subscriptions:
-            sub_url = self.subscriptions_url + sub['id']
+            sub_url = self.subscriptions_url + '/' + sub['id']
             self.client.delete(sub_url)
         # Delete test queue.
         self.client.delete(self.queue_url)
@@ -72,7 +72,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
         result = self.client.post(data=doc)
         self.assertEqual(201, result.status_code)
         shortlive_id = result.json()['subscription_id']
-        shortlive_url = self.subscriptions_url + shortlive_id
+        shortlive_url = self.subscriptions_url + '/' + shortlive_id
 
         # Let's wait for subscription to expire.
         for i in range(self.class_ttl_gc_interval + ttl_for_shortlive):
@@ -97,7 +97,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
         result = self.client.post(data=doc)
         self.assertEqual(201, result.status_code)
         subscription_id = result.json()['subscription_id']
-        subscription_url = self.subscriptions_url + subscription_id
+        subscription_url = self.subscriptions_url + '/' + subscription_id
 
         # This is a minimum TTL allowed by server.
         updated_ttl = 60

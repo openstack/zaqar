@@ -129,6 +129,10 @@ class Driver(transport.DriverBase):
         else:
             self.app = falcon.API(before=self.before_hooks)
 
+        # Set options to keep behavior compatible to pre-2.0.0 falcon
+        self.app.req_options.auto_parse_qs_csv = True
+        self.app.req_options.keep_blank_qs_values = False
+
         self.app.add_error_handler(Exception, self._error_handler)
 
         for version_path, endpoints in catalog:

@@ -24,6 +24,7 @@ var/*
 ChangeLog
 AUTHORS
 etc/zaqar.conf.sample
+doc/source/_static/zaqar.conf.sample
 .idea
 # Files created by releasenotes build
 releasenotes/build
