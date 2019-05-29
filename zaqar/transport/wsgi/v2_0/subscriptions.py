@@ -55,9 +55,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Subscription could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.body = utils.to_json(resp_dict)
@@ -71,9 +71,9 @@ class ItemResource(object):
                                                  subscription_id,
                                                  project=project_id)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Subscription could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -102,11 +102,11 @@ class ItemResource(object):
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = (_(u'Subscription %(subscription_id)s could not be'
                              ' updated.') %
                            dict(subscription_id=subscription_id))
+            LOG.exception(description)
             raise falcon.HTTPBadRequest(_('Unable to update subscription'),
                                         description)
 
@@ -147,9 +147,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Subscriptions could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Got some. Prepare the response.
@@ -201,9 +201,9 @@ class CollectionResource(object):
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Subscription could not be created.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         now = timeutils.utcnow_ts()
@@ -295,10 +295,10 @@ class ConfirmResource(object):
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = (_(u'Subscription %(subscription_id)s could not be'
                              ' confirmed.') %
                            dict(subscription_id=subscription_id))
+            LOG.exception(description)
             raise falcon.HTTPBadRequest(_('Unable to confirm subscription'),
                                         description)

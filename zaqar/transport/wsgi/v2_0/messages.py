@@ -67,9 +67,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -103,8 +103,8 @@ class CollectionResource(object):
                 # So maybe a refactor is needed in the future.
                 queue_meta = self._queue_controller.get_metadata(queue_name,
                                                                  project_id)
-            except storage_errors.DoesNotExist as ex:
-                LOG.exception(ex)
+            except storage_errors.DoesNotExist:
+                LOG.exception('Queue name "%s" does not exist', queue_name)
             queue_delay = queue_meta.get('_default_message_delay')
             if not queue_delay:
                 # NOTE(cdyangzhenyu): If the queue without the metadata
@@ -131,9 +131,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             messages = None
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         if not messages:
@@ -231,14 +231,14 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except storage_errors.MessageConflict as ex:
-            LOG.exception(ex)
+        except storage_errors.MessageConflict:
             description = _(u'No messages could be enqueued.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be enqueued.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare the response
@@ -309,9 +309,9 @@ class CollectionResource(object):
                 project=project_id,
                 claim_ids=claim_ids)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         return falcon.HTTP_204
@@ -327,9 +327,9 @@ class CollectionResource(object):
                 project=project_id,
                 limit=pop_limit)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be popped.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -361,9 +361,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -405,9 +405,9 @@ class ItemResource(object):
                             u'deleted without a valid claim ID.')
             raise falcon.HTTPForbidden(error_title, description)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Alles guete

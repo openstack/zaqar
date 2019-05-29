@@ -74,9 +74,9 @@ class Resource(object):
                                                    project=project_id)
         except ValueError as err:
             raise wsgi_errors.HTTPBadRequestAPI(str(err))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Topic could not be purged.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204

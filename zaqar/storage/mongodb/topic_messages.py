@@ -24,7 +24,6 @@ Field Mappings:
 import datetime
 import time
 
-from bson import errors as bsonerror
 from bson import objectid
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -365,8 +364,8 @@ class MessageController(storage.Message):
                     projection={'c.v': 1, '_id': 0})
 
                 break
-            except pymongo.errors.AutoReconnect as ex:
-                LOG.exception(ex)
+            except pymongo.errors.AutoReconnect:
+                LOG.exception('Auto reconnect error.')
 
         if doc is None:
             if window is None:
@@ -430,8 +429,8 @@ class MessageController(storage.Message):
                 projection={'c.v': 1, '_id': 0})
 
             return doc['c']['v']
-        except pymongo.errors.AutoReconnect as ex:
-            LOG.exception(ex)
+        except pymongo.errors.AutoReconnect:
+            LOG.exception('Auto reconnect error.')
 
     # ----------------------------------------------------------------------
     # Public interface
@@ -813,7 +812,7 @@ class FIFOMessageController(MessageController):
                 return [str(id_) for id_ in res.inserted_ids]
 
             except (pymongo.errors.DuplicateKeyError,
-                    pymongo.errors.BulkWriteError) as ex:
+                    pymongo.errors.BulkWriteError):
                 # TODO(kgriffs): Record stats of how often retries happen,
                 # and how many attempts, on average, are required to insert
                 # messages.
@@ -895,11 +894,8 @@ class FIFOMessageController(MessageController):
 
                 for index, message in enumerate(prepared_messages):
                     message['k'] = next_marker + index
-            except bsonerror.InvalidDocument as ex:
-                LOG.exception(ex)
-                raise
-            except Exception as ex:
-                LOG.exception(ex)
+            except Exception:
+                LOG.exception('Error parsing document.')
                 raise
 
         msgtmpl = (u'Hit maximum number of attempts (%(max)s) for topic '

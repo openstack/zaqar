@@ -117,8 +117,8 @@ class PoolsController(base.PoolsBase):
                                            'f': flavor,
                                            'o': options}},
                                  upsert=True)
-        except mongo_error.DuplicateKeyError as ex:
-            LOG.exception(ex)
+        except mongo_error.DuplicateKeyError:
+            LOG.exception('Pool "%s" already exists', name)
             raise errors.PoolAlreadyExists()
 
     @utils.raises_conn_error

@@ -194,11 +194,11 @@ def on_exception_sends_500(func):
         try:
             return func(*args, **kwargs)
         except Exception as ex:
-            LOG.exception(ex)
             error = _("Unexpected error.")
             headers = {'status': 500}
             # args[0] - Endpoints object, args[1] - Request object.
             req = args[1]
+            LOG.exception(error)
             return error_response(req, ex, headers, error)
 
     return wrapper

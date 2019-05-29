@@ -34,7 +34,7 @@ def _fail(returncode, ex):
 
     print(ex, file=sys.stderr)
 
-    LOG.exception(ex)
+    LOG.exception('Exception encountered:')
     sys.exit(returncode)
 
 

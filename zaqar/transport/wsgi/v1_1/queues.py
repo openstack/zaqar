@@ -48,9 +48,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue metadata could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.body = utils.to_json(resp_dict)
@@ -81,12 +81,12 @@ class ItemResource(object):
                                                     project=project_id)
 
         except storage_errors.FlavorDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('"%s" does not exist', queue_name)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be created.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
@@ -97,9 +97,9 @@ class ItemResource(object):
         try:
             self._queue_controller.delete(queue_name, project=project_id)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -134,9 +134,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queues could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Got some. Prepare the response.

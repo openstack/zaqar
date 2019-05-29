@@ -164,8 +164,8 @@ class Driver(transport.DriverBase):
 
     def _error_handler(self, exc, request, response, params):
         if isinstance(exc, falcon.HTTPError):
-            raise exc
-        LOG.exception(exc)
+            raise
+        LOG.exception('Internal server error')
         raise falcon.HTTPInternalServerError('Internal server error',
                                              six.text_type(exc))
 

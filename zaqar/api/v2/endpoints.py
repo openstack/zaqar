@@ -72,9 +72,9 @@ class Endpoints(object):
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = 'Queues could not be listed.'
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
 
         # Got some. Prepare the response.
@@ -112,9 +112,9 @@ class Endpoints(object):
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = _('Queue %s could not be created.') % queue_name
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             body = _('Queue %s created.') % queue_name
@@ -138,9 +138,9 @@ class Endpoints(object):
         try:
             self._queue_controller.delete(queue_name, project=project_id)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = _('Queue %s could not be deleted.') % queue_name
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             body = _('Queue %s removed.') % queue_name
@@ -172,9 +172,9 @@ class Endpoints(object):
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers, error)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             headers = {'status': 503}
             error = _('Cannot retrieve queue %s.') % queue_name
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             body = resp_dict
@@ -201,8 +201,8 @@ class Endpoints(object):
             resp_dict = self._queue_controller.stats(queue_name,
                                                      project=project_id)
             body = resp_dict
-        except storage_errors.QueueDoesNotExist as ex:
-            LOG.exception(ex)
+        except storage_errors.QueueDoesNotExist:
+            LOG.exception('Queue "%s" does not exist', queue_name)
             resp_dict = {
                 'messages': {
                     'claimed': 0,
@@ -214,9 +214,9 @@ class Endpoints(object):
             headers = {'status': 404}
             return response.Response(req, body, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = _('Cannot retrieve queue %s stats.') % queue_name
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             headers = {'status': 200}
@@ -262,11 +262,11 @@ class Endpoints(object):
                                                          project=project_id)
 
         except storage_errors.QueueDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('Queue "%s" does not exist', queue_name)
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
+            LOG.exception('Error deleting queue "%s".', queue_name)
             headers = {'status': 503}
             return api_utils.error_response(req, ex, headers)
         else:
@@ -489,9 +489,9 @@ class Endpoints(object):
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.MessageConflict as ex:
-            LOG.exception(ex)
             error = _(u'No messages could be enqueued.')
             headers = {'status': 500}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
 
         # Prepare the response
@@ -835,9 +835,9 @@ class Endpoints(object):
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = 'Subscriptions could not be listed.'
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
 
         # Got some. Prepare the response.
@@ -889,9 +889,9 @@ class Endpoints(object):
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = _('Subscription %s could not be created.') % queue_name
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             if created:
@@ -924,11 +924,11 @@ class Endpoints(object):
                                                  subscription_id,
                                                  project=project_id)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             error = _('Subscription %(subscription)s for queue %(queue)s '
                       'could not be deleted.') % {
                 'subscription': subscription_id, 'queue': queue_name}
             headers = {'status': 503}
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             body = _('Subscription %s removed.') % subscription_id
@@ -964,9 +964,9 @@ class Endpoints(object):
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers, error)
         except storage_errors.ExceptionBase as ex:
-            LOG.exception(ex)
             headers = {'status': 503}
             error = _('Cannot retrieve subscription %s.') % subscription_id
+            LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
         else:
             body = resp_dict

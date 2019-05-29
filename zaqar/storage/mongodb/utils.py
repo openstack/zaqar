@@ -268,8 +268,8 @@ def raises_conn_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except errors.ConnectionFailure as ex:
-            LOG.exception(ex)
+        except errors.ConnectionFailure:
+            LOG.exception('Connection failure.')
             raise storage_errors.ConnectionError()
 
     return wrapper

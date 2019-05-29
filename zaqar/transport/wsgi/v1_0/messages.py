@@ -57,9 +57,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
@@ -100,9 +100,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         if not messages:
@@ -161,14 +161,14 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except storage_errors.MessageConflict as ex:
-            LOG.exception(ex)
+        except storage_errors.MessageConflict:
             description = _(u'No messages could be enqueued.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be enqueued.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare the response
@@ -222,9 +222,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Messages could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -249,9 +249,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.content_location = req.relative_uri
@@ -289,9 +289,9 @@ class ItemResource(object):
                             u'deleted without a valid claim ID.')
             raise falcon.HTTPForbidden(error_title, description)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Message could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Alles guete

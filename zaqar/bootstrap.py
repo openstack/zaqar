@@ -95,7 +95,7 @@ class Bootstrap(object):
             oslo_cache.register_config(self.conf)
             return oslo_cache.get_cache(self.conf)
         except RuntimeError as exc:
-            LOG.exception(exc)
+            LOG.exception('Error loading proxy cache.')
             raise errors.InvalidDriver(exc)
 
     @decorators.lazy_property(write=False)
@@ -120,10 +120,9 @@ class Bootstrap(object):
                                        invoke_args=args)
             return mgr.driver
         except RuntimeError as exc:
-            LOG.exception(exc)
-            LOG.error(u'Failed to load transport driver zaqar.transport.'
-                      u'%(driver)s with args %(args)s',
-                      {'driver': transport_name, 'args': args})
+            LOG.exception(u'Failed to load transport driver zaqar.transport.'
+                          u'%(driver)s with args %(args)s',
+                          {'driver': transport_name, 'args': args})
             raise errors.InvalidDriver(exc)
 
     def run(self):

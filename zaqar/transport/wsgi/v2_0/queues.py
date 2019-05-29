@@ -68,9 +68,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue metadata could not be retrieved.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.body = utils.to_json(resp_dict)
@@ -99,11 +99,11 @@ class ItemResource(object):
                                                     project=project_id)
 
         except storage_errors.FlavorDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('Flavor "%s" does not exist', queue_name)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be created.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
@@ -118,9 +118,9 @@ class ItemResource(object):
         try:
             self._queue_controller.delete(queue_name, project=project_id)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -173,10 +173,10 @@ class ItemResource(object):
                 description = _(u'JSON contains integer that is too large.')
                 raise wsgi_errors.HTTPBadRequestBody(description)
 
-            except Exception as ex:
+            except Exception:
                 # Error while reading from the network/server
-                LOG.exception(ex)
                 description = _(u'Request body could not be read.')
+                LOG.exception(description)
                 raise wsgi_errors.HTTPServiceUnavailable(description)
         else:
             msg = _("PATCH body could not be empty for update.")
@@ -209,10 +209,10 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
         except wsgi_errors.HTTPConflict as ex:
-            raise ex
-        except Exception as ex:
-            LOG.exception(ex)
+            raise
+        except Exception:
             description = _(u'Queue could not be updated.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
         for meta, value in _get_reserved_metadata(self._validate).items():
             if not metadata.get(meta):
@@ -266,9 +266,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queues could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Got some. Prepare the response.

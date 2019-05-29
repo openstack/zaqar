@@ -69,10 +69,10 @@ def deserialize(stream, len):
         description = _(u'JSON contains integer that is too large.')
         raise errors.HTTPBadRequestBody(description)
 
-    except Exception as ex:
+    except Exception:
         # Error while reading from the network/server
-        LOG.exception(ex)
         description = _(u'Request body could not be read.')
+        LOG.exception(description)
         raise errors.HTTPServiceUnavailable(description)
 
 
@@ -192,11 +192,10 @@ def load(req):
     """
     try:
         return utils.read_json(req.stream, req.content_length)
-    except (utils.MalformedJSON, utils.OverflowedJSONInteger) as ex:
-        LOG.exception(ex)
-        raise errors.HTTPBadRequestBody(
-            'JSON could not be parsed.'
-        )
+    except (utils.MalformedJSON, utils.OverflowedJSONInteger):
+        message = 'JSON could not be parsed.'
+        LOG.exception(message)
+        raise errors.HTTPBadRequestBody(message)
 
 
 # TODO(cpp-cabrera): generalize this

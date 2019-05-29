@@ -90,9 +90,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Claim could not be created.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Serialize claimed messages, if any. This logic assumes
@@ -138,9 +138,9 @@ class ItemResource(object):
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Claim could not be queried.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Serialize claimed messages
@@ -180,9 +180,9 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Claim could not be updated.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
     @decorators.TransportLog("Claim item")
@@ -194,7 +194,7 @@ class ItemResource(object):
 
             resp.status = falcon.HTTP_204
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Claim could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)

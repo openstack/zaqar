@@ -182,11 +182,11 @@ class Resource(object):
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolCapabilitiesMismatch as e:
-            LOG.exception(e)
             title = _(u'Unable to create pool')
+            LOG.exception(title)
             raise falcon.HTTPBadRequest(title, six.text_type(e))
         except errors.PoolAlreadyExists as e:
-            LOG.exception(e)
+            LOG.exception('Pool "%s" already exists', pool)
             raise wsgi_errors.HTTPConflict(six.text_type(e))
 
     def on_delete(self, request, response, project_id, pool):
@@ -200,11 +200,11 @@ class Resource(object):
         try:
             self._ctrl.delete(pool)
         except errors.PoolInUseByFlavor as ex:
-            LOG.exception(ex)
             title = _(u'Unable to delete')
             description = _(u'This pool is used by flavors {flavor}; '
                             u'It cannot be deleted.')
             description = description.format(flavor=ex.flavor)
+            LOG.exception(description)
             raise falcon.HTTPForbidden(title, description)
 
         response.status = falcon.HTTP_204
@@ -248,5 +248,5 @@ class Resource(object):
         try:
             self._ctrl.update(pool, **fields)
         except errors.PoolDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('Pool "%s" does not exist', pool)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
