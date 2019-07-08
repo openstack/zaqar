@@ -73,28 +73,28 @@ directory use:
 
 .. code-block:: console
 
-    $ tox -e py27 zaqar.tests.unit.storage
+    $ tox -e py27 -- zaqar.tests.unit.storage
 
 To run the tests specific to the MongoDB driver in the
 ``zaqar/tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
-    $ tox -e py27 test_impl_mongodb
+    $ tox -e py27 -- test_impl_mongodb
 
 To run the tests in the ``MongodbMessageTests`` class in
 the ``tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
-    $ tox -e py27 test_impl_mongodb.MongodbMessageTests
+    $ tox -e py27 -- test_impl_mongodb.MongodbMessageTests
 
 To run the ``MongodbMessageTests.test_message_lifecycle`` test method in
 the ``tests/unit/storage/test_impl_mongodb.py`` file:
 
 .. code-block:: console
 
-    $ tox -e py27 test_impl_mongodb.MongodbMessageTests.test_message_lifecycle
+    $ tox -e py27 -- test_impl_mongodb.MongodbMessageTests.test_message_lifecycle
 
 Running functional tests
 ------------------------
@@ -131,7 +131,7 @@ To run functional tests in non-integration mode, execute:
 
 .. code-block:: console
 
-    $ tox -e py27 zaqar.tests.functional
+    $ tox -e py27 -- zaqar.tests.functional
 
 Using a custom MongoDB instance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
