@@ -142,7 +142,7 @@ Messaging service Operations
 
 This section lists all of the operations that are available in the
 Messaging service API. This document uses some of the most common
-operations in `OpenStack API Reference <https://developer.openstack.org/api-guide/quick-start/index.html>`__..
+operations in `OpenStack API Reference <https://docs.openstack.org/api-quick-start/index.html>`__..
 
 For details about all of the operations, see the Messaging service API v2
 Reference.
@@ -322,7 +322,7 @@ Reference. All you need to get started with Messaging service is the
 getting started guide, the reference, and your Cloud account.
 
 For information about the OpenStack Zaqar API, see
-`OpenStack API Reference <https://developer.openstack.org/api-guide/quick-start/index.html>`__.
+`OpenStack API Reference <https://docs.openstack.org/api-quick-start/index.html>`__.
 
 This API uses standard HTTP 1.1 response codes as documented at
 `www.w3.org/Protocols/rfc2616/rfc2616-sec10.html <http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html>`__.
