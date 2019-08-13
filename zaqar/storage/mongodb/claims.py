@@ -38,14 +38,17 @@ LOG = logging.getLogger(__name__)
 def _messages_iter(msg_iter):
     """Used to iterate through messages."""
 
-    msg = next(msg_iter)
-    yield msg.pop('claim')
-    yield msg
-
-    # Smoke it!
-    for msg in msg_iter:
-        del msg['claim']
+    try:
+        msg = next(msg_iter)
+        yield msg.pop('claim')
         yield msg
+
+        # Smoke it!
+        for msg in msg_iter:
+            del msg['claim']
+            yield msg
+    except StopIteration:
+        return
 
 
 class ClaimController(storage.Claim):
