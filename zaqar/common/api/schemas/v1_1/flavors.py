@@ -27,17 +27,6 @@ patch_capabilities = {
     }
 }
 
-# NOTE(gengchc): Add pool_list in flavor creation for removing pool_group
-patch_pool_list = {
-    'type': 'object',
-    'properties': {
-        'pool_list': {
-            'type': 'array'
-        },
-        'additionalProperties': False
-    }
-}
-
 create = {
     'type': 'object',
     'properties': {
@@ -47,5 +36,5 @@ create = {
     # must provide reasonable defaults.
     # NOTE(wanghao): remove the whole folder when we remove the 1.1 API
     # totally.
-    'additionalProperties': False
+    'additionalProperties': True
 }
