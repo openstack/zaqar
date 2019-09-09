@@ -56,6 +56,10 @@ Information on how to run benchmarking tool is available at:
 
     https://docs.openstack.org/zaqar/latest/admin/running_benchmark.html
 
+Zaqar's design specifications is tracked at:
+
+    https://specs.openstack.org/openstack/zaqar-specs/
+
 Using Zaqar
 -----------
 
