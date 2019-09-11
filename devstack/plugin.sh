@@ -92,7 +92,7 @@ function configure_zaqar {
 
     # Enable pooling by default for now
     iniset $ZAQAR_CONF DEFAULT admin_mode True
-    iniset $ZAQAR_CONF 'drivers:transport:websocket' bind $ZAQAR_SERVICE_HOST
+    iniset $ZAQAR_CONF 'drivers:transport:websocket' bind $(ipv6_unquote $ZAQAR_SERVICE_HOST)
     iniset $ZAQAR_CONF 'drivers:transport:websocket' port $ZAQAR_WEBSOCKET_PORT
     iniset $ZAQAR_CONF drivers transport websocket
 

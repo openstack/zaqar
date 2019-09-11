@@ -1,0 +1,72 @@
+- hosts: all
+  name: Tempest Devstack Zaqar Base
+  tasks:
+
+    - name: Ensure legacy workspace directory
+      file:
+        path: '{{ ansible_user_dir }}/workspace'
+        state: directory
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat > clonemap.yaml << EOF
+          clonemap:
+            - name: openstack/devstack-gate
+              dest: devstack-gate
+          EOF
+          /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
+              https://opendev.org \
+              openstack/devstack-gate
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat << 'EOF' >>"/tmp/dg-local.conf"
+          [[local|localrc]]
+          enable_plugin zaqar https://opendev.org/openstack/zaqar
+           # Enable Zaqar Tempest plugin
+          TEMPEST_PLUGINS='/opt/stack/new/zaqar-tempest-plugin'
+          SERVICE_IP_VERSION=6
+          SERVICE_HOST=""
+
+          EOF
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          export PROJECTS="openstack/python-zaqarclient $PROJECTS"
+          export PYTHONUNBUFFERED=true
+          export ENABLED_SERVICES=tempest
+          export DEVSTACK_GATE_TEMPEST_REGEX="zaqar_tempest_plugin.tests"
+          export DEVSTACK_GATE_TEMPEST=0
+          export DEVSTACK_GATE_USE_PYTHON3=True
+
+          function gate_hook {
+              cd /opt/stack/new/zaqar/devstack/gate
+              ./gate_hook.sh tempest "{{ database_backend }}"
+          }
+
+          export PROJECTS="openstack/zaqar-tempest-plugin $PROJECTS"
+          export -f gate_hook
+
+          function post_test_hook {
+              cd $BASE/new/tempest/tools
+              ./verify-ipv6-only-deployments.sh
+          }
+          export -f post_test_hook
+
+          cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
+          ./safe-devstack-vm-gate-wrap.sh
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
