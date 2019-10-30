@@ -32,6 +32,7 @@
           enable_plugin zaqar https://opendev.org/openstack/zaqar
           # Enable Zaqar Tempest plugin
           TEMPEST_PLUGINS='/opt/stack/new/zaqar-tempest-plugin'
+          USE_PYTHON3="True"
 
           EOF
         executable: /bin/bash
