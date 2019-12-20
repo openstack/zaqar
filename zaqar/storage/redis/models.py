@@ -157,8 +157,8 @@ class SubscriptionEnvelope(object):
         is_confirmed = self.confirmed == str(True)
         basic_msg = {
             'id': self.id,
-            'source': self.source,
-            'subscriber': self.subscriber,
+            'source': self.source.decode(),
+            'subscriber': self.subscriber.decode(),
             'ttl': self.ttl,
             'age': now - created,
             'options': self.options,

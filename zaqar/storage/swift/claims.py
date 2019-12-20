@@ -224,7 +224,7 @@ class ClaimController(storage.Claim):
                 except errors.MessageDoesNotExist:
                     continue
                 md5 = hashlib.md5()
-                md5.update(msg.encode('utf-8'))
+                md5.update(msg)
                 md5 = md5.hexdigest()
                 msg = jsonutils.loads(msg)
                 content = jsonutils.dumps(

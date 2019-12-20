@@ -79,12 +79,12 @@ class SubscriptionController(base.Subscription):
                 is_confirmed = record[5]
             ret = {
                 'id': sid,
-                'source': record[0],
-                'subscriber': record[1],
+                'source': record[0].decode(),
+                'subscriber': record[1].decode(),
                 'ttl': ttl,
                 'age': now - created,
                 'options': self._unpacker(record[4]),
-                'confirmed': is_confirmed,
+                'confirmed': is_confirmed.decode(),
             }
             marker_next['next'] = sid
 
@@ -168,7 +168,7 @@ class SubscriptionController(base.Subscription):
                     # the subscription but the id is still there. So let's
                     # delete the id for clean up.
                     self._client.zrem(subset_key, s_id)
-                if subscription[1] == subscriber:
+                if subscription[1].decode() == subscriber:
                     return True
             return False
         except redis.exceptions.ResponseError:
@@ -252,7 +252,7 @@ class SubscriptionController(base.Subscription):
         for s_id in sub_ids:
             subscription = self._client.hmget(s_id,
                                               ['s', 'u', 't', 'o', 'c'])
-            if subscription[1] == subscriber:
+            if subscription[1].decode() == subscriber:
                 subscription = SubscriptionEnvelope.from_redis(s_id,
                                                                self._client)
                 now = timeutils.utcnow_ts()
