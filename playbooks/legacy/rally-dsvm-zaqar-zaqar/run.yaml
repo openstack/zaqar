@@ -48,7 +48,7 @@
           export DEVSTACK_GATE_EXERCISES=0
           export DEVSTACK_GATE_PREPOPULATE_USERS=0
 
-          export DEVSTACK_GATE_USE_PYTHON3=False
+          export DEVSTACK_GATE_USE_PYTHON3=True
           export USE_KEYSTONE_V2API=0
           export RALLY_SCENARIO=$ZUUL_SHORT_PROJECT_NAME-zaqar
 
