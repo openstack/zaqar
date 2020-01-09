@@ -123,6 +123,9 @@ class QueueController(storage.Queue):
     def _stats(self, name, project=None):
         raise NotImplementedError()
 
+    def _calculate_resource_count(self, project=None):
+        raise NotImplementedError()
+
 
 class MessageController(storage.Message):
     def __init__(self, driver):

@@ -50,6 +50,7 @@ Request Parameters
   - marker: marker
   - detailed: detailed
   - name: name
+  - with_count: with_count
 
 Response Parameters
 -------------------
@@ -58,6 +59,7 @@ Response Parameters
 
   - queues: queues
   - links: links
+  - count: count
 
 
 Response Example

@@ -256,12 +256,17 @@ class CollectionResource(object):
     def _queue_list(self, project_id, path, kfilter, **kwargs):
         try:
             self._validate.queue_listing(**kwargs)
+            with_count = kwargs.pop('with_count', False)
             results = self._queue_controller.list(project=project_id,
                                                   kfilter=kfilter, **kwargs)
 
             # Buffer list of queues
             queues = list(next(results))
 
+            total_number = None
+            if with_count:
+                total_number = self._queue_controller.calculate_resource_count(
+                    project=project_id)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
@@ -281,7 +286,7 @@ class CollectionResource(object):
                     if not each_queue.get('metadata', {}).get(meta):
                         each_queue['metadata'][meta] = value
 
-        return queues, kwargs['marker']
+        return queues, kwargs['marker'], total_number
 
     def _on_get_with_kfilter(self, req, resp, project_id, kfilter={}):
         kwargs = {}
@@ -292,9 +297,11 @@ class CollectionResource(object):
         req.get_param_as_int('limit', store=kwargs)
         req.get_param_as_bool('detailed', store=kwargs)
         req.get_param('name', store=kwargs)
+        req.get_param_as_bool('with_count', store=kwargs)
 
-        queues, marker = self._queue_list(project_id,
-                                          req.path, kfilter, **kwargs)
+        queues, marker, total_number = self._queue_list(project_id,
+                                                        req.path, kfilter,
+                                                        **kwargs)
 
         links = []
         kwargs['marker'] = marker
@@ -311,13 +318,16 @@ class CollectionResource(object):
             'links': links
         }
 
+        if total_number:
+            response_body['count'] = total_number
+
         resp.body = utils.to_json(response_body)
         # status defaults to 200
 
     @decorators.TransportLog("Queues collection")
     @acl.enforce("queues:get_all")
     def on_get(self, req, resp, project_id):
-        field = ('marker', 'limit', 'detailed', 'name')
+        field = ('marker', 'limit', 'detailed', 'name', 'with_count')
         kfilter = copy.deepcopy(req.params)
 
         for key in req.params.keys():

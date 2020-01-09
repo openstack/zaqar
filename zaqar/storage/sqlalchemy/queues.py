@@ -134,3 +134,13 @@ class QueueController(storage.Queue):
 
     def _stats(self, name, project):
         pass
+
+    def _calculate_resource_count(self, project=None):
+        if project is None:
+            project = ''
+        sel = sa.sql.select([sa.sql.func.count('*')],
+                            tables.Queues.c.project == project)
+        res = self.driver.run(sel)
+        r = res.fetchone()
+        res.close()
+        return r is not None

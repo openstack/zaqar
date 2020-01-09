@@ -1,0 +1,5 @@
+---
+features:
+  - Support query queues with filter 'with_count=true' to return the amount of
+    the queues. This will help users to quickly get the exact total number of
+    queues which they own.

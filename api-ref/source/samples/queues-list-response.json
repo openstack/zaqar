@@ -18,5 +18,6 @@
          "href":"/v2/queues?marker=wellington",
          "rel":"next"
       }
-   ]
+   ],
+   "count": 3
 }

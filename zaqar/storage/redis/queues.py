@@ -103,7 +103,7 @@ class QueueController(storage.Queue):
             queue = {'name': utils.descope_queue_name(name)}
             marker_next['next'] = queue['name']
             if detailed:
-                queue['metadata'] = info[1]
+                queue['metadata'] = self._unpacker(info[1])
 
             return queue
 
@@ -192,3 +192,10 @@ class QueueController(storage.Queue):
     @utils.retries_on_connection_error
     def _stats(self, name, project=None):
         pass
+
+    @utils.raises_conn_error
+    @utils.retries_on_connection_error
+    def _calculate_resource_count(self, project=None):
+        client = self._client
+        qset_key = utils.scope_queue_name(QUEUES_SET_STORE_NAME, project)
+        return client.zlexcount(qset_key, '-', '+')
