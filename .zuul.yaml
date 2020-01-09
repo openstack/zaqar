@@ -70,6 +70,11 @@
       database_backend: swift
 
 - job:
+    name: zaqar-tempest-swift-ipv6
+    parent: zaqar-tempest-swift
+    run: playbooks/legacy/tempest-devstack-zaqar-base/run-ipv6.yaml
+
+- job:
     name: zaqar-tox-integration
     parent: openstack-tox
     description: |
@@ -124,6 +129,7 @@
         - zaqar-grenade-mongodb
         - zaqar-grenade-redis
         - zaqar-grenade-swift
+        - zaqar-tempest-swift-ipv6
         # TripleO jobs that deploy Zaqar.
         # Note we don't use a project-template here, so it's easier
         # to disable voting on one specific job if things go wrong.
@@ -141,5 +147,6 @@
         - zaqar-tempest-mongodb
         - zaqar-tempest-redis
         - zaqar-tempest-swift
+        - zaqar-tempest-swift-ipv6
         - tripleo-ci-centos-7-scenario002-standalone
         - heat-functional-convg-mysql-lbaasv2
