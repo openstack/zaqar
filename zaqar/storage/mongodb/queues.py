@@ -287,6 +287,13 @@ class QueueController(storage.Queue):
     def _stats(self, name, project=None):
         pass
 
+    @utils.raises_conn_error
+    @utils.retries_on_autoreconnect
+    def _calculate_resource_count(self, project=None):
+        query = utils.scoped_query(None, project, None, {})
+        projection = {'p_q': 1, '_id': 0}
+        return self._collection.find(query, projection=projection).count()
+
 
 def _get_scoped_query(name, project):
     return {'p_q': utils.scope_queue_name(name, project)}

@@ -151,6 +151,14 @@ pop:
     ``pop`` & ``ids`` parameters are mutually exclusive. Using them together
     in a request will result in HTTP 400.
 
+with_count:
+  type: boolean
+  in: query
+  required: false
+  description: |
+    The 'with_count' specifies if showing the amount of queues when querying
+    them.
+
 # variables in body
 
 _dead_letter_queue:
@@ -311,6 +319,13 @@ claim_ttl:
     The ``ttl`` attribute specifies how long the server waits before releasing
     the claim. The ttl value must be between 60 and 43200 seconds (12 hours).
     You must include a value for this attribute in your request.
+
+count:
+  type: integer
+  in: body
+  required: false
+  description: |
+    The ``count`` attribute specifies how many queus in current project.
 
 flavor_href:
   type: string

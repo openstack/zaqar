@@ -587,6 +587,13 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         result_doc = jsonutils.loads(result[0])
         self.assertEqual(3, len(result_doc['queues']))
 
+        # List (filter query)
+        result = self.simulate_get(self.queue_path, headers=header,
+                                   query_string='with_count=true')
+
+        result_doc = jsonutils.loads(result[0])
+        self.assertEqual(3, result_doc['count'])
+
 
 class TestQueueLifecycleFaultyDriver(base.V2BaseFaulty):
 

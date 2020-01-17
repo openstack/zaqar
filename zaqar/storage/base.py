@@ -418,6 +418,16 @@ class Queue(ControllerBase):
 
     _stats = abc.abstractmethod(lambda x: None)
 
+    def calculate_resource_count(self, project=None):
+        """Base method for calculate queues amount.
+
+        :param project: Project id
+        :returns: The number of queues.
+        """
+        return self._calculate_resource_count(project)
+
+    _calculate_resource_count = abc.abstractmethod(lambda x: None)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Message(ControllerBase):

@@ -264,6 +264,9 @@ class QueueController(storage.Queue):
             return mqHandler.stats(name, project=project)
         raise errors.QueueDoesNotExist(name, project)
 
+    def _calculate_resource_count(self, project=None):
+        return self._mgt_queue_ctrl.calculate_resource_count(project=project)
+
 
 class MessageController(storage.Message):
     """Routes operations to a message controller in the appropriate pool.
