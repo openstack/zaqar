@@ -95,7 +95,7 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
         return mgr.driver
 
     except Exception as exc:
-        LOG.exception(exc)
+        LOG.exception('Error loading storage driver')
         raise errors.InvalidDriver(exc)
 
 
@@ -148,9 +148,8 @@ def load_storage_driver(conf, cache, storage_type=None,
             return mgr.driver
 
     except Exception as exc:
-        LOG.error('Failed to load "{}" driver for "{}"'.format(
-            driver_type, storage_type))
-        LOG.exception(exc)
+        LOG.exception('Failed to load "%s" driver for "%s"',
+                      driver_type, storage_type)
         raise errors.InvalidDriver(exc)
 
 

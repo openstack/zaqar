@@ -148,8 +148,8 @@ class TopicController(storage.Topic):
                     projection={'c.v': 1, '_id': 0})
 
                 break
-            except pymongo.errors.AutoReconnect as ex:
-                LOG.exception(ex)
+            except pymongo.errors.AutoReconnect:
+                LOG.exception('Auto reconnect failure')
 
         if doc is None:
             if window is None:

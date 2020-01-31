@@ -155,9 +155,10 @@ class DataDriverBase(DriverBase):
             try:
                 start = time.time()
                 result = callable_operation()
-            except Exception as e:
+            except Exception:
                 ref = uuidutils.generate_uuid()
-                LOG.exception(e, extra={'instance_uuid': ref})
+                LOG.exception('Error calling operation.',
+                              extra={'instance_uuid': ref})
                 succeeded = False
             status = status_template(succeeded, time.time() - start, ref)
             op_status[operation_type] = status

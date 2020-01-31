@@ -179,7 +179,7 @@ class Resource(object):
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolAlreadyExists as e:
-            LOG.exception(e)
+            LOG.exception('Pool "%s" already exists', pool)
             raise wsgi_errors.HTTPConflict(six.text_type(e))
 
     def on_delete(self, request, response, project_id, pool):
@@ -231,5 +231,5 @@ class Resource(object):
         try:
             self._ctrl.update(pool, **fields)
         except errors.PoolDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('Pool "%s" does not exist', pool)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))

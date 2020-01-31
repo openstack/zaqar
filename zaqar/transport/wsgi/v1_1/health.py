@@ -33,7 +33,7 @@ class Resource(object):
         try:
             resp_dict = self._driver.health()
             resp.body = utils.to_json(resp_dict)
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Health status could not be read.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)

@@ -41,9 +41,9 @@ class ItemResource(object):
             created = self._queue_controller.create(
                 queue_name, project=project_id)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be created.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_201 if created else falcon.HTTP_204
@@ -65,9 +65,9 @@ class ItemResource(object):
         try:
             self._queue_controller.delete(queue_name, project=project_id)
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue could not be deleted.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.status = falcon.HTTP_204
@@ -103,9 +103,9 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queues could not be listed.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Check for an empty list

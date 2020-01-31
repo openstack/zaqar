@@ -152,8 +152,8 @@ def raises_conn_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except redis.exceptions.ConnectionError as ex:
-            LOG.exception(ex)
+        except redis.exceptions.ConnectionError:
+            LOG.exception('Connection failure:')
             raise errors.ConnectionError()
 
     return wrapper

@@ -55,8 +55,8 @@ class DataDriver(storage.DataDriverBase):
         try:
             self.connection.get_capabilities()
             return True
-        except Exception as e:
-            LOG.exception(e)
+        except Exception:
+            LOG.exception('Aliveness check failed:')
             return False
 
     @decorators.lazy_property(write=False)

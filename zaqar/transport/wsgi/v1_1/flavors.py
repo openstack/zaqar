@@ -150,10 +150,10 @@ class Resource(object):
                               capabilities=data['capabilities'])
             response.status = falcon.HTTP_201
             response.location = request.path
-        except errors.PoolGroupDoesNotExist as ex:
-            LOG.exception(ex)
+        except errors.PoolGroupDoesNotExist:
             description = (_(u'Flavor %(flavor)s could not be created. ') %
                            dict(flavor=flavor))
+            LOG.exception(description)
             raise falcon.HTTPBadRequest(_('Unable to create'), description)
 
     def on_delete(self, request, response, project_id, flavor):
@@ -199,5 +199,5 @@ class Resource(object):
         try:
             self._ctrl.update(flavor, project=project_id, **fields)
         except errors.FlavorDoesNotExist as ex:
-            LOG.exception(ex)
+            LOG.exception('Flavor "%s" does not exist', flavor)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))

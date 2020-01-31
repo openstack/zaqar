@@ -68,7 +68,7 @@ class Resource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(six.text_type(ex))
 
-        except Exception as ex:
-            LOG.exception(ex)
+        except Exception:
             description = _(u'Queue stats could not be read.')
+            LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)

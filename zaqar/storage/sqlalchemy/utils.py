@@ -42,8 +42,8 @@ def raises_conn_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except exc.InvalidRequestError as ex:
-            LOG.exception(ex)
+        except exc.InvalidRequestError:
+            LOG.exception('Connection error:')
             raise errors.ConnectionError()
 
     return wrapper
