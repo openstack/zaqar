@@ -142,7 +142,7 @@ html_theme = 'openstackdocs'
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 # html_last_updated_fmt = '%b %d, %Y'
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
+# html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -186,17 +186,6 @@ htmlhelp_basename = 'ZaqarReleaseNotesdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
-}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,

@@ -140,7 +140,7 @@ function configure_zaqar {
         zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head
 
         iniset $ZAQAR_CONF  drivers message_store swift
-        iniset $ZAQAR_CONF 'drivers:message_store:swift' auth_url $KEYSTONE_AUTH_URI_V3
+        iniset $ZAQAR_CONF 'drivers:message_store:swift' auth_url $KEYSTONE_AUTH_URI
         iniset $ZAQAR_CONF 'drivers:message_store:swift' uri swift://zaqar:$SERVICE_PASSWORD@/service
     fi
 
