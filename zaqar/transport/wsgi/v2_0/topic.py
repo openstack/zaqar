@@ -205,7 +205,7 @@ class ItemResource(object):
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
-        except wsgi_errors.HTTPConflict as ex:
+        except wsgi_errors.HTTPConflict:
             raise
         except Exception:
             description = _(u'Topic could not be updated.')

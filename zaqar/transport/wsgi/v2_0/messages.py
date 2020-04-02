@@ -177,7 +177,7 @@ class CollectionResource(object):
             try:
                 queue_meta = self._queue_controller.get_metadata(queue_name,
                                                                  project_id)
-            except storage_errors.DoesNotExist as ex:
+            except storage_errors.DoesNotExist:
                 self._validate.queue_identification(queue_name, project_id)
                 self._queue_controller.create(queue_name, project=project_id)
                 # NOTE(flwang): Queue is created in lazy mode, so no metadata

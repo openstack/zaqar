@@ -58,7 +58,7 @@ class Resource(object):
             # status defaults to 200
 
         except (storage_errors.TopicDoesNotExist,
-                storage_errors.TopicIsEmpty) as ex:
+                storage_errors.TopicIsEmpty):
             resp_dict = {
                 'messages': {
                     'claimed': 0,

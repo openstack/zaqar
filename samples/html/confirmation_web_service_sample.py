@@ -81,6 +81,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         data = {'confirmed': confirmed_value}
         requests.put(url=url, data=json.dumps(data), headers=headers)
 
+
 Handler = ServerHandler
 httpd = SocketServer.TCPServer(("", PORT), Handler)
 httpd.serve_forever()

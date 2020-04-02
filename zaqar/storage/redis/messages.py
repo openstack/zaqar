@@ -404,7 +404,7 @@ class MessageController(storage.Message, scripting.Mixin):
         # for performance.
         with self._client.pipeline() as pipe:
             for mid in message_ids:
-                    pipe.hgetall(mid)
+                pipe.hgetall(mid)
 
             messages = pipe.execute()
 
@@ -577,6 +577,7 @@ def _filter_messages(messages, filters, to_basic, marker):
                 yield msg.to_basic(now)
             else:
                 yield msg
+
 
 QUEUES_SET_STORE_NAME = 'queues_set'
 
