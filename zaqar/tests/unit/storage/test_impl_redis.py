@@ -14,9 +14,9 @@
 
 import collections
 import time
+from unittest import mock
 import uuid
 
-import mock
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 import redis

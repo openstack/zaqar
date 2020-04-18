@@ -14,19 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import collections
 import datetime
 import hashlib
 import json
 import math
+import os
 import random
 import time
+from unittest import mock
 import uuid
 
 import ddt
-import mock
 from oslo_utils import timeutils
 import six
 import testtools

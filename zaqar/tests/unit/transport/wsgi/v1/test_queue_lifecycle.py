@@ -12,9 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+from unittest import mock
+
 import ddt
 import falcon
-import mock
 from oslo_serialization import jsonutils
 import six
 

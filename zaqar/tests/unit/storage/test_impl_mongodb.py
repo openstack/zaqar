@@ -16,9 +16,9 @@
 import collections
 import datetime
 import time
+from unittest import mock
 import uuid
 
-import mock
 from oslo_utils import timeutils
 from pymongo import cursor
 import pymongo.errors

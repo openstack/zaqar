@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import json
+from unittest import mock
 import uuid
 
 import ddt
-import mock
 
 from zaqar.common import urls
 from zaqar.notification import notifier

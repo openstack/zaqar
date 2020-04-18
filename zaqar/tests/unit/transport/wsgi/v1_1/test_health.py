@@ -14,9 +14,10 @@
 # limitations under the License.
 
 
+from unittest import mock
+
 import ddt
 import falcon
-import mock
 from oslo_serialization import jsonutils
 
 from zaqar.storage import errors

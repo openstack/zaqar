@@ -14,12 +14,12 @@
 # limitations under the License.
 
 import json
+from unittest import mock
 
 import ddt
 from keystonemiddleware import auth_token
-import mock
-
 from oslo_utils import uuidutils
+
 from zaqar.common import consts
 from zaqar.common import urls
 from zaqar.tests.unit.transport.websocket import base

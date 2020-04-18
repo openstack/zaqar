@@ -15,11 +15,11 @@
 
 import json
 import time
+from unittest import mock
 
-import mock
 import msgpack
-
 from oslo_utils import uuidutils
+
 from zaqar.common import auth
 from zaqar.common import consts
 from zaqar.storage import errors as storage_errors

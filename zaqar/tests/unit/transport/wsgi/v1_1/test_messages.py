@@ -14,11 +14,11 @@
 # limitations under the License.
 
 import datetime
+from unittest import mock
 import uuid
 
 import ddt
 import falcon
-import mock
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import six

@@ -13,9 +13,9 @@
 # the License.
 
 import json
+from unittest import mock
 
 import ddt
-import mock
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 

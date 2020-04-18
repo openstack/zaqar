@@ -14,11 +14,11 @@
 #    under the License.
 
 import json
+from unittest import mock
 
 import ddt
-import mock
-
 from oslo_utils import uuidutils
+
 import zaqar
 from zaqar.tests.unit.transport.websocket import base
 from zaqar.tests.unit.transport.websocket import utils as test_utils

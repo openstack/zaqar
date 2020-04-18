@@ -4,9 +4,6 @@
 # Metrics and style
 hacking>=3.0.1,<3.1.0 # Apache-2.0
 
-# Packaging
-mock>=2.0.0 # BSD
-
 # Backends
 redis>=3.0.0 # MIT
 pymongo>=3.6.0 # Apache-2.0

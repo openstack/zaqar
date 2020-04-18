@@ -13,9 +13,10 @@
 # the License.
 
 
+from unittest import mock
+
 import ddt
 import falcon
-import mock
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
