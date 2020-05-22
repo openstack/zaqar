@@ -117,7 +117,7 @@ add_module_names = False
 show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['zaqar.']
@@ -236,7 +236,7 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-# -- Options for openstackdocstheme -------------------------------------------
-repository_name = 'openstack/zaqar'
-bug_project = 'zaqar'
-bug_tag = ''
+# Options for openstackdocstheme
+openstackdocs_repo_name = 'openstack/zaqar'
+openstackdocs_bug_project = 'zaqar'
+openstackdocs_bug_tag = ''

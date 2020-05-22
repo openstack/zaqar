@@ -90,7 +90,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -256,7 +256,7 @@ texinfo_documents = [
 # -- Options for Internationalization output ------------------------------
 locale_dirs = ['locale/']
 
-# -- Options for openstackdocstheme -------------------------------------------
-repository_name = 'openstack/zaqar'
-bug_project = 'zaqar'
-bug_tag = ''
+# Options for openstackdocstheme
+openstackdocs_repo_name = 'openstack/zaqar'
+openstackdocs_bug_project = 'zaqar'
+openstackdocs_bug_tag = ''
