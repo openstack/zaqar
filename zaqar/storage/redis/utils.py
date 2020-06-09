@@ -69,6 +69,7 @@ def scope_queue_name(queue=None, project=None):
     # TODO(prashanthr_) : Try to reuse this utility. Violates DRY
     return normalize_none_str(project) + '.' + normalize_none_str(queue)
 
+
 # NOTE(prashanthr_): Aliase the scope_queue_name function
 # to be used in the pools and claims controller as similar
 # functionality is required to scope redis id's.

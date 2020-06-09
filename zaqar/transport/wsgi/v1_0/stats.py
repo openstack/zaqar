@@ -54,7 +54,7 @@ class Resource(object):
             resp.body = utils.to_json(resp_dict)
             # status defaults to 200
 
-        except storage_errors.QueueIsEmpty as ex:
+        except storage_errors.QueueIsEmpty:
             resp_dict = {
                 'messages': {
                     'claimed': 0,

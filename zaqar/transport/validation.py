@@ -34,7 +34,7 @@ MIN_SUBSCRIPTION_TTL = 60
 _PURGBLE_RESOURCE_TYPES = {'messages', 'subscriptions'}
 # NOTE(kgriffs): Don't use \w because it isn't guaranteed to match
 # only ASCII characters.
-QUEUE_NAME_REGEX = re.compile('^[a-zA-Z0-9_\-.]+$')
+QUEUE_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_\-.]+$')
 QUEUE_NAME_MAX_LEN = 64
 PROJECT_ID_MAX_LEN = 256
 
@@ -125,7 +125,7 @@ class Validator(object):
         if not pointer.startswith('/'):
             msg = _('Pointer `%s` does not start with "/".') % pointer
             raise ValidationFailed(msg)
-        if re.search('/\s*?/', pointer[1:]):
+        if re.search(r'/\s*?/', pointer[1:]):
             msg = _('Pointer `%s` contains adjacent "/".') % pointer
             raise ValidationFailed(msg)
         if len(pointer) > 1 and pointer.endswith('/'):
@@ -134,7 +134,7 @@ class Validator(object):
         if pointer[1:].strip() == '/':
             msg = _('Pointer `%s` does not contains valid token.') % pointer
             raise ValidationFailed(msg)
-        if re.search('~[^01]', pointer) or pointer.endswith('~'):
+        if re.search(r'~[^01]', pointer) or pointer.endswith('~'):
             msg = _('Pointer `%s` contains "~" not part of'
                     ' a recognized escape sequence.') % pointer
             raise ValidationFailed(msg)

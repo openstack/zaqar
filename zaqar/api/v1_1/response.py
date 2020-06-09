@@ -37,8 +37,8 @@ class ResponseSchema(api.Api):
                 },
                 "href": {
                     "type": "string",
-                    "pattern": "^(/v1\.1/queues/[a-zA-Z0-9_-]{1,64}"
-                    "/messages/[a-zA-Z0-9_-]+)(\?claim_id=[a-zA-Z0-9_-]+)?$"
+                    "pattern": r"^(/v1\.1/queues/[a-zA-Z0-9_-]{1,64}"
+                    r"/messages/[a-zA-Z0-9_-]+)(\?claim_id=[a-zA-Z0-9_-]+)?$"
                 },
                 "age": age,
                 "ttl": {
@@ -60,9 +60,9 @@ class ResponseSchema(api.Api):
 
         claim_href = {
             "type": "string",
-            "pattern": "^(/v1\.1/queues/[a-zA-Z0-9_-]{1,64}"
-            "/messages/[a-zA-Z0-9_-]+)"
-            "\?claim_id=[a-zA-Z0-9_-]+$"
+            "pattern": r"^(/v1\.1/queues/[a-zA-Z0-9_-]{1,64}"
+            r"/messages/[a-zA-Z0-9_-]+)"
+            r"\?claim_id=[a-zA-Z0-9_-]+$"
         }
 
         flavor = {
@@ -70,7 +70,7 @@ class ResponseSchema(api.Api):
             'properties': {
                 'href': {
                     'type': 'string',
-                    'pattern': '^/v1\.1/flavors/[a-zA-Z0-9_-]{1,64}$'
+                    'pattern': r'^/v1\.1/flavors/[a-zA-Z0-9_-]{1,64}$'
                 },
                 'pool': {
                     'type': 'string',
@@ -116,7 +116,7 @@ class ResponseSchema(api.Api):
                                 },
                                 'href': {
                                     'type': 'string',
-                                    "pattern": "^/v1\.1/queues\?",
+                                    "pattern": r"^/v1\.1/queues\?",
                                 }
                             },
                             'required': ['rel', 'href'],
@@ -137,8 +137,8 @@ class ResponseSchema(api.Api):
                                 },
                                 'href': {
                                     'type': 'string',
-                                    'pattern': '^/v1\.1/queues/'
-                                               '[a-zA-Z0-9_-]{1,64}$',
+                                    'pattern': r'^/v1\.1/queues/'
+                                               r'[a-zA-Z0-9_-]{1,64}$',
                                 },
                                 'metadata': {
                                     'type': 'object',
@@ -202,7 +202,7 @@ class ResponseSchema(api.Api):
                                 },
                                 'href': {
                                     'type': 'string',
-                                    'pattern': '^/v1\.1/pools\?'
+                                    'pattern': r'^/v1\.1/pools\?'
                                 }
                             },
                             'required': ['rel', 'href'],
@@ -216,8 +216,8 @@ class ResponseSchema(api.Api):
                             'properties': {
                                 'href': {
                                     'type': 'string',
-                                    'pattern': '^/v1\.1/'
-                                               'pools/[a-zA-Z0-9_-]{1,64}$'
+                                    'pattern': r'^/v1\.1/'
+                                               r'pools/[a-zA-Z0-9_-]{1,64}$'
                                 },
                                 'weight': {
                                     'type': 'number',
@@ -259,8 +259,8 @@ class ResponseSchema(api.Api):
                                 },
                                 'href': {
                                     'type': 'string',
-                                    'pattern': '^/v1\.1/queues/[a-zA-Z0-9_-]+'
-                                               '/messages\?(.)*$'
+                                    'pattern': r'^/v1\.1/queues/[a-zA-Z0-9_-]+'
+                                               r'/messages\?(.)*$'
                                 }
                             },
                             'required': ['rel', 'href'],
@@ -293,8 +293,8 @@ class ResponseSchema(api.Api):
                     },
                     'href': {
                         'type': 'string',
-                        'pattern': '^/v1\.1/pools/'
-                                   '[a-zA-Z0-9_\-]+$'
+                        'pattern': r'^/v1\.1/pools/'
+                                   r'[a-zA-Z0-9_\-]+$'
                     },
                     'options': {
                         'type': 'object',
@@ -352,8 +352,8 @@ class ResponseSchema(api.Api):
                     },
                     'href': {
                         'type': 'string',
-                        'pattern': '^/v1\.1/queues/[a-zA-Z0-9_-]+'
-                                   '/claims/[a-zA-Z0-9_-]+$'
+                        'pattern': r'^/v1\.1/queues/[a-zA-Z0-9_-]+'
+                                   r'/claims/[a-zA-Z0-9_-]+$'
                     },
                     'messages': {
                         "type": "array",
@@ -398,7 +398,7 @@ class ResponseSchema(api.Api):
                                 },
                                 'href': {
                                     'type': 'string',
-                                    'pattern': '^/v1\.1/flavors\?'
+                                    'pattern': r'^/v1\.1/flavors\?'
                                 }
                             },
                             'required': ['rel', 'href'],
