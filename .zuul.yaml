@@ -97,7 +97,6 @@
       - openstack/magnum
       - openstack/networking-bgpvpn
       - openstack/neutron
-      - openstack/neutron-fwaas
       - openstack/neutron-vpnaas
       - openstack/octavia
       - openstack/panko
