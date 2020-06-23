@@ -82,9 +82,11 @@ def public_endpoints(driver, conf):
                                      driver._validate,
                                      message_controller,
                                      queue_controller,
-                                     defaults.message_ttl)),
+                                     defaults.message_ttl,
+                                     driver._encryptor_factory)),
         ('/queues/{queue_name}/messages/{message_id}',
-         messages.ItemResource(message_controller)),
+         messages.ItemResource(message_controller, queue_controller,
+                               driver._encryptor_factory)),
 
         # Claims Endpoints
         ('/queues/{queue_name}/claims',
@@ -140,9 +142,11 @@ def public_endpoints(driver, conf):
                                      driver._validate,
                                      message_controller,
                                      topic_controller,
-                                     defaults.message_ttl)),
+                                     defaults.message_ttl,
+                                     driver._encryptor_factory)),
         ('/topics/{topic_name}/messages/{message_id}',
-         messages.ItemResource(message_controller)),
+         messages.ItemResource(message_controller, queue_controller,
+                               driver._encryptor_factory)),
         # Topic Subscription Endpoints
         ('/topics/{topic_name}/subscriptions',
          subscriptions.CollectionResource(driver._validate,

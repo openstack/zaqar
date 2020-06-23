@@ -85,8 +85,8 @@ exceed 64 bytes in length, and it is limited to US-ASCII letters, digits,
 underscores, and hyphens.
 
 When create queue, user can specify metadata for the queue. Currently, Zaqar
-supports below metadata: _flavor, _max_claim_count, _dead_letter_queue and
-_dead_letter_queue_messages_ttl.
+supports below metadata: _flavor, _max_claim_count, _dead_letter_queue,
+_dead_letter_queue_messages_ttl and _enable_encrypt_messages.
 
 In order to support the delayed queues, now add a metadata
 ``_default_message_delay``.
@@ -119,6 +119,7 @@ Request Parameters
   - _flavor: _flavor
   - _max_claim_count: _max_claim_count
   - _max_messages_post_size: _max_messages_post_size
+  - _enable_encrypt_messages: _enable_encrypt_messages
 
 Request Example
 ---------------
@@ -225,6 +226,7 @@ Response Parameters
   - _max_claim_count: _max_claim_count_response
   - _dead_letter_queue: _dead_letter_queue_response
   - _dead_letter_queue_messages_ttl: _dead_letter_queue_messages_ttl_response
+  - _enable_encrypt_messages: _enable_encrypt_messages
 
 Response Example
 ----------------

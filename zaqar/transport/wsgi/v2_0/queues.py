@@ -42,6 +42,7 @@ def _get_reserved_metadata(validate):
     for metadata in ['_dead_letter_queue', '_dead_letter_queue_messages_ttl',
                      '_max_claim_count']:
         reserved_metadata.update({metadata: None})
+    reserved_metadata.update({'_enable_encrypt_messages': False})
     return reserved_metadata
 
 

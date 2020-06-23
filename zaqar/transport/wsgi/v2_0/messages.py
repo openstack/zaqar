@@ -37,18 +37,20 @@ class CollectionResource(object):
         '_queue_controller',
         '_wsgi_conf',
         '_validate',
-        '_default_message_ttl'
+        '_default_message_ttl',
+        '_encryptor'
     )
 
     def __init__(self, wsgi_conf, validate,
                  message_controller, queue_controller,
-                 default_message_ttl):
+                 default_message_ttl, encryptor_factory):
 
         self._wsgi_conf = wsgi_conf
         self._validate = validate
         self._message_controller = message_controller
         self._queue_controller = queue_controller
         self._default_message_ttl = default_message_ttl
+        self._encryptor = encryptor_factory.getEncryptor()
 
     # ----------------------------------------------------------------------
     # Helpers
@@ -63,10 +65,14 @@ class CollectionResource(object):
                 message_ids=ids,
                 project=project_id)
 
+            queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                             project_id)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
-
+        except storage_errors.QueueDoesNotExist:
+            LOG.exception('Queue name "%s" does not exist', queue_name)
+            queue_meta = None
         except Exception:
             description = _(u'Message could not be retrieved.')
             LOG.exception(description)
@@ -76,6 +82,10 @@ class CollectionResource(object):
         messages = list(messages)
         if not messages:
             return None
+
+        # Decrypt messages
+        if queue_meta and queue_meta.get('_enable_encrypt_messages', False):
+            self._encryptor.message_decrypted(messages)
 
         messages = [wsgi_utils.format_message_v1_1(m, base_path, m['claim_id'])
                     for m in messages]
@@ -122,6 +132,10 @@ class CollectionResource(object):
             # Buffer messages
             cursor = next(results)
             messages = list(cursor)
+
+            # Decrypt messages
+            if queue_meta.get('_enable_encrypt_messages', False):
+                self._encryptor.message_decrypted(messages)
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
@@ -187,6 +201,7 @@ class CollectionResource(object):
             queue_max_msg_size = queue_meta.get('_max_messages_post_size')
             queue_default_ttl = queue_meta.get('_default_message_ttl')
             queue_delay = queue_meta.get('_default_message_delay')
+            queue_encrypted = queue_meta.get('_enable_encrypt_messages', False)
 
             if queue_default_ttl:
                 message_post_spec = (('ttl', int, queue_default_ttl),
@@ -216,6 +231,9 @@ class CollectionResource(object):
 
         try:
             self._validate.message_posting(messages)
+
+            if queue_encrypted:
+                self._encryptor.message_encrypted(messages)
 
             message_ids = self._message_controller.post(
                 queue_name,
@@ -343,10 +361,17 @@ class CollectionResource(object):
 
 class ItemResource(object):
 
-    __slots__ = '_message_controller'
+    __slots__ = (
+        '_message_controller',
+        '_queue_controller',
+        '_encryptor'
+    )
 
-    def __init__(self, message_controller):
+    def __init__(self, message_controller, queue_controller,
+                 encryptor_factory):
         self._message_controller = message_controller
+        self._queue_controller = queue_controller
+        self._encryptor = encryptor_factory.getEncryptor()
 
     @decorators.TransportLog("Messages item")
     @acl.enforce("messages:get")
@@ -356,6 +381,12 @@ class ItemResource(object):
                 queue_name,
                 message_id,
                 project=project_id)
+
+            queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                             project_id)
+            # Decrypt messages
+            if queue_meta.get('_enable_encrypt_messages', False):
+                self._encryptor.message_decrypted([message])
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)

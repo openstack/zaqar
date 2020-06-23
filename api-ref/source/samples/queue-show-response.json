@@ -4,5 +4,6 @@
     "description": "Queue used for billing.",
     "_max_claim_count": 10,
     "_dead_letter_queue": "dead_letter",
-    "_dead_letter_queue_messages_ttl": 3600
+    "_dead_letter_queue_messages_ttl": 3600,
+    "_enable_encrypt_messages": true
 }

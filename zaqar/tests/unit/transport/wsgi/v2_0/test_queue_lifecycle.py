@@ -113,6 +113,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         ref_doc['_dead_letter_queue'] = None
         ref_doc['_dead_letter_queue_messages_ttl'] = None
         ref_doc['_max_claim_count'] = None
+        ref_doc['_enable_encrypt_messages'] = False
         self.assertEqual(ref_doc, result_doc)
 
         # Stats empty queue
@@ -161,6 +162,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         ref_doc['_dead_letter_queue'] = None
         ref_doc['_dead_letter_queue_messages_ttl'] = None
         ref_doc['_max_claim_count'] = None
+        ref_doc['_enable_encrypt_messages'] = False
         self.assertEqual(ref_doc, result_doc)
 
         # Stats empty queue
@@ -301,6 +303,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         ref_doc['_dead_letter_queue'] = None
         ref_doc['_dead_letter_queue_messages_ttl'] = None
         ref_doc['_max_claim_count'] = None
+        ref_doc['_enable_encrypt_messages'] = False
         self.assertEqual(ref_doc, result_doc)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
@@ -358,7 +361,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           '_default_message_delay': 0,
                           '_dead_letter_queue': None,
                           '_dead_letter_queue_messages_ttl': None,
-                          '_max_claim_count': None}, result_doc)
+                          '_max_claim_count': None,
+                          '_enable_encrypt_messages': False}, result_doc)
 
         # remove metadata
         doc3 = '[{"op":"remove", "path": "/metadata/key1"}]'
@@ -383,7 +387,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           '_default_message_delay': 0,
                           '_dead_letter_queue': None,
                           '_dead_letter_queue_messages_ttl': None,
-                          '_max_claim_count': None}, result_doc)
+                          '_max_claim_count': None,
+                          '_enable_encrypt_messages': False}, result_doc)
 
         # replace non-existent metadata
         doc4 = '[{"op":"replace", "path": "/metadata/key3", "value":2}]'
@@ -501,7 +506,8 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           '_default_message_delay': 0,
                           '_dead_letter_queue': None,
                           '_dead_letter_queue_messages_ttl': None,
-                          '_max_claim_count': None},  result_doc)
+                          '_max_claim_count': None,
+                          '_enable_encrypt_messages': False},  result_doc)
 
         # queue filter
         result = self.simulate_get(self.queue_path, headers=header,

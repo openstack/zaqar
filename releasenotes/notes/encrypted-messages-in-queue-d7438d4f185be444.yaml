@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    To enhance the security of messaging service, the queue in Zaqar
+    supports to encrypt messages before storing them into storage backends,
+    also could support to decrypt messages when those are claimed by consumer.
+    To enable this feature, user just need to take "_enable_encrypt_messages=True"
+    when creating queue. AES-256 is used as the default of encryption algorithm and
+    encryption key is configurable in the zaqar.conf.

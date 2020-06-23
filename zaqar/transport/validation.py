@@ -341,6 +341,11 @@ class Validator(object):
                     msg, self._limits_conf.max_message_delay,
                     MIN_DELAY_TTL)
 
+        encrypted_queue = queue_metadata.get('_enable_encrypt_messages', False)
+        if encrypted_queue and not isinstance(encrypted_queue, bool):
+            msg = _(u'_enable_encrypt_messages must be boolean.')
+            raise ValidationFailed(msg)
+
         self._validate_retry_policy(queue_metadata)
 
     def queue_purging(self, document):

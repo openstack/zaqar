@@ -239,6 +239,15 @@ _default_message_ttl:
     one of the ``reserved attributes`` of Zaqar queues. The value will be
     reverted to the default value after deleting it explicitly.
 
+_enable_encrypt_messages:
+  type: boolean
+  in: body
+  required: False
+  description: |
+    The switch of encrypting messages for a queue, which will effect for
+    any messages posted to the queue. By default, the value is False. It is
+    one of the ``reserved attributes`` of Zaqar queues.
+
 _flavor:
   type: string
   in: body

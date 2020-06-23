@@ -61,13 +61,19 @@ class TestMessagesMongoDB(base.V2Base):
         # so that we don't have to concatenate against self.url_prefix
         # all over the place.
         self.queue_path = self.url_prefix + '/queues/fizbit'
+        self.encrypted_queue_path = self.url_prefix + '/queues/secretbit'
         self.messages_path = self.queue_path + '/messages'
+        self.encrypted_messages_path = self.encrypted_queue_path + '/messages'
 
         doc = '{"_ttl": 60}'
         self.simulate_put(self.queue_path, body=doc, headers=self.headers)
+        doc = '{"_ttl": 60, "_enable_encrypt_messages": true}'
+        self.simulate_put(self.encrypted_queue_path, body=doc,
+                          headers=self.headers)
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, headers=self.headers)
+        self.simulate_delete(self.encrypted_queue_path, headers=self.headers)
         if self.conf.pooling:
             for i in range(4):
                 self.simulate_delete(self.url_prefix + '/pools/' + str(i),
@@ -94,10 +100,15 @@ class TestMessagesMongoDB(base.V2Base):
                            body=sample_doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    def _test_post(self, sample_messages):
+    def _test_post(self, sample_messages, is_encrypted=False):
         sample_doc = jsonutils.dumps({'messages': sample_messages})
+        messages_path = None
+        if is_encrypted:
+            messages_path = self.encrypted_messages_path
+        else:
+            messages_path = self.messages_path
 
-        result = self.simulate_post(self.messages_path,
+        result = self.simulate_post(messages_path,
                                     body=sample_doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
@@ -125,7 +136,7 @@ class TestMessagesMongoDB(base.V2Base):
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
             for msg_id in msg_ids:
-                message_uri = self.messages_path + '/' + msg_id
+                message_uri = messages_path + '/' + msg_id
 
                 headers = self.headers.copy()
                 headers['X-Project-ID'] = '777777'
@@ -150,7 +161,7 @@ class TestMessagesMongoDB(base.V2Base):
 
         # Test bulk GET
         query_string = 'ids=' + ','.join(msg_ids)
-        result = self.simulate_get(self.messages_path,
+        result = self.simulate_get(messages_path,
                                    query_string=query_string,
                                    headers=self.headers)
 
@@ -196,6 +207,22 @@ class TestMessagesMongoDB(base.V2Base):
         self._test_post(sample_messages)
 
     def test_post_multiple(self):
+        sample_messages = [
+            {'body': 239, 'ttl': 100},
+            {'body': {'key': 'value'}, 'ttl': 200},
+            {'body': [1, 3], 'ttl': 300},
+        ]
+
+        self._test_post(sample_messages)
+
+    def test_post_single_encrypted(self):
+        sample_messages = [
+            {'body': {'key': 'value'}, 'ttl': 200},
+        ]
+
+        self._test_post(sample_messages)
+
+    def test_post_multiple_encrypted(self):
         sample_messages = [
             {'body': 239, 'ttl': 100},
             {'body': {'key': 'value'}, 'ttl': 200},
@@ -304,6 +331,24 @@ class TestMessagesMongoDB(base.V2Base):
                            body=sample_doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
+    def test_post_using_queue_max_messages_post_size_with_encrypted(self):
+        queue_path = self.url_prefix + '/queues/test_queue2'
+        messages_path = queue_path + '/messages'
+        doc = ('{"_max_messages_post_size": 1023, '
+               '"_enable_encrypt_messages": true}')
+        self.simulate_put(queue_path, body=doc, headers=self.headers)
+        self.addCleanup(self.simulate_delete, queue_path, headers=self.headers)
+        sample_messages = {
+            'messages': [
+                {'body': {'key': 'a' * 1204}},
+            ],
+        }
+
+        sample_doc = jsonutils.dumps(sample_messages)
+        self.simulate_post(messages_path,
+                           body=sample_doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
     def test_get_from_missing_queue(self):
         body = self.simulate_get(self.url_prefix +
                                  '/queues/nonexistent/messages',
@@ -384,8 +429,52 @@ class TestMessagesMongoDB(base.V2Base):
         self.simulate_delete(target, headers=self.headers)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
+    def test_delete_with_encrypted(self):
+        self._post_messages(self.encrypted_messages_path)
+        msg_id = self._get_msg_id(self.srmock.headers_dict)
+        target = self.encrypted_messages_path + '/' + msg_id
+
+        self.simulate_get(target, headers=self.headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        self.simulate_delete(target, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+        self.simulate_get(target, headers=self.headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+        # Safe to delete non-existing ones
+        self.simulate_delete(target, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
     def test_bulk_delete(self):
         path = self.queue_path + '/messages'
+        self._post_messages(path, repeat=5)
+        [target, params] = self.srmock.headers_dict['location'].split('?')
+
+        # Deleting the whole collection is denied
+        self.simulate_delete(path, headers=self.headers)
+        self.assertEqual(falcon.HTTP_400, self.srmock.status)
+
+        self.simulate_delete(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+        self.simulate_get(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+        # Safe to delete non-existing ones
+        self.simulate_delete(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+        # Even after the queue is gone
+        self.simulate_delete(self.queue_path, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+        self.simulate_delete(target, query_string=params, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)
+
+    def test_bulk_delete_with_encrpted(self):
+        path = self.encrypted_queue_path + '/messages'
         self._post_messages(path, repeat=5)
         [target, params] = self.srmock.headers_dict['location'].split('?')
 
@@ -487,6 +576,35 @@ class TestMessagesMongoDB(base.V2Base):
         body = self.simulate_get(self.url_prefix +
                                  '/queues/nonexistent/messages',
                                  headers=self.headers)
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        self._empty_message_list(body)
+
+    def test_list_with_encrpyted(self):
+        path = self.encrypted_queue_path + '/messages'
+        self._post_messages(path, repeat=10)
+
+        query_string = 'limit=3&echo=true'
+        body = self.simulate_get(path,
+                                 query_string=query_string,
+                                 headers=self.headers)
+
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+        cnt = 0
+        while jsonutils.loads(body[0])['messages'] != []:
+            contents = jsonutils.loads(body[0])
+            [target, params] = contents['links'][0]['href'].split('?')
+
+            for msg in contents['messages']:
+                self.simulate_get(msg['href'], headers=self.headers)
+                self.assertEqual(falcon.HTTP_200, self.srmock.status)
+
+            body = self.simulate_get(target,
+                                     query_string=params,
+                                     headers=self.headers)
+            cnt += 1
+
+        self.assertEqual(4, cnt)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         self._empty_message_list(body)
 

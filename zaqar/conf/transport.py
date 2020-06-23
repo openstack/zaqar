@@ -149,6 +149,15 @@ message_delete_with_claim_id = cfg.BoolOpt(
          'improve the security of the message avoiding delete messages before'
          ' they are claimed and handled.')
 
+message_encryption_algorithms = cfg.StrOpt(
+    'message_encryption_algorithms', default='AES256', choices=['AES256'],
+    help='Defines the encryption algorithms of messages, the value could be '
+         '"AES256" for now.')
+
+message_encryption_key = cfg.StrOpt(
+    'message_encryption_key', default='AES256',
+    help='Defines the encryption key of algorithms.')
+
 
 GROUP_NAME = 'transport'
 ALL_OPTS = [
@@ -173,7 +182,9 @@ ALL_OPTS = [
     client_id_uuid_safe,
     min_length_client_id,
     max_length_client_id,
-    message_delete_with_claim_id
+    message_delete_with_claim_id,
+    message_encryption_algorithms,
+    message_encryption_key
 ]
 
 

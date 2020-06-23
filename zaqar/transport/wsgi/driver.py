@@ -28,6 +28,7 @@ from zaqar.conf import drivers_transport_wsgi
 from zaqar.i18n import _
 from zaqar import transport
 from zaqar.transport import acl
+from zaqar.transport import encryptor
 from zaqar.transport.middleware import auth
 from zaqar.transport.middleware import cors
 from zaqar.transport.middleware import profile
@@ -59,6 +60,7 @@ class Driver(transport.DriverBase):
                                  group=drivers_transport_wsgi.GROUP_NAME)
         self._wsgi_conf = self._conf[drivers_transport_wsgi.GROUP_NAME]
         self._validate = validation.Validator(self._conf)
+        self._encryptor_factory = encryptor.EncryptionFactory(self._conf)
 
         self.app = None
         self._init_routes()
