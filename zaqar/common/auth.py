@@ -23,6 +23,7 @@ PASSWORD_PLUGIN = 'password'
 TRUSTEE_CONF_GROUP = 'trustee'
 KEYSTONE_AUTHTOKEN_GROUP = 'keystone_authtoken'
 loading.register_auth_conf_options(cfg.CONF, TRUSTEE_CONF_GROUP)
+loading.register_session_conf_options(cfg.CONF, TRUSTEE_CONF_GROUP)
 loading.register_auth_conf_options(cfg.CONF, KEYSTONE_AUTHTOKEN_GROUP)
 _ZAQAR_ENDPOINTS = {}
 
@@ -38,18 +39,21 @@ def get_trusted_token(trust_id):
     auth_plugin = loading.load_auth_from_conf_options(
         cfg.CONF, TRUSTEE_CONF_GROUP, trust_id=trust_id)
 
-    trust_session = session.Session(auth=auth_plugin)
+    trust_session = loading.load_session_from_conf_options(
+        cfg.CONF, TRUSTEE_CONF_GROUP, auth=auth_plugin)
     return trust_session.auth.get_access(trust_session).auth_token
 
 
 def _get_admin_session(conf_group):
     auth_plugin = loading.load_auth_from_conf_options(
         cfg.CONF, conf_group)
-    return session.Session(auth=auth_plugin)
+    return session.Session(
+        auth=auth_plugin, verify=getattr(cfg.CONF, conf_group).cafile)
 
 
 def _get_user_client(auth_plugin):
-    sess = session.Session(auth=auth_plugin)
+    sess = loading.load_session_from_conf_options(
+        cfg.CONF, TRUSTEE_CONF_GROUP, auth=auth_plugin)
     return client.Client(session=sess)
 
 
