@@ -48,9 +48,8 @@ class SubscriptionController(base.Subscription):
     def __init__(self, *args, **kwargs):
         super(SubscriptionController, self).__init__(*args, **kwargs)
         self._client = self.driver.connection
-        self._packer = msgpack.Packer(encoding='utf-8',
-                                      use_bin_type=True).pack
-        self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
+        self._packer = msgpack.Packer(use_bin_type=True).pack
+        self._unpacker = functools.partial(msgpack.unpackb)
 
     @utils.raises_conn_error
     @utils.retries_on_connection_error

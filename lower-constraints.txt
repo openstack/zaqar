@@ -16,7 +16,7 @@ jsonschema==2.6.0
 keystoneauth1==3.4.0
 keystonemiddleware==4.17.0
 mock==2.0.0
-msgpack==0.5.1
+msgpack==1.0.0
 os-api-ref==1.4.0
 os-client-config==1.28.0
 os-testr==1.0.0

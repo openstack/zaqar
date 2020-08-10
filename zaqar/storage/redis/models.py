@@ -250,8 +250,8 @@ class Message(MessageEnvelope):
 # ==========================================================================
 
 
-_pack = msgpack.Packer(encoding='utf-8', use_bin_type=True).pack
-_unpack = functools.partial(msgpack.unpackb, encoding='utf-8')
+_pack = msgpack.Packer(use_bin_type=True).pack
+_unpack = functools.partial(msgpack.unpackb)
 
 
 def _hmap_kv_to_msgenv(keys, values):

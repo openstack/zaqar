@@ -69,9 +69,8 @@ class FlavorsController(base.FlavorsBase):
     def __init__(self, *args, **kwargs):
         super(FlavorsController, self).__init__(*args, **kwargs)
         self._client = self.driver.connection
-        self._packer = msgpack.Packer(encoding='utf-8',
-                                      use_bin_type=True).pack
-        self._unpacker = functools.partial(msgpack.unpackb, encoding='utf-8')
+        self._packer = msgpack.Packer(use_bin_type=True).pack
+        self._unpacker = functools.partial(msgpack.unpackb)
 
     @utils.raises_conn_error
     def list(self, project=None, marker=None, limit=10, detailed=False):

@@ -83,8 +83,7 @@ class TestDecorators(base.TestBase):
         self.assertEqual(1, instance.project_gets)
 
         # Should be in the cache now.
-        project = msgpack.unpackb(cache.get(create_key(*args)),
-                                  encoding='utf-8')
+        project = msgpack.unpackb(cache.get(create_key(*args)))
         self.assertEqual(sample_project, project)
 
         # Should read from the cache this time (counter will not
@@ -128,7 +127,7 @@ class TestDecorators(base.TestBase):
         self.assertEqual(1, instance.user_gets)
 
         # Should be in the cache now.
-        user = msgpack.unpackb(cache.get(name), encoding='utf-8')
+        user = msgpack.unpackb(cache.get(name))
         self.assertEqual(name, user)
 
         # Should read from the cache this time (counter will not

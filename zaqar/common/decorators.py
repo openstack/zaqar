@@ -148,7 +148,7 @@ def caches(keygen, ttl, cond=None):
             else:
                 # NOTE(kgriffs): unpackb does not default to UTF-8,
                 # so we have to explicitly ask for it.
-                value = msgpack.unpackb(packed_value, encoding='utf-8')
+                value = msgpack.unpackb(packed_value)
 
             return value
 

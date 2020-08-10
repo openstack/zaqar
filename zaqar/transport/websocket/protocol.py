@@ -80,7 +80,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         # Deserialize the request
         try:
             if isBinary:
-                payload = msgpack.unpackb(payload, encoding='utf-8')
+                payload = msgpack.unpackb(payload)
             else:
                 if isinstance(payload, bytes):
                     payload = payload.decode()

@@ -38,8 +38,8 @@ def get_pack_tools(binary=None):
     if binary is None:
         raise Exception("binary param is unspecified")
     if binary:
-        dumps = msgpack.Packer(encoding='utf-8', use_bin_type=False).pack
-        loads = functools.partial(msgpack.unpackb, encoding='utf-8')
+        dumps = msgpack.Packer(use_bin_type=False).pack
+        loads = functools.partial(msgpack.unpackb)
         create_request_function = create_binary_request
     else:
         dumps = json.dumps

@@ -347,8 +347,7 @@ class SubscriptionTest(base.V1_1Base):
         # Check that the server sent the websocket notification in binary
         # format
         self.assertEqual(3, sender.call_count)
-        ws_notification = msgpack.unpackb(sender.call_args_list[2][0][0],
-                                          encoding='utf-8')
+        ws_notification = msgpack.unpackb(sender.call_args_list[2][0][0])
         self.assertEqual({'body': {'status': 'disco queen'}, 'ttl': 60,
                           'queue_name': 'kitkat',
                           'Message_Type': u'Notification'}, ws_notification)
