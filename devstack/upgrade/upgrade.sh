@@ -35,6 +35,13 @@ source $GRENADE_DIR/functions
 # only the first error that occurred.
 set -o errexit
 
+if grep -q '_store *= *mongodb' /etc/zaqar/zaqar.conf; then
+    # mongo-tools is the name of the package which includes mongodump on
+    # basically all distributions (Ubuntu, Debian, Fedora, CentOS and
+    # openSUSE).
+    install_package mongo-tools
+fi
+
 if grep -q 'management_store *= *mongodb' /etc/zaqar/zaqar.conf; then
     mongodump --db zaqar_mgmt --out $SAVE_DIR/zaqar-mongodb-mgmt-dump.$BASE_RELEASE
 fi
@@ -100,7 +107,7 @@ fi
 
 if grep -q 'message_store *= *redis' /etc/zaqar/zaqar.conf; then
     redis-cli save
-    cp /var/lib/redis/dump.rdb $SAVE_DIR/zaqar-redis-message-dump-$TARGET_RELEASE.rdb
+    sudo cp /var/lib/redis/dump.rdb $SAVE_DIR/zaqar-redis-message-dump-$TARGET_RELEASE.rdb
 fi
 
 set +o xtrace
