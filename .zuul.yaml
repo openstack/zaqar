@@ -1,39 +1,63 @@
 - job:
     name: zaqar-grenade-base
-    parent: legacy-dsvm-base
+    abstract: true
+    parent: grenade
+    description: |
+      Abstract base grenade job for zaqar tempest plugin
+    required-projects:
+      - opendev.org/openstack/python-zaqarclient
+      - opendev.org/openstack/zaqar
+      - opendev.org/openstack/zaqar-tempest-plugin
+    vars:
+      devstack_plugins:
+        zaqar: https://opendev.org/openstack/zaqar
+      devstack_services:
+        # probably other services can be disabled;
+        # the old legacy job only uses mysql, keystone, zaqar and tempest
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-bak: false
+      tempest_plugins:
+        - zaqar-tempest-plugin
+      tempest_test_regex: zaqar_tempest_plugin.tests
+      tox_envlist: all
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
-    required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/python-zaqarclient
-      - openstack/zaqar
-      - openstack/zaqar-tempest-plugin
-    run: playbooks/legacy/grenade-devstack-zaqar-base/run.yaml
-    post-run: playbooks/legacy/grenade-devstack-zaqar-base/post.yaml
-    timeout: 7800
 
 - job:
     name: zaqar-grenade-mongodb
     parent: zaqar-grenade-base
     voting: false
     vars:
-      database_backend: mongodb
+      grenade_devstack_localrc:
+        shared:
+          ZAQAR_BACKEND: mongodb
 
 - job:
     name: zaqar-grenade-redis
     parent: zaqar-grenade-base
     voting: false
     vars:
-      database_backend: redis
+      grenade_devstack_localrc:
+        shared:
+          ZAQAR_BACKEND: redis
 
 - job:
     name: zaqar-grenade-swift
     parent: zaqar-grenade-base
     voting: false
     vars:
-      database_backend: swift
+      devstack_services:
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+      grenade_devstack_localrc:
+        shared:
+          ZAQAR_BACKEND: swift
 
 - job:
     name: zaqar-tox-integration
