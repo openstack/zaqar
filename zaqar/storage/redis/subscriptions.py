@@ -75,7 +75,7 @@ class SubscriptionController(base.Subscription):
             created = expires - ttl
             is_confirmed = 1
             if len(record) == 6:
-                is_confirmed = record[5]
+                is_confirmed = int(record[5])
             ret = {
                 'id': sid,
                 'source': record[0].decode(),
@@ -83,7 +83,7 @@ class SubscriptionController(base.Subscription):
                 'ttl': ttl,
                 'age': now - created,
                 'options': self._unpacker(record[4]),
-                'confirmed': is_confirmed.decode(),
+                'confirmed': bool(is_confirmed),
             }
             marker_next['next'] = sid
 

@@ -133,7 +133,7 @@ class SubscriptionEnvelope(object):
         self.ttl = kwargs['ttl']
         self.expires = kwargs.get('expires', float('inf'))
         self.options = kwargs['options']
-        self.confirmed = kwargs.get('confirmed', 'True')
+        self.confirmed = kwargs.get('confirmed', 1)
 
     @staticmethod
     def from_redis(sid, client):
@@ -154,7 +154,7 @@ class SubscriptionEnvelope(object):
 
     def to_basic(self, now):
         created = self.expires - self.ttl
-        is_confirmed = self.confirmed == str(True)
+        is_confirmed = bool(self.confirmed)
         basic_msg = {
             'id': self.id,
             'source': self.source.decode(),
@@ -323,7 +323,7 @@ def _hmap_to_subenv_kwargs(hmap):
         'ttl': int(hmap[b't']),
         'expires': int(hmap[b'e']),
         'options': _unpack(hmap[b'o']),
-        'confirmed': hmap[b'c']
+        'confirmed': int(hmap[b'c'])
     }
 
 
