@@ -1,0 +1,25 @@
+---
+prelude: |
+    Welcome to the Victoria release of the OpenStack Message  service
+    (zaqar). In this cycle, the Zaqar team would like to bring the following
+    points to your attention.  Details may be found below.
+
+    * Support encrypted messages in queue.
+
+    * Fixed bugs for stable and security.
+
+features:
+  - |
+    Encrypted Messages in Queue
+    (Change-Id `Icecfb9a232cfeefc2f9603934696bb2dcd56bc9c
+    <https://review.opendev.org/#/q/Icecfb9a232cfeefc2f9603934696bb2dcd56bc9c>`_)
+
+fixes:
+  - |
+    Fix SSLError caused by not passing the cafile
+    (Change-Id `I176e3876f2652608aaf51b0f74f4d971d31253e2
+    <https://review.opendev.org/#/q/I176e3876f2652608aaf51b0f74f4d971d31253e2>`_)
+  - |
+    Fix the issue that the function unpackb has no encoding option
+    (Change-Id `bb92e983a79e5c1608f6a603816e1b88283e34c9
+    <https://review.opendev.org/#/q/bb92e983a79e5c1608f6a603816e1b88283e34c9>`_)
