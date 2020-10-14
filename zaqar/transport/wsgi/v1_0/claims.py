@@ -15,7 +15,6 @@
 
 import falcon
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -68,7 +67,7 @@ class CollectionResource(Resource):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
             description = _(u'Claim could not be created.')
@@ -110,7 +109,7 @@ class ItemResource(Resource):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
         except Exception:
             description = _(u'Claim could not be queried.')
             LOG.exception(description)
@@ -147,11 +146,11 @@ class ItemResource(Resource):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Claim could not be updated.')

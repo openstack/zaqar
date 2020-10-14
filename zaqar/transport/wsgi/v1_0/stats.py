@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from oslo_log import log as logging
-import six
 
 from zaqar.i18n import _
 from zaqar.storage import errors as storage_errors
@@ -65,7 +64,7 @@ class Resource(object):
             resp.body = utils.to_json(resp_dict)
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Queue stats could not be read.')

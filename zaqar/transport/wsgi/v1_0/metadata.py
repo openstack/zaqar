@@ -15,7 +15,6 @@
 
 import falcon
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -45,7 +44,7 @@ class Resource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Queue metadata could not be retrieved.')
@@ -73,7 +72,7 @@ class Resource(object):
                     raise validation.ValidationFailed(description)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         try:
             self._queue_ctrl.set_metadata(queue_name,
@@ -82,10 +81,10 @@ class Resource(object):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except storage_errors.QueueDoesNotExist as ex:
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Metadata could not be updated.')

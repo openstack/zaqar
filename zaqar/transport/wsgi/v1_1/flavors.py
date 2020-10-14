@@ -16,7 +16,6 @@
 import falcon
 import jsonschema
 from oslo_log import log
-import six
 
 from zaqar.common.api.schemas.v1_1 import flavors as schema
 from zaqar.common import utils as common_utils
@@ -122,7 +121,7 @@ class Resource(object):
                                   detailed=detailed)
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         data['href'] = request.path
 
@@ -200,4 +199,4 @@ class Resource(object):
             self._ctrl.update(flavor, project=project_id, **fields)
         except errors.FlavorDoesNotExist as ex:
             LOG.exception('Flavor "%s" does not exist', flavor)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
