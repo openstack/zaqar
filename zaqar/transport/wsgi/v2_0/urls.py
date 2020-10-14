@@ -15,7 +15,6 @@
 import os
 
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.common import urls
@@ -50,11 +49,11 @@ class Resource(object):
             document = wsgi_utils.deserialize(req.stream, req.content_length)
         except ValueError as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         diff = set(document.keys()) - _KNOWN_KEYS
         if diff:
-            msg = six.text_type('Unknown keys: %s' % diff)
+            msg = str('Unknown keys: %s' % diff)
             raise wsgi_errors.HTTPBadRequestAPI(msg)
 
         key = self._conf.signed_url.secret_key
@@ -64,7 +63,7 @@ class Resource(object):
         else:
             diff = set(paths) - _VALID_PATHS
             if diff:
-                msg = six.text_type('Invalid paths: %s' % diff)
+                msg = str('Invalid paths: %s' % diff)
                 raise wsgi_errors.HTTPBadRequestAPI(msg)
             paths = [os.path.join(req.path[:-6], path) for path in paths]
 

@@ -15,7 +15,6 @@
 import falcon
 
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -51,7 +50,7 @@ class Resource(object):
                 document = {'resource_types': ['messages', 'subscriptions']}
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         try:
             if "messages" in document['resource_types']:
