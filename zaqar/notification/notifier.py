@@ -18,7 +18,7 @@ from stevedore import driver
 
 import futurist
 from oslo_log import log as logging
-from six.moves import urllib_parse
+from urllib import parse as urllib_parse
 
 from zaqar.common import auth
 from zaqar.common import urls

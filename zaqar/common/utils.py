@@ -16,7 +16,6 @@
 """utils: general-purpose utilities."""
 
 from oslo_config import cfg
-import six
 
 
 def fields(d, names, pred=lambda x: True,
@@ -41,7 +40,6 @@ def fields(d, names, pred=lambda x: True,
 
 
 _pytype_to_cfgtype = {
-    six.text_type: cfg.StrOpt,
     str: cfg.StrOpt,
     int: cfg.IntOpt,
     bool: cfg.BoolOpt,

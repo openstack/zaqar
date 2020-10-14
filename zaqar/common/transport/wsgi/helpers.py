@@ -21,7 +21,6 @@ import uuid
 
 import falcon
 from oslo_log import log as logging
-import six
 
 from zaqar.common import urls
 from zaqar import context
@@ -131,7 +130,7 @@ def require_client_id(validate, req, resp, params):
             description = _(u'Malformed hexadecimal UUID.')
             raise falcon.HTTPBadRequest('Wrong UUID value', description)
         except validation.ValidationFailed as ex:
-            raise falcon.HTTPBadRequest(six.text_type(ex))
+            raise falcon.HTTPBadRequest(str(ex))
     else:
         # NOTE(wanghao): Since we changed the get_client_uuid to support
         # other format of client id, so need to check the uuid here for
@@ -174,8 +173,6 @@ def validate_queue_identification(validate, req, resp, params):
     except validation.ValidationFailed:
         project = params['project_id']
         queue = params['queue_name']
-        if six.PY2:
-            queue = queue.decode('utf-8', 'replace')
 
         LOG.debug(u'Invalid queue name "%(queue)s" submitted for '
                   u'project: %(project)s',
@@ -308,8 +305,6 @@ def validate_topic_identification(validate, req, resp, params):
     except validation.ValidationFailed:
         project = params['project_id']
         queue = params['topic_name']
-        if six.PY2:
-            queue = queue.decode('utf-8', 'replace')
 
         LOG.debug(u'Invalid topic name "%(topic)s" submitted for '
                   u'project: %(project)s',

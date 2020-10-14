@@ -15,9 +15,9 @@
 
 from email.mime import text
 import json
-from six.moves import urllib_parse
 import smtplib
 import subprocess
+from urllib import parse as urllib_parse
 
 from oslo_log import log as logging
 

@@ -18,7 +18,6 @@ import hashlib
 import hmac
 
 from oslo_utils import timeutils
-import six
 
 _DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -78,12 +77,13 @@ def create_signed_url(key, paths, project=None, expires=None, methods=None):
     methods = sorted(methods)
     paths = sorted(paths)
     expires_str = expires.strftime(_DATE_FORMAT)
-    hmac_body = six.b(r'%(paths)s\n%(methods)s\n%(project)s\n%(expires)s' %
-                      {'paths': ','.join(paths), 'methods': ','.join(methods),
-                       'project': project, 'expires': expires_str})
+    hmac_body = (r'%(paths)s\n%(methods)s\n%(project)s\n%(expires)s' %
+                 {'paths': ','.join(paths), 'methods': ','.join(methods),
+                  'project': project, 'expires':
+                  expires_str}).encode('utf-8')
 
-    if not isinstance(key, six.binary_type):
-        key = six.binary_type(key.encode('utf-8'))
+    if not isinstance(key, bytes):
+        key = bytes(key.encode('utf-8'))
 
     return {'paths': paths,
             'methods': methods,
