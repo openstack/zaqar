@@ -19,7 +19,7 @@ import re
 import uuid
 
 from oslo_utils import timeutils
-import six
+from urllib import parse as urllib_parse
 
 from zaqar.common import consts
 from zaqar.conf import transport
@@ -569,7 +569,7 @@ class Validator(object):
         subscriber_type = None
 
         if subscriber:
-            parsed_uri = six.moves.urllib_parse.urlparse(subscriber)
+            parsed_uri = urllib_parse.urlparse(subscriber)
             subscriber_type = parsed_uri.scheme
 
             if subscriber_type not in self._limits_conf.subscriber_types:

@@ -15,7 +15,6 @@
 
 from distutils import version as d_version
 import falcon
-import six
 import socket
 from wsgiref import simple_server
 
@@ -169,7 +168,7 @@ class Driver(transport.DriverBase):
             raise
         LOG.exception('Internal server error')
         raise falcon.HTTPInternalServerError('Internal server error',
-                                             six.text_type(exc))
+                                             str(exc))
 
     def _get_server_cls(self, host):
         """Return an appropriate WSGI server class base on provided host

@@ -15,8 +15,6 @@
 
 import abc
 
-import six
-
 from zaqar.conf import default
 from zaqar.conf import transport
 
@@ -47,8 +45,7 @@ class ResourceDefaults(object):
         return self._defaults.default_subscription_ttl
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DriverBase(object):
+class DriverBase(object, metaclass=abc.ABCMeta):
     """Base class for Transport Drivers to document the expected interface.
 
     :param conf: configuration instance
