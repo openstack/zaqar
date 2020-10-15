@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import configparser
 import contextlib
 import functools
 import os
 import tempfile
 import uuid
 
-import six
 import testtools
 
 
@@ -77,8 +77,8 @@ def partitions(controller, count):
     :param count: int - number of partitions to create
     :returns: [(str, int, [str])] - names, weights, hosts
     """
-    spec = [(six.text_type(uuid.uuid1()), i,
-             [six.text_type(i)]) for i in range(count)]
+    spec = [(str(uuid.uuid1()), i,
+             [str(i)]) for i in range(count)]
     for n, w, h in spec:
         controller.create(n, w, h)
 
@@ -137,8 +137,8 @@ def entries(controller, count):
     :param count: int - number of entries to create
     :returns: [(str, str, str, str)] - [(project, queue, partition, host)]
     """
-    spec = [(u'_', six.text_type(uuid.uuid1()), six.text_type(i),
-             six.text_type(i))
+    spec = [(u'_', str(uuid.uuid1()), str(i),
+             str(i))
             for i in range(count)]
 
     for p, q, n, h in spec:
@@ -160,13 +160,13 @@ def pool_entry(controller, project, queue, pool):
     :param controller: storage handler
     :type controller: queues.storage.base:CatalogueBase
     :param project: namespace for queue
-    :type project: six.text_type
+    :type project: str
     :param queue: name of queue
-    :type queue: six.text_type
+    :type queue: str
     :param pool: an identifier for the pool
-    :type pool: six.text_type
+    :type pool: str
     :returns: (project, queue, pool)
-    :rtype: (six.text_type, six.text_type, six.text_type)
+    :rtype: (str, str, str)
     """
     controller.insert(project, queue, pool)
     yield (project, queue, pool)
@@ -185,9 +185,9 @@ def pool_entries(controller, pool_ctrl, count):
     :param count: number of entries to create
     :type count: int
     :returns: [(project, queue, pool)]
-    :rtype: [(six.text_type, six.text_type, six.text_type)]
+    :rtype: [(str, str, str)]
     """
-    spec = [(u'_', six.text_type(uuid.uuid1()), six.text_type(i))
+    spec = [(u'_', str(uuid.uuid1()), str(i))
             for i in range(count)]
 
     for p, q, s in spec:
@@ -278,7 +278,7 @@ def is_slow(condition=lambda self: True):
 def override_mongo_conf(conf_file, test):
     test_mongo_url = os.environ.get('ZAQAR_TEST_MONGODB_URL')
     if test_mongo_url:
-        parser = six.moves.configparser.ConfigParser()
+        parser = configparser.ConfigParser()
         parser.read(test.conf_path(conf_file))
         sections = ['drivers:management_store:mongodb',
                     'drivers:message_store:mongodb']

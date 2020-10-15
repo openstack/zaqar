@@ -16,18 +16,17 @@
 import uuid
 
 import ddt
-import six
 
 from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
 
 
-class NamedBinaryStr(six.binary_type):
+class NamedBinaryStr(bytes):
 
-    """Wrapper for six.binary_type to facilitate overriding __name__."""
+    """Wrapper for bytes to facilitate overriding __name__."""
 
 
-class NamedUnicodeStr(six.text_type):
+class NamedUnicodeStr(str):
 
     """Unicode string look-alike to facilitate overriding __name__."""
 
@@ -57,7 +56,7 @@ class NamedDict(dict):
 def annotated(test_name, test_input):
     if isinstance(test_input, dict):
         annotated_input = NamedDict(test_input)
-    elif isinstance(test_input, six.text_type):
+    elif isinstance(test_input, str):
         annotated_input = NamedUnicodeStr(test_input)
     else:
         annotated_input = NamedBinaryStr(test_input)
@@ -104,9 +103,6 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
               annotated('test_insert_queue_invalid_name_length', 'i' * 65))
     def test_insert_queue_invalid_name(self, queue_name):
         """Create Queue."""
-        if six.PY2 and isinstance(queue_name, NamedUnicodeStr):
-            queue_name = queue_name.encode('utf-8')
-
         self.url = self.base_url + '/queues/' + queue_name
         self.addCleanup(self.client.delete, self.url)
 

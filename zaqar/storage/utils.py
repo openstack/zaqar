@@ -19,8 +19,8 @@ import json
 from oslo_config import cfg
 from oslo_log import log
 from osprofiler import profiler
-import six
 from stevedore import driver
+from urllib import parse as urllib_parse
 
 from zaqar.common import errors
 from zaqar.common import utils
@@ -33,7 +33,7 @@ def dynamic_conf(uri, options, conf=None):
     """Given metadata, yields a dynamic configuration.
 
     :param uri: pool location
-    :type uri: six.text_type
+    :type uri: str
     :param options: additional pool metadata
     :type options: dict
     :param conf: Optional conf object to copy
@@ -42,7 +42,7 @@ def dynamic_conf(uri, options, conf=None):
               drivers
     :rtype: oslo_config.cfg.ConfigOpts
     """
-    storage_type = six.moves.urllib_parse.urlparse(uri).scheme
+    storage_type = urllib_parse.urlparse(uri).scheme
 
     # NOTE(cpp-cabrera): parse storage-specific opts:
     # 'drivers:storage:{type}'
@@ -86,7 +86,7 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'zaqar.{0}.storage'.format(mode)
-    storage_type = six.moves.urllib_parse.urlparse(uri).scheme or default_store
+    storage_type = urllib_parse.urlparse(uri).scheme or default_store
 
     try:
         mgr = driver.DriverManager(driver_type, storage_type,
@@ -190,7 +190,7 @@ def can_connect(uri, conf=None):
     """Given a URI, verifies whether it's possible to connect to it.
 
     :param uri: connection string to a storage endpoint
-    :type uri: six.text_type
+    :type uri: str
     :returns: True if can connect else False
     :rtype: bool
     """
@@ -198,7 +198,7 @@ def can_connect(uri, conf=None):
     # the URI field. This should be sufficient to initialize a
     # storage driver.
     conf = dynamic_conf(uri, {}, conf=conf)
-    storage_type = six.moves.urllib_parse.urlparse(uri).scheme
+    storage_type = urllib_parse.urlparse(uri).scheme
 
     try:
         ctrl = load_storage_driver(conf, None,
@@ -217,11 +217,11 @@ def get_checksum(body, algorithm='MD5'):
     """According to the algorithm to get the message body checksum.
 
     :param body: The message body.
-    :type body: six.text_type
+    :type body: str
     :param algorithm: The algorithm type, default is MD5.
-    :type algorithm: six.text_type
+    :type algorithm: str
     :returns: The message body checksum.
-    :rtype: six.text_type
+    :rtype: str
     """
 
     checksum = '%s:' % algorithm

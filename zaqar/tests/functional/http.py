@@ -19,7 +19,7 @@ import json
 from falcon import testing as ftest
 from oslo_serialization import jsonutils
 import requests
-import six
+from urllib import parse as urllib_parse
 
 
 def _build_url(method):
@@ -146,12 +146,12 @@ class WSGIClient(object):
 
         if data is None:
             body = ''
-        elif isinstance(data, str) or isinstance(data, six.text_type):
+        elif isinstance(data, str):
             body = data
         else:
             body = json.dumps(data, ensure_ascii=False)
 
-        parsed_url = six.moves.urllib_parse.urlparse(url)
+        parsed_url = urllib_parse.urlparse(url)
 
         query = parsed_url.query
 
