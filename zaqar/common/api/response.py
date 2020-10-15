@@ -24,7 +24,7 @@ class Response(object):
     :param request: The request sent to the server.
     :type request: `zaqar.transport.request.Request`
     :param body: Response's body
-    :type body: `six.string_types`
+    :type body: `str`
     :param headers: Optional headers returned in the response.
     :type headers: dict
     """

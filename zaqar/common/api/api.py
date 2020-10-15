@@ -33,7 +33,7 @@ class Api(object):
 
         :param action: Action for which params need
             to be validated.
-        :type action: `six.text_type`
+        :type action: `str`
 
         :returns: Action's schema
         :rtype: dict
@@ -57,7 +57,7 @@ class Api(object):
 
         :param action: Action's for which body need
             to be validated.
-        :type action: `six.text_type`
+        :type action: `str`
         :param body: Params to validate
         :type body: dict
 
