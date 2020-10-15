@@ -20,13 +20,12 @@ Serves to construct an association between a project + queue -> pool.
 ::
 
     {
-        'p_q': project_queue :: six.text_type,
-        's': pool_identifier :: six.text_type
+        'p_q': project_queue :: str,
+        's': pool_identifier :: str
     }
 """
 from oslo_log import log as logging
 import redis
-import six
 
 from zaqar.i18n import _
 from zaqar.storage import base
@@ -241,7 +240,7 @@ class CatalogueController(base.CatalogueBase):
 
 def _normalize(entry):
     return {
-        'queue': six.text_type(entry['p_q']),
-        'project': six.text_type(entry['p']),
-        'pool': six.text_type(entry['p_p'])
+        'queue': str(entry['p_q']),
+        'project': str(entry['p']),
+        'pool': str(entry['p_p'])
     }

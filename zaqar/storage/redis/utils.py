@@ -21,7 +21,6 @@ import time
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 import redis
-import six
 
 from zaqar.storage import errors
 
@@ -231,7 +230,7 @@ def msg_delayed_filter(message, now):
 def msg_echo_filter(message, client_uuid):
     """Return True IFF the specified client posted the message."""
 
-    return message.client_uuid == six.text_type(client_uuid)
+    return message.client_uuid == str(client_uuid)
 
 
 def msg_expired_filter(message, now):

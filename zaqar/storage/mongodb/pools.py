@@ -16,11 +16,11 @@
 controller for mongodb.
 
 Schema:
-  'n': name :: six.text_type
-  'u': uri :: six.text_type
+  'n': name :: str
+  'u': uri :: str
   'w': weight :: int
   'o': options :: dict
-  'f': flavor :: six.text_type
+  'f': flavor :: str
 """
 
 import functools

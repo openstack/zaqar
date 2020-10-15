@@ -15,7 +15,7 @@
 from osprofiler import profiler
 import redis
 import redis.sentinel
-from six.moves import urllib
+import urllib
 
 from zaqar.common import decorators
 from zaqar.common import errors
