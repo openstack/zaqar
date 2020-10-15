@@ -22,7 +22,6 @@ import mock
 from oslo_utils import timeutils
 from pymongo import cursor
 import pymongo.errors
-import six
 from testtools import matchers
 
 from zaqar.common import cache as oslo_cache
@@ -273,7 +272,7 @@ class MongodbQueueTests(MongodbSetupMixin, base.QueueControllerTest):
     def test_raises_connection_error(self):
 
         with mock.patch.object(cursor.Cursor,
-                               'next' if six.PY2 else '__next__',
+                               '__next__',
                                spec=True) as method:
             error = pymongo.errors.ConnectionFailure()
             method.side_effect = error
