@@ -27,10 +27,14 @@ import pickle
 
 try:
     from cryptography.hazmat import backends as crypto_backends
+    from cryptography.hazmat.primitives.asymmetric import padding as \
+        rsa_padding
     from cryptography.hazmat.primitives import ciphers
     from cryptography.hazmat.primitives.ciphers import algorithms
     from cryptography.hazmat.primitives.ciphers import modes
+    from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives import padding
+    from cryptography.hazmat.primitives import serialization
 except ImportError:
     ciphers = None
 
@@ -84,6 +88,8 @@ class EncryptionFactory(object):
     def getEncryptor(self):
         if self._algorithm == 'AES256' and self._encryption_key:
             return AES256Encryptor(self._encryption_key)
+        if self._algorithm == 'RSA' and self._encryption_key:
+            return RSAEncryptor(self._encryption_key)
 
 
 class Encryptor(object):
@@ -214,3 +220,73 @@ class AES256Encryptor(Encryptor):
             msg = _(u'Now Zaqar only support AES-256 and need to specify the'
                     u'key.')
             raise EncryptionFailed(msg)
+
+
+class RSAEncryptor(Encryptor):
+
+    def get_cipher(self):
+        # Load the public key
+        public_key = None
+        with open(self.get_encryption_key(), "rb") as key_file:
+            public_key = serialization.load_pem_publice_key(
+                key_file.read(), passwor=None,
+                backend=crypto_backends.default_backends())
+        return public_key
+
+    def _encrypt_string_message(self, message):
+        """Encrypt the message type of string"""
+        message = message.encode('utf-8')
+        public_key = self.get_cipher()
+        data = public_key.encrypt(message, rsa_padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(), label=None))
+        return base64.b64encode(data)
+
+    def _encrypt_other_types_message(self, message):
+        """Encrypt the message type of other types"""
+        public_key = self.get_cipher()
+        data = public_key.encrypt(message, rsa_padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(), label=None))
+        return base64.b64encode(data)
+
+    def _encrypt_message(self, message):
+        """Encrypt the message data with the given secret key.
+
+        Padding is n bytes of the value n, where 1 <= n <= blocksize.
+        """
+        if isinstance(message['body'], str):
+            message['body'] = self._encrypt_string_message(message['body'])
+        else:
+            # For other types like dict or list, we need to serialize them
+            # first.
+            try:
+                s_message = pickle.dumps(message['body'])
+            except pickle.PickleError:
+                return
+            message['body'] = self._encrypt_other_types_message(s_message)
+
+    def _decrypt_message(self, message):
+        pass
+
+    @assert_crypto_availability
+    def message_encrypted(self, messages):
+        """Encrypting a list of messages.
+
+        :param messages: A list of messages
+        """
+        if self.get_encryption_key():
+            for msg in messages:
+                self._encrypt_message(msg)
+        else:
+            msg = _(u'Now Zaqar only support AES-256 and need to specify the'
+                    u'key.')
+            raise EncryptionFailed(msg)
+
+    @assert_crypto_availability
+    def message_decrypted(self, messages):
+        """decrypting a list of messages.
+
+        :param messages: A list of messages
+        """
+        pass

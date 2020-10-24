@@ -150,7 +150,8 @@ message_delete_with_claim_id = cfg.BoolOpt(
          ' they are claimed and handled.')
 
 message_encryption_algorithms = cfg.StrOpt(
-    'message_encryption_algorithms', default='AES256', choices=['AES256'],
+    'message_encryption_algorithms', default='AES256',
+    choices=['AES256', 'RSA'],
     help='Defines the encryption algorithms of messages, the value could be '
          '"AES256" for now.')
 
