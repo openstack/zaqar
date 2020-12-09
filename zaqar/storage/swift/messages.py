@@ -216,7 +216,7 @@ class MessageController(storage.Message):
 
     def bulk_get(self, queue, message_ids, project=None):
         if not self._queue_ctrl.exists(queue, project):
-            raise StopIteration()
+            return
 
         for id in message_ids:
             try:
