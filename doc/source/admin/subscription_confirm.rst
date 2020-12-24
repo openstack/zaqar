@@ -29,14 +29,14 @@ Webhook
    like: message_pipeline = zaqar.notification.notifier
 
 1. Set the config option "require_confirmation" and add the policy to the
-policy.json file. Then restart Zaqar-wsgi service::
+policy.yaml file. Then restart Zaqar-wsgi service::
 
     In the config file:
     [notification]
     require_confirmation = True
 
-    In the policy.json file:
-    "subscription:confirm": "",
+    In the policy.yaml file:
+    "subscription:confirm": ""
 
 2. Create a subscription.
 
@@ -244,8 +244,8 @@ unsubscribe confirmation email content, including topic, body and sender too::
                                               body:'You have unsubscribed successfully to the queue: {0}. This queue belongs to project: {1}. To resubscribe this subscription, click or visit this link below: {2}',\
                                               sender:Zaqar Notifications <no-reply@openstack.org>
 
-    In the policy.json file:
-    "subscription:confirm": "",
+    In the policy.yaml file:
+    "subscription:confirm": ""
 
 2. Create a subscription.
 For email confirmation, you should create a subscription like this::

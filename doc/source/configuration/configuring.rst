@@ -57,6 +57,15 @@ Permission control options in each API version:
   * RBAC policy options: ``policy_default_rule``, ``policy_dirs``,
     ``policy_file`` which controls the permissions to access each type of
     functionality for different types of users.
+
+    .. warning::
+
+       JSON formatted policy file is deprecated since Zaqar 12.0.0 (Wallaby).
+       This `oslopolicy-convert-json-to-yaml`__ tool will migrate your existing
+       JSON-formatted policy file to YAML in a backward-compatible way.
+
+    .. __: https://docs.openstack.org/oslo.policy/latest/cli/oslopolicy-convert-json-to-yaml.html
+
   * ``secret_key`` option which defines a secret key to use for signing
     special URLs. These are called pre-signed URLs and give temporary
     permissions to outsiders of the system.

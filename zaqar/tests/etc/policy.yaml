@@ -1,0 +1,4 @@
+# WARNING: Below rules are either deprecated rules
+# or extra rules in policy file, it is strongly
+# recommended to switch to new rules.
+"default": "rule:admin_or_owner"

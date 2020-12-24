@@ -57,6 +57,7 @@ class TestBase(testtools.TestCase):
             self.conf = self.load_conf(self.config_file)
         else:
             self.conf = cfg.ConfigOpts()
+            self.conf(args=[], project='zaqar')
 
         self.conf.register_opts(default.ALL_OPTS)
         self.conf.register_opts(drivers.ALL_OPTS,

@@ -288,7 +288,7 @@ def override_mongo_conf(conf_file, test):
             parser.set(section, 'uri', test_mongo_url)
         if not parser.has_section('oslo_policy'):
             parser.add_section('oslo_policy')
-        parser.set('oslo_policy', 'policy_file', test.conf_path('policy.json'))
+        parser.set('oslo_policy', 'policy_file', test.conf_path('policy.yaml'))
         fd, path = tempfile.mkstemp()
         conf_fd = os.fdopen(fd, 'w')
         try:
