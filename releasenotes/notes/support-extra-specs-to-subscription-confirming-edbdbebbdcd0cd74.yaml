@@ -1,0 +1,6 @@
+---
+features:
+  - Introduce a new request header called "EXTRA-SPEC" and driver mechanism
+    with stevedore to let developers to implement the task about how to deal
+    with this informtaion. In Wallaby, there's just an empty handler by
+    default.
