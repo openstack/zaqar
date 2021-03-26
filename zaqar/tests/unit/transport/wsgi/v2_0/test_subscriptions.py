@@ -443,3 +443,14 @@ class TestSubscriptionsMongoDB(base.V2Base):
         doc = '{"confirmed": true}'
         self.simulate_put(self.confirm_path, body=doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+    def test_confirm_with_extra_spec(self):
+        self.headers['EXTRA-SPEC'] = 'messagecode:123456'
+        doc = '{"confirmed": true}'
+        resp = self._create_subscription()
+        resp_doc = jsonutils.loads(resp[0])
+        confirm_path = (self.url_prefix + '/queues/' + self.queue +
+                        '/subscriptions/' + resp_doc['subscription_id'] +
+                        '/confirm')
+        self.simulate_put(confirm_path, body=doc, headers=self.headers)
+        self.assertEqual(falcon.HTTP_204, self.srmock.status)

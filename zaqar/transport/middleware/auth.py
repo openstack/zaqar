@@ -24,7 +24,7 @@ STRATEGIES = {}
 LOG = log.getLogger(__name__)
 
 
-class SignedHeadersAuth(object):
+class SignedAndExtraSpecHeadersAuth(object):
 
     def __init__(self, app, auth_app):
         self._app = app
@@ -32,6 +32,7 @@ class SignedHeadersAuth(object):
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO')
+        extra_spec = environ.get('HTTP_EXTRA_SPEC')
         # NOTE(flwang): The root path of Zaqar service shouldn't require any
         # auth.
         if path == '/':
@@ -39,7 +40,8 @@ class SignedHeadersAuth(object):
 
         signature = environ.get('HTTP_URL_SIGNATURE')
 
-        if signature is None or path.startswith('/v1'):
+        if (signature is None and extra_spec is None) or \
+                path.startswith('/v1'):
             return self._auth_app(environ, start_response)
 
         return self._app(environ, start_response)
