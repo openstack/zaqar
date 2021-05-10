@@ -15,6 +15,7 @@
 import functools
 
 import msgpack
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 import redis
@@ -78,8 +79,8 @@ class SubscriptionController(base.Subscription):
                 is_confirmed = int(record[5])
             ret = {
                 'id': sid,
-                'source': record[0].decode(),
-                'subscriber': record[1].decode(),
+                'source': encodeutils.safe_decode(record[0]),
+                'subscriber': encodeutils.safe_decode(record[1]),
                 'ttl': ttl,
                 'age': now - created,
                 'options': self._unpacker(record[4]),
@@ -167,7 +168,7 @@ class SubscriptionController(base.Subscription):
                     # the subscription but the id is still there. So let's
                     # delete the id for clean up.
                     self._client.zrem(subset_key, s_id)
-                if subscription[1].decode() == subscriber:
+                if encodeutils.safe_decode(subscription[1]) == subscriber:
                     return True
             return False
         except redis.exceptions.ResponseError:
@@ -251,7 +252,7 @@ class SubscriptionController(base.Subscription):
         for s_id in sub_ids:
             subscription = self._client.hmget(s_id,
                                               ['s', 'u', 't', 'o', 'c'])
-            if subscription[1].decode() == subscriber:
+            if encodeutils.safe_decode(subscription[1]) == subscriber:
                 subscription = SubscriptionEnvelope.from_redis(s_id,
                                                                self._client)
                 now = timeutils.utcnow_ts()

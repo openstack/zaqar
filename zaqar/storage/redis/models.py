@@ -157,8 +157,8 @@ class SubscriptionEnvelope(object):
         is_confirmed = bool(self.confirmed)
         basic_msg = {
             'id': self.id,
-            'source': self.source.decode(),
-            'subscriber': self.subscriber.decode(),
+            'source': encodeutils.safe_decode(self.source),
+            'subscriber': encodeutils.safe_decode(self.subscriber),
             'ttl': self.ttl,
             'age': now - created,
             'options': self.options,
@@ -318,8 +318,8 @@ def _hmap_to_subenv_kwargs(hmap):
     # into binary. Woohoo!
     return {
         'id': encodeutils.safe_decode(hmap[b'id']),
-        'source': hmap[b's'],
-        'subscriber': hmap[b'u'],
+        'source': encodeutils.safe_decode(hmap[b's']),
+        'subscriber': encodeutils.safe_decode(hmap[b'u']),
         'ttl': int(hmap[b't']),
         'expires': int(hmap[b'e']),
         'options': _unpack(hmap[b'o']),
