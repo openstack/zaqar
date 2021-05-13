@@ -24,7 +24,7 @@ class TestHomeDocument(base.V1Base):
     config_file = 'wsgi_mongodb.conf'
 
     def test_json_response(self):
-        body = self.simulate_get(self.url_prefix)
+        body = self.simulate_get(self.url_prefix + '/')
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         content_type = self.srmock.headers_dict['Content-Type']
@@ -36,7 +36,7 @@ class TestHomeDocument(base.V1Base):
             self.fail('Home document is not valid JSON')
 
     def test_href_template(self):
-        body = self.simulate_get(self.url_prefix)
+        body = self.simulate_get(self.url_prefix + '/')
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         resp = jsonutils.loads(body[0])
         queue_href_template = resp['resources']['rel/queue']['href-template']

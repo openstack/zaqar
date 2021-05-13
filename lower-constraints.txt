@@ -8,14 +8,14 @@ doc8==0.8.1
 docutils==0.15.2
 dogpile.cache==1.0.2
 enum34==1.0.4;python_version=='2.7'
-falcon==1.1.0
+falcon==3.0.0
 fixtures==3.0.0
 future==0.16.0
 futurist==1.2.0
 iso8601==0.1.11
 jsonschema==3.2.0
 keystoneauth1==3.4.0
-keystonemiddleware==4.17.0
+keystonemiddleware==9.1.0
 msgpack==1.0.0
 os-api-ref==1.4.0
 os-client-config==1.28.0
@@ -42,7 +42,7 @@ PyMySQL==0.8.0
 python-keystoneclient==3.8.0
 python-memcached==1.56
 python-subunit==1.0.0
-python-swiftclient==3.2.0
+python-swiftclient==3.10.1
 pytz==2013.6
 PyYAML==5.1
 redis==3.0.0

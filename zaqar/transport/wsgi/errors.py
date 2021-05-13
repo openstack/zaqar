@@ -24,10 +24,10 @@ class HTTPServiceUnavailable(falcon.HTTPServiceUnavailable):
     TITLE = _(u'Service temporarily unavailable')
     DESCRIPTION = _(u'Please try again in a few seconds.')
 
-    def __init__(self, description, retry_after=30):
+    def __init__(self, description):
         description = description + ' ' + self.DESCRIPTION
         super(HTTPServiceUnavailable, self).__init__(
-            self.TITLE, description, retry_after)
+            self.TITLE, description)
 
 
 class HTTPBadRequestAPI(falcon.HTTPBadRequest):

@@ -30,7 +30,7 @@ class TestHomeDocument(base.V2Base):
             'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '8383830383abc_'
         }
-        body = self.simulate_get(self.url_prefix, headers=self.headers)
+        body = self.simulate_get(self.url_prefix + '/', headers=self.headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
         content_type = self.srmock.headers_dict['Content-Type']
@@ -46,7 +46,7 @@ class TestHomeDocument(base.V2Base):
             'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': '8383830383'
         }
-        body = self.simulate_get(self.url_prefix, headers=self.headers)
+        body = self.simulate_get(self.url_prefix + '/', headers=self.headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         resp = jsonutils.loads(body[0])
         queue_href_template = resp['resources']['rel/queue']['href-template']
