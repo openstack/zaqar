@@ -106,9 +106,9 @@ Useful links
 
 Where can I discuss and propose changes?
 ----------------------------------------
-- Our IRC channel: **#openstack-zaqar** on **irc.freenode.net**;
-- Bi-Weekly Zaqar team meeting (in IRC): **#openstack-meeting-3** on
-  **irc.freenode.net**, held on Monday at 14:00 UTC;
+- Our IRC channel: **#openstack-zaqar** on **OFTC**;
+- Bi-Weekly Zaqar team meeting (in IRC): **#openstack-zaqar** on
+  **OFTC**, held on Monday at 14:00 UTC;
 - OpenStack mailing list: **openstack-discuss@lists.openstack.org** (see
   `Subscription and usage instructions`_);
 - `Zaqar team on Launchpad`_: Answers/Bugs/Blueprints.

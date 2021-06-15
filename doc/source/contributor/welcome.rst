@@ -24,7 +24,7 @@ First of all, make sure you join Zaqar communication forums:
 
 * Subscribe to Zaqar `mailing lists`_.
 * Join Zaqar team on IRC. You can chat with us directly in the
-  ``#openstack-zaqar`` channel on ``irc.freenode.org``. If you don't know
+  ``#openstack-zaqar`` channel on ``OFTC``. If you don't know
   how to use IRC, you can find some directions in `OpenStack IRC wiki`_.
 * Answer and ask questions on `Ask OpenStack`_.
 

@@ -48,7 +48,7 @@ Note that `Ask OpenStack`_ (which is not hosted on Launchpad) can also be used
 for technical support requests.
 
 You can also reach us in ``#openstack-zaqar`` IRC channel at
-``irc.freenode.org``.
+``OFTC``.
 
 .. _Launchpad: https://launchpad.net
 .. _Wiki: https://wiki.openstack.org

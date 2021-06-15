@@ -1,7 +1,7 @@
 Maintainer
 ----------
 OpenStack Foundation
-IRC: #openstack on irc.freenode.net
+IRC: #openstack on OFTC
 
 Original Authors
 ----------------
