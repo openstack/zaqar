@@ -93,6 +93,7 @@ Contents
    admin/index
    install/index
    configuration/index
+   contributor/contributing
    contributor/index
    cli/index
 
