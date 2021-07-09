@@ -329,6 +329,13 @@ claim_ttl:
     the claim. The ttl value must be between 60 and 43200 seconds (12 hours).
     You must include a value for this attribute in your request.
 
+confirmed:
+  type: boolean
+  in: body
+  required: true
+  description: |
+    The ``confirmed`` attribute specifies whether to confirm a subscription.
+
 count:
   type: integer
   in: body

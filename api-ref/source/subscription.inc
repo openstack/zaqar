@@ -252,3 +252,47 @@ Request Parameters
 
 This operation does not accept a request body and does not return a response
 body.
+
+
+Confirm Subscription
+====================
+
+.. rest_method:: POST /v2/queues/{queue_name}/subscriptions/{subscription_id}/confirm
+
+Confirm a subscription.
+
+This operation can confirm or cancel a subscription.
+
+
+Response codes
+--------------
+
+.. rest_status_code:: success status.yaml
+
+   - 201
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 503
+
+
+Request Parameters
+------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - queue_name: queue_name
+  - subscription_id: subscription_id_path
+  - confirmed: confirmed
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/subscription-confirm-request.json
+   :language: javascript
+
+
+This operation does not return a response body.
