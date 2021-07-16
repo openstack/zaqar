@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
+from collections import abc
 import datetime
 import hashlib
 import json
@@ -832,7 +832,7 @@ class MessageControllerTest(ControllerBaseTest):
         res = self.controller.bulk_get(queue_name, message_ids,
                                        project=self.project)
 
-        self.assertIsInstance(res, collections.Iterable)
+        self.assertIsInstance(res, abc.Iterable)
         self.assertEqual([], list(res))
 
 
