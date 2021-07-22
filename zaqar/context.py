@@ -26,17 +26,18 @@ class RequestContext(context.RequestContext):
                  auth_token=None, user_id=None, domain_id=None,
                  user_domain_id=None, project_domain_id=None, is_admin=False,
                  read_only=False, request_id=None, roles=None, **kwargs):
-        super(RequestContext, self).__init__(auth_token=auth_token,
-                                             user=user_id,
-                                             tenant=project_id,
-                                             domain=domain_id,
-                                             user_domain=user_domain_id,
-                                             project_domain=project_domain_id,
-                                             is_admin=is_admin,
-                                             read_only=read_only,
-                                             show_deleted=False,
-                                             request_id=request_id,
-                                             roles=roles)
+        super(RequestContext, self).__init__(
+            auth_token=auth_token,
+            user_id=user_id,
+            project_id=project_id,
+            domain_id=domain_id,
+            user_domain_id=user_domain_id,
+            project_domain_id=project_domain_id,
+            is_admin=is_admin,
+            read_only=read_only,
+            show_deleted=False,
+            request_id=request_id,
+            roles=roles)
         self.client_id = client_id
         if overwrite or not hasattr(context._request_store, 'context'):
             self.update_store()
