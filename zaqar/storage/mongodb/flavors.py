@@ -14,9 +14,9 @@
 
 """
 Schema:
-  'n': name :: six.text_type
-  'p': project :: six.text_type
-  's': storage pool_group :: six.text_type
+  'n': name :: str
+  'p': project :: str
+  's': storage pool_group :: str
   'c': capabilities :: dict
 """
 

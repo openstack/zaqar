@@ -42,12 +42,12 @@ class SubscriptionController(base.Subscription):
     Subscriptions are unique by project + queue/topic + subscriber.
 
     Schema:
-      's': source :: six.text_type
-      'u': subscriber:: six.text_type
+      's': source :: str
+      'u': subscriber:: str
       't': ttl:: int
       'e': expires: datetime.datetime
       'o': options :: dict
-      'p': project :: six.text_type
+      'p': project :: str
       'c': confirmed :: boolean
     """
 

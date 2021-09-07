@@ -159,9 +159,9 @@ def scope_queue_name(queue=None, project=None):
     specified, a scope for "all global queues" is returned, which
     is to be interpreted as excluding queues scoped by project.
     :param queue: name of queue to seek
-    :type queue: six.text_type
+    :type queue: str
     :param project: namespace
-    :type project: six.text_type
+    :type project: str
     :returns: '{project}/{queue}' if project and queue are given,
         '{project}/' if ONLY project is given, '/{queue}' if ONLY
         queue is given, and '/' if neither are given.
@@ -184,9 +184,9 @@ def parse_scoped_project_queue(scoped_name):
     """Returns the project and queue name for a scoped catalogue entry.
 
     :param scoped_name: a project/queue as given by :scope_queue_name:
-    :type scoped_name: six.text_type
+    :type scoped_name: str
     :returns: (project, queue)
-    :rtype: (six.text_type, six.text_type)
+    :rtype: (str, six.text_type)
     """
     return scoped_name.split('/')
 
@@ -196,9 +196,9 @@ def scoped_query(queue, project, name=None, kfilter={},
     """Returns a dict usable for querying for scoped project/queues.
 
     :param queue: name of queue to seek
-    :type queue: six.text_type
+    :type queue: str
     :param project: namespace
-    :type project: six.text_type
+    :type project: str
     :returns: query to issue
     :rtype: dict
     """

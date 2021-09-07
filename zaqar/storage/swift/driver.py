@@ -13,7 +13,7 @@
 
 import logging
 from osprofiler import profiler
-from six.moves import urllib
+import urllib
 
 from keystoneauth1.identity import generic
 from keystoneauth1 import session as keystone_session

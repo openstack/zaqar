@@ -39,12 +39,12 @@ class SubscriptionController(base.Subscription):
     Subscriptions are unique by project + queue + subscriber.
 
     Schema:
-      's': source :: six.text_type
-      'u': subscriber:: six.text_type
+      's': source :: str
+      'u': subscriber:: str
       't': ttl:: int
       'e': expires: int
       'o': options :: dict
-      'p': project :: six.text_type
+      'p': project :: str
     """
     def __init__(self, *args, **kwargs):
         super(SubscriptionController, self).__init__(*args, **kwargs)

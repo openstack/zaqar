@@ -466,7 +466,7 @@ class Catalog(object):
         """Given a pool name, returns a storage driver.
 
         :param pool_id: The name of a pool.
-        :type pool_id: six.text_type
+        :type pool_id: str
         :returns: a storage driver
         :rtype: zaqar.storage.base.DataDriverBase
         """
@@ -507,12 +507,12 @@ class Catalog(object):
         queue's assigned backend pool.
 
         :param queue: Name of the new queue to assign to a pool
-        :type queue: six.text_type
+        :type queue: str
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
-        :type project: six.text_type
+        :type project: str
         :param flavor: Flavor for the queue (OPTIONAL)
-        :type flavor: six.text_type
+        :type flavor: str
 
         :raises NoPoolFound: if not found
 
@@ -582,10 +582,10 @@ class Catalog(object):
         backend pool.
 
         :param queue: Name of the new queue to assign to a pool
-        :type queue: six.text_type
+        :type queue: str
         :param project: Project to which the queue belongs, or
             None for the "global" or "generic" project.
-        :type project: six.text_type
+        :type project: str
         """
         self._catalogue_ctrl.delete(project, queue)
 
@@ -727,7 +727,7 @@ class Catalog(object):
         """Get storage driver, preferably cached, from a pool name.
 
         :param pool_id: The name of a pool.
-        :type pool_id: six.text_type
+        :type pool_id: str
         :returns: a storage driver
         :rtype: zaqar.storage.base.DataDriver
         """
