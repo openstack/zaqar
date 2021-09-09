@@ -15,7 +15,6 @@
 
 import falcon
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.common.transport.wsgi import helpers as wsgi_helpers
@@ -55,7 +54,7 @@ class CollectionResource(object):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
             description = _(u'Message could not be retrieved.')
@@ -94,11 +93,11 @@ class CollectionResource(object):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Messages could not be listed.')
@@ -137,7 +136,7 @@ class CollectionResource(object):
             self._validate.message_length(req.content_length)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         # Deserialize and validate the request body
         document = wsgi_utils.deserialize(req.stream, req.content_length)
@@ -155,11 +154,11 @@ class CollectionResource(object):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except storage_errors.MessageConflict:
             description = _(u'No messages could be enqueued.')
@@ -220,7 +219,7 @@ class CollectionResource(object):
 
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
             description = _(u'Messages could not be deleted.')
@@ -247,7 +246,7 @@ class ItemResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Message could not be retrieved.')

@@ -38,7 +38,6 @@ registered, there is an optional field::
 import falcon
 import jsonschema
 from oslo_log import log
-import six
 
 from zaqar.common.api.schemas import pools as schema
 from zaqar.common import utils as common_utils
@@ -144,7 +143,7 @@ class Resource(object):
 
         except errors.PoolDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         data['href'] = request.path
 
@@ -180,7 +179,7 @@ class Resource(object):
             response.location = request.path
         except errors.PoolAlreadyExists as e:
             LOG.exception('Pool "%s" already exists', pool)
-            raise wsgi_errors.HTTPConflict(six.text_type(e))
+            raise wsgi_errors.HTTPConflict(str(e))
 
     def on_delete(self, request, response, project_id, pool):
         """Deregisters a pool.
@@ -232,4 +231,4 @@ class Resource(object):
             self._ctrl.update(pool, **fields)
         except errors.PoolDoesNotExist as ex:
             LOG.exception('Pool "%s" does not exist', pool)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))

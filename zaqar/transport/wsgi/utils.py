@@ -16,7 +16,6 @@ import falcon
 import jsonschema
 
 from oslo_log import log as logging
-import six
 
 from zaqar.i18n import _
 from zaqar.transport import utils
@@ -212,7 +211,7 @@ def validate(validator, document):
         validator.validate(document)
     except jsonschema.ValidationError as ex:
         raise errors.HTTPBadRequestBody(
-            '{0}: {1}'.format(ex.args, six.text_type(ex))
+            '{0}: {1}'.format(ex.args, str(ex))
         )
 
 
