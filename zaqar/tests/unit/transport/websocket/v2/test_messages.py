@@ -20,7 +20,6 @@ from unittest import mock
 import ddt
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-import six
 from testtools import matchers
 
 from zaqar.common import consts
@@ -241,9 +240,6 @@ class MessagesBaseTest(base.V2Base):
 
     def test_post_to_non_ascii_queue(self):
         queue_name = u'non-ascii-n\u0153me'
-
-        if six.PY2:
-            queue_name = queue_name.encode('utf-8')
 
         resp = self._post_messages(queue_name)
         self.assertEqual(400, resp['headers']['status'])

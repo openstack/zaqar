@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import six
 import uuid
 
 from zaqar import storage
@@ -76,10 +75,7 @@ class SqlalchemyFlavorsTest1(DBCreateMixin, base.FlavorsControllerTest1):
 class MsgidTests(testing.TestBase):
 
     def test_encode(self):
-        if six.PY2:
-            ids = [3, long(1), 0]  # noqa
-        elif six.PY3:
-            ids = [3, 1, 0]
+        ids = [3, 1, 0]
         msgids = ['5c693a50', '5c693a52', '5c693a53']
         for msgid, id in zip(msgids, ids):
             self.assertEqual(msgid, utils.msgid_encode(id))
