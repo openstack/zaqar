@@ -27,7 +27,6 @@ import uuid
 
 import ddt
 from oslo_utils import timeutils
-import six
 import testtools
 from testtools import matchers
 
@@ -80,7 +79,7 @@ class ControllerBaseTest(testing.TestBase):
 
                     # NOTE(dynarro): we need to create a unique uri.
                     new_uri = "%s/%s" % (uri, db_name)
-                    self.control.pools_controller.create(six.text_type(i),
+                    self.control.pools_controller.create(str(i),
                                                          100, new_uri)
             else:
                 uri = self.mongodb_url
@@ -90,7 +89,7 @@ class ControllerBaseTest(testing.TestBase):
                     # NOTE(dynarro): we need to create a unique uri.
                     new_uri = "%s/%s" % (uri, db_name)
                     options = {'database': db_name}
-                    self.control.pools_controller.create(six.text_type(i),
+                    self.control.pools_controller.create(str(i),
                                                          100, new_uri,
                                                          options=options)
             self.driver = self.driver_class(self.conf, cache, self.control)
@@ -138,7 +137,7 @@ class QueueControllerTest(ControllerBaseTest):
         project_alt = self.project if project is None else None
 
         num = 15
-        for queue in six.moves.xrange(num):
+        for queue in range(num):
             queue = str(queue)
             self.controller.create(queue, project=project)
             self.controller.create(queue, project=project_alt)
@@ -1218,7 +1217,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
     @ddt.data(True, False)
     def test_list(self, precreate_queue):
         self._precreate_queue(precreate_queue)
-        for s in six.moves.xrange(15):
+        for s in range(15):
             subscriber = 'http://fake_{0}'.format(s)
             s_id = self.subscription_controller.create(
                 self.source,
@@ -1437,7 +1436,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
         self._precreate_queue(precreate_queue)
         # create two subscriptions: fake_0 and fake_1
         ids = []
-        for s in six.moves.xrange(2):
+        for s in range(2):
             subscriber = 'http://fake_{0}'.format(s)
             s_id = self.subscription_controller.create(
                 self.source,
@@ -1687,8 +1686,8 @@ class CatalogueControllerTest(ControllerBaseTest):
         super(CatalogueControllerTest, self).setUp()
         self.controller = self.driver.catalogue_controller
         self.pool_ctrl = self.driver.pools_controller
-        self.queue = six.text_type(uuid.uuid4())
-        self.project = six.text_type(uuid.uuid4())
+        self.queue = str(uuid.uuid4())
+        self.project = str(uuid.uuid4())
 
         self.pool = str(uuid.uuid1())
         self.flavor = str(uuid.uuid1())
@@ -1713,9 +1712,9 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.assertIn('queue', entry)
         self.assertIn('project', entry)
         self.assertIn('pool', entry)
-        self.assertIsInstance(entry['queue'], six.text_type)
-        self.assertIsInstance(entry['project'], six.text_type)
-        self.assertIsInstance(entry['pool'], six.text_type)
+        self.assertIsInstance(entry['queue'], str)
+        self.assertIsInstance(entry['project'], str)
+        self.assertIsInstance(entry['pool'], str)
 
     def _check_value(self, entry, xqueue, xproject, xpool):
         self.assertEqual(xqueue, entry['queue'])
@@ -1809,8 +1808,8 @@ class CatalogueControllerTest(ControllerBaseTest):
             self.assertFalse(self.controller.exists('nada', 'not_here'))
 
     def test_insert(self):
-        q1 = six.text_type(uuid.uuid1())
-        q2 = six.text_type(uuid.uuid1())
+        q1 = str(uuid.uuid1())
+        q2 = str(uuid.uuid1())
         self.controller.insert(self.project, q1, u'a')
         self.controller.insert(self.project, q2, u'a')
 
@@ -2000,7 +1999,7 @@ class FlavorsControllerTest1(ControllerBaseTest):
 def _insert_fixtures(controller, queue_name, project=None,
                      client_uuid=None, num=4, ttl=120):
     def messages():
-        for n in six.moves.xrange(num):
+        for n in range(num):
             yield {
                 'ttl': ttl,
                 'body': {

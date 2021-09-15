@@ -18,7 +18,6 @@ import hashlib
 import hmac
 
 from oslo_utils import timeutils
-import six
 
 from zaqar.common import urls
 from zaqar.tests import base
@@ -30,18 +29,19 @@ class TestURLs(base.TestBase):
         timeutils.set_time_override()
         self.addCleanup(timeutils.clear_time_override)
 
-        key = six.b('test')
+        key = 'test'.encode('latin-1')
         methods = ['POST']
         project = 'my-project'
         paths = ['/v2/queues/shared/messages']
         expires = timeutils.utcnow() + datetime.timedelta(days=1)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        hmac_body = six.b(r'%(paths)s\n%(methods)s\n'
-                          r'%(project)s\n%(expires)s' %
-                          {'paths': ','.join(paths),
-                           'methods': ','.join(methods),
-                           'project': project, 'expires': expires_str})
+        hmac_body = (r'%(paths)s\n%(methods)s\n'
+                     r'%(project)s\n%(expires)s' %
+                     {'paths': ','.join(paths),
+                      'methods': ','.join(methods),
+                      'project': project,
+                      'expires': expires_str}).encode("latin-1")
 
         expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
         actual = urls.create_signed_url(key, paths, methods=['POST'],
@@ -52,7 +52,7 @@ class TestURLs(base.TestBase):
         timeutils.set_time_override()
         self.addCleanup(timeutils.clear_time_override)
 
-        key = six.b('test')
+        key = 'test'.encode("latin-1")
         methods = ['POST']
         project = 'my-project'
         paths = ['/v2/queues/shared/messages',
@@ -60,11 +60,12 @@ class TestURLs(base.TestBase):
         expires = timeutils.utcnow() + datetime.timedelta(days=1)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        hmac_body = six.b(r'%(paths)s\n%(methods)s\n'
-                          r'%(project)s\n%(expires)s' %
-                          {'paths': ','.join(paths),
-                           'methods': ','.join(methods),
-                           'project': project, 'expires': expires_str})
+        hmac_body = (r'%(paths)s\n%(methods)s\n'
+                     r'%(project)s\n%(expires)s' %
+                     {'paths': ','.join(paths),
+                      'methods': ','.join(methods),
+                      'project': project,
+                      'expires': expires_str}).encode("latin-1")
 
         expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
         actual = urls.create_signed_url(key, paths, methods=['POST'],
@@ -76,7 +77,7 @@ class TestURLs(base.TestBase):
         date_str = '2100-05-31T19:00:17+02'
         date_str_utc = '2100-05-31T17:00:17'
 
-        key = six.b('test')
+        key = 'test'.encode("latin-1")
         project = None
         methods = ['GET']
         paths = ['/v2/queues/shared/messages']
@@ -84,11 +85,12 @@ class TestURLs(base.TestBase):
         expires = timeutils.normalize_time(parsed)
         expires_str = expires.strftime(urls._DATE_FORMAT)
 
-        hmac_body = six.b('%(paths)s\\n%(methods)s\\n'
-                          '%(project)s\\n%(expires)s' %
-                          {'paths': ','.join(paths),
-                           'methods': ','.join(methods),
-                           'project': project, 'expires': expires_str})
+        hmac_body = ('%(paths)s\\n%(methods)s\\n'
+                     '%(project)s\\n%(expires)s' %
+                     {'paths': ','.join(paths),
+                      'methods': ','.join(methods),
+                      'project': project,
+                      'expires': expires_str}).encode("latin-1")
 
         expected = hmac.new(key, hmac_body, hashlib.sha256).hexdigest()
         actual = urls.create_signed_url(key, paths, expires=date_str)
