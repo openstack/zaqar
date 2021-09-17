@@ -96,7 +96,7 @@
         # to disable voting on one specific job if things go wrong.
         # If you need any support to debug these jobs in case of
         # failures, please reach us on #tripleo IRC channel.
-        - tripleo-ci-centos-7-scenario002-standalone
+        - tripleo-ci-centos-8-scenario002-standalone
         # Heat job that deploy Zaqar
         - heat-functional-convg-mysql-lbaasv2
         - zaqar-rally:
