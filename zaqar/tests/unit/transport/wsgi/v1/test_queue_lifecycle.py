@@ -17,7 +17,6 @@ from unittest import mock
 import ddt
 import falcon
 from oslo_serialization import jsonutils
-import six
 
 from zaqar.storage import errors as storage_errors
 from zaqar import tests as testing
@@ -147,9 +146,6 @@ class TestQueueLifecycleMongoDB(base.V1Base):
 
         for uri, enc in test_params:
             uri = self.url_prefix + uri
-
-            if six.PY2:
-                uri = uri.encode(enc)
 
             self.simulate_put(uri)
             self.assertEqual(falcon.HTTP_400, self.srmock.status)

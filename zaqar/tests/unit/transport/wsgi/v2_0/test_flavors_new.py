@@ -31,8 +31,8 @@ def flavor(test, name, pool_list):
 
     :param test: Must expose simulate_* methods
     :param name: Name for this flavor
-    :type name: six.text_type
-    :type pool: six.text_type
+    :type name: str
+    :type pool: str
     :returns: (name, uri, capabilities)
     :rtype: see above
 
@@ -60,7 +60,7 @@ def flavors(test, count):
     :param count: Number of pools to create
     :type count: int
     :returns: (paths, pool_list capabilities)
-    :rtype: ([six.text_type], [six.text_type], [dict])
+    :rtype: ([str], [str], [dict])
 
     """
 

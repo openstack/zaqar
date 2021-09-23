@@ -14,7 +14,7 @@
 
 import falcon
 from oslo_serialization import jsonutils
-import six.moves.urllib.parse as urlparse
+from urllib import parse as urlparse
 
 from zaqar.tests.unit.transport.wsgi import base
 

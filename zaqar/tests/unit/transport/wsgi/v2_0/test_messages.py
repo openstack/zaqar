@@ -21,7 +21,6 @@ import falcon
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-import six
 from testtools import matchers
 
 from zaqar import tests as testing
@@ -117,7 +116,7 @@ class TestMessagesMongoDB(base.V2Base):
         msg_ids = self._get_msg_ids(self.srmock.headers_dict)
         self.assertEqual(len(sample_messages), len(msg_ids))
 
-        expected_resources = [six.text_type(self.messages_path + '/' + id)
+        expected_resources = [str(self.messages_path + '/' + id)
                               for id in msg_ids]
         self.assertEqual(expected_resources, result_doc['resources'])
 
@@ -260,9 +259,6 @@ class TestMessagesMongoDB(base.V2Base):
         # hook, regardless of the target resource.
 
         path = self.url_prefix + u'/queues/non-ascii-n\u0153me/messages'
-
-        if six.PY2:
-            path = path.encode('utf-8')
 
         self._post_messages(path)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)

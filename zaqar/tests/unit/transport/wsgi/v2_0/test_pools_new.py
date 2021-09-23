@@ -31,9 +31,9 @@ def pool(test, name, weight, uri, flavor=None, options={}):
 
     :param test: Must expose simulate_* methods
     :param name: Name for this pool
-    :type name: six.text_type
+    :type name: str
     :type weight: int
-    :type uri: six.text_type
+    :type uri: str
     :type options: dict
     :returns: (name, weight, uri, options)
     :rtype: see above
@@ -62,7 +62,7 @@ def pools(test, count, uri, flavor):
     :param count: Number of pools to create
     :type count: int
     :returns: (paths, weights, uris, options)
-    :rtype: ([six.text_type], [int], [six.text_type], [dict])
+    :rtype: ([str], [int], [str], [dict])
     """
     mongo_url = uri
     base = test.url_prefix + '/pools/'
