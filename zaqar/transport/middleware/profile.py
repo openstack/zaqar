@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six.moves.urllib.parse as urlparse
+from urllib import parse as urlparse
 import webob
 
 from oslo_log import log
