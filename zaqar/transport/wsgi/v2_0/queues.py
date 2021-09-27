@@ -16,7 +16,6 @@
 import copy
 import falcon
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -67,7 +66,7 @@ class ItemResource(object):
                     resp_dict[meta] = value
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Queue metadata could not be retrieved.')
@@ -92,7 +91,7 @@ class ItemResource(object):
             self._validate.queue_metadata_putting(metadata)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         try:
             created = self._queue_controller.create(queue_name,
@@ -101,7 +100,7 @@ class ItemResource(object):
 
         except storage_errors.FlavorDoesNotExist as ex:
             LOG.exception('Flavor "%s" does not exist', queue_name)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
             description = _(u'Queue could not be created.')
             LOG.exception(description)
@@ -145,7 +144,7 @@ class ItemResource(object):
             self._validate.queue_metadata_length(req.content_length)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestBody(str(ex))
 
         # NOTE(flwang): See below link to get more details about draft 10,
         # tools.ietf.org/html/draft-ietf-appsawg-json-patch-10
@@ -205,10 +204,10 @@ class ItemResource(object):
                                                 project_id)
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestBody(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestBody(str(ex))
         except wsgi_errors.HTTPConflict:
             raise
         except Exception:
@@ -270,7 +269,7 @@ class CollectionResource(object):
                     project=project_id)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
             description = _(u'Queues could not be listed.')

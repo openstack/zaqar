@@ -16,7 +16,6 @@
 import falcon
 import jsonschema
 from oslo_log import log
-import six
 
 from zaqar.common.api.schemas import flavors as schema
 from zaqar.common import decorators
@@ -74,7 +73,7 @@ class Listing(object):
             self._validate.flavor_listing(**store)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         cursor = self._ctrl.list(project=project_id, **store)
         flavors = list(next(cursor))
@@ -161,7 +160,7 @@ class Resource(object):
 
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         data['href'] = request.path
 
@@ -287,7 +286,7 @@ class Resource(object):
             self._ctrl.get(flavor, project=project_id)
         except errors.FlavorDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         flavor_obj = {}
         flavor_obj['name'] = flavor
@@ -312,7 +311,7 @@ class Resource(object):
                                          for cap in capabilities]
         except errors.FlavorDoesNotExist as ex:
             LOG.exception('Flavor "%s" does not exist', flavor)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         # (gengchc) Update flavor field in new pool list.
         try:

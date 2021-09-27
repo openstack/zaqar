@@ -39,7 +39,6 @@ registered, there is an optional field:
 import falcon
 import jsonschema
 from oslo_log import log
-import six
 
 from zaqar.common.api.schemas import pools as schema
 from zaqar.common import decorators
@@ -97,7 +96,7 @@ class Listing(object):
             self._validate.pool_listing(**store)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         cursor = self._ctrl.list(**store)
         pools = list(next(cursor))
@@ -162,7 +161,7 @@ class Resource(object):
 
         except errors.PoolDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         data['href'] = request.path
 
@@ -201,10 +200,10 @@ class Resource(object):
         except errors.PoolCapabilitiesMismatch as e:
             title = _(u'Unable to create pool')
             LOG.exception(title)
-            raise falcon.HTTPBadRequest(title, six.text_type(e))
+            raise falcon.HTTPBadRequest(title, str(e))
         except errors.PoolAlreadyExists as e:
             LOG.exception('Pool "%s" already exists', pool)
-            raise wsgi_errors.HTTPConflict(six.text_type(e))
+            raise wsgi_errors.HTTPConflict(str(e))
 
     @decorators.TransportLog("Pools item")
     @acl.enforce("pools:delete")
@@ -272,7 +271,7 @@ class Resource(object):
             resp_data = self._ctrl.get(pool, False)
         except errors.PoolDoesNotExist as ex:
             LOG.exception('Pool "%s" does not exist', pool)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         resp_data['href'] = request.path
         response.body = transport_utils.to_json(resp_data)

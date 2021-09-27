@@ -18,7 +18,6 @@ import falcon
 from oslo_log import log as logging
 from oslo_utils import netutils
 from oslo_utils import timeutils
-import six
 from stevedore import driver
 
 from zaqar.common import decorators
@@ -53,7 +52,7 @@ class ItemResource(object):
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
             description = _(u'Subscription could not be retrieved.')
@@ -95,13 +94,13 @@ class ItemResource(object):
             resp.location = req.path
         except storage_errors.SubscriptionDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
         except storage_errors.SubscriptionAlreadyExists as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPConflict(six.text_type(ex))
+            raise wsgi_errors.HTTPConflict(str(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
             description = (_(u'Subscription %(subscription_id)s could not be'
                              ' updated.') %
@@ -145,7 +144,7 @@ class CollectionResource(object):
             subscriptions = list(next(results))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
             description = _(u'Subscriptions could not be listed.')
@@ -200,7 +199,7 @@ class CollectionResource(object):
                                                            project=project_id)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
             description = _(u'Subscription could not be created.')
             LOG.exception(description)
@@ -222,7 +221,7 @@ class CollectionResource(object):
             resp.location = req.path
             resp.status = falcon.HTTP_201
             resp.body = utils.to_json(
-                {'subscription_id': six.text_type(created)})
+                {'subscription_id': str(created)})
         else:
             subscription = self._subscription_controller.get_with_subscriber(
                 queue_name, subscriber, project_id)
@@ -243,7 +242,7 @@ class CollectionResource(object):
                 resp.location = req.path
                 resp.status = falcon.HTTP_201
                 resp.body = utils.to_json(
-                    {'subscription_id': six.text_type(subscription['id'])})
+                    {'subscription_id': str(subscription['id'])})
 
 
 class ConfirmResource(object):
@@ -291,10 +290,10 @@ class ConfirmResource(object):
             resp.location = req.path
         except storage_errors.SubscriptionDoesNotExist as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPNotFound(six.text_type(ex))
+            raise wsgi_errors.HTTPNotFound(str(ex))
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
-            raise wsgi_errors.HTTPBadRequestAPI(six.text_type(ex))
+            raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
             description = (_(u'Subscription %(subscription_id)s could not be'
                              ' confirmed.') %
