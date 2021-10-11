@@ -24,7 +24,6 @@ import enum
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
-import six
 
 from zaqar.common import decorators
 from zaqar.storage import errors
@@ -52,8 +51,7 @@ class Capabilities(enum.IntEnum):
     HIGH_THROUGHPUT = 5
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DriverBase(object):
+class DriverBase(object, metaclass=abc.ABCMeta):
     """Base class for both data and control plane drivers
 
     :param conf: Configuration containing options for this driver.
@@ -78,8 +76,7 @@ class DriverBase(object):
                     pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DataDriverBase(DriverBase):
+class DataDriverBase(DriverBase, metaclass=abc.ABCMeta):
     """Interface definition for storage drivers.
 
     Data plane storage drivers are responsible for implementing the
@@ -250,8 +247,7 @@ class DataDriverBase(DriverBase):
         return self.control_driver.topic_controller
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ControlDriverBase(DriverBase):
+class ControlDriverBase(DriverBase, metaclass=abc.ABCMeta):
     """Interface definition for control plane storage drivers.
 
     Storage drivers that work at the control plane layer allow one to
@@ -310,8 +306,7 @@ class ControllerBase(object):
         self.driver = driver
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Queue(ControllerBase):
+class Queue(ControllerBase, metaclass=abc.ABCMeta):
     """This class is responsible for managing queues.
 
     Queue operations include CRUD, monitoring, etc.
@@ -430,8 +425,7 @@ class Queue(ControllerBase):
     _calculate_resource_count = abc.abstractmethod(lambda x: None)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Message(ControllerBase):
+class Message(ControllerBase, metaclass=abc.ABCMeta):
     """This class is responsible for managing message CRUD."""
 
     @abc.abstractmethod
@@ -561,8 +555,7 @@ class Message(ControllerBase):
         raise NotImplementedError
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Claim(ControllerBase):
+class Claim(ControllerBase, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get(self, queue, claim_id, project=None):
@@ -620,8 +613,7 @@ class Claim(ControllerBase):
         raise NotImplementedError
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Subscription(ControllerBase):
+class Subscription(ControllerBase, metaclass=abc.ABCMeta):
     """This class is responsible for managing subscriptions of notification.
 
     """
@@ -632,11 +624,11 @@ class Subscription(ControllerBase):
         """Base method for listing subscriptions.
 
         :param queue: Name of the queue to get the subscriptions from.
-        :type queue: six.text_type
+        :type queue: str
         :param project: Project this subscription belongs to.
-        :type project: six.text_type
+        :type project: str
         :param marker: used to determine which subscription to start with
-        :type marker: six.text_type
+        :type marker: str
         :param limit: (Default 10) Max number of results to return
         :type limit: int
         :returns: An iterator giving a sequence of subscriptions
@@ -650,11 +642,11 @@ class Subscription(ControllerBase):
         """Returns a single subscription entry.
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param subscription_id: ID of this subscription
-        :type subscription_id: six.text_type
+        :type subscription_id: str
         :param project: Project this subscription belongs to.
-        :type project: six.text_type
+        :type project: str
         :returns: Dictionary containing subscription data
         :rtype: {}
         :raises SubscriptionDoesNotExist: if not found
@@ -666,15 +658,15 @@ class Subscription(ControllerBase):
         """Create a new subscription.
 
         :param queue:The source queue for notifications
-        :type queue: six.text_type
+        :type queue: str
         :param subscriber: The subscriber URI
-        :type subscriber: six.text_type
+        :type subscriber: str
         :param ttl: time to live for this subscription
         :type ttl: int
         :param options: Options used to configure this subscription
         :type options: dict
         :param project: Project id
-        :type project: six.text_type
+        :type project: str
         :returns: True if a subscription was created and False
         if it is failed.
         :rtype: boolean
@@ -686,7 +678,7 @@ class Subscription(ControllerBase):
         """Updates the weight, uris, and/or options of this subscription
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param name: ID of the subscription
         :type name: text
         :param kwargs: one of: `source`, `subscriber`, `ttl`, `options`
@@ -703,11 +695,11 @@ class Subscription(ControllerBase):
         """Base method for testing subscription existence.
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param subscription_id: ID of subscription
-        :type subscription_id: six.text_type
+        :type subscription_id: str
         :param project: Project id
-        :type project: six.text_type
+        :type project: str
         :returns: True if a subscription exists and False
             if it does not.
         """
@@ -718,11 +710,11 @@ class Subscription(ControllerBase):
         """Base method for deleting a subscription.
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param subscription_id: ID of the subscription to be deleted.
-        :type subscription_id: six.text_type
+        :type subscription_id: str
         :param project: Project id
-        :type project: six.text_type
+        :type project: str
         """
         raise NotImplementedError
 
@@ -731,11 +723,11 @@ class Subscription(ControllerBase):
         """Base method for get a subscription with the subscriber.
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param subscriber: link of the subscription to be notified.
-        :type subscriber: six.text_type
+        :type subscriber: str
         :param project: Project id
-        :type project: six.text_type
+        :type project: str
         :returns: Dictionary containing subscription data
         :rtype: dict
         """
@@ -746,11 +738,11 @@ class Subscription(ControllerBase):
         """Base method for confirming a subscription.
 
         :param queue: Name of the queue subscription belongs to.
-        :type queue: six.text_type
+        :type queue: str
         :param subscription_id: ID of the subscription to be deleted.
-        :type subscription_id: six.text_type
+        :type subscription_id: str
         :param project: Project id
-        :type project: six.text_type
+        :type project: str
         :param confirmed: Confirm a subscription or cancel the confirmation of
             a subscription.
         :type confirmed: boolean
@@ -758,8 +750,7 @@ class Subscription(ControllerBase):
         raise NotImplementedError
 
 
-@six.add_metaclass(abc.ABCMeta)
-class PoolsBase(ControllerBase):
+class PoolsBase(ControllerBase, metaclass=abc.ABCMeta):
     """A controller for managing pools."""
 
     def _check_capabilities(self, uri, flavor=None, name=None):
@@ -781,9 +772,9 @@ class PoolsBase(ControllerBase):
         """Gets the set of capabilities for this flavor/name
 
         :param flavor: The pool flavor to get capabilities for
-        :type flavor: six.text_type
+        :type flavor: str
         :param name: The pool name to get capabilities for
-        :type name: six.text_type
+        :type name: str
         """
         pllt = []
         if name:
@@ -807,7 +798,7 @@ class PoolsBase(ControllerBase):
         """Lists all registered pools.
 
         :param marker: used to determine which pool to start with
-        :type marker: six.text_type
+        :type marker: str
         :param limit: (Default 10) Max number of results to return
         :type limit: int
         :param detailed: whether to include options
@@ -824,14 +815,14 @@ class PoolsBase(ControllerBase):
         """Registers a pool entry.
 
         :param name: The name of this pool
-        :type name: six.text_type
+        :type name: str
         :param weight: the likelihood that this pool will be used
         :type weight: int
         :param uri: A URI that can be used by a storage client
             (e.g., pymongo) to access this pool.
-        :type uri: six.text_type
+        :type uri: str
         :param flavor: The flavor of this pool
-        :type flavor: six.text_type
+        :type flavor: str
         :param options: Options used to configure this pool
         :type options: dict
         """
@@ -850,7 +841,7 @@ class PoolsBase(ControllerBase):
 
         :param flavor: The flavor to filter on. `None` returns
             pools that are not assigned to any pool flavor.
-        :type flavor: six.text_type
+        :type flavor: str
         :param detailed: Should the options data be included?
         :type detailed: bool
         :returns: weight, uri, and options for this pool
@@ -865,7 +856,7 @@ class PoolsBase(ControllerBase):
         """Returns a single pool entry.
 
         :param name: The name of this pool
-        :type name: six.text_type
+        :type name: str
         :param detailed: Should the options data be included?
         :type detailed: bool
         :returns: weight, uri, and options for this pool
@@ -880,7 +871,7 @@ class PoolsBase(ControllerBase):
         """Returns a single pool entry.
 
         :param name: The name of this pool
-        :type name: six.text_type
+        :type name: str
         :returns: True if the pool exists
         :rtype: bool
         """
@@ -892,7 +883,7 @@ class PoolsBase(ControllerBase):
         """Removes a pool entry.
 
         :param name: The name of this pool
-        :type name: six.text_type
+        :type name: str
         :rtype: None
         """
         return self._delete(name)
@@ -923,8 +914,7 @@ class PoolsBase(ControllerBase):
     _drop_all = abc.abstractmethod(lambda x: None)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CatalogueBase(ControllerBase):
+class CatalogueBase(ControllerBase, metaclass=abc.ABCMeta):
     """A controller for managing the catalogue.
 
     The catalogue is responsible for maintaining a mapping
@@ -937,7 +927,7 @@ class CatalogueBase(ControllerBase):
 
         :param project: The project to use when filtering through queue
                         entries.
-        :type project: six.text_type
+        :type project: str
         :returns: [{'project': ..., 'queue': ..., 'pool': ...},]
         :rtype: [dict]
         """
@@ -949,9 +939,9 @@ class CatalogueBase(ControllerBase):
         """Returns the pool identifier for the given queue.
 
         :param project: Namespace to search for the given queue
-        :type project: six.text_type
+        :type project: str
         :param queue: The name of the queue to search for
-        :type queue: six.text_type
+        :type queue: str
         :returns: {'pool': ...}
         :rtype: dict
         :raises QueueNotMapped: if queue is not mapped
@@ -964,9 +954,9 @@ class CatalogueBase(ControllerBase):
         """Determines whether the given queue exists under project.
 
         :param project: Namespace to check.
-        :type project: six.text_type
+        :type project: str
         :param queue: str - Particular queue to check for
-        :type queue: six.text_type
+        :type queue: str
         :return: True if the queue exists under this project
         :rtype: bool
         """
@@ -976,11 +966,11 @@ class CatalogueBase(ControllerBase):
         """Creates a new catalogue entry, or updates it if it already exists.
 
         :param project: str - Namespace to insert the given queue into
-        :type project: six.text_type
+        :type project: str
         :param queue: str - The name of the queue to insert
-        :type queue: six.text_type
+        :type queue: str
         :param pool: pool identifier to associate this queue with
-        :type pool: six.text_type
+        :type pool: str
         """
 
         raise NotImplementedError
@@ -990,9 +980,9 @@ class CatalogueBase(ControllerBase):
         """Removes this entry from the catalogue.
 
         :param project: The namespace to search for this queue
-        :type project: six.text_type
+        :type project: str
         :param queue: The queue name to remove
-        :type queue: six.text_type
+        :type queue: str
         """
 
         raise NotImplementedError
@@ -1002,11 +992,11 @@ class CatalogueBase(ControllerBase):
         """Updates the pool identifier for this queue.
 
         :param project: Namespace to search
-        :type project: six.text_type
+        :type project: str
         :param queue: The name of the queue
-        :type queue: six.text_type
+        :type queue: str
         :param pools: The name of the pool where this project/queue lives.
-        :type pools: six.text_type
+        :type pools: str
         :raises QueueNotMapped: if queue is not mapped
         """
 
@@ -1019,8 +1009,7 @@ class CatalogueBase(ControllerBase):
         raise NotImplementedError
 
 
-@six.add_metaclass(abc.ABCMeta)
-class FlavorsBase(ControllerBase):
+class FlavorsBase(ControllerBase, metaclass=abc.ABCMeta):
     """A controller for managing flavors."""
 
     @abc.abstractmethod
@@ -1028,9 +1017,9 @@ class FlavorsBase(ControllerBase):
         """Lists all registered flavors.
 
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :param marker: used to determine which flavor to start with
-        :type marker: six.text_type
+        :type marker: str
         :param limit: (Default 10) Max number of results to return
         :type limit: int
         :returns: A list of flavors - name, project, flavor
@@ -1044,11 +1033,11 @@ class FlavorsBase(ControllerBase):
         """Registers a flavor entry.
 
         :param name: The name of this flavor
-        :type name: six.text_type
+        :type name: str
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :param pool: The name of the pool to use for this flavor.
-        :type pool: six.text_type
+        :type pool: str
         :param capabilities: Flavor capabilities
         :type capabilities: dict
         """
@@ -1060,9 +1049,9 @@ class FlavorsBase(ControllerBase):
         """Returns a single flavor entry.
 
         :param name: The name of this flavor
-        :type name: six.text_type
+        :type name: str
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :rtype: {}
         :raises FlavorDoesNotExist: if not found
         """
@@ -1074,9 +1063,9 @@ class FlavorsBase(ControllerBase):
         """Verifies whether the flavor exists.
 
         :param name: The name of this flavor
-        :type name: six.text_type
+        :type name: str
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :returns: True if the flavor exists
         :rtype: bool
         """
@@ -1088,9 +1077,9 @@ class FlavorsBase(ControllerBase):
         """Removes a flavor entry.
 
         :param name: The name of this flavor
-        :type name: six.text_type
+        :type name: str
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :rtype: None
         """
 
@@ -1103,7 +1092,7 @@ class FlavorsBase(ControllerBase):
         :param name: Name of the flavor
         :type name: text
         :param project: Project this flavor belongs to.
-        :type project: six.text_type
+        :type project: str
         :param kwargs: one of: `uri`, `weight`, `options`
         :type kwargs: dict
         :raises FlavorDoesNotExist: if not found
@@ -1118,8 +1107,7 @@ class FlavorsBase(ControllerBase):
         raise NotImplementedError
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Topic(ControllerBase):
+class Topic(ControllerBase, metaclass=abc.ABCMeta):
     """This class is responsible for managing topics.
 
     Topic operations include CRUD, etc.
