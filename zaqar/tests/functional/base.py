@@ -20,7 +20,6 @@ import os
 
 import jsonschema
 from oslo_utils import timeutils
-import six
 
 from zaqar.api.v1 import response as response_v1
 from zaqar.api.v1_1 import response as response_v1_1
@@ -306,8 +305,7 @@ class FunctionalTestBase(testing.TestBase):
         self.assertLessEqual(delta, 6000, msg)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Server(object):
+class Server(object, metaclass=abc.ABCMeta):
 
     name = "zaqar-functional-test-server"
 
