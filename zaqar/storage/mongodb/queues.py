@@ -95,7 +95,9 @@ class QueueController(storage.Queue):
         # allows for querying by project and project+name.
         # This is also useful for retrieving the queues list for
         # a specific project, for example. Order matters!
-        self._collection.ensure_index([('p_q', 1)], unique=True)
+        # NOTE(wanghao): pymongo has removed the ensure_index since 4.0.0.
+        # So we need to update ensure_index to create_index.
+        self._collection.create_index([('p_q', 1)], unique=True)
 
     # ----------------------------------------------------------------------
     # Helpers
@@ -209,6 +211,7 @@ class QueueController(storage.Queue):
         cursor = self._collection.find(query, projection=projection)
         cursor = cursor.limit(limit).sort('p_q')
         marker_name = {}
+        ntotal = self._collection.count_documents(query, limit=limit)
 
         def normalizer(record):
             queue = {'name': utils.descope_queue_name(record['p_q'])}
@@ -217,7 +220,7 @@ class QueueController(storage.Queue):
                 queue['metadata'] = record['m']
             return queue
 
-        yield utils.HookedCursor(cursor, normalizer)
+        yield utils.HookedCursor(cursor, normalizer, ntotal=ntotal)
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
@@ -291,8 +294,7 @@ class QueueController(storage.Queue):
     @utils.retries_on_autoreconnect
     def _calculate_resource_count(self, project=None):
         query = utils.scoped_query(None, project, None, {})
-        projection = {'p_q': 1, '_id': 0}
-        return self._collection.find(query, projection=projection).count()
+        return self._collection.count_documents(query)
 
 
 def _get_scoped_query(name, project):

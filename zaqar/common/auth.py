@@ -54,7 +54,7 @@ def _get_admin_session(conf_group):
 def _get_user_client(auth_plugin):
     sess = loading.load_session_from_conf_options(
         cfg.CONF, TRUSTEE_CONF_GROUP, auth=auth_plugin)
-    return client.Client(session=sess)
+    return client.Client(session=sess, interface='public')
 
 
 def create_trust_id(auth_plugin, trustor_user_id, trustor_project_id, roles,

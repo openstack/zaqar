@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    Upgrade one of storage drivers, mongo driver with new version of pymongo.
+    Pymongo has been updated to 4.0.0, there are some changes which are not
+    supported in new version:
+    1. Collection.count and Cursor.count is removed.
+    2. Collection.ensure_index is removed.
+    3. Collection.__bool__ raises NotImplementedError.
+    4. Should use Binary.from_uuid to handle the UUID object.
+    Those changes need to upgrade the mongo driver's code to work well.

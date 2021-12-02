@@ -23,7 +23,9 @@ Field Mappings:
 
 import datetime
 import time
+import uuid
 
+from bson import binary
 from bson import objectid
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -144,24 +146,24 @@ class MessageController(storage.Message):
     def _ensure_indexes(self, collection):
         """Ensures that all indexes are created."""
 
-        collection.ensure_index(TTL_INDEX_FIELDS,
+        collection.create_index(TTL_INDEX_FIELDS,
                                 name='ttl',
                                 expireAfterSeconds=0,
                                 background=True)
 
-        collection.ensure_index(ACTIVE_INDEX_FIELDS,
+        collection.create_index(ACTIVE_INDEX_FIELDS,
                                 name='active',
                                 background=True)
 
-        collection.ensure_index(COUNTING_INDEX_FIELDS,
+        collection.create_index(COUNTING_INDEX_FIELDS,
                                 name='counting',
                                 background=True)
 
-        collection.ensure_index(MARKER_INDEX_FIELDS,
+        collection.create_index(MARKER_INDEX_FIELDS,
                                 name='queue_marker',
                                 background=True)
 
-        collection.ensure_index(TRANSACTION_INDEX_FIELDS,
+        collection.create_index(TRANSACTION_INDEX_FIELDS,
                                 name='transaction',
                                 background=True)
 
@@ -205,7 +207,7 @@ class MessageController(storage.Message):
     def _list(self, topic_name, project=None, marker=None,
               echo=False, client_uuid=None, projection=None,
               include_claimed=False, include_delayed=False,
-              sort=1, limit=None):
+              sort=1, limit=None, count=False):
         """Message document listing helper.
 
         :param topic_name: Name of the topic to list
@@ -232,6 +234,7 @@ class MessageController(storage.Message):
             to list. The results may include fewer messages than the
             requested `limit` if not enough are available. If limit is
             not specified
+        :param count: (Default False) If return the count number of cursor
 
         :returns: Generator yielding up to `limit` messages.
         """
@@ -255,6 +258,12 @@ class MessageController(storage.Message):
         }
 
         if not echo:
+            if (client_uuid is not None) and not isinstance(client_uuid,
+                                                            uuid.UUID):
+                client_uuid = uuid.UUID(client_uuid)
+                client_uuid = binary.Binary.from_uuid(client_uuid)
+            elif isinstance(client_uuid, uuid.UUID):
+                client_uuid = binary.Binary.from_uuid(client_uuid)
             query['u'] = {'$ne': client_uuid}
 
         if marker is not None:
@@ -274,12 +283,19 @@ class MessageController(storage.Message):
         cursor = collection.find(query,
                                  projection=projection,
                                  sort=[('k', sort)])
+        ntotal = None
+        if count:
+            ntotal = collection.count_documents(query)
 
         if limit is not None:
             cursor.limit(limit)
+            if count:
+                ntotal = collection.count_documents(query, limit=limit)
 
         # NOTE(flaper87): Suggest the index to use for this query to
         # ensure the most performant one is chosen.
+        if count:
+            return cursor.hint(ACTIVE_INDEX_FIELDS), ntotal
         return cursor.hint(ACTIVE_INDEX_FIELDS)
 
     # ----------------------------------------------------------------------
@@ -310,7 +326,8 @@ class MessageController(storage.Message):
         }
 
         collection = self._collection(topic_name, project)
-        return collection.count(filter=query, hint=COUNTING_INDEX_FIELDS)
+        return collection.count_documents(filter=query,
+                                          hint=COUNTING_INDEX_FIELDS)
 
     def _active(self, topic_name, marker=None, echo=False,
                 client_uuid=None, projection=None, project=None,
@@ -447,10 +464,12 @@ class MessageController(storage.Message):
             except ValueError:
                 yield iter([])
 
-        messages = self._list(topic_name, project=project, marker=marker,
-                              client_uuid=client_uuid, echo=echo,
-                              include_claimed=include_claimed,
-                              include_delayed=include_delayed, limit=limit)
+        messages, ntotal = self._list(topic_name, project=project,
+                                      marker=marker,
+                                      client_uuid=client_uuid, echo=echo,
+                                      include_claimed=include_claimed,
+                                      include_delayed=include_delayed,
+                                      limit=limit, count=True)
 
         marker_id = {}
 
@@ -463,7 +482,7 @@ class MessageController(storage.Message):
 
             return _basic_message(msg, now)
 
-        yield utils.HookedCursor(messages, denormalizer)
+        yield utils.HookedCursor(messages, denormalizer, ntotal=ntotal)
         yield str(marker_id['next'])
 
     @utils.raises_conn_error
@@ -524,11 +543,12 @@ class MessageController(storage.Message):
         # NOTE(flaper87): Should this query
         # be sorted?
         messages = collection.find(query).hint(ID_INDEX_FIELDS)
+        ntotal = collection.count_documents(query)
 
         def denormalizer(msg):
             return _basic_message(msg, now)
 
-        return utils.HookedCursor(messages, denormalizer)
+        return utils.HookedCursor(messages, denormalizer, ntotal=ntotal)
 
     @utils.raises_conn_error
     @utils.retries_on_autoreconnect
@@ -553,6 +573,13 @@ class MessageController(storage.Message):
         next_marker = self._inc_counter(topic_name,
                                         project,
                                         amount=msgs_n) - msgs_n
+
+        if (client_uuid is not None) and not isinstance(client_uuid,
+                                                        uuid.UUID):
+            client_uuid = uuid.UUID(client_uuid)
+            client_uuid = binary.Binary.from_uuid(client_uuid)
+        elif isinstance(client_uuid, uuid.UUID):
+            client_uuid = binary.Binary.from_uuid(client_uuid)
 
         prepared_messages = []
         for index, message in enumerate(messages):
@@ -682,16 +709,16 @@ class FIFOMessageController(MessageController):
     def _ensure_indexes(self, collection):
         """Ensures that all indexes are created."""
 
-        collection.ensure_index(TTL_INDEX_FIELDS,
+        collection.create_index(TTL_INDEX_FIELDS,
                                 name='ttl',
                                 expireAfterSeconds=0,
                                 background=True)
 
-        collection.ensure_index(ACTIVE_INDEX_FIELDS,
+        collection.create_index(ACTIVE_INDEX_FIELDS,
                                 name='active',
                                 background=True)
 
-        collection.ensure_index(COUNTING_INDEX_FIELDS,
+        collection.create_index(COUNTING_INDEX_FIELDS,
                                 name='counting',
                                 background=True)
 
@@ -702,12 +729,12 @@ class FIFOMessageController(MessageController):
         # to miss a message when there is more than one
         # producer posting messages to the same queue, in
         # parallel.
-        collection.ensure_index(MARKER_INDEX_FIELDS,
+        collection.create_index(MARKER_INDEX_FIELDS,
                                 name='queue_marker',
                                 unique=True,
                                 background=True)
 
-        collection.ensure_index(TRANSACTION_INDEX_FIELDS,
+        collection.create_index(TRANSACTION_INDEX_FIELDS,
                                 name='transaction',
                                 background=True)
 
@@ -741,6 +768,13 @@ class FIFOMessageController(MessageController):
 
         # Unique transaction ID to facilitate atomic batch inserts
         transaction = objectid.ObjectId()
+
+        if (client_uuid is not None) and not isinstance(client_uuid,
+                                                        uuid.UUID):
+            client_uuid = uuid.UUID(client_uuid)
+            client_uuid = binary.Binary.from_uuid(client_uuid)
+        elif isinstance(client_uuid, uuid.UUID):
+            client_uuid = binary.Binary.from_uuid(client_uuid)
 
         prepared_messages = []
         for index, message in enumerate(messages):
