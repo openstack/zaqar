@@ -314,10 +314,10 @@ class MongodbMessageTests(MongodbSetupMixin, base.MessageControllerTest):
         seed_marker1 = self.controller._get_counter(queue_name,
                                                     self.project)
         self.assertEqual(0, seed_marker1, 'First marker is 0')
-
+        uuid = '97b64000-2526-11e3-b088-d85c1300734c'
         for i in range(iterations):
-            self.controller.post(queue_name, [{'ttl': 60}],
-                                 'uuid', project=self.project)
+            self.controller.post(queue_name, [{'ttl': 60}], uuid,
+                                 project=self.project)
 
             marker1 = self.controller._get_counter(queue_name,
                                                    self.project)

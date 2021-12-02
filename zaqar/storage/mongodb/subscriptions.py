@@ -54,13 +54,13 @@ class SubscriptionController(base.Subscription):
     def __init__(self, *args, **kwargs):
         super(SubscriptionController, self).__init__(*args, **kwargs)
         self._collection = self.driver.subscriptions_database.subscriptions
-        self._collection.ensure_index(SUBSCRIPTIONS_INDEX, unique=True)
+        self._collection.create_index(SUBSCRIPTIONS_INDEX, unique=True)
         # NOTE(flwang): MongoDB will automatically delete the subscription
         # from the subscriptions collection when the subscription's 'e' value
         # is older than the number of seconds specified in expireAfterSeconds,
         # i.e. 0 seconds older in this case. As such, the data expires at the
         # specified 'e' value.
-        self._collection.ensure_index(TTL_INDEX_FIELDS, name='ttl',
+        self._collection.create_index(TTL_INDEX_FIELDS, name='ttl',
                                       expireAfterSeconds=0,
                                       background=True)
 
@@ -76,6 +76,7 @@ class SubscriptionController(base.Subscription):
         cursor = self._collection.find(query, projection=projection)
         cursor = cursor.limit(limit).sort('_id')
         marker_name = {}
+        ntotal = self._collection.count_documents(query, limit=limit)
 
         now = timeutils.utcnow_ts()
 
@@ -84,7 +85,7 @@ class SubscriptionController(base.Subscription):
 
             return _basic_subscription(record, now)
 
-        yield utils.HookedCursor(cursor, normalizer)
+        yield utils.HookedCursor(cursor, normalizer, ntotal=ntotal)
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error

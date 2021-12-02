@@ -48,11 +48,11 @@ class FlavorsController(base.FlavorsBase):
         super(FlavorsController, self).__init__(*args, **kwargs)
 
         self._col = self.driver.database.flavors
-        self._col.ensure_index(FLAVORS_INDEX,
+        self._col.create_index(FLAVORS_INDEX,
                                background=True,
                                name='flavors_name',
                                unique=True)
-        self._col.ensure_index(FLAVORS_STORAGE_POOL_INDEX,
+        self._col.create_index(FLAVORS_STORAGE_POOL_INDEX,
                                background=True,
                                name='flavors_storage_pool_group_name')
 
@@ -66,13 +66,14 @@ class FlavorsController(base.FlavorsBase):
 
         cursor = self._col.find(query, projection=_field_spec(detailed),
                                 limit=limit).sort('n', 1)
+        ntotal = self._col.count_documents(query)
         marker_name = {}
 
         def normalizer(flavor):
             marker_name['next'] = flavor['n']
             return _normalize(flavor, detailed=detailed)
 
-        yield utils.HookedCursor(cursor, normalizer)
+        yield utils.HookedCursor(cursor, normalizer, ntotal=ntotal)
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error
@@ -127,7 +128,7 @@ class FlavorsController(base.FlavorsBase):
     @utils.raises_conn_error
     def drop_all(self):
         self._col.drop()
-        self._col.ensure_index(FLAVORS_INDEX, unique=True)
+        self._col.create_index(FLAVORS_INDEX, unique=True)
 
 
 def _normalize(flavor, detailed=False):

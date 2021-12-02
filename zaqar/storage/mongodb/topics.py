@@ -81,7 +81,7 @@ class TopicController(storage.Topic):
         # allows for querying by project and project+name.
         # This is also useful for retrieving the queues list for
         # a specific project, for example. Order matters!
-        self._collection.ensure_index([('p_t', 1)], unique=True)
+        self._collection.create_index([('p_t', 1)], unique=True)
 
     # ----------------------------------------------------------------------
     # Helpers
@@ -196,6 +196,7 @@ class TopicController(storage.Topic):
         cursor = self._collection.find(query, projection=projection)
         cursor = cursor.limit(limit).sort('p_t')
         marker_name = {}
+        ntotal = self._collection.count_documents(query, limit=limit)
 
         def normalizer(record):
             topic = {'name': utils.descope_queue_name(record['p_t'])}
@@ -204,7 +205,7 @@ class TopicController(storage.Topic):
                 topic['metadata'] = record['m']
             return topic
 
-        yield utils.HookedCursor(cursor, normalizer)
+        yield utils.HookedCursor(cursor, normalizer, ntotal=ntotal)
         yield marker_name and marker_name['next']
 
     @utils.raises_conn_error

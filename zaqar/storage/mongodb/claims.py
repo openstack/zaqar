@@ -247,7 +247,7 @@ class ClaimController(storage.Claim):
                                                          {'$set': new_msg},
                                                          **kwargs)
                     dlq_collection = msg_ctrl._collection(dlq_name, project)
-                    if not dlq_collection:
+                    if dlq_collection is None:
                         LOG.warning(u"Failed to find the message collection "
                                     u"for queue %(dlq_name)s", {"dlq_name":
                                                                 dlq_name})

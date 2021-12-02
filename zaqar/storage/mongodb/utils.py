@@ -319,9 +319,10 @@ def retries_on_autoreconnect(func):
 
 class HookedCursor(object):
 
-    def __init__(self, cursor, denormalizer):
+    def __init__(self, cursor, denormalizer, ntotal=None):
         self.cursor = cursor
         self.denormalizer = denormalizer
+        self.ntotal = ntotal
 
     def __getattr__(self, attr):
         return getattr(self.cursor, attr)
@@ -330,11 +331,14 @@ class HookedCursor(object):
         return self
 
     def __len__(self):
-        return self.cursor.count(True)
+        return self.ntotal
 
     @raises_conn_error
     def next(self):
-        item = next(self.cursor)
+        try:
+            item = next(self.cursor)
+        except errors.InvalidOperation:
+            raise StopIteration()
         return self.denormalizer(item)
 
     def __next__(self):

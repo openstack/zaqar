@@ -142,10 +142,11 @@ class DataDriver(storage.DataDriverBase):
         message_volume = {'free': 0, 'claimed': 0, 'total': 0}
 
         for msg_col in [db.messages for db in self.message_databases]:
-            msg_count_claimed = msg_col.find({'c.id': {'$ne': None}}).count()
+            msg_count_claimed = msg_col.count_documents({'c.id':
+                                                        {'$ne': None}})
             message_volume['claimed'] += msg_count_claimed
 
-            msg_count_total = msg_col.find().count()
+            msg_count_total = msg_col.count_documents({})
             message_volume['total'] += msg_count_total
 
         message_volume['free'] = (message_volume['total'] -

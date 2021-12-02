@@ -43,7 +43,7 @@ class CatalogueController(base.CatalogueBase):
         super(CatalogueController, self).__init__(*args, **kwargs)
 
         self._col = self.driver.database.catalogue
-        self._col.ensure_index(CATALOGUE_INDEX, unique=True)
+        self._col.create_index(CATALOGUE_INDEX, unique=True)
 
     @utils.raises_conn_error
     def _insert(self, project, queue, pool, upsert):
@@ -56,8 +56,9 @@ class CatalogueController(base.CatalogueBase):
         fields = {'_id': 0}
 
         query = utils.scoped_query(None, project)
+        ntotal = self._col.count_documents(query)
         return utils.HookedCursor(self._col.find(query, fields),
-                                  _normalize)
+                                  _normalize, ntotal=ntotal)
 
     @utils.raises_conn_error
     def get(self, project, queue):
@@ -95,7 +96,7 @@ class CatalogueController(base.CatalogueBase):
     @utils.raises_conn_error
     def drop_all(self):
         self._col.drop()
-        self._col.ensure_index(CATALOGUE_INDEX, unique=True)
+        self._col.create_index(CATALOGUE_INDEX, unique=True)
 
 
 def _normalize(entry):

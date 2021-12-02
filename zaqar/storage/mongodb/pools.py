@@ -57,12 +57,12 @@ class PoolsController(base.PoolsBase):
         super(PoolsController, self).__init__(*args, **kwargs)
 
         self._col = self.driver.database.pools
-        self._col.ensure_index(POOLS_INDEX,
+        self._col.create_index(POOLS_INDEX,
                                background=True,
                                name='pools_name',
                                unique=True)
 
-        self._col.ensure_index(URI_INDEX,
+        self._col.create_index(URI_INDEX,
                                background=True,
                                name='pools_uri',
                                unique=True)
@@ -95,15 +95,16 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def _get_pools_by_flavor(self, flavor=None, detailed=False):
-        query = None
+        query = {}
         if flavor is None:
             query = {'f': None}
         elif flavor.get('name') is not None:
             query = {'f': flavor.get('name')}
         cursor = self._col.find(query,
                                 projection=_field_spec(detailed))
+        ntotal = self._col.count_documents(query)
         normalizer = functools.partial(_normalize, detailed=detailed)
-        return utils.HookedCursor(cursor, normalizer)
+        return utils.HookedCursor(cursor, normalizer, ntotal=ntotal)
 
     @utils.raises_conn_error
     def _create(self, name, weight, uri, flavor=None,
@@ -169,7 +170,7 @@ class PoolsController(base.PoolsBase):
     @utils.raises_conn_error
     def _drop_all(self):
         self._col.drop()
-        self._col.ensure_index(POOLS_INDEX, unique=True)
+        self._col.create_index(POOLS_INDEX, unique=True)
 
 
 def _normalize(pool, detailed=False):
