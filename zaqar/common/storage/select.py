@@ -25,7 +25,7 @@ def weighted(objs, key='weight', generator=random.randint):
     :param objs: a list of objects containing at least the field `key`
     :type objs: [dict]
     :param key: the field in each obj that corresponds to weight
-    :type key: six.text_type
+    :type key: str
     :param generator: a number generator taking two ints
     :type generator: function(int, int) -> int
     :return: an object

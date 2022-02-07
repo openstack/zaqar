@@ -32,7 +32,6 @@ them do, an AttributeError exception will be raised.
 import contextlib
 
 from oslo_log import log as logging
-import six
 
 from zaqar.common import decorators
 from zaqar.i18n import _
@@ -58,7 +57,7 @@ class Pipeline(object):
         for `method`.
 
         :params method: The method name to call on each stage
-        :type method: `six.text_type`
+        :type method: `str`
 
         :returns: A callable to consume the pipeline.
         """
@@ -88,7 +87,7 @@ class Pipeline(object):
                 try:
                     target = getattr(stage, method)
                 except AttributeError:
-                    sstage = six.text_type(stage)
+                    sstage = str(stage)
                     msgtmpl = _(u"Stage %(stage)s does not "
                                 "implement %(method)s")
                     LOG.debug(msgtmpl, {'stage': sstage, 'method': method})
