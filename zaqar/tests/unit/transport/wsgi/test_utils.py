@@ -13,9 +13,11 @@
 # the License.
 
 import io
-import json
 
 import falcon
+
+from oslo_serialization import jsonutils
+
 import testtools
 
 from zaqar.transport.wsgi import utils
@@ -113,7 +115,7 @@ class TestUtils(testtools.TestCase):
 
     def test_no_spec(self):
         obj = {u'body': {'event': 'start_backup'}, 'ttl': 300}
-        document = str(json.dumps(obj, ensure_ascii=False))
+        document = str(jsonutils.dumps(obj, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
         deserialized = utils.deserialize(doc_stream, len(document))
@@ -126,7 +128,7 @@ class TestUtils(testtools.TestCase):
 
     def test_no_spec_array(self):
         things = [{u'body': {'event': 'start_backup'}, 'ttl': 300}]
-        document = str(json.dumps(things, ensure_ascii=False))
+        document = str(jsonutils.dumps(things, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
         deserialized = utils.deserialize(doc_stream, len(document))
@@ -145,7 +147,7 @@ class TestUtils(testtools.TestCase):
     def test_deserialize_and_sanitize_json_obj(self):
         obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
 
-        document = str(json.dumps(obj, ensure_ascii=False))
+        document = str(jsonutils.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict, None), ('id', str, None)]
 
@@ -162,7 +164,7 @@ class TestUtils(testtools.TestCase):
     def test_deserialize_and_sanitize_json_array(self):
         array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
 
-        document = str(json.dumps(array, ensure_ascii=False))
+        document = str(jsonutils.dumps(array, ensure_ascii=False))
         stream = io.StringIO(document)
         spec = [('body', dict, None)]
 

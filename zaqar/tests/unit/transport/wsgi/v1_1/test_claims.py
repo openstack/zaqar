@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import datetime
-import json
 from unittest import mock
 
 import ddt
@@ -47,12 +46,12 @@ class TestClaimsMongoDB(base.V1_1Base):
         self.claims_path = self.queue_path + '/claims'
         self.messages_path = self.queue_path + '/messages'
 
-        doc = json.dumps({"_ttl": 60})
+        doc = jsonutils.dumps({"_ttl": 60})
 
         self.simulate_put(self.queue_path, body=doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
-        doc = json.dumps({'messages': [{'body': 239, 'ttl': 300}] * 10})
+        doc = jsonutils.dumps({'messages': [{'body': 239, 'ttl': 300}] * 10})
         self.simulate_post(self.queue_path + '/messages',
                            body=doc, headers=self.headers)
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
@@ -91,7 +90,7 @@ class TestClaimsMongoDB(base.V1_1Base):
     def test_unacceptable_ttl_or_grace(self, ttl_grace):
         ttl, grace = ttl_grace
         self.simulate_post(self.claims_path,
-                           body=json.dumps({'ttl': ttl, 'grace': grace}),
+                           body=jsonutils.dumps({'ttl': ttl, 'grace': grace}),
                            headers=self.headers)
 
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
@@ -101,7 +100,7 @@ class TestClaimsMongoDB(base.V1_1Base):
         href = self._get_a_claim()
 
         self.simulate_patch(href,
-                            body=json.dumps({'ttl': ttl}),
+                            body=jsonutils.dumps({'ttl': ttl}),
                             headers=self.headers)
 
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
@@ -281,7 +280,7 @@ class TestClaimsMongoDB(base.V1_1Base):
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
     def test_patch_nonexistent_claim_404s(self):
-        patch_data = json.dumps({'ttl': 100})
+        patch_data = jsonutils.dumps({'ttl': 100})
         self.simulate_patch(self.claims_path + '/a', body=patch_data,
                             headers=self.headers)
         self.assertEqual(falcon.HTTP_404, self.srmock.status)

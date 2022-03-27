@@ -9,8 +9,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-import json
 import logging
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 import requests
 import sys
@@ -79,7 +79,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             'URL-Expires': self.headers['url-expires'],
         }
         data = {'confirmed': confirmed_value}
-        requests.put(url=url, data=json.dumps(data), headers=headers)
+        requests.put(url=url, data=jsonutils.dumps(data), headers=headers)
 
 
 Handler = ServerHandler

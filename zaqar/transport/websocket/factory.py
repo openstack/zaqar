@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 from autobahn.asyncio import websocket
 import msgpack
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from zaqar.transport.websocket import protocol
@@ -67,7 +66,7 @@ class NotificationFactory(object):
             # NOTE(Eva-i): incoming data is encoded in JSON, let's convert it
             # to MsgPack, if notification should be encoded in binary format.
             if instance.notify_in_binary:
-                data = msgpack.packb(json.loads(data))
+                data = msgpack.packb(jsonutils.loads(data))
             instance.sendMessage(data, instance.notify_in_binary)
 
     def __call__(self):

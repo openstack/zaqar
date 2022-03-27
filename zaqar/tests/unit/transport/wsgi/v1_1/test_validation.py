@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 import falcon
 
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 from zaqar.tests.unit.transport.wsgi import base
 
@@ -78,11 +77,11 @@ class TestValidation(base.V1_1Base):
         max_messages_post_size = 256
 
         obj = {'a': 0, 'b': ''}
-        envelope_length = len(json.dumps(obj, separators=(',', ':')))
+        envelope_length = len(jsonutils.dumps(obj, separators=(',', ':')))
         obj['b'] = 'x' * (max_messages_post_size - envelope_length + 1)
 
         for long_body in ('a' * (max_messages_post_size - 2 + 1), obj):
-            doc = json.dumps([{'body': long_body, 'ttl': 100}])
+            doc = jsonutils.dumps([{'body': long_body, 'ttl': 100}])
             self.simulate_post(self.queue_path + '/messages',
                                self.project_id,
                                body=doc,

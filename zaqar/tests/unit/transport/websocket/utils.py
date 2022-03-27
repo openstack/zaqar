@@ -13,12 +13,13 @@
 # the License.
 
 import functools
-import json
 import msgpack
+from oslo_serialization import jsonutils
 
 
 def create_request(action, body, headers):
-    return json.dumps({"action": action, "body": body, "headers": headers})
+    return jsonutils.dumps({"action": action, "body": body,
+                            "headers": headers})
 
 
 def create_binary_request(action, body, headers):
@@ -42,7 +43,7 @@ def get_pack_tools(binary=None):
         loads = functools.partial(msgpack.unpackb)
         create_request_function = create_binary_request
     else:
-        dumps = json.dumps
-        loads = json.loads
+        dumps = jsonutils.dumps
+        loads = jsonutils.loads
         create_request_function = create_request
     return dumps, loads, create_request_function

@@ -17,7 +17,6 @@
 from collections import abc
 import datetime
 import hashlib
-import json
 import math
 import os
 import random
@@ -26,6 +25,7 @@ from unittest import mock
 import uuid
 
 import ddt
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import testtools
 from testtools import matchers
@@ -488,7 +488,7 @@ class MessageControllerTest(ControllerBaseTest):
         expected_checksum = ''
         if algorithm == 'MD5':
             md5 = hashlib.md5()
-            md5.update(json.dumps(message['body']).encode('utf-8'))
+            md5.update(jsonutils.dump_as_bytes(message['body']))
             expected_checksum = md5.hexdigest()
 
         self.assertEqual(expected_checksum, checksum)

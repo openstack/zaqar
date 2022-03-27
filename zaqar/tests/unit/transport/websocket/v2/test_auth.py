@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from unittest import mock
 
 import ddt
 from keystonemiddleware import auth_token
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from zaqar.common import consts
@@ -51,7 +51,7 @@ class AuthTest(base.V2Base):
     def test_post(self):
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'mytoken1'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
 
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(msg_mock.stop)
@@ -69,9 +69,9 @@ class AuthTest(base.V2Base):
         self.assertEqual('200 OK', responses[0])
 
         # Check that the env is available to future requests
-        req = json.dumps({'action': consts.MESSAGE_LIST,
-                          'body': {'queue_name': 'myqueue'},
-                          'headers': self.headers})
+        req = jsonutils.dumps({'action': consts.MESSAGE_LIST,
+                               'body': {'queue_name': 'myqueue'},
+                               'headers': self.headers})
         process_request = mock.patch.object(self.protocol._handler,
                                             'process_request').start()
         process_request.return_value = self.protocol._handler.create_response(
@@ -83,7 +83,7 @@ class AuthTest(base.V2Base):
     def test_post_between_auth(self):
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'mytoken1'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
 
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(msg_mock.stop)
@@ -94,7 +94,7 @@ class AuthTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, msg_mock.call_count)
-        resp = json.loads(msg_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(msg_mock.call_args[0][0])
         self.assertEqual(403, resp['headers']['status'])
 
     def test_failed_auth(self):
@@ -104,14 +104,14 @@ class AuthTest(base.V2Base):
         self.protocol._auth_in_binary = False
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
-        resp = json.loads(msg_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(msg_mock.call_args[0][0])
         self.assertEqual(401, resp['headers']['status'])
         self.assertEqual('authenticate', resp['request']['action'])
 
     def test_reauth(self):
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'mytoken1'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
 
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(msg_mock.stop)
@@ -128,7 +128,7 @@ class AuthTest(base.V2Base):
 
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'mytoken2'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
         self.protocol.onMessage(req, False)
         self.protocol._auth_start(self.env, lambda x, y: responses.append(x))
 
@@ -140,7 +140,7 @@ class AuthTest(base.V2Base):
     def test_reauth_after_auth_failure(self):
         headers = self.headers.copy()
         headers['X-Auth-Token'] = 'wrong_token'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
 
         msg_mock = mock.patch.object(self.protocol, 'sendMessage')
         self.addCleanup(msg_mock.stop)
@@ -149,7 +149,7 @@ class AuthTest(base.V2Base):
         # request will raise 401 error.
         self.protocol.onMessage(req, False)
         self.protocol._auth_response('401 error', 'Failed')
-        resp = json.loads(msg_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(msg_mock.call_args[0][0])
 
         self.assertEqual(401, resp['headers']['status'])
         self.assertEqual('authenticate', resp['request']['action'])
@@ -158,11 +158,11 @@ class AuthTest(base.V2Base):
         # try to authenticate again, "onMessage" should not return 403 because
         # that the _auth_app was cleaned after auth failure.
         headers['X-Auth-Token'] = 'mytoken'
-        req = json.dumps({'action': 'authenticate', 'headers': headers})
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
         self.protocol.onMessage(req, False)
 
         self.protocol._auth_response('200 OK', 'authenticate success')
-        resp = json.loads(msg_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(msg_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
 
     @ddt.data(True, False)
@@ -182,8 +182,6 @@ class AuthTest(base.V2Base):
         self.protocol._auth_response('401 error', 'Failed')
         self.assertEqual(1, msg_mock.call_count)
         arg = msg_mock.call_args[0][0]
-        if not in_binary:
-            arg = arg.decode()
         resp = loads(arg)
         self.assertEqual(401, resp['headers']['status'])
 
@@ -202,13 +200,13 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/myqueue/messages']
         })
-        req = json.dumps({'action': consts.MESSAGE_LIST,
-                          'body': {'queue_name': 'myqueue'},
-                          'headers': headers})
+        req = jsonutils.dumps({'action': consts.MESSAGE_LIST,
+                               'body': {'queue_name': 'myqueue'},
+                               'headers': headers})
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
 
     def test_signed_url_wrong_queue(self):
@@ -226,13 +224,13 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/otherqueue/messages']
         })
-        req = json.dumps({'action': consts.MESSAGE_LIST,
-                          'body': {'queue_name': 'otherqueue'},
-                          'headers': headers})
+        req = jsonutils.dumps({'action': consts.MESSAGE_LIST,
+                               'body': {'queue_name': 'otherqueue'},
+                               'headers': headers})
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(403, resp['headers']['status'])
 
     def test_signed_url_wrong_method(self):
@@ -250,12 +248,12 @@ class AuthTest(base.V2Base):
             'URL-Methods': ['GET'],
             'URL-Paths': ['/v2/queues/myqueue/messages']
         })
-        req = json.dumps({'action': consts.MESSAGE_DELETE,
-                          'body': {'queue_name': 'myqueue',
-                                   'message_id': '123'},
-                          'headers': headers})
+        req = jsonutils.dumps({'action': consts.MESSAGE_DELETE,
+                               'body': {'queue_name': 'myqueue',
+                                        'message_id': '123'},
+                               'headers': headers})
         self.protocol.onMessage(req, False)
 
         self.assertEqual(1, send_mock.call_count)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(403, resp['headers']['status'])

@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import uuid
 
 import ddt
+
+from oslo_serialization import jsonutils
 
 from zaqar.tests.functional import base
 from zaqar.tests.functional import helpers
@@ -54,7 +55,7 @@ class TestMessages(base.V1FunctionalTestBase):
         message2 = {"body": '', "ttl": 120}
 
         doc = [message1, message2]
-        overhead = len(json.dumps(doc))
+        overhead = len(jsonutils.dumps(doc))
 
         half_size = (self.limits.max_messages_post_size - overhead) // 2
         message1['body'] = helpers.generate_random_string(half_size)

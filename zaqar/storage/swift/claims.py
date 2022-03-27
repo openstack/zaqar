@@ -118,10 +118,10 @@ class ClaimController(storage.Claim):
             claim_count = msg.get('claim_count', 0)
             md5 = hashlib.md5()
             md5.update(
-                jsonutils.dumps(
+                jsonutils.dump_as_bytes(
                     {'body': msg['body'], 'claim_id': None,
                      'ttl': msg['ttl'],
-                     'claim_count': claim_count}).encode('utf-8'))
+                     'claim_count': claim_count}))
             md5 = md5.hexdigest()
             msg_ttl = max(msg['ttl'], msg_ts)
             move_to_dlq = False

@@ -14,10 +14,10 @@
 
 import copy
 import hashlib
-import json
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_serialization import jsonutils
 from osprofiler import profiler
 from stevedore import driver
 from urllib import parse as urllib_parse
@@ -229,7 +229,7 @@ def get_checksum(body, algorithm='MD5'):
     if body is None:
         return ''
     else:
-        checksum_body = json.dumps(body).encode('utf-8')
+        checksum_body = jsonutils.dump_as_bytes(body)
     # TODO(yangzhenyu): We may support other algorithms in future
     # versions, including SHA1, SHA256, SHA512, and so on.
     if algorithm == 'MD5':

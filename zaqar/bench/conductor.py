@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import multiprocessing as mp
 import os
+from oslo_serialization import jsonutils
 # NOTE(Eva-i): See https://github.com/gevent/gevent/issues/349. Let's keep
 # it until the new stable version of gevent(>=1.1) will be released.
 os.environ["GEVENT_RESOLVER"] = "ares"
@@ -100,4 +100,4 @@ def main():
             },
         }
 
-        print(json.dumps(stats))
+        print(jsonutils.dumps(stats))

@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import datetime
-import json
 from unittest import mock
 
 import ddt
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 from testtools import matchers
@@ -51,7 +51,7 @@ class MessagesBaseTest(base.V2Base):
 
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
             self.protocol.onMessage(req, False)
-            resp = json.loads(msg_mock.call_args[0][0].decode())
+            resp = jsonutils.loads(msg_mock.call_args[0][0])
             self.assertIn(resp['headers']['status'], [201, 204])
 
     def tearDown(self):
@@ -66,7 +66,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
     def _test_post(self, sample_messages, in_binary=False):
@@ -82,8 +82,6 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, in_binary)
         arg = send_mock.call_args[0][0]
-        if not in_binary:
-            arg = arg.decode()
         resp = loads(arg)
         self.assertEqual(201, resp['headers']['status'])
         self.msg_ids = resp['body']['message_ids']
@@ -109,8 +107,6 @@ class MessagesBaseTest(base.V2Base):
 
                 self.protocol.onMessage(req, in_binary)
                 arg = send_mock.call_args[0][0]
-                if not in_binary:
-                    arg = arg.decode()
                 resp = loads(arg)
                 self.assertEqual(404, resp['headers']['status'])
 
@@ -119,8 +115,6 @@ class MessagesBaseTest(base.V2Base):
 
                 self.protocol.onMessage(req, in_binary)
                 arg = send_mock.call_args[0][0]
-                if not in_binary:
-                    arg = arg.decode()
                 resp = loads(arg)
                 self.assertEqual(200, resp['headers']['status'])
 
@@ -143,8 +137,6 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, in_binary)
         arg = send_mock.call_args[0][0]
-        if not in_binary:
-            arg = arg.decode()
         resp = loads(arg)
         self.assertEqual(200, resp['headers']['status'])
         expected_ttls = set(m['ttl'] for m in sample_messages)
@@ -170,14 +162,14 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
         # Listing restriction
         body['limit'] = 21
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
         # Bulk deletion restriction
@@ -187,7 +179,7 @@ class MessagesBaseTest(base.V2Base):
                 "message_ids": del_msg_ids}
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data(True, False)
@@ -222,7 +214,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(201, resp['headers']['status'])
         msg_id = resp['body']['message_ids'][0]
 
@@ -233,7 +225,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
         self.assertEqual(self.default_message_ttl,
                          resp['body']['messages']['ttl'])
@@ -278,7 +270,7 @@ class MessagesBaseTest(base.V2Base):
 
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
         self.assertEqual(
             'Bad request. The value of the "ttl" field must be a int.',
@@ -299,7 +291,7 @@ class MessagesBaseTest(base.V2Base):
 
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
         self.assertEqual(
             'Bad request. Missing "body" field.', resp['body']['exception'])
@@ -314,7 +306,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
         self.assertEqual([], resp['body']['messages'])
 
@@ -338,7 +330,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
         action = consts.MESSAGE_GET
@@ -351,7 +343,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data(None, '[', '[]', '{}', '.')
@@ -369,7 +361,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data(-1, 59, 1209601)
@@ -385,7 +377,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     def test_exceeded_message_posting(self):
@@ -404,7 +396,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     @ddt.data('{"overflow": 9223372036854775808}',
@@ -423,7 +415,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     def test_delete(self):
@@ -441,7 +433,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
 
         # Delete queue
@@ -450,7 +442,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
         # Get non existent queue
@@ -458,7 +450,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(404, resp['headers']['status'])
 
         # Safe to delete non-existing ones
@@ -466,7 +458,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
     def test_bulk_delete(self):
@@ -484,7 +476,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
         action = consts.MESSAGE_GET
@@ -492,7 +484,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
         # Safe to delete non-existing ones
@@ -501,7 +493,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
         # Even after the queue is gone
@@ -510,7 +502,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
         action = consts.MESSAGE_DELETE_MANY
@@ -519,7 +511,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(204, resp['headers']['status'])
 
     def test_pop_delete(self):
@@ -535,7 +527,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
         self.assertEqual(2, len(resp['body']['messages']))
         self.assertEqual(239, resp['body']['messages'][0]['body'])
@@ -552,7 +544,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(404, resp['headers']['status'])
 
     def test_get_multiple_invalid_messages_404s(self):
@@ -566,7 +558,7 @@ class MessagesBaseTest(base.V2Base):
         req = test_utils.create_request(action, body, self.headers)
 
         self.protocol.onMessage(req, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(200, resp['headers']['status'])
 
     def test_delete_multiple_invalid_messages_204s(self):
@@ -581,7 +573,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     def _post_messages(self, queue_name, repeat=1):
@@ -598,7 +590,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage(req, False)
 
-        return json.loads(send_mock.call_args[0][0].decode())
+        return jsonutils.loads(send_mock.call_args[0][0])
 
     def test_invalid_request(self):
         send_mock = mock.Mock()
@@ -606,7 +598,7 @@ class MessagesBaseTest(base.V2Base):
 
         self.protocol.onMessage('foo', False)
         self.assertEqual(1, send_mock.call_count)
-        response = json.loads(send_mock.call_args[0][0].decode())
+        response = jsonutils.loads(send_mock.call_args[0][0])
         self.assertIn('error', response['body'])
         self.assertEqual({'status': 400}, response['headers'])
         self.assertEqual(

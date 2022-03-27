@@ -14,12 +14,12 @@
 # limitations under the License.
 
 from email.mime import text
-import json
 import smtplib
 import subprocess
 from urllib import parse as urllib_parse
 
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 from zaqar.i18n import _
 from zaqar.notification.notifier import MessageType
@@ -92,7 +92,7 @@ class MailtoTask(object):
                     # to our original messages(dicts) which will be later
                     # consumed in the storage controller. It seems safe though.
                     message['queue_name'] = subscription['source']
-                    msg = text.MIMEText(json.dumps(message))
+                    msg = text.MIMEText(jsonutils.dumps(message))
                     msg["to"] = subscriber.path
                     msg["from"] = subscription['options'].get('from', '')
                     subject_opt = subscription['options'].get('subject', '')

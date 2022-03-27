@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import multiprocessing as mp
 import random
 import sys
@@ -22,6 +21,7 @@ from gevent import monkey as curious_george
 curious_george.patch_all(thread=False, select=False)
 import gevent
 import marktime
+from oslo_serialization import jsonutils
 from zaqarclient.transport import errors
 
 from zaqar.bench import config
@@ -50,7 +50,7 @@ def load_messages():
     messages_path = CONF.messages_path or CONF.find_file(default_file_name)
     if messages_path:
         with open(messages_path) as f:
-            message_pool = json.load(f)
+            message_pool = jsonutils.load(f)
         message_pool.sort(key=lambda msg: msg['weight'])
         return message_pool
     else:

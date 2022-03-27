@@ -16,8 +16,8 @@
 import math
 import time
 
-import json
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 import requests
 
 from zaqar.common import consts
@@ -129,9 +129,10 @@ class WebhookTask(object):
                 msg['queue_name'] = subscription['source']
                 if 'post_data' in subscription['options']:
                     data = subscription['options']['post_data']
-                    data = data.replace('"$zaqar_message$"', json.dumps(msg))
+                    data = data.replace('"$zaqar_message$"',
+                                        jsonutils.dumps(msg))
                 else:
-                    data = json.dumps(msg)
+                    data = jsonutils.dumps(msg)
                 response = requests.post(subscription['subscriber'],
                                          data=data,
                                          headers=headers)

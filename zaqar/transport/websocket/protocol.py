@@ -15,12 +15,12 @@
 
 import datetime
 import io
-import json
 import sys
 
 from autobahn.asyncio import websocket
 import msgpack
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import pytz
 import txaio
@@ -84,7 +84,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             else:
                 if isinstance(payload, bytes):
                     payload = payload.decode()
-                payload = json.loads(payload)
+                payload = jsonutils.loads(payload)
         except Exception:
             if isBinary:
                 pack_name = 'binary (MessagePack)'
@@ -209,13 +209,14 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             self.sendMessage(msgpack.packb(resp.get_response()), True)
         else:
             pack_name = 'txt'
-            self.sendMessage(json.dumps(resp.get_response()).encode(), False)
+            self.sendMessage(jsonutils.dump_as_bytes(resp.get_response()),
+                             False)
         if LOG.isEnabledFor(logging.INFO):
             api = resp._request._api
             status = resp._headers['status']
             action = resp._request._action
             # Dump to JSON to print body without unicode prefixes on Python 2
-            body = json.dumps(resp._request._body)
+            body = jsonutils.dumps(resp._request._body)
             var_dict = {'api': api, 'pack_name': pack_name, 'status':
                         status, 'action': action, 'body': body}
             LOG.info('Response: API %(api)s %(pack_name)s, %(status)s. '

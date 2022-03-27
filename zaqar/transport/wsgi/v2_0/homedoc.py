@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-import json
+from oslo_serialization import jsonutils
 
 
 # NOTE(kgriffs): http://tools.ietf.org/html/draft-nottingham-json-home-03
@@ -381,7 +381,7 @@ class Resource(object):
         if conf.admin_mode:
             JSON_HOME['resources'].update(ADMIN_RESOURCES)
 
-        document = json.dumps(JSON_HOME, ensure_ascii=False, indent=4)
+        document = jsonutils.dumps(JSON_HOME, ensure_ascii=False, indent=4)
         self.document_utf8 = document.encode('utf-8')
 
     def on_get(self, req, resp, project_id):

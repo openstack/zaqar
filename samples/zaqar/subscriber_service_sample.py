@@ -9,8 +9,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-import json
 import logging
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 import requests
 import sys
@@ -48,7 +48,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         logging.warning('=================== POST =====================')
         data_string = str(
             self.rfile.read(int(self.headers['Content-Length'])))
-        self.data = json.loads(data_string)
+        self.data = jsonutils.loads(data_string)
         if _AUTO_CONFIRM:
             self._send_confirm_request()
             message = 'OK'
@@ -72,7 +72,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             'URL-Expires': self.data['URL-Expires'],
         }
         data = {'confirmed': True}
-        requests.put(url=url, data=json.dumps(data), headers=headers)
+        requests.put(url=url, data=jsonutils.dumps(data), headers=headers)
 
 
 Handler = ServerHandler

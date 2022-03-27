@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+from oslo_serialization import jsonutils
 
 from oslo_utils import encodeutils
 
@@ -45,7 +45,7 @@ def read_json(stream, len):
     """
     try:
         content = encodeutils.safe_decode(stream.read(len), 'utf-8')
-        result = json.loads(content, parse_int=_json_int)
+        result = jsonutils.loads(content, parse_int=_json_int)
         if not isinstance(result, dict) and not isinstance(result, list):
             raise MalformedJSON()
         return result
@@ -60,4 +60,4 @@ def to_json(obj):
 
     :param obj: a JSON-serializable object
     """
-    return json.dumps(obj, ensure_ascii=False)
+    return jsonutils.dumps(obj, ensure_ascii=False)

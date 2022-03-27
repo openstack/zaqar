@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import functools
-import json
 
 from falcon import testing as ftest
 from oslo_serialization import jsonutils
@@ -66,7 +65,7 @@ class Client(object):
         """Does  http POST."""
 
         if "data" in kwargs:
-            kwargs['data'] = json.dumps(kwargs["data"])
+            kwargs['data'] = jsonutils.dumps(kwargs["data"])
 
         return self.session.post(url, **kwargs)
 
@@ -75,7 +74,7 @@ class Client(object):
         """Does  http PUT."""
 
         if "data" in kwargs:
-            kwargs['data'] = json.dumps(kwargs["data"])
+            kwargs['data'] = jsonutils.dumps(kwargs["data"])
 
         return self.session.put(url, **kwargs)
 
@@ -88,7 +87,7 @@ class Client(object):
     def patch(self, url=None, **kwargs):
         """Does  http PATCH."""
         if "data" in kwargs:
-            kwargs['data'] = json.dumps(kwargs["data"])
+            kwargs['data'] = jsonutils.dumps(kwargs["data"])
         return self.session.patch(url, **kwargs)
 
 
@@ -149,7 +148,7 @@ class WSGIClient(object):
         elif isinstance(data, str):
             body = data
         else:
-            body = json.dumps(data, ensure_ascii=False)
+            body = jsonutils.dumps(data, ensure_ascii=False)
 
         parsed_url = urllib_parse.urlparse(url)
 

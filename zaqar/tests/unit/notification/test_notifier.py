@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from unittest import mock
 import uuid
 
 import ddt
+
+from oslo_serialization import jsonutils
 
 from zaqar.common import urls
 from zaqar.notification import notifier
@@ -86,7 +87,7 @@ class NotifierTest(testing.TestBase):
             # often fail, because dict keys can be serialized in different
             # order inside the string.
             for call in mock_post.call_args_list:
-                call[1]['data'] = json.loads(call[1]['data'])
+                call[1]['data'] = jsonutils.loads(call[1]['data'])
             # These are not real calls. In real calls each "data" argument is
             # serialized by json.dumps. But we made a substitution before,
             # so it will work.
@@ -116,7 +117,7 @@ class NotifierTest(testing.TestBase):
         post_data = {'foo': 'bar', 'egg': '$zaqar_message$'}
         subscription = [{'subscriber': 'http://trigger_me',
                          'source': 'fake_queue',
-                         'options': {'post_data': json.dumps(post_data)}}]
+                         'options': {'post_data': jsonutils.dumps(post_data)}}]
         ctlr = mock.MagicMock()
         ctlr.list = mock.Mock(return_value=iter([subscription, {}]))
         queue_ctlr = mock.MagicMock()
@@ -134,7 +135,7 @@ class NotifierTest(testing.TestBase):
             # often fail, because dict keys can be serialized in different
             # order inside the string.
             for call in mock_post.call_args_list:
-                call[1]['data'] = json.loads(call[1]['data'])
+                call[1]['data'] = jsonutils.loads(call[1]['data'])
             # These are not real calls. In real calls each "data" argument is
             # serialized by json.dumps. But we made a substitution before,
             # so it will work.
@@ -179,7 +180,7 @@ class NotifierTest(testing.TestBase):
             # often fail, because dict keys can be serialized in different
             # order inside the string.
             for call in mock_post.call_args_list:
-                call[1]['data'] = json.loads(call[1]['data'])
+                call[1]['data'] = jsonutils.loads(call[1]['data'])
             # These are not real calls. In real calls each "data" argument is
             # serialized by json.dumps. But we made a substitution before,
             # so it will work.
@@ -216,16 +217,16 @@ class NotifierTest(testing.TestBase):
                ' %(to)s\nfrom: %(from)s\nsubject: %(subject)s\n\n%(body)s')
         mail1 = msg % {'to': subscription[0]['subscriber'][7:],
                        'from': 'zaqar@example.com', 'subject': 'Hello',
-                       'body': json.dumps(self.notifications[0])}
+                       'body': jsonutils.dumps(self.notifications[0])}
         mail2 = msg % {'to': subscription[0]['subscriber'][7:],
                        'from': 'zaqar@example.com', 'subject': 'Hello',
-                       'body': json.dumps(self.notifications[1])}
+                       'body': jsonutils.dumps(self.notifications[1])}
         mail3 = msg % {'to': subscription[1]['subscriber'][7:],
                        'from': 'zaqar@example.com', 'subject': 'Hello',
-                       'body': json.dumps(self.notifications[0])}
+                       'body': jsonutils.dumps(self.notifications[0])}
         mail4 = msg % {'to': subscription[1]['subscriber'][7:],
                        'from': 'zaqar@example.com', 'subject': 'Hello',
-                       'body': json.dumps(self.notifications[1])}
+                       'body': jsonutils.dumps(self.notifications[1])}
 
         def _communicate(msg):
             called.add(msg)
@@ -246,13 +247,15 @@ class NotifierTest(testing.TestBase):
         for mail in mails:
             options, body = mail.split('\n\n')
             mail_options.append(options)
-            mail_bodies.append(json.dumps(json.loads(body), sort_keys=True))
+            mail_bodies.append(jsonutils.dumps(jsonutils.loads(body),
+                               sort_keys=True))
         called_options = []
         called_bodies = []
         for call in called:
             options, body = call.split('\n\n')
             called_options.append(options)
-            called_bodies.append(json.dumps(json.loads(body), sort_keys=True))
+            called_bodies.append(jsonutils.dumps(jsonutils.loads(body),
+                                 sort_keys=True))
         self.assertEqual(sorted(mail_options), sorted(called_options))
         self.assertEqual(sorted(mail_bodies), sorted(called_bodies))
 
@@ -286,7 +289,7 @@ class NotifierTest(testing.TestBase):
             driver.executor.shutdown()
             self.assertEqual(2, mock_post.call_count)
             self.assertEqual(self.notifications[1],
-                             json.loads(mock_post.call_args[1]['data']))
+                             jsonutils.loads(mock_post.call_args[1]['data']))
 
     @mock.patch('requests.post')
     def test_send_confirm_notification(self, mock_request):
@@ -310,7 +313,7 @@ class NotifierTest(testing.TestBase):
                        'X-Project-ID', 'URL-Signature', 'URL-Paths', 'Message',
                        'URL-Expires', 'Message_Type', 'WSGISubscribeURL',
                        'WebSocketSubscribeURL' 'UnsubscribeBody']
-        actual_args = json.loads(mock_request.call_args[1]['data']).keys()
+        actual_args = jsonutils.loads(mock_request.call_args[1]['data']).keys()
         self.assertEqual(expect_args.sort(),
                          list(actual_args).sort())
 

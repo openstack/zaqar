@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 from unittest import mock
 
 import ddt
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 import zaqar
@@ -43,13 +43,13 @@ class TestMessagingProtocol(base.TestBase):
         self.protocol.sendMessage = send_mock
 
         self.protocol.onMessage(payload, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
         payload = "123"
 
         self.protocol.onMessage(payload, False)
-        resp = json.loads(send_mock.call_args[0][0].decode())
+        resp = jsonutils.loads(send_mock.call_args[0][0])
         self.assertEqual(400, resp['headers']['status'])
 
     def test_on_message_with_invalid_input_binary(self):
@@ -92,8 +92,6 @@ class TestMessagingProtocol(base.TestBase):
         self.protocol.sendMessage = send_mock
         self.protocol.onMessage(req, in_binary)
         arg = send_mock.call_args[0][0]
-        if not in_binary:
-            arg = arg.decode()
         resp = loads(arg)
         self.assertEqual(200, resp['headers']['status'])
 

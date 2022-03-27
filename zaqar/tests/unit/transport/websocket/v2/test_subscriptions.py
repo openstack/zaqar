@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import time
 from unittest import mock
 
 import msgpack
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from zaqar.common import auth
@@ -47,7 +47,7 @@ class SubscriptionTest(base.V1_1Base):
                                         body, self.headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp.decode())
+            resp = jsonutils.loads(resp)
             self.assertIn(resp['headers']['status'], [201, 204])
 
         with mock.patch.object(self.protocol, 'sendMessage') as msg_mock:
@@ -66,7 +66,7 @@ class SubscriptionTest(base.V1_1Base):
                                         body, self.headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp.decode())
+            resp = jsonutils.loads(resp)
             self.assertEqual(resp['headers']['status'], 204)
 
         sender.side_effect = validator
@@ -110,7 +110,7 @@ class SubscriptionTest(base.V1_1Base):
                         'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(response, json.loads(sender.call_args[0][0].decode()))
+        self.assertEqual(response, jsonutils.loads(sender.call_args[0][0]))
 
         # Trigger protocol close
         self.protocol.onClose(True, 100, None)
@@ -180,7 +180,7 @@ class SubscriptionTest(base.V1_1Base):
                                  'subscription_id': str(sub)},
                         'api': 'v2', 'headers': self.headers}}
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(response, json.loads(sender.call_args[0][0].decode()))
+        self.assertEqual(response, jsonutils.loads(sender.call_args[0][0]))
 
     def test_subscription_create_no_queue(self):
         action = consts.SUBSCRIPTION_CREATE
@@ -214,7 +214,7 @@ class SubscriptionTest(base.V1_1Base):
                         'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
-        self.assertEqual(response, json.loads(sender.call_args[0][0].decode()))
+        self.assertEqual(response, jsonutils.loads(sender.call_args[0][0]))
 
     def test_subscription_get(self):
         sub = self.boot.storage.subscription_controller.create(
@@ -246,7 +246,7 @@ class SubscriptionTest(base.V1_1Base):
                         'api': 'v2', 'headers': self.headers}}
 
         self.assertEqual(1, sender.call_count)
-        response = json.loads(sender.call_args[0][0].decode())
+        response = jsonutils.loads(sender.call_args[0][0])
         # Get and remove age from the actual response.
         actual_sub_age = response['body'].pop('age')
         self.assertLessEqual(0, actual_sub_age)
@@ -282,7 +282,7 @@ class SubscriptionTest(base.V1_1Base):
                         'body': {'queue_name': 'kitkat'},
                         'api': 'v2', 'headers': self.headers}}
         self.assertEqual(1, sender.call_count)
-        response = json.loads(sender.call_args[0][0].decode())
+        response = jsonutils.loads(sender.call_args[0][0])
         # Get and remove age from the actual response.
         actual_sub_age = response['body']['subscriptions'][0].pop('age')
         self.assertLessEqual(0, actual_sub_age)
@@ -334,8 +334,8 @@ class SubscriptionTest(base.V1_1Base):
 
         # Check that the server responded in text format to the message
         # creation request
-        message_create_response = json.loads(
-            sender.call_args_list[1][0][0].decode())
+        message_create_response = jsonutils.loads(
+            sender.call_args_list[1][0][0])
         self.assertEqual(201, message_create_response['headers']['status'])
 
         # Fetch webhook notification that was intended to arrive to
@@ -368,7 +368,7 @@ class SubscriptionTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
 
         def validator(resp, isBinary):
-            resp = json.loads(resp.decode())
+            resp = jsonutils.loads(resp)
             self.assertEqual(503, resp['headers']['status'])
 
         sender.side_effect = validator

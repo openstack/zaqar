@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from testtools import testcase
@@ -39,8 +39,8 @@ class TestQueues(base.V1_1FunctionalTestBase):
 
     def test_list_empty(self):
         self.client.send(
-            json.dumps({'action': 'queue_list', 'headers': self.headers}))
-        response = json.loads(self.client.recv())
+            jsonutils.dumps({'action': 'queue_list', 'headers': self.headers}))
+        response = jsonutils.loads(self.client.recv())
         self.assertEqual(
             {'body': {'queues': []},
              'headers': {'status': 200},
@@ -50,10 +50,10 @@ class TestQueues(base.V1_1FunctionalTestBase):
 
     def test_list(self):
         self.client.send(
-            json.dumps({'action': 'queue_create',
-                        'body': {'queue_name': 'my_queue'},
-                        'headers': self.headers}))
-        response = json.loads(self.client.recv())
+            jsonutils.dumps({'action': 'queue_create',
+                             'body': {'queue_name': 'my_queue'},
+                             'headers': self.headers}))
+        response = jsonutils.loads(self.client.recv())
         self.assertEqual(
             {'body': 'Queue my_queue created.',
              'headers': {'status': 201},
@@ -62,8 +62,8 @@ class TestQueues(base.V1_1FunctionalTestBase):
                          'headers': self.headers}},
             response)
         self.client.send(
-            json.dumps({'action': 'queue_list', 'headers': self.headers}))
-        response = json.loads(self.client.recv())
+            jsonutils.dumps({'action': 'queue_list', 'headers': self.headers}))
+        response = jsonutils.loads(self.client.recv())
         self.assertEqual(
             {'body': {'queues': [{'name': 'my_queue'}]},
              'headers': {'status': 200},

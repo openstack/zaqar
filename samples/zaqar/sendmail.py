@@ -14,13 +14,13 @@
 
 from email.mime.text import MIMEText
 from email.parser import Parser
-import json
 import smtplib
 import sys
 
 from keystoneauth1 import loading
 from keystoneauth1 import session as ks_session
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 import requests
 import retrying
 
@@ -178,7 +178,7 @@ def prepare_msg(msg_str):
 
     msg_subject = headers['subject']
     if not headers['subject']:
-        alarm_info = json.loads(payload)['body']
+        alarm_info = jsonutils.loads(payload)['body']
         subject = msg_subject + alarm_info['alarm_name']
         template = generate_subbody(mail_alarm_info,
                                     reason=alarm_info['reason'],
