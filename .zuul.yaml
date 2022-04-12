@@ -77,7 +77,6 @@
     queue: zaqar
     templates:
       - check-requirements
-      - openstack-lower-constraints-jobs
       - openstack-python3-ussuri-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
@@ -92,12 +91,6 @@
         - zaqar-grenade-mongodb
         - zaqar-grenade-redis
         - zaqar-grenade-swift
-        # TripleO jobs that deploy Zaqar.
-        # Note we don't use a project-template here, so it's easier
-        # to disable voting on one specific job if things go wrong.
-        # If you need any support to debug these jobs in case of
-        # failures, please reach us on #tripleo IRC channel.
-        - tripleo-ci-centos-7-scenario002-standalone
         - zaqar-rally:
             voting: false
     gate:
@@ -107,4 +100,3 @@
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
-        - tripleo-ci-centos-7-scenario002-standalone
