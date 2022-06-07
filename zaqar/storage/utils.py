@@ -86,7 +86,12 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
 
     mode = 'control' if control_mode else 'data'
     driver_type = 'zaqar.{0}.storage'.format(mode)
-    storage_type = urllib_parse.urlparse(uri).scheme or default_store
+    # Note(wanghao): In python3.9, urlparse will return 'localhost' as scheme
+    # instead of '' in python3.8 when uri string is 'localhost:xxxxx'. So there
+    # need to handle this change.
+    storage_type = urllib_parse.urlparse(uri).scheme
+    if storage_type == '' or storage_type == 'localhost':
+        storage_type = default_store
 
     try:
         mgr = driver.DriverManager(driver_type, storage_type,
