@@ -55,17 +55,25 @@ class PoolsController(base.PoolsBase):
 
     def __init__(self, *args, **kwargs):
         super(PoolsController, self).__init__(*args, **kwargs)
-
+        # To avoid creating unique index twice
+        pools_index_str = '_'.join(
+            map(lambda x: '%s_%s' % (x[0], x[1]), POOLS_INDEX)
+        )
+        uri_index_str = '_'.join(
+            map(lambda x: '%s_%s' % (x[0], x[1]), URI_INDEX)
+        )
         self._col = self.driver.database.pools
-        self._col.create_index(POOLS_INDEX,
-                               background=True,
-                               name='pools_name',
-                               unique=True)
-
-        self._col.create_index(URI_INDEX,
-                               background=True,
-                               name='pools_uri',
-                               unique=True)
+        indexes = self._col.index_information().keys()
+        if pools_index_str and pools_index_str not in indexes:
+            self._col.create_index(POOLS_INDEX,
+                                   background=True,
+                                   name='pools_name',
+                                   unique=True)
+        if uri_index_str and uri_index_str not in indexes:
+            self._col.create_index(URI_INDEX,
+                                   background=True,
+                                   name='pools_uri',
+                                   unique=True)
 
     @utils.raises_conn_error
     def _list(self, marker=None, limit=10, detailed=False):

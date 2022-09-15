@@ -46,12 +46,17 @@ class FlavorsController(base.FlavorsBase):
 
     def __init__(self, *args, **kwargs):
         super(FlavorsController, self).__init__(*args, **kwargs)
-
+        # To avoid creating unique index twice
+        flavors_index_str = '_'.join(
+            map(lambda x: '%s_%s' % (x[0], x[1]), FLAVORS_INDEX)
+        )
         self._col = self.driver.database.flavors
-        self._col.create_index(FLAVORS_INDEX,
-                               background=True,
-                               name='flavors_name',
-                               unique=True)
+        indexes = self._col.index_information().keys()
+        if flavors_index_str and flavors_index_str not in indexes:
+            self._col.create_index(FLAVORS_INDEX,
+                                   background=True,
+                                   name='flavors_name',
+                                   unique=True)
         self._col.create_index(FLAVORS_STORAGE_POOL_INDEX,
                                background=True,
                                name='flavors_storage_pool_group_name')

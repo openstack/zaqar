@@ -50,15 +50,16 @@ function cleanup_zaqar {
 
 # cleanup_zaqar_mongodb() - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
+# After mongodb 6.0, the mongo shell has been remove, now using mongosh.
 function cleanup_zaqar_mongodb {
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! mongo zaqar --eval 'db.dropDatabase();'; do sleep 1; done"; then
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! mongosh zaqar --eval 'db.dropDatabase();'; do sleep 1; done"; then
         die $LINENO "Mongo DB did not start"
     else
-        full_version=$(mongo zaqar --eval 'db.dropDatabase();')
-        mongo_version=`echo $full_version | cut -d' ' -f4`
-        required_mongo_version='2.2'
+        full_version=$(mongosh zaqar --eval 'db.dropDatabase();')
+        mongo_version=`echo $full_version | cut -d' ' -f11`
+        required_mongo_version='6.0'
         if [[ $mongo_version < $required_mongo_version ]]; then
-            die $LINENO "Zaqar needs Mongo DB version >= 2.2 to run."
+            die $LINENO "Zaqar needs Mongo DB version >= 6.0 to run."
         fi
     fi
 }
@@ -186,15 +187,18 @@ function configure_mongodb {
     # per database.
     pip_install pymongo
     if is_ubuntu; then
-        install_package mongodb-server
-        if ! grep -qF "smallfiles = true" /etc/mongodb.conf; then
-            echo "smallfiles = true" | sudo tee --append /etc/mongodb.conf > /dev/null
-        fi
-        restart_service mongodb
+        # NOTE: To fix the mongodb's issue in ubuntu 22.04 LTS
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt update
+        curl -LO http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.20_amd64.deb
+        sudo dpkg -i ./libssl1.1_1.1.1-1ubuntu2.1~18.04.20_amd64.deb
+
+        install_package mongodb-org
+        restart_service mongod
     elif is_fedora; then
         install_package mongodb
         install_package mongodb-server
-        sudo sed -i '/--smallfiles/!s/OPTIONS=\"/OPTIONS=\"--smallfiles /' /etc/sysconfig/mongod
         restart_service mongod
     fi
 }

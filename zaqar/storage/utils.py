@@ -19,7 +19,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from osprofiler import profiler
-from stevedore import driver
+import stevedore
 from urllib import parse as urllib_parse
 
 from zaqar.common import errors
@@ -94,8 +94,9 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
         storage_type = default_store
 
     try:
-        mgr = driver.DriverManager(driver_type, storage_type,
-                                   invoke_on_load=False)
+        mgr = stevedore.DriverManager(namespace=driver_type,
+                                      name=storage_type,
+                                      invoke_on_load=False)
 
         return mgr.driver
 
@@ -138,10 +139,10 @@ def load_storage_driver(conf, cache, storage_type=None,
         _invoke_args = (conf, cache, control_driver)
 
     try:
-        mgr = driver.DriverManager(driver_type,
-                                   storage_type,
-                                   invoke_on_load=True,
-                                   invoke_args=_invoke_args)
+        mgr = stevedore.DriverManager(namespace=driver_type,
+                                      name=storage_type,
+                                      invoke_on_load=True,
+                                      invoke_args=_invoke_args)
 
         if conf.profiler.enabled:
             if ((mode == "control" and conf.profiler.trace_management_store) or

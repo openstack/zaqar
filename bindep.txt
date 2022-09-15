@@ -3,7 +3,6 @@
 # their own bindep.txt files if the list below is not
 # working for them.
 
-mongodb [platform:dpkg]
 mongodb-server [platform:rpm !platform:opensuseproject]
 dev-db/mongodb [platform:gentoo]
 redis [platform:rpm]
