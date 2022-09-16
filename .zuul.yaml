@@ -91,12 +91,6 @@
         - zaqar-grenade-mongodb
         - zaqar-grenade-redis
         - zaqar-grenade-swift
-        # TripleO jobs that deploy Zaqar.
-        # Note we don't use a project-template here, so it's easier
-        # to disable voting on one specific job if things go wrong.
-        # If you need any support to debug these jobs in case of
-        # failures, please reach us on #tripleo IRC channel.
-        - tripleo-ci-centos-7-scenario002-standalone
         # Heat job that deploy Zaqar
         - heat-functional-convg-mysql-lbaasv2
         - zaqar-rally:
@@ -109,5 +103,4 @@
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
-        - tripleo-ci-centos-7-scenario002-standalone
         - heat-functional-convg-mysql-lbaasv2
