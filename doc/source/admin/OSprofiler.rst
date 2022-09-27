@@ -25,6 +25,7 @@ OSprofiler now supports some kind of backends, such as Ceilometer, ElasticSearch
 
 .. note:: 1. Ceilometer is only used for data collection, and Messaging is only
    used for data transfer. So Ceilometer only works when Messaging is enabled.
+
    2. ElasticSearch and MongoDB support both data collection and transfer. So
    they can be used standalone.
 
@@ -79,12 +80,12 @@ So In this example, we should add the following config options::
     [oslo_messaging_notifications]
     topics = notifications, profiler
 
-Then restart Zaqar service
+Then restart Zaqar service.
 
 Command Line
 ------------
 
-we can use OpenStack Client to analyse the user request now. For example, if we
+We can use OpenStack Client to analyse the user request now. For example, if we
 want to know the performance for "queue list", we can do like this:
 
 1. OpenStack Client now supports OSprofiler by default. Only thing we need to
