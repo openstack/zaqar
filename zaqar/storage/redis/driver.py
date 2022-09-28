@@ -318,14 +318,14 @@ def _get_redis_client(driver):
         return sentinel.master_for(connection_uri.master)
 
     elif connection_uri.strategy == STRATEGY_TCP:
-        return redis.StrictRedis(
+        return redis.Redis(
             host=connection_uri.hostname,
             port=connection_uri.port,
             db=connection_uri.dbid,
             password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
     else:
-        return redis.StrictRedis(
+        return redis.Redis(
             unix_socket_path=connection_uri.unix_socket_path,
             db=connection_uri.dbid,
             password=connection_uri.password,
