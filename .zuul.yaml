@@ -74,6 +74,7 @@
       rally_task: rally-jobs/zaqar-zaqar.yaml
 
 - project:
+    queue: zaqar
     templates:
       - check-requirements
       - openstack-lower-constraints-jobs
@@ -91,16 +92,12 @@
         - zaqar-grenade-mongodb
         - zaqar-grenade-redis
         - zaqar-grenade-swift
-        # Heat job that deploy Zaqar
-        - heat-functional-convg-mysql-lbaasv2
         - zaqar-rally:
             voting: false
     gate:
-      queue: zaqar
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
-        - heat-functional-convg-mysql-lbaasv2
