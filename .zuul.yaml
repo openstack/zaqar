@@ -93,7 +93,6 @@
       - openstack/networking-bgpvpn
       - openstack/neutron
       - openstack/neutron-fwaas
-      - openstack/neutron-lbaas
       - openstack/neutron-vpnaas
       - openstack/octavia
       - openstack/panko
@@ -109,6 +108,7 @@
       - openstack/zaqar-ui
 
 - project:
+    queue: zaqar
     templates:
       - check-requirements
       - openstack-lower-constraints-jobs
@@ -133,16 +133,12 @@
         # If you need any support to debug these jobs in case of
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario002-standalone
-        # Heat job that deploy Zaqar
-        - heat-functional-convg-mysql-lbaasv2
         - zaqar-rally:
             voting: false
     gate:
-      queue: zaqar
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-mongodb
         - zaqar-tempest-redis
         - zaqar-tempest-swift
         - tripleo-ci-centos-7-scenario002-standalone
-        - heat-functional-convg-mysql-lbaasv2
