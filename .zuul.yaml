@@ -74,9 +74,9 @@
       rally_task: rally-jobs/zaqar-zaqar.yaml
 
 - project:
+    queue: zaqar
     templates:
       - check-requirements
-      - openstack-lower-constraints-jobs
       - openstack-python3-yoga-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
@@ -94,7 +94,6 @@
         - zaqar-rally:
             voting: false
     gate:
-      queue: zaqar
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
