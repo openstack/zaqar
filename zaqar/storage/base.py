@@ -105,7 +105,8 @@ class DataDriverBase(DriverBase, metaclass=abc.ABCMeta):
         """Check whether the storage is ready."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def capabilities(self):
         """Returns storage's capabilities."""
         return self.BASE_CAPABILITIES
@@ -226,17 +227,20 @@ class DataDriverBase(DriverBase, metaclass=abc.ABCMeta):
     def queue_controller(self):
         return self.control_driver.queue_controller
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def message_controller(self):
         """Returns the driver's message controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def claim_controller(self):
         """Returns the driver's claim controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def subscription_controller(self):
         """Returns the driver's subscription controller."""
         raise NotImplementedError
@@ -264,27 +268,32 @@ class ControlDriverBase(DriverBase, metaclass=abc.ABCMeta):
     :type cache: `dogpile.cache.region.CacheRegion`
     """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def catalogue_controller(self):
         """Returns the driver's catalogue controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def pools_controller(self):
         """Returns storage's pool management controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def flavors_controller(self):
         """Returns storage's flavor management controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def queue_controller(self):
         """Returns the driver's queue controller."""
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def topic_controller(self):
         """Returns the driver's topic controller."""
         raise NotImplementedError
