@@ -74,6 +74,7 @@
       rally_task: rally-jobs/zaqar-zaqar.yaml
 
 - project:
+    queue: zaqar
     templates:
       - openstack-python3-jobs
       - openstack-python3-jobs-arm64
