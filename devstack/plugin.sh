@@ -180,9 +180,9 @@ function configure_mongodb {
         if [[ $ubuntu_version == '22.04' ]]; then
             wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+            echo "deb http://security.ubuntu.com/ubuntu bionic-security main" | sudo tee /etc/apt/sources.list.d/bionic-security.list
             sudo apt update
-            curl -LO http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.21_amd64.deb
-            sudo dpkg -i ./libssl1.1_1.1.1-1ubuntu2.1~18.04.21_amd64.deb
+            install_package libssl1.1
             install_package mongodb-org
             restart_service mongod
         else
