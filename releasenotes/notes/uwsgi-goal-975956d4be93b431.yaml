@@ -1,6 +1,0 @@
-deprecations:
-  - |
-    Set "wsgi-file = zaqar/transport/wsgi/app.py" in uwsgi config file is
-    deprecated and this way is removed in Bobcat release. Please use something
-    like (Ubuntu for example): "wsgi-file = /usr/local/bin/zaqar-wsgi" after
-    installing Zaqar.
