@@ -1101,9 +1101,9 @@ class ClaimControllerTest(ControllerBaseTest):
         self.assertEqual({"key": "value"}, expected_msg["body"])
 
     def test_delay_queue(self):
-        meta = {'ttl': 1, 'grace': 0}
+        meta = {'ttl': 2, 'grace': 0}
         # Set default message delay for queue.
-        metadata = {'_default_message_delay': 2}
+        metadata = {'_default_message_delay': 3}
         self.queue_controller.set_metadata(self.queue_name,
                                            metadata,
                                            project=self.project)
@@ -1128,12 +1128,12 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
         self.assertIsNone(claim_id)
         self.assertEqual(0, len(list(messages)))
-        time.sleep(3)
+        time.sleep(4)
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
         self.assertIsNotNone(claim_id)
         self.assertEqual(1, len(list(messages)))
-        time.sleep(1)
+        time.sleep(2)
         self.message_controller.delete(self.queue_name, ids[0],
                                        project=self.project)
 
@@ -1154,12 +1154,12 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
         self.assertIsNone(claim_id)
         self.assertEqual(0, len(list(messages)))
-        time.sleep(1)
+        time.sleep(2)
         claim_id, messages = self.controller.create(self.queue_name, meta,
                                                     project=self.project)
         self.assertIsNotNone(claim_id)
         self.assertEqual(1, len(list(messages)))
-        time.sleep(1)
+        time.sleep(2)
         self.message_controller.delete(self.queue_name, ids[0],
                                        project=self.project)
 
@@ -1180,7 +1180,7 @@ class ClaimControllerTest(ControllerBaseTest):
                                                     project=self.project)
         self.assertIsNotNone(claim_id)
         self.assertEqual(1, len(list(messages)))
-        time.sleep(1)
+        time.sleep(2)
         self.message_controller.delete(self.queue_name, ids[0],
                                        project=self.project)
 

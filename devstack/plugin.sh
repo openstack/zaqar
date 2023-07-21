@@ -197,6 +197,7 @@ function configure_mongodb {
             install_package libssl1.1
             install_package mongodb-org
             restart_service mongod
+            sudo systemctl status mongod
         else
             install_package mongodb-server
             restart_service mongodb

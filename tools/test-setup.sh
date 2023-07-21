@@ -42,6 +42,7 @@ if [[ $ubuntu_version == '22.04' ]]; then
     sudo apt install -y libssl1.1
     sudo apt install -y mongodb-org
     sudo systemctl restart mongod
+    sudo systemctl status mongod
 else
     sudo apt-get install -y mongodb
     sudo systemctl restart mongodb
