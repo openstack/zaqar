@@ -38,6 +38,7 @@ if [[ $ubuntu_version == '22.04' ]]; then
     wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
     echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
     echo "deb http://security.ubuntu.com/ubuntu bionic-security main" | sudo tee /etc/apt/sources.list.d/bionic-security.list
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
     sudo apt update
     sudo apt install -y libssl1.1
     sudo apt install -y mongodb-org
