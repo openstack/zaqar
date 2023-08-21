@@ -179,13 +179,13 @@ class RedisDriverTest(testing.TestBase):
                                          driver.ControlDriver
                                          (self.conf, cache))
 
-        self.assertIsInstance(redis_driver.connection, redis.StrictRedis)
+        self.assertIsInstance(redis_driver.connection, redis.Redis)
 
     def test_version_match(self):
         oslo_cache.register_config(self.conf)
         cache = oslo_cache.get_cache(self.conf)
 
-        with mock.patch('redis.StrictRedis.info') as info:
+        with mock.patch('redis.Redis.info') as info:
             info.return_value = {'redis_version': '2.4.6'}
             self.assertRaises(RuntimeError, driver.DataDriver,
                               self.conf, cache,
