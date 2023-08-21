@@ -15,9 +15,9 @@
 
 from email.mime import text
 import smtplib
-import subprocess
 from urllib import parse as urllib_parse
 
+from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
@@ -98,9 +98,8 @@ class MailtoTask(object):
                     subject_opt = subscription['options'].get('subject', '')
                     msg["subject"] = params.get('subject', subject_opt)
                 if conf_n.smtp_mode == 'third_part':
-                    p = subprocess.Popen(conf_n.smtp_command.split(' '),
-                                         stdin=subprocess.PIPE)
-                    p.communicate(msg.as_string())
+                    cmd = conf_n.smtp_command.split(' ')
+                    processutils.execute(*cmd, process_input=msg.as_string())
                 elif conf_n.smtp_mode == 'self_local':
                     sender = smtplib.SMTP_SSL(conf_n.smtp_host,
                                               conf_n.smtp_port)
