@@ -190,8 +190,8 @@ function configure_mongodb {
         # NOTE: To fix the mongodb's issue in ubuntu 22.04 LTS
         ubuntu_version=$(source /etc/os-release ; echo $VERSION_ID)
         if [[ $ubuntu_version == '22.04' ]]; then
-            wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+            wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
             echo "deb http://security.ubuntu.com/ubuntu bionic-security main" | sudo tee /etc/apt/sources.list.d/bionic-security.list
             sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
             sudo apt update
@@ -204,9 +204,23 @@ function configure_mongodb {
             restart_service mongodb
         fi
     elif is_fedora; then
-        install_package mongodb
-        install_package mongodb-server
-        restart_service mongod
+        fedora_version=$(source /etc/os-release ; echo $VERSION_ID)
+        if [[ $fedora_version == '9' ]]; then
+            cat > /etc/yum.repos.d/mongodb-org-6.0.repo << __EOF__
+[mongodb-org-6.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/6.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc
+__EOF__
+            install_package mongodb-org
+            restart_service mongod
+        else
+            install_package mongodb
+            install_package mongodb-server
+            restart_service mongod
+        fi
     fi
 }
 
