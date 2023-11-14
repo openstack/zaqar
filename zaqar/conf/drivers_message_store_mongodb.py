@@ -67,6 +67,7 @@ ssl_ca_certs = cfg.StrOpt(
 
 uri = cfg.StrOpt(
     'uri',
+    secret=True,
     deprecated_opts=[cfg.DeprecatedOpt(
         'uri',
         group=_deprecated_group), ],

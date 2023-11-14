@@ -18,6 +18,7 @@ _deprecated_group = 'drivers:storage:redis'
 
 uri = cfg.StrOpt(
     'uri', default="redis://127.0.0.1:6379",
+    secret=True,
     deprecated_opts=[cfg.DeprecatedOpt(
         'uri',
         group=_deprecated_group), ],
