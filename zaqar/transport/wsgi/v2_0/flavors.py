@@ -95,8 +95,7 @@ class Listing(object):
                     entry['pool_list'] = pool_name_list
                 if detailed:
                     caps = self._pools_ctrl.capabilities(flavor=entry)
-                    entry['capabilities'] = [str(cap).split('.')[-1]
-                                             for cap in caps]
+                    entry['capabilities'] = [cap.name for cap in caps]
 
         if detailed is not None:
             store['detailed'] = detailed
@@ -149,8 +148,7 @@ class Resource(object):
         try:
             data = self._ctrl.get(flavor, project=project_id)
             capabilities = self._pools_ctrl.capabilities(flavor=data)
-            data['capabilities'] = [str(cap).split('.')[-1]
-                                    for cap in capabilities]
+            data['capabilities'] = [cap.name for cap in capabilities]
             pool_list =\
                 list(self._pools_ctrl.get_pools_by_flavor(flavor=data))
             pool_name_list = []
@@ -307,8 +305,7 @@ class Resource(object):
             self._ctrl.update(flavor, project=project_id,
                               capabilities=capabilities)
             resp_data = self._ctrl.get(flavor, project=project_id)
-            resp_data['capabilities'] = [str(cap).split('.')[-1]
-                                         for cap in capabilities]
+            resp_data['capabilities'] = [cap.name for cap in capabilities]
         except errors.FlavorDoesNotExist as ex:
             LOG.exception('Flavor "%s" does not exist', flavor)
             raise wsgi_errors.HTTPNotFound(str(ex))
