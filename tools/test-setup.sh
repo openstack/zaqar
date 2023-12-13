@@ -44,11 +44,20 @@ if [[ $ubuntu_version == '22.04' ]]; then
     sudo apt install -y mongodb-org
     sudo systemctl restart mongod
     sudo systemctl status mongod
+elif [[ $ubuntu_version == '12' ]]; then
+    wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    echo "deb http://security.ubuntu.com/ubuntu bionic-security main" | sudo tee /etc/apt/sources.list.d/bionic-security.list
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+    sudo apt update
+    sudo apt install -y libssl1.1
+    sudo apt install -y mongodb-org
+    sudo systemctl restart mongod
+    sudo systemctl status mongod
 else
     sudo apt-get install -y mongodb
     sudo systemctl restart mongodb
 fi
 
-sudo apt install -y pip
-pip install setuptools
+sudo apt install -y pip python3-setuptools
 sudo python3 setup.py install
