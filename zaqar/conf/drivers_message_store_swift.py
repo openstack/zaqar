@@ -30,22 +30,25 @@ insecure = cfg.StrOpt(
 
 
 project_domain_id = cfg.StrOpt(
-    "project_domain_id", default="default",
+    "project_domain_id",
     help="Domain ID containing project")
 
 
 project_domain_name = cfg.StrOpt(
     "project_domain_name",
+    default='Default',
     help="Domain name containing project")
 
 
 user_domain_id = cfg.StrOpt(
-    "user_domain_id", default="default",
+    "user_domain_id",
     help="User's domain id")
 
 
 user_domain_name = cfg.StrOpt(
-    "user_domain_name", help="User's domain name")
+    "user_domain_name",
+    default='Default',
+    help="User's domain name")
 
 
 region_name = cfg.StrOpt(
