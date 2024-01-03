@@ -1,15 +1,16 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 # Andi Chandler <andi@gowling.com>, 2020. #zanata
+# Andi Chandler <andi@gowling.com>, 2022. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: zaqar VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-01-15 09:27+0000\n"
+"POT-Creation-Date: 2023-12-29 01:48+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2020-10-10 02:47+0000\n"
+"PO-Revision-Date: 2022-05-31 08:39+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -132,6 +133,9 @@ msgstr ""
 "Endpoint does not accept `application/x-www-form-urlencoded` content; "
 "currently supported media type is `application/json`; specify proper client-"
 "side media type with the \"Content-Type\" header."
+
+msgid "Extra spec cannot be an empty if specify the header."
+msgstr "Extra spec cannot be an empty if specify the header."
 
 #, python-format
 msgid ""
@@ -359,9 +363,6 @@ msgid ""
 msgstr ""
 "Pipeline to use for processing topic operations. This pipeline will be "
 "consumed before calling the storage driver's controller methods."
-
-msgid "Placeholder"
-msgstr "Placeholder"
 
 msgid "Please try again in a few seconds."
 msgstr "Please try again in a few seconds."
@@ -781,6 +782,9 @@ msgstr "invalid retry_backoff_function."
 
 msgid "minimum_delay must less than maximum_delay."
 msgstr "minimum_delay must less than maximum_delay."
+
+msgid "policy File JSON to YAML Migration"
+msgstr "policy File JSON to YAML Migration"
 
 msgid "pop and id params cannot be present together in the delete request."
 msgstr "pop and id params cannot be present together in the delete request."
