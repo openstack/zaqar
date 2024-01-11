@@ -21,6 +21,7 @@ auth_url = cfg.StrOpt(
 uri = cfg.StrOpt(
     "uri",
     default="swift://demo:nomoresecrete@/demo",
+    secret=True,
     help="Custom URI describing the swift connection.")
 
 
