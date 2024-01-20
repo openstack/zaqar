@@ -81,7 +81,6 @@
       - publish-openstack-docs-pti
       - periodic-stable-jobs
       - check-requirements
-      - integrated-gate-storage
       - release-notes-jobs-python3
     check:
       jobs:
