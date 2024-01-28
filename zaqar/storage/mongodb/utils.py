@@ -301,14 +301,14 @@ def retries_on_autoreconnect(func):
                 break
 
             except errors.AutoReconnect as ex:
-                LOG.warning(u'Caught AutoReconnect, retrying the '
-                            'call to {0}'.format(func))
+                LOG.warning('Caught AutoReconnect, retrying the '
+                            'call to %s', func.__name__)
 
                 last_ex = ex
                 time.sleep(sleep_sec * (2 ** attempt))
         else:
-            LOG.error(u'Caught AutoReconnect, maximum attempts '
-                      'to {0} exceeded.'.format(func))
+            LOG.error('Caught AutoReconnect, maximum attempts '
+                      'to %s exceeded.', func.__name__)
 
             raise last_ex
 
