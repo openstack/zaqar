@@ -203,13 +203,13 @@ def retries_on_connection_error(func):
                 # MasterNotFoundError.
 
                 ex = sys.exc_info()[1]
-                LOG.warning(u'Caught ConnectionError, retrying the '
-                            'call to {0}'.format(func))
+                LOG.warning('Caught ConnectionError, retrying the '
+                            'call to %s', func.__name__)
 
                 time.sleep(sleep_sec * (2 ** attempt))
         else:
-            LOG.error(u'Caught ConnectionError, maximum attempts '
-                      'to {0} exceeded.'.format(func))
+            LOG.error('Caught ConnectionError, maximum attempts '
+                      'to %s exceeded.', func.__name__)
             raise ex
 
     return wrapper

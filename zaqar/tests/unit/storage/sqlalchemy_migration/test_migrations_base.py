@@ -83,8 +83,8 @@ class BaseWalkMigrationTestCase(object):
 
         getattr(command, alembic_command)(*args, **kwargs)
         res = buf.getvalue().strip()
-        LOG.debug('Alembic command {command} returns: {result}'.format(
-                  command=alembic_command, result=res))
+        LOG.debug('Alembic command {command} returns: {result}',
+                  {'command': alembic_command, 'result': res})
 
         return res
 
@@ -160,7 +160,7 @@ class BaseWalkMigrationTestCase(object):
                     check(engine, data)
         except Exception:
             LOG.error("Failed to migrate to version {version} on engine "
-                      "{engine}".format(version=version, engine=engine))
+                      "{engine}", {'version': version, 'engine': engine})
             raise
 
 

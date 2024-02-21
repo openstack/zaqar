@@ -186,7 +186,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
         query = 'limit={0}'.format(limit)
         if marker:
-            query += '&marker={1}'.format(marker)
+            query += '&marker={0}'.format(marker)
 
         resp = self.simulate_get(self.subscription_path,
                                  query_string=query,

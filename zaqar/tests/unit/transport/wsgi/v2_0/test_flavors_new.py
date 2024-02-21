@@ -266,7 +266,7 @@ class TestFlavorsMongoDB(base.V2Base):
         self.simulate_delete(self.flavor_path)
         query = 'limit={0}&detailed={1}'.format(limit, detailed)
         if marker:
-            query += '&marker={2}'.format(marker)
+            query += '&marker={0}'.format(marker)
 
         with flavors(self, count):
             result = self.simulate_get(self.url_prefix + '/flavors',
