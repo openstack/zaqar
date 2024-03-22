@@ -55,8 +55,7 @@ function cleanup_zaqar_mongodb {
     if ! timeout $SERVICE_TIMEOUT sh -c "while ! mongosh zaqar --eval 'db.dropDatabase();'; do sleep 1; done"; then
         die $LINENO "Mongo DB did not start"
     else
-        full_version=$(mongosh zaqar --eval 'db.dropDatabase();')
-        mongo_version=`echo $full_version | cut -d' ' -f11`
+        mongo_version=$(mongosh zaqar --eval 'db.version();')
         required_mongo_version='6.0'
         if [[ $mongo_version < $required_mongo_version ]]; then
             die $LINENO "Zaqar needs Mongo DB version >= 6.0 to run."
