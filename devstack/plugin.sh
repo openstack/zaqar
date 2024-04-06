@@ -107,10 +107,6 @@ function configure_zaqar {
     iniset $ZAQAR_CONF DEFAULT pooling True
     iniset $ZAQAR_CONF 'pooling:catalog' enable_virtual_pool True
 
-    # NOTE(flaper87): Configure mongodb regardless so we can use it as a pool
-    # in tests.
-    configure_mongodb
-
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         iniset $ZAQAR_CONF  drivers message_store mongodb
         iniset $ZAQAR_CONF 'drivers:message_store:mongodb' uri mongodb://localhost:27017/zaqar
@@ -119,6 +115,7 @@ function configure_zaqar {
         iniset $ZAQAR_CONF  drivers management_store mongodb
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' uri mongodb://localhost:27017/zaqar_mgmt
         iniset $ZAQAR_CONF 'drivers:management_store:mongodb' database zaqar_mgmt
+        configure_mongodb
     elif [ "$ZAQAR_BACKEND" = 'redis' ] ; then
         recreate_database zaqar
         iniset $ZAQAR_CONF  drivers management_store sqlalchemy
