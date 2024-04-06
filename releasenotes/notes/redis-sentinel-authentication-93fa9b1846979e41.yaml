@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Now Redis driver supports authentication with Redis Sentinel. To use this
+    feature, add the ``redis_password`` query to the Redis URI.
+    The ``redis_username`` can be used when ACL feature is enabled.
