@@ -40,7 +40,7 @@ uri = cfg.StrOpt(
           'string as "master=<name>". Finally, to connect '
           'to a local instance of Redis over a unix socket, '
           'you may use the form '
-          '"redis:[:password]@/path/to/redis.sock[?options]".'
+          '"redis://[:password]@/path/to/redis.sock[?options]".'
           ' In all forms, the "socket_timeout" option may be'
           'specified in the query string. Its value is '
           'given in seconds. If not provided, '

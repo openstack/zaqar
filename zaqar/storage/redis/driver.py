@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_log import log as logging
 from osprofiler import profiler
 import redis
 import redis.sentinel
@@ -34,9 +35,11 @@ STRATEGY_TCP = 1
 STRATEGY_UNIX = 2
 STRATEGY_SENTINEL = 3
 
+LOG = logging.getLogger(__name__)
+
 
 class ConnectionURI(object):
-    def __init__(self, uri):  # noqa: C901
+    def __init__(self, uri):
         # TODO(prashanthr_): Add SSL support
         try:
             parsed_url = urllib.parse.urlparse(uri)
@@ -46,21 +49,23 @@ class ConnectionURI(object):
         if parsed_url.scheme != 'redis':
             raise errors.ConfigurationError(_('Invalid scheme in Redis URI'))
 
-        # NOTE(kgriffs): Python 2.6 has a bug that causes the
-        # query string to be appended to the path when given a
-        # hostless URL.
         path = parsed_url.path
-        if '?' in path:
-            path, sep, query = path.partition('?')
-        else:
-            query = parsed_url.query
-        # NOTE(gengchc2): Redis connection support password configure.
-        self.password = None
-        if '@' in path:
-            self.password, sep, path = path.partition('@')
+        query = parsed_url.query
+        # NOTE(tkajinam): Replace '' by None
+        self.password = parsed_url.password or None
+        self.username = parsed_url.username or None
+
         netloc = parsed_url.netloc
         if '@' in netloc:
-            self.password, sep, netloc = netloc.partition('@')
+            cred, sep, netloc = netloc.partition('@')
+
+        if self.username and not self.password:
+            # NOTE(tkajinam): This is kept for backword compatibility but
+            #                 should be removed after 2025.1
+            LOG.warning('Credential in redis uri does not contain \':\'. '
+                        'Make sure that \':\' is added before password.')
+            self.password = self.username
+            self.username = None
 
         query_params = dict(urllib.parse.parse_qsl(query))
 
@@ -315,6 +320,7 @@ def _get_redis_client(driver):
         sentinel = redis.sentinel.Sentinel(
             connection_uri.sentinels,
             db=connection_uri.dbid,
+            username=connection_uri.username,
             password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
 
@@ -328,11 +334,13 @@ def _get_redis_client(driver):
             host=connection_uri.hostname,
             port=connection_uri.port,
             db=connection_uri.dbid,
+            username=connection_uri.username,
             password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)
     else:
         return redis.Redis(
             unix_socket_path=connection_uri.unix_socket_path,
             db=connection_uri.dbid,
+            username=connection_uri.username,
             password=connection_uri.password,
             socket_timeout=connection_uri.socket_timeout)

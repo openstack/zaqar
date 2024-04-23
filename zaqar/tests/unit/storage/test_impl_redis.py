@@ -233,42 +233,99 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
         self.assertEqual(6379, uri.port)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI('redis://example.com:7777')
         self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
         self.assertEqual(7777, uri.port)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
             'redis://example.com:7777?socket_timeout=1')
         self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
         self.assertEqual(7777, uri.port)
         self.assertEqual(1.0, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
-            'redis://test123@example.com:7777?socket_timeout=1&dbid=5')
+            'redis://:test123@example.com:7777?socket_timeout=1&dbid=5')
         self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
         self.assertEqual(7777, uri.port)
         self.assertEqual(1.0, uri.socket_timeout)
         self.assertEqual(5, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        # NOTE(tkajinam): Test fallback for backword compatibility
+        uri = driver.ConnectionURI('redis://test123@example.com')
+        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
+        self.assertEqual(6379, uri.port)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        uri = driver.ConnectionURI(
+            'redis://default:test123@example.com')
+        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
+        self.assertEqual(6379, uri.port)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertEqual('default', uri.username)
         self.assertEqual('test123', uri.password)
 
     def test_connection_uri_unix_socket(self):
-        uri = driver.ConnectionURI('redis:/tmp/redis.sock')
+        uri = driver.ConnectionURI('redis:///tmp/redis.sock')
         self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
         self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
-        uri = driver.ConnectionURI('redis:/tmp/redis.sock?socket_timeout=1.5')
+        uri = driver.ConnectionURI(
+            'redis:///tmp/redis.sock?socket_timeout=1.5')
         self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
         self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
         self.assertEqual(1.5, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
-            'redis:test123@/tmp/redis.sock?socket_timeout=1.5&dbid=5')
+            'redis://:test123@/tmp/redis.sock?'
+            'socket_timeout=1.5&dbid=5')
         self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
         self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
         self.assertEqual(1.5, uri.socket_timeout)
         self.assertEqual(5, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        # NOTE(tkajinam): Test fallback for backword compatibility
+        uri = driver.ConnectionURI(
+            'redis://test123@/tmp/redis.sock')
+        self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
+        self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        uri = driver.ConnectionURI(
+            'redis://default:test123@/tmp/redis.sock')
+        self.assertEqual(driver.STRATEGY_UNIX, uri.strategy)
+        self.assertEqual('/tmp/redis.sock', uri.unix_socket_path)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertEqual('default', uri.username)
         self.assertEqual('test123', uri.password)
 
     def test_connection_uri_sentinel(self):
@@ -277,18 +334,27 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual([('s1', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI('redis://s1,s2?master=dumbledore')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
         self.assertEqual([('s1', 26379), ('s2', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI('redis://s1:26389,s1?master=dumbledore')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
         self.assertEqual([('s1', 26389), ('s1', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
             'redis://[::1]:26389,[::2]?master=dumbledore')
@@ -296,6 +362,9 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual([('::1', 26389), ('::2', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
             'redis://s1?master=dumbledore&socket_timeout=0.5')
@@ -303,14 +372,39 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual([('s1', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.5, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertIsNone(uri.password)
 
         uri = driver.ConnectionURI(
-            'redis://test123@s1?master=dumbledore&socket_timeout=0.5&dbid=5')
+            'redis://:test123@s1?master=dumbledore&socket_timeout=0.5&dbid=5')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
         self.assertEqual([('s1', 26379)], uri.sentinels)
         self.assertEqual('dumbledore', uri.master)
         self.assertEqual(0.5, uri.socket_timeout)
         self.assertEqual(5, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        # NOTE(tkajinam): Test fallback for backword compatibility
+        uri = driver.ConnectionURI(
+            'redis://test123@s1?master=dumbledore')
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertIsNone(uri.username)
+        self.assertEqual('test123', uri.password)
+
+        uri = driver.ConnectionURI(
+            'redis://default:test123@s1?master=dumbledore')
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertEqual('default', uri.username)
         self.assertEqual('test123', uri.password)
 
 

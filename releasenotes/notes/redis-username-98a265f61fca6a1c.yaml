@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Redis messaging store now supports authentication with username.
+
+deprecation:
+  - |
+    Password in redis uri will need to be prefixed by ':' in a future release.
+    Make sure all uri options are updated accordingly.
