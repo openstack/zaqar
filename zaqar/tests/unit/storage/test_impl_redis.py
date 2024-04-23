@@ -291,6 +291,13 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0.1, uri.socket_timeout)
 
         uri = driver.ConnectionURI(
+            'redis://[::1]:26389,[::2]?master=dumbledore')
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('::1', 26389), ('::2', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
+
+        uri = driver.ConnectionURI(
             'redis://s1?master=dumbledore&socket_timeout=0.5')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
         self.assertEqual([('s1', 26379)], uri.sentinels)

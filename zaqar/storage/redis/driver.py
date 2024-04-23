@@ -36,7 +36,7 @@ STRATEGY_SENTINEL = 3
 
 
 class ConnectionURI(object):
-    def __init__(self, uri):
+    def __init__(self, uri):  # noqa: C901
         # TODO(prashanthr_): Add SSL support
         try:
             parsed_url = urllib.parse.urlparse(uri)
@@ -89,7 +89,14 @@ class ConnectionURI(object):
             # NOTE(kgriffs): Have to parse list of sentinel hosts ourselves
             # since urllib doesn't support it.
             for each_host in netloc.split(','):
-                name, sep, port = each_host.partition(':')
+                if not each_host.endswith(']') and ':' in each_host:
+                    name, sep, port = each_host.rpartition(':')
+                else:
+                    name = each_host
+                    port = None
+
+                if name.startswith('[') and name.endswith(']'):
+                    name = name[1:-1]
 
                 if port:
                     try:
@@ -98,7 +105,6 @@ class ConnectionURI(object):
                         msg = _('The Redis configuration URI contains an '
                                 'invalid port')
                         raise errors.ConfigurationError(msg)
-
                 else:
                     port = SENTINEL_DEFAULT_PORT
 
