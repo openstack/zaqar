@@ -85,6 +85,8 @@ class ConnectionURI(object):
         # Sentinel
         self.master = None
         self.sentinels = []
+        self.sentinel_username = query_params.get('sentinel_username')
+        self.sentinel_password = query_params.get('sentinel_password')
 
         if 'master' in query_params:
             # NOTE(prashanthr_): Configure redis driver in sentinel mode
@@ -322,11 +324,12 @@ def _get_redis_client(driver):
             db=connection_uri.dbid,
             username=connection_uri.username,
             password=connection_uri.password,
+            sentinel_kwargs={
+                'socket_timeout': connection_uri.socket_timeout,
+                'username': connection_uri.sentinel_username,
+                'password': connection_uri.sentinel_password
+            },
             socket_timeout=connection_uri.socket_timeout)
-
-        # NOTE(prashanthr_): The socket_timeout parameter being generic
-        # to all redis connections is inherited from the parameters for
-        # sentinel.
         return sentinel.master_for(connection_uri.master)
 
     elif connection_uri.strategy == STRATEGY_TCP:

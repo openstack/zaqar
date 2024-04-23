@@ -337,6 +337,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertIsNone(uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI('redis://s1,s2?master=dumbledore')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
@@ -346,6 +348,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertIsNone(uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI('redis://s1:26389,s1?master=dumbledore')
         self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
@@ -355,6 +359,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertIsNone(uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI(
             'redis://[::1]:26389,[::2]?master=dumbledore')
@@ -365,6 +371,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertIsNone(uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI(
             'redis://s1?master=dumbledore&socket_timeout=0.5')
@@ -375,6 +383,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertIsNone(uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI(
             'redis://:test123@s1?master=dumbledore&socket_timeout=0.5&dbid=5')
@@ -385,6 +395,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(5, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertEqual('test123', uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         # NOTE(tkajinam): Test fallback for backword compatibility
         uri = driver.ConnectionURI(
@@ -396,6 +408,8 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertIsNone(uri.username)
         self.assertEqual('test123', uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
 
         uri = driver.ConnectionURI(
             'redis://default:test123@s1?master=dumbledore')
@@ -406,6 +420,21 @@ class RedisDriverTest(testing.TestBase):
         self.assertEqual(0, uri.dbid)
         self.assertEqual('default', uri.username)
         self.assertEqual('test123', uri.password)
+        self.assertIsNone(uri.sentinel_username)
+        self.assertIsNone(uri.sentinel_password)
+
+        uri = driver.ConnectionURI(
+            'redis://default:test123@s1?master=dumbledore'
+            '&sentinel_username=sentinel&sentinel_password=test456')
+        self.assertEqual(driver.STRATEGY_SENTINEL, uri.strategy)
+        self.assertEqual([('s1', 26379)], uri.sentinels)
+        self.assertEqual('dumbledore', uri.master)
+        self.assertEqual(0.1, uri.socket_timeout)
+        self.assertEqual(0, uri.dbid)
+        self.assertEqual('default', uri.username)
+        self.assertEqual('test123', uri.password)
+        self.assertEqual('sentinel', uri.sentinel_username)
+        self.assertEqual('test456', uri.sentinel_password)
 
 
 @testing.requires_redis
