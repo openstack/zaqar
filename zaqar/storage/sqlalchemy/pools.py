@@ -38,15 +38,15 @@ class PoolsController(base.PoolsBase):
         # TODO(cpp-cabrera): optimization - limit the columns returned
         # when detailed=False by specifying them in the select()
         # clause
-        stmt = sa.sql.select([tables.Pools.c.name, tables.Pools.c.uri,
-                              tables.Pools.c.weight,
-                              tables.Pools.c.options,
-                              tables.Pools.c.flavor]).where(
+        stmt = sa.sql.select(tables.Pools.c.name, tables.Pools.c.uri,
+                             tables.Pools.c.weight,
+                             tables.Pools.c.options,
+                             tables.Pools.c.flavor).where(
             tables.Pools.c.name > marker
         )
         if limit > 0:
             stmt = stmt.limit(limit)
-        cursor = self.driver.run(stmt)
+        cursor = self.driver.fetch_all(stmt)
 
         marker_name = {}
 
@@ -63,36 +63,37 @@ class PoolsController(base.PoolsBase):
         flavor_name = flavor.get("name", None) if flavor is not None\
             else None
         if flavor_name is not None:
-            stmt = sa.sql.select([tables.Pools]).where(
+            stmt = sa.sql.select(tables.Pools.c.name, tables.Pools.c.uri,
+                                 tables.Pools.c.weight,
+                                 tables.Pools.c.options,
+                                 tables.Pools.c.flavor).where(
                 tables.Pools.c.flavor == flavor_name
             )
         else:
-            stmt = sa.sql.select([tables.Pools])
+            stmt = sa.sql.select(tables.Pools.c.name, tables.Pools.c.uri,
+                                 tables.Pools.c.weight,
+                                 tables.Pools.c.options,
+                                 tables.Pools.c.flavor)
 
-        cursor = self.driver.run(stmt)
+        cursor = self.driver.fetch_all(stmt)
 
         normalizer = functools.partial(_normalize, detailed=detailed)
-        return (normalizer(v) for v in cursor)
+        get_result = (normalizer(v) for v in cursor)
+        return get_result
 
     @utils.raises_conn_error
     def _get(self, name, detailed=False):
-        stmt = sa.sql.select([tables.Pools]).where(
+        stmt = sa.sql.select(tables.Pools.c.name, tables.Pools.c.uri,
+                             tables.Pools.c.weight, tables.Pools.c.options,
+                             tables.Pools.c.flavor).where(
             tables.Pools.c.name == name
         )
 
-        pool = self.driver.run(stmt).fetchone()
+        pool = self.driver.fetch_one(stmt)
         if pool is None:
             raise errors.PoolDoesNotExist(name)
 
         return _normalize(pool, detailed)
-
-    def _ensure_group_exists(self, name):
-        try:
-            stmt = sa.sql.expression.insert(tables.PoolGroup).values(name=name)
-            self.driver.run(stmt)
-            return True
-        except oslo_db.exception.DBDuplicateEntry:
-            return False
 
     # TODO(cpp-cabrera): rename to upsert
     @utils.raises_conn_error
@@ -101,7 +102,7 @@ class PoolsController(base.PoolsBase):
         opts = None if options is None else utils.json_encode(options)
 
         try:
-            stmt = sa.sql.expression.insert(tables.Pools).values(
+            stmt = sa.sql.insert(tables.Pools).values(
                 name=name, weight=weight, uri=uri,
                 flavor=flavor, options=opts
             )
@@ -115,10 +116,9 @@ class PoolsController(base.PoolsBase):
 
     @utils.raises_conn_error
     def _exists(self, name):
-        stmt = sa.sql.select([tables.Pools.c.name]).where(
-            tables.Pools.c.name == name
-        ).limit(1)
-        return self.driver.run(stmt).fetchone() is not None
+        stmt = sa.sql.select(tables.Pools.c.name).where(
+            tables.Pools.c.name == name).limit(1)
+        return self.driver.fetch_one(stmt) is not None
 
     @utils.raises_conn_error
     def _update(self, name, **kwargs):

@@ -41,17 +41,17 @@ def _match(project, queue):
 class CatalogueController(base.CatalogueBase):
 
     def list(self, project):
-        stmt = sa.sql.select([tables.Catalogue]).where(
+        stmt = sa.sql.select(tables.Catalogue).where(
             tables.Catalogue.c.project == project
         )
-        cursor = self.driver.run(stmt)
+        cursor = self.driver.fetch_all(stmt)
         return (_normalize(v) for v in cursor)
 
     def get(self, project, queue):
-        stmt = sa.sql.select([tables.Catalogue]).where(
+        stmt = sa.sql.select(tables.Catalogue).where(
             _match(project, queue)
         )
-        entry = self.driver.run(stmt).fetchone()
+        entry = self.driver.fetch_one(stmt)
 
         if entry is None:
             raise errors.QueueNotMapped(queue, project)

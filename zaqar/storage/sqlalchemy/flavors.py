@@ -39,14 +39,14 @@ class FlavorsController(base.FlavorsBase):
         # TODO(cpp-cabrera): optimization - limit the columns returned
         # when detailed=False by specifying them in the select()
         # clause
-        stmt = sa.sql.select([tables.Flavors]).where(
+        stmt = sa.sql.select(tables.Flavors).where(
             sa.and_(tables.Flavors.c.name > marker,
                     tables.Flavors.c.project == project)
         )
 
         if limit > 0:
             stmt = stmt.limit(limit)
-        cursor = self.driver.run(stmt)
+        cursor = self.driver.fetch_all(stmt)
 
         marker_name = {}
 
@@ -60,12 +60,12 @@ class FlavorsController(base.FlavorsBase):
 
     @utils.raises_conn_error
     def get(self, name, project=None, detailed=False):
-        stmt = sa.sql.select([tables.Flavors]).where(
+        stmt = sa.sql.select(tables.Flavors).where(
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         )
 
-        flavor = self.driver.run(stmt).fetchone()
+        flavor = self.driver.fetch_one(stmt)
         if flavor is None:
             raise errors.FlavorDoesNotExist(name)
 
@@ -90,11 +90,11 @@ class FlavorsController(base.FlavorsBase):
 
     @utils.raises_conn_error
     def exists(self, name, project=None):
-        stmt = sa.sql.select([tables.Flavors.c.name]).where(
+        stmt = sa.sql.select(tables.Flavors.c.name).where(
             sa.and_(tables.Flavors.c.name == name,
                     tables.Flavors.c.project == project)
         ).limit(1)
-        return self.driver.run(stmt).fetchone() is not None
+        return self.driver.fetch_one(stmt) is not None
 
     @utils.raises_conn_error
     def update(self, name, project=None, capabilities=None):

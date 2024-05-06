@@ -30,19 +30,20 @@ class QueueController(storage.Queue):
         if project is None:
             project = ''
 
-        fields = [tables.Queues.c.name]
+        fields = tables.Queues.c.name
         if detailed:
-            fields.append(tables.Queues.c.metadata)
+            fields = tables.Queues.c["name", "metadata"]
 
         if marker:
-            sel = sa.sql.select(fields, sa.and_(
-                                tables.Queues.c.project == project,
-                                tables.Queues.c.name > marker))
+            sel = sa.sql.select(fields).where(sa.and_(
+                tables.Queues.c.project == project,
+                tables.Queues.c.name > marker))
         else:
-            sel = sa.sql.select(fields, tables.Queues.c.project == project)
+            sel = sa.sql.select(fields).where(
+                tables.Queues.c.project == project)
 
         sel = sel.order_by(sa.asc(tables.Queues.c.name)).limit(limit)
-        records = self.driver.run(sel)
+        records = self.driver.fetch_all(sel)
 
         marker_name = {}
 
@@ -60,12 +61,10 @@ class QueueController(storage.Queue):
         if project is None:
             project = ''
 
-        sel = sa.sql.select([tables.Queues.c.metadata], sa.and_(
-            tables.Queues.c.project == project,
-            tables.Queues.c.name == name
-        ))
+        sel = sa.sql.select(tables.Queues.c.metadata).where(sa.and_(
+            tables.Queues.c.project == project, tables.Queues.c.name == name))
 
-        queue = self.driver.run(sel).fetchone()
+        queue = self.driver.fetch_one(sel)
         if queue is None:
             raise errors.QueueDoesNotExist(name, project)
 
@@ -96,14 +95,10 @@ class QueueController(storage.Queue):
         if project is None:
             project = ''
 
-        sel = sa.sql.select([tables.Queues.c.id], sa.and_(
-                            tables.Queues.c.project == project,
-                            tables.Queues.c.name == name
-                            ))
-        res = self.driver.run(sel)
-        r = res.fetchone()
-        res.close()
-        return r is not None
+        sel = sa.sql.select(tables.Queues.c.id).where(sa.and_(
+            tables.Queues.c.project == project, tables.Queues.c.name == name))
+        res = self.driver.fetch_one(sel)
+        return res is not None
 
     def set_metadata(self, name, metadata, project):
         if project is None:
@@ -138,9 +133,7 @@ class QueueController(storage.Queue):
     def _calculate_resource_count(self, project=None):
         if project is None:
             project = ''
-        sel = sa.sql.select([sa.sql.func.count('*')],
-                            tables.Queues.c.project == project)
-        res = self.driver.run(sel)
-        r = res.fetchone()
-        res.close()
-        return r is not None
+        sel = sa.sql.select(sa.sql.func.count('*')).where(
+            tables.Queues.c.project == project)
+        res = self.driver.fetch_one(sel)
+        return res is not None

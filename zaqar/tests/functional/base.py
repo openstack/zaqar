@@ -21,7 +21,6 @@ import os
 import jsonschema
 from oslo_utils import timeutils
 
-from zaqar.api.v1 import response as response_v1
 from zaqar.api.v1_1 import response as response_v1_1
 from zaqar.api.v2 import response as response_v2
 from zaqar import bootstrap
@@ -385,12 +384,6 @@ class ZaqarAdminServer(Server):
         conf.admin_mode = True
         server = bootstrap.Bootstrap(conf)
         return server.run
-
-
-class V1FunctionalTestBase(FunctionalTestBase):
-    def setUp(self):
-        super(V1FunctionalTestBase, self).setUp()
-        self.response = response_v1.ResponseSchema(self.limits)
 
 
 class V1_1FunctionalTestBase(FunctionalTestBase):

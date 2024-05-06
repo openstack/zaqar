@@ -47,10 +47,6 @@ class ControlDriver(storage.ControlDriverBase):
 
         if (uri.startswith('mysql://') or
                 uri.startswith('mysql+pymysql://')):
-            # oslo_db.create_engine makes a test connection, throw that out
-            # first.   mysql time_zone can be added to oslo_db as a
-            # startup option
-            engine.dispose()
             sa.event.listen(engine, 'connect',
                             self._mysql_on_connect)
 
@@ -65,7 +61,18 @@ class ControlDriver(storage.ControlDriverBase):
     # closes it once the operations are completed
     # TODO(wangxiyuan): we should migrate to oslo.db asap.
     def run(self, *args, **kwargs):
-        return self.engine.execute(*args, **kwargs)
+        with self.engine.connect() as conn:
+            result = conn.execute(*args, **kwargs)
+            conn.commit()
+            return result
+
+    def fetch_all(self, *args, **kwargs):
+        with self.engine.connect() as conn:
+            return conn.execute(*args, **kwargs).fetchall()
+
+    def fetch_one(self, *args, **kwargs):
+        with self.engine.connect() as conn:
+            return conn.execute(*args, **kwargs).fetchone()
 
     def close(self):
         pass
