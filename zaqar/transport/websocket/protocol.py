@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import datetime
+import email
 import io
 import sys
 
@@ -24,18 +26,6 @@ from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import pytz
 import txaio
-
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio
-
-try:
-    import mimetools
-    Message = mimetools.Message
-except ImportError:
-    import email
-    Message = email.message_from_binary_file
 
 from zaqar.common import consts
 
@@ -253,7 +243,8 @@ class NotificationProtocol(asyncio.Protocol):
 
         if self._state == 'HEADERS' and b'\r\n\r\n' in self._data:
             headers, self._data = self._data.split(b'\r\n\r\n', 1)
-            headers = Message(io.BytesIO(headers))
+            headers = email.message_from_binary_file(io.BytesIO(headers))
+
             # try both cases of content-length for backwards compatibility
             length = headers.get(b'content-length',
                                  headers.get('Content-Length'))

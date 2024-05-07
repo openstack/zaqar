@@ -15,10 +15,7 @@ import functools
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 import swiftclient
-try:  # Python3
-    from urllib.parse import quote_plus
-except ImportError:  # Python2
-    from urllib import quote_plus
+from urllib.parse import quote_plus
 
 from zaqar import storage
 from zaqar.storage import errors
