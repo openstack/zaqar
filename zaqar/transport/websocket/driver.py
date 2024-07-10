@@ -13,15 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import socket
 
 from oslo_log import log as logging
 from oslo_utils import netutils
-
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio
 
 from zaqar.common import decorators
 from zaqar.conf import drivers_transport_websocket
