@@ -30,6 +30,7 @@ postgres=# create database openstack_citest with owner openstack_citest;
 
 """
 
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from zaqar.tests.unit.storage.sqlalchemy_migration import \
@@ -167,5 +168,6 @@ class ZaqarMigrationsCheckers(object):
 
 
 class TestMigrationsMySQL(ZaqarMigrationsCheckers,
-                          base.BaseWalkMigrationTestCase):
+                          base.BaseWalkMigrationTestCase,
+                          test_fixtures.MySQLOpportunisticFixture):
     pass
