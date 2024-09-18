@@ -19,6 +19,7 @@ import uuid
 import ddt
 
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 
 from zaqar.common import urls
 from zaqar.notification import notifier
@@ -228,11 +229,12 @@ class NotifierTest(testing.TestBase):
                        'from': 'zaqar@example.com', 'subject': 'Hello',
                        'body': jsonutils.dumps(self.notifications[1])}
 
-        def _communicate(msg):
+        def _communicate(msg, timeout=None):
             called.add(msg)
+            return ('', '')
 
         mock_process = mock.Mock()
-        attrs = {'communicate': _communicate}
+        attrs = {'communicate': _communicate, 'returncode': 0}
         mock_process.configure_mock(**attrs)
         mock_popen.return_value = mock_process
         driver.post('fake_queue', self.messages, self.client_id, self.project)
@@ -252,7 +254,7 @@ class NotifierTest(testing.TestBase):
         called_options = []
         called_bodies = []
         for call in called:
-            options, body = call.split('\n\n')
+            options, body = encodeutils.safe_decode(call).split('\n\n')
             called_options.append(options)
             called_bodies.append(jsonutils.dumps(jsonutils.loads(body),
                                  sort_keys=True))
@@ -408,11 +410,12 @@ class NotifierTest(testing.TestBase):
 
         called = set()
 
-        def _communicate(msg):
+        def _communicate(msg, timeout=None):
             called.add(msg)
+            return ('', '')
 
         mock_process = mock.Mock()
-        attrs = {'communicate': _communicate}
+        attrs = {'communicate': _communicate, 'returncode': 0}
         mock_process.configure_mock(**attrs)
         mock_popen.return_value = mock_process
         mock_signed_url.return_value = message
@@ -429,7 +432,7 @@ class NotifierTest(testing.TestBase):
         called_options = []
         called_bodies = []
         for call in called:
-            options, body = call.split('\n\n')
+            options, body = encodeutils.safe_decode(call).split('\n\n')
             called_options.append(options)
             called_bodies.append(body)
         self.assertEqual(expec_options, called_options)
