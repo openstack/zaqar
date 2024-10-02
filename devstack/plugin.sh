@@ -183,9 +183,17 @@ function configure_mongodb {
     # per database.
     pip_install pymongo
     if is_ubuntu; then
-        # NOTE: To fix the mongodb's issue in ubuntu 22.04 LTS
+        # NOTE: To fix the mongodb's issue in ubuntu 22.04/24.04 LTS
         ubuntu_version=$(source /etc/os-release ; echo $VERSION_ID)
-        if [[ $ubuntu_version == '22.04' ]]; then
+        if [[ $ubuntu_version == '24.04' ]]; then
+            sudo mkdir /etc/apt/sources.list.d
+            wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add -
+            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+            sudo apt update
+            install_package mongodb-org
+            restart_service mongod
+            sudo systemctl status mongod
+        elif [[ $ubuntu_version == '22.04' ]]; then
             wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
             sudo apt update
