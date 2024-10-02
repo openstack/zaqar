@@ -104,7 +104,8 @@ class SubscriptionController(base.Subscription):
     def create(self, queue, subscriber, ttl, options, project=None):
         source = queue
         now = timeutils.utcnow_ts()
-        now_dt = datetime.datetime.utcfromtimestamp(now)
+        now_dt = datetime.datetime.fromtimestamp(
+            now, tz=datetime.timezone.utc).replace(tzinfo=None)
         expires = now_dt + datetime.timedelta(seconds=ttl)
         confirmed = False
 
@@ -138,7 +139,8 @@ class SubscriptionController(base.Subscription):
         new_ttl = fields.get('t')
         if new_ttl is not None:
             now = timeutils.utcnow_ts()
-            now_dt = datetime.datetime.utcfromtimestamp(now)
+            now_dt = datetime.datetime.fromtimestamp(
+                now, tz=datetime.timezone.utc).replace(tzinfo=None)
             expires = now_dt + datetime.timedelta(seconds=new_ttl)
             fields['e'] = expires
 

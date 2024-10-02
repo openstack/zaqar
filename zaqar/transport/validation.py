@@ -598,7 +598,8 @@ class Validator(object):
             # NOTE(flwang): By this change, technically, user can set a very
             # big TTL so as to get a very long subscription.
             now = timeutils.utcnow_ts()
-            now_dt = datetime.datetime.utcfromtimestamp(now)
+            now_dt = datetime.datetime.fromtimestamp(
+                now, tz=datetime.timezone.utc).replace(tzinfo=None)
             msg = _(u'The TTL seconds for a subscription plus current time'
                     ' must be less than {0}.')
             try:
