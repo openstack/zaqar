@@ -142,11 +142,13 @@ class ClaimController(storage.Claim):
 
         now = timeutils.utcnow_ts()
         claim_expires = now + ttl
-        claim_expires_dt = datetime.datetime.utcfromtimestamp(claim_expires)
+        claim_expires_dt = datetime.datetime.fromtimestamp(
+            claim_expires, tz=datetime.timezone.utc).replace(tzinfo=None)
 
         message_ttl = ttl + grace
-        message_expiration = datetime.datetime.utcfromtimestamp(
-            claim_expires + grace)
+        message_expiration = datetime.datetime.fromtimestamp(
+            claim_expires + grace, tz=datetime.timezone.utc).replace(
+                tzinfo=None)
 
         meta = {
             'id': oid,
@@ -293,10 +295,12 @@ class ClaimController(storage.Claim):
         grace = metadata['grace']
         ttl = metadata['ttl']
         claim_expires = now + ttl
-        claim_expires_dt = datetime.datetime.utcfromtimestamp(claim_expires)
+        claim_expires_dt = datetime.datetime.fromtimestamp(
+            claim_expires, tz=datetime.timezone.utc).replace(tzinfo=None)
         message_ttl = ttl + grace
-        message_expires = datetime.datetime.utcfromtimestamp(
-            claim_expires + grace)
+        message_expires = datetime.datetime.fromtimestamp(
+            claim_expires + grace, tz=datetime.timezone.utc).replace(
+                tzinfo=None)
 
         msg_ctrl = self.driver.message_controller
         claimed = msg_ctrl._claimed(queue, cid, expires=now,

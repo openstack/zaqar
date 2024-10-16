@@ -237,8 +237,9 @@ class Message(MessageEnvelope):
         }
 
         if include_created:
-            created_iso = datetime.datetime.utcfromtimestamp(
-                self.created).strftime('%Y-%m-%dT%H:%M:%SZ')
+            created_iso = datetime.datetime.fromtimestamp(
+                self.created, tz=datetime.timezone.utc).replace(
+                    tzinfo=None).strftime('%Y-%m-%dT%H:%M:%SZ')
             basic_msg['created'] = created_iso
         if self.checksum:
             basic_msg['checksum'] = self.checksum

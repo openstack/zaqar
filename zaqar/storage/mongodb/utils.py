@@ -31,7 +31,8 @@ from zaqar.storage import errors as storage_errors
 
 # BSON ObjectId gives TZ-aware datetime, so we generate a
 # TZ-aware UNIX epoch for convenience.
-EPOCH = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=tz_util.utc)
+EPOCH = datetime.datetime.fromtimestamp(
+    0, tz=datetime.timezone.utc).replace(tzinfo=tz_util.utc)
 
 # NOTE(cpp-cabrera): the authoritative form of project/queue keys.
 PROJ_QUEUE_KEY = 'p_q'
@@ -133,8 +134,9 @@ def stat_message(message, now):
     msg_id = message['id']
     created = oid_ts(to_oid(msg_id))
     age = now - created
-    created_iso = datetime.datetime.utcfromtimestamp(created).strftime(
-        '%Y-%m-%dT%H:%M:%SZ')
+    created_iso = datetime.datetime.fromtimestamp(
+        created, tz=datetime.timezone.utc).replace(tzinfo=None).strftime(
+            '%Y-%m-%dT%H:%M:%SZ')
     return {
         'id': msg_id,
         'age': int(age),

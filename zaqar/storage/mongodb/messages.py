@@ -668,7 +668,8 @@ class MessageController(storage.Message):
         # is an upsert.
         self._get_counter(queue_name, project)
         now = timeutils.utcnow_ts()
-        now_dt = datetime.datetime.utcfromtimestamp(now)
+        now_dt = datetime.datetime.fromtimestamp(
+            now, tz=datetime.timezone.utc).replace(tzinfo=None)
         collection = self._collection(queue_name, project)
 
         messages = list(messages)
@@ -854,7 +855,8 @@ class FIFOMessageController(MessageController):
         # is an upsert.
         self._get_counter(queue_name, project)
         now = timeutils.utcnow_ts()
-        now_dt = datetime.datetime.utcfromtimestamp(now)
+        now_dt = datetime.datetime.fromtimestamp(
+            now, tz=datetime.timezone.utc).replace(tzinfo=None)
         collection = self._collection(queue_name, project)
 
         # Set the next basis marker for the first attempt.
