@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from oslo_log import log as logging
+from oslo_utils import netutils
 from osprofiler import profiler
 import redis
 import redis.sentinel
@@ -96,24 +97,12 @@ class ConnectionURI(object):
             # NOTE(kgriffs): Have to parse list of sentinel hosts ourselves
             # since urllib doesn't support it.
             for each_host in netloc.split(','):
-                if not each_host.endswith(']') and ':' in each_host:
-                    name, sep, port = each_host.rpartition(':')
-                else:
-                    name = each_host
-                    port = None
-
-                if name.startswith('[') and name.endswith(']'):
-                    name = name[1:-1]
-
-                if port:
-                    try:
-                        port = int(port)
-                    except ValueError:
-                        msg = _('The Redis configuration URI contains an '
-                                'invalid port')
-                        raise errors.ConfigurationError(msg)
-                else:
-                    port = SENTINEL_DEFAULT_PORT
+                try:
+                    name, port = netutils.parse_host_port(
+                        each_host, SENTINEL_DEFAULT_PORT)
+                except ValueError:
+                    raise errors.ConfigurationError(
+                        'invalid redis server format %s' % each_host)
 
                 self.sentinels.append((name, port))
 
