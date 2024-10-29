@@ -175,7 +175,7 @@ class TestDecorators(base.TestBase):
         public_endpoint_2(None, self.conf)
 
         # 3. Test enabling deprecated API version
-        self.config(enable_deprecated_api_versions=[['1']])
+        self.config(enable_deprecated_api_versions=['1'])
 
         @decorators.api_version_manager(VERSION)
         def public_endpoint_3(driver, conf):
