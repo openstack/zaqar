@@ -59,7 +59,7 @@ class ItemResource(object):
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        resp.body = utils.to_json(resp_dict)
+        resp.text = utils.to_json(resp_dict)
         # status defaults to 200
 
     @decorators.TransportLog("Subscriptions item")
@@ -106,8 +106,9 @@ class ItemResource(object):
                              ' updated.') %
                            dict(subscription_id=subscription_id))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to update subscription'),
-                                        description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to update subscription'),
+                description=description)
 
 
 class CollectionResource(object):
@@ -167,7 +168,7 @@ class CollectionResource(object):
             'links': links
         }
 
-        resp.body = utils.to_json(response_body)
+        resp.text = utils.to_json(response_body)
         # status defaults to 200
 
     @decorators.TransportLog("Subscriptions collection")
@@ -221,7 +222,7 @@ class CollectionResource(object):
 
             resp.location = req.path
             resp.status = falcon.HTTP_201
-            resp.body = utils.to_json(
+            resp.text = utils.to_json(
                 {'subscription_id': str(created)})
         else:
             subscription = self._subscription_controller.get_with_subscriber(
@@ -242,7 +243,7 @@ class CollectionResource(object):
 
                 resp.location = req.path
                 resp.status = falcon.HTTP_201
-                resp.body = utils.to_json(
+                resp.text = utils.to_json(
                     {'subscription_id': str(subscription['id'])})
 
 
@@ -301,5 +302,6 @@ class ConfirmResource(object):
                              ' confirmed.') %
                            dict(subscription_id=subscription_id))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to confirm subscription'),
-                                        description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to confirm subscription'),
+                description=description)

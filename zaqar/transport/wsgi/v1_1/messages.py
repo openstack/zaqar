@@ -207,7 +207,7 @@ class CollectionResource(object):
 
         hrefs = [req.path + '/' + id for id in message_ids]
         body = {'resources': hrefs}
-        resp.body = utils.to_json(body)
+        resp.text = utils.to_json(body)
         resp.status = falcon.HTTP_201
 
     @decorators.TransportLog("Messages collection")
@@ -232,7 +232,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPNotFound(description)
 
         else:
-            resp.body = utils.to_json(response)
+            resp.text = utils.to_json(response)
         # status defaults to 200
 
     @decorators.TransportLog("Messages collection")
@@ -251,7 +251,7 @@ class CollectionResource(object):
                                                       project_id)
 
         elif pop_limit:
-            resp.status, resp.body = self._pop_messages(queue_name,
+            resp.status, resp.text = self._pop_messages(queue_name,
                                                         project_id,
                                                         pop_limit)
 
@@ -324,7 +324,7 @@ class ItemResource(object):
                                                  req.path.rsplit('/', 2)[0],
                                                  message['claim_id'])
 
-        resp.body = utils.to_json(message)
+        resp.text = utils.to_json(message)
         # status defaults to 200
 
     @decorators.TransportLog("Messages item")
@@ -342,19 +342,22 @@ class ItemResource(object):
             LOG.debug(ex)
             description = _(u'A claim was specified, but the message '
                             u'is not currently claimed.')
-            raise falcon.HTTPBadRequest(error_title, description)
+            raise falcon.HTTPBadRequest(
+                title=error_title, description=description)
 
         except storage_errors.ClaimDoesNotExist as ex:
             LOG.debug(ex)
             description = _(u'The specified claim does not exist or '
                             u'has expired.')
-            raise falcon.HTTPBadRequest(error_title, description)
+            raise falcon.HTTPBadRequest(
+                title=error_title, description=description)
 
         except storage_errors.NotPermitted as ex:
             LOG.debug(ex)
             description = _(u'This message is claimed; it cannot be '
                             u'deleted without a valid claim ID.')
-            raise falcon.HTTPForbidden(error_title, description)
+            raise falcon.HTTPForbidden(
+                title=error_title, description=description)
 
         except Exception:
             description = _(u'Message could not be deleted.')

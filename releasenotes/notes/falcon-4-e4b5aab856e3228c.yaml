@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixed compatibility with falcon 4.0.0 and later.

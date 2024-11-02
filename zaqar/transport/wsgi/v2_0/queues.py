@@ -73,7 +73,7 @@ class ItemResource(object):
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        resp.body = utils.to_json(resp_dict)
+        resp.text = utils.to_json(resp_dict)
         # status defaults to 200
 
     @decorators.TransportLog("Queues item")
@@ -217,7 +217,7 @@ class ItemResource(object):
         for meta, value in _get_reserved_metadata(self._validate).items():
             if not metadata.get(meta):
                 metadata[meta] = value
-        resp.body = utils.to_json(metadata)
+        resp.text = utils.to_json(metadata)
 
     def _do_replace(self, req, metadata, reserved_metadata, change):
         path = change['path']
@@ -321,7 +321,7 @@ class CollectionResource(object):
         if total_number:
             response_body['count'] = total_number
 
-        resp.body = utils.to_json(response_body)
+        resp.text = utils.to_json(response_body)
         # status defaults to 200
 
     @decorators.TransportLog("Queues collection")

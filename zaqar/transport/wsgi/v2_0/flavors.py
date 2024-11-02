@@ -110,7 +110,7 @@ class Listing(object):
 
         results['flavors'] = flavors
 
-        response.body = transport_utils.to_json(results)
+        response.text = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 
 
@@ -162,7 +162,7 @@ class Resource(object):
 
         data['href'] = request.path
 
-        response.body = transport_utils.to_json(data)
+        response.text = transport_utils.to_json(data)
 
     def _check_pools_exists(self, pool_list):
         if pool_list is not None:
@@ -194,7 +194,8 @@ class Resource(object):
         if len(pool_list) == 0:
             response.status = falcon.HTTP_400
             response.location = request.path
-            raise falcon.HTTPBadRequest(_('Unable to create'), 'Bad Request')
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description='Bad Request')
         # NOTE(gengchc2): Check if pools in the pool_list exist.
         try:
             self._check_pools_exists(pool_list)
@@ -203,7 +204,8 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
         capabilities = self._pools_ctrl.capabilities(name=pool_list[0])
         try:
             self._ctrl.create(flavor,
@@ -216,7 +218,8 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
         # NOTE(gengchc2): Update the 'flavor' field in pools tables.
         try:
             self._update_pools_by_flavor(flavor, pool_list)
@@ -225,7 +228,8 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
 
     @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:create")
@@ -268,7 +272,8 @@ class Resource(object):
             description = (_(u'Flavor %(flavor)s could not be deleted.') %
                            dict(flavor=flavor))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
         self._ctrl.delete(flavor, project=project_id)
         response.status = falcon.HTTP_204
 
@@ -278,7 +283,8 @@ class Resource(object):
         if len(pool_list) == 0:
             response.status = falcon.HTTP_400
             response.location = request.path
-            raise falcon.HTTPBadRequest(_('Unable to create'), 'Bad Request')
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description='Bad Request')
         # NOTE(gengchc2): If the flavor does not exist, return
         try:
             self._ctrl.get(flavor, project=project_id)
@@ -299,7 +305,8 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('updatefail'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('updatefail'), description=description)
         capabilities = self._pools_ctrl.capabilities(name=pool_list[0])
         try:
             self._ctrl.update(flavor, project=project_id,
@@ -318,7 +325,8 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
         # (gengchc) Remove flavor from old pool list.
         try:
             pool_list_removed = []
@@ -331,10 +339,11 @@ class Resource(object):
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
         resp_data['pool_list'] = pool_list
         resp_data['href'] = request.path
-        response.body = transport_utils.to_json(resp_data)
+        response.text = transport_utils.to_json(resp_data)
 
     @decorators.TransportLog("Flavors item")
     @acl.enforce("flavors:update")

@@ -83,7 +83,7 @@ class Listing(object):
 
         results['flavors'] = flavors
 
-        response.body = transport_utils.to_json(results)
+        response.text = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 
 
@@ -125,7 +125,7 @@ class Resource(object):
 
         data['href'] = request.path
 
-        response.body = transport_utils.to_json(data)
+        response.text = transport_utils.to_json(data)
 
     def on_put(self, request, response, project_id, flavor):
         """Registers a new flavor. Expects the following input:
@@ -153,7 +153,8 @@ class Resource(object):
             description = (_(u'Flavor %(flavor)s could not be created. ') %
                            dict(flavor=flavor))
             LOG.exception(description)
-            raise falcon.HTTPBadRequest(_('Unable to create'), description)
+            raise falcon.HTTPBadRequest(
+                title=_('Unable to create'), description=description)
 
     def on_delete(self, request, response, project_id, flavor):
         """Deregisters a flavor.

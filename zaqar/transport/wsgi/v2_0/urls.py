@@ -74,4 +74,4 @@ class Resource(object):
         except ValueError as err:
             raise wsgi_errors.HTTPBadRequestAPI(str(err))
 
-        resp.body = utils.to_json(data)
+        resp.text = utils.to_json(data)

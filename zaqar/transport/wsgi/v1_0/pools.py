@@ -105,7 +105,7 @@ class Listing(object):
         results['pools'] = pools
 
         response.content_location = request.relative_uri
-        response.body = transport_utils.to_json(results)
+        response.text = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 
 
@@ -147,7 +147,7 @@ class Resource(object):
 
         data['href'] = request.path
 
-        response.body = transport_utils.to_json(data)
+        response.text = transport_utils.to_json(data)
         response.content_location = request.relative_uri
 
     def on_put(self, request, response, project_id, pool):

@@ -183,7 +183,7 @@ class CollectionResource(object):
         # field has been removed in v1.1.
         body = {'resources': hrefs, 'partial': False}
 
-        resp.body = utils.to_json(body)
+        resp.text = utils.to_json(body)
         resp.status = falcon.HTTP_201
 
     @decorators.TransportLog("Messages collection")
@@ -201,7 +201,7 @@ class CollectionResource(object):
             resp.status = falcon.HTTP_204
             return
 
-        resp.body = utils.to_json(response)
+        resp.text = utils.to_json(response)
         # status defaults to 200
 
     @decorators.TransportLog("Messages collection")
@@ -256,7 +256,7 @@ class ItemResource(object):
         resp.content_location = req.relative_uri
         message = wsgi_utils.format_message_v1(
             message, req.path.rsplit('/', 2)[0])
-        resp.body = utils.to_json(message)
+        resp.text = utils.to_json(message)
         # status defaults to 200
 
     @decorators.TransportLog("Messages item")
@@ -274,19 +274,22 @@ class ItemResource(object):
             LOG.debug(ex)
             description = _(u'A claim was specified, but the message '
                             u'is not currently claimed.')
-            raise falcon.HTTPBadRequest(error_title, description)
+            raise falcon.HTTPBadRequest(
+                title=error_title, description=description)
 
         except storage_errors.ClaimDoesNotExist as ex:
             LOG.debug(ex)
             description = _(u'The specified claim does not exist or '
                             u'has expired.')
-            raise falcon.HTTPBadRequest(error_title, description)
+            raise falcon.HTTPBadRequest(
+                title=error_title, description=description)
 
         except storage_errors.NotPermitted as ex:
             LOG.debug(ex)
             description = _(u'This message is claimed; it cannot be '
                             u'deleted without a valid claim ID.')
-            raise falcon.HTTPForbidden(error_title, description)
+            raise falcon.HTTPForbidden(
+                title=error_title, description=description)
 
         except Exception:
             description = _(u'Message could not be deleted.')

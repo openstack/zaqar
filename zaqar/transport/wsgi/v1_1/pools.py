@@ -107,7 +107,7 @@ class Listing(object):
         results['pools'] = pools
 
         response.content_location = request.relative_uri
-        response.body = transport_utils.to_json(results)
+        response.text = transport_utils.to_json(results)
         response.status = falcon.HTTP_200
 
 
@@ -151,7 +151,7 @@ class Resource(object):
 
         data['href'] = request.path
 
-        response.body = transport_utils.to_json(data)
+        response.text = transport_utils.to_json(data)
 
     def on_put(self, request, response, project_id, pool):
         """Registers a new pool. Expects the following input:
@@ -183,7 +183,7 @@ class Resource(object):
         except errors.PoolCapabilitiesMismatch as e:
             title = _(u'Unable to create pool')
             LOG.exception(title)
-            raise falcon.HTTPBadRequest(title, str(e))
+            raise falcon.HTTPBadRequest(title=title, description=str(e))
         except errors.PoolAlreadyExists as e:
             LOG.exception('Pool "%s" already exists', pool)
             raise wsgi_errors.HTTPConflict(str(e))
@@ -204,7 +204,7 @@ class Resource(object):
                             u'It cannot be deleted.')
             description = description.format(flavor=ex.flavor)
             LOG.exception(description)
-            raise falcon.HTTPForbidden(title, description)
+            raise falcon.HTTPForbidden(title=title, description=description)
 
         response.status = falcon.HTTP_204
 

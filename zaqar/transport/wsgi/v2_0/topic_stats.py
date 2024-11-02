@@ -53,7 +53,7 @@ class Resource(object):
                 oldest['href'] = base_path + oldest['id']
                 del oldest['id']
 
-            resp.body = utils.to_json(resp_dict)
+            resp.text = utils.to_json(resp_dict)
             # status defaults to 200
 
         except (storage_errors.TopicDoesNotExist,
@@ -65,7 +65,7 @@ class Resource(object):
                     'total': 0
                 }
             }
-            resp.body = utils.to_json(resp_dict)
+            resp.text = utils.to_json(resp_dict)
 
         except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)

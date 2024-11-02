@@ -96,15 +96,16 @@ def extract_project_id(req, resp, params):
         # a check for the project-id.
         return
     if params['project_id'] == "":
-        raise falcon.HTTPBadRequest('Empty project header not allowed',
-                                    _(u'X-PROJECT-ID cannot be an empty '
-                                      u'string. Specify the right header '
-                                      u'X-PROJECT-ID and retry.'))
+        raise falcon.HTTPBadRequest(
+            title='Empty project header not allowed',
+            description=_('X-PROJECT-ID cannot be an empty string. Specify '
+                          'the right header X-PROJECT-ID and retry.'))
 
     if not params['project_id'] and versionutils.is_compatible(
             'v1.1', api_version_string, same_major=False):
-        raise falcon.HTTPBadRequest('Project-Id Missing',
-                                    _(u'The header X-PROJECT-ID was missing'))
+        raise falcon.HTTPBadRequest(
+            title='Project-Id Missing',
+            description=_('The header X-PROJECT-ID was missing'))
 
 
 def require_client_id(validate, req, resp, params):
@@ -127,10 +128,11 @@ def require_client_id(validate, req, resp, params):
         try:
             validate(req.get_header('Client-ID', required=True))
         except ValueError:
-            description = _(u'Malformed hexadecimal UUID.')
-            raise falcon.HTTPBadRequest('Wrong UUID value', description)
+            description = _('Malformed hexadecimal UUID.')
+            raise falcon.HTTPBadRequest(
+                title='Wrong UUID value', description=description)
         except validation.ValidationFailed as ex:
-            raise falcon.HTTPBadRequest(str(ex))
+            raise falcon.HTTPBadRequest(title=str(ex))
     else:
         # NOTE(wanghao): Since we changed the get_client_uuid to support
         # other format of client id, so need to check the uuid here for
@@ -140,8 +142,9 @@ def require_client_id(validate, req, resp, params):
             if client_id or client_id == '':
                 uuid.UUID(client_id)
         except ValueError:
-            description = _(u'Malformed hexadecimal UUID.')
-            raise falcon.HTTPBadRequest('Wrong UUID value', description)
+            description = _('Malformed hexadecimal UUID.')
+            raise falcon.HTTPBadRequest(
+                title='Wrong UUID value', description=description)
 
 
 def validate_queue_identification(validate, req, resp, params):
@@ -178,9 +181,10 @@ def validate_queue_identification(validate, req, resp, params):
                   u'project: %(project)s',
                   {'queue': queue, 'project': project})
 
-        raise falcon.HTTPBadRequest(_(u'Invalid queue identification'),
-                                    _(u'The format of the submitted queue '
-                                      u'name or project id is not valid.'))
+        raise falcon.HTTPBadRequest(
+            title=_('Invalid queue identification'),
+            description=_('The format of the submitted queue '
+                          'name or project id is not valid.'))
 
 
 def require_accepts_json(req, resp, params):
@@ -199,11 +203,11 @@ def require_accepts_json(req, resp, params):
     """
     if not req.client_accepts('application/json'):
         raise falcon.HTTPNotAcceptable(
-            u'''
-Endpoint only serves `application/json`; specify client-side
-media type support with the "Accept" header.''',
-            href=u'http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
-            href_text=u'14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
+            description='Endpoint only serves `application/json`; '
+                        'specify client-side media type support with '
+                        'the "Accept" header.',
+            href='http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html',
+            href_text='14.1 Accept, Hypertext Transfer Protocol -- HTTP/1.1')
 
 
 def require_content_type_be_non_urlencoded(req, resp, params):
@@ -232,13 +236,13 @@ def require_content_type_be_non_urlencoded(req, resp, params):
         return
     if req.content_type and (req.content_type.lower() ==
                              'application/x-www-form-urlencoded'):
-        title = _(u'Invalid Content-Type')
-        description = _(u'Endpoint does not accept '
-                        u'`application/x-www-form-urlencoded` content; '
-                        u'currently supported media type is '
-                        u'`application/json`; specify proper client-side '
-                        u'media type with the "Content-Type" header.')
-        raise falcon.HTTPBadRequest(title, description)
+        title = _('Invalid Content-Type')
+        description = _('Endpoint does not accept '
+                        '`application/x-www-form-urlencoded` content; '
+                        'currently supported media type is '
+                        '`application/json`; specify proper client-side '
+                        'media type with the "Content-Type" header.')
+        raise falcon.HTTPBadRequest(title=title, description=description)
 
 
 def inject_context(req, resp, params):
@@ -306,13 +310,14 @@ def validate_topic_identification(validate, req, resp, params):
         project = params['project_id']
         queue = params['topic_name']
 
-        LOG.debug(u'Invalid topic name "%(topic)s" submitted for '
-                  u'project: %(project)s',
+        LOG.debug('Invalid topic name "%(topic)s" submitted for '
+                  'project: %(project)s',
                   {'topic': queue, 'project': project})
 
-        raise falcon.HTTPBadRequest(_(u'Invalid topic identification'),
-                                    _(u'The format of the submitted topic '
-                                      u'name or project id is not valid.'))
+        raise falcon.HTTPBadRequest(
+            title=_('Invalid topic identification'),
+            description=_('The format of the submitted topic '
+                          'name or project id is not valid.'))
 
 
 def verify_extra_spec(req, resp, params):
@@ -333,9 +338,10 @@ def verify_extra_spec(req, resp, params):
         return
 
     if extra_spec == "":
-        raise falcon.HTTPBadRequest('Empty extra spec not allowed',
-                                    _(u'Extra spec cannot be an empty '
-                                      u'if specify the header.'))
+        raise falcon.HTTPBadRequest(
+            title='Empty extra spec not allowed',
+            description=_('Extra spec cannot be an empty '
+                          'if specify the header.'))
     extra_spec_schema = extra_spec.split(':')[0]
     if extra_spec_schema:
         mgr = driver.DriverManager('zaqar.extraspec.tasks', extra_spec_schema,

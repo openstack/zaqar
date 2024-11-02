@@ -170,8 +170,9 @@ class Driver(transport.DriverBase):
         if isinstance(exc, falcon.HTTPError):
             raise
         LOG.exception('Internal server error')
-        raise falcon.HTTPInternalServerError('Internal server error',
-                                             str(exc))
+        raise falcon.HTTPInternalServerError(
+            title='Internal server error',
+            description=str(exc))
 
     def _get_server_cls(self, host):
         """Return an appropriate WSGI server class base on provided host

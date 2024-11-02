@@ -52,7 +52,7 @@ class Resource(object):
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         resp.content_location = req.path
-        resp.body = utils.to_json(resp_dict)
+        resp.text = utils.to_json(resp_dict)
         # status defaults to 200
 
     @decorators.TransportLog("Queue metadata")

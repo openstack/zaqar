@@ -104,7 +104,7 @@ class CollectionResource(object):
                          for msg in resp_msgs]
 
             resp.location = req.path + '/' + cid
-            resp.body = utils.to_json({'messages': resp_msgs})
+            resp.text = utils.to_json({'messages': resp_msgs})
             resp.status = falcon.HTTP_201
         else:
             resp.status = falcon.HTTP_204
@@ -155,7 +155,7 @@ class ItemResource(object):
         meta['href'] = req.path
         del meta['id']
 
-        resp.body = utils.to_json(meta)
+        resp.text = utils.to_json(meta)
         # status defaults to 200
 
     @decorators.TransportLog("Claims item")

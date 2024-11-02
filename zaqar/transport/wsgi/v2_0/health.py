@@ -36,7 +36,7 @@ class Resource(object):
     def on_get(self, req, resp, **kwargs):
         try:
             resp_dict = self._driver.health()
-            resp.body = utils.to_json(resp_dict)
+            resp.text = utils.to_json(resp_dict)
         except Exception:
             description = _(u'Health status could not be read.')
             LOG.exception(description)

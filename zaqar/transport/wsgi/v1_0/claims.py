@@ -81,7 +81,7 @@ class CollectionResource(Resource):
                 msg, req.path.rpartition('/')[0], cid) for msg in resp_msgs]
 
             resp.location = req.path + '/' + cid
-            resp.body = utils.to_json(resp_msgs)
+            resp.text = utils.to_json(resp_msgs)
             resp.status = falcon.HTTP_201
         else:
             resp.status = falcon.HTTP_204
@@ -125,7 +125,7 @@ class ItemResource(Resource):
         del meta['id']
 
         resp.content_location = req.relative_uri
-        resp.body = utils.to_json(meta)
+        resp.text = utils.to_json(meta)
         # status defaults to 200
 
     @decorators.TransportLog("Claim item")
