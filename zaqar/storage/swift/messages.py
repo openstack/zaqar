@@ -168,8 +168,8 @@ class MessageController(storage.Message):
 
     def first(self, queue, project=None, sort=1):
         if sort not in (1, -1):
-            raise ValueError(u'sort must be either 1 (ascending) '
-                             u'or -1 (descending)')
+            raise ValueError('sort must be either 1 (ascending) '
+                             'or -1 (descending)')
         cursor = self._list(queue, project, limit=1, sort=sort)
         try:
             message = next(next(cursor))

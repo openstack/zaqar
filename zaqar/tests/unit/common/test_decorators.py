@@ -50,9 +50,9 @@ class TestDecorators(base.TestBase):
         cache = oslo_cache.get_cache(conf)
 
         sample_project = {
-            u'name': u'Cats Abound',
-            u'bits': b'\x80\x81\x82\x83\x84',
-            b'key': u'Value. \x80',
+            'name': 'Cats Abound',
+            'bits': b'\x80\x81\x82\x83\x84',
+            b'key': 'Value. \x80',
         }
 
         def create_key(user, project=None):

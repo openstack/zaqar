@@ -172,9 +172,9 @@ class QueueController(storage.Queue):
                 # NOTE(kgriffs): Since we did not filter by a time window,
                 # the queue should have been found and updated. Perhaps
                 # the queue has been deleted?
-                message = _(u'Failed to increment the message '
-                            u'counter for queue %(name)s and '
-                            u'project %(project)s')
+                message = _('Failed to increment the message '
+                            'counter for queue %(name)s and '
+                            'project %(project)s')
                 message %= dict(name=name, project=project)
 
                 LOG.warning(message)

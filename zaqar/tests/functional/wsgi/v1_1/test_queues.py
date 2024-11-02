@@ -98,7 +98,7 @@ class TestInsertQueue(base.V1_1FunctionalTestBase):
     test_insert_queue.tags = ['positive', 'smoke']
 
     @ddt.data(annotated('test_insert_queue_non_ascii_name',
-                        u'\u6c49\u5b57\u6f22\u5b57'),
+                        '\u6c49\u5b57\u6f22\u5b57'),
               '@$@^qw',
               annotated('test_insert_queue_invalid_name_length', 'i' * 65))
     def test_insert_queue_invalid_name(self, queue_name):

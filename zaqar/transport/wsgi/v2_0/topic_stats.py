@@ -72,6 +72,6 @@ class Resource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Topic stats could not be read.')
+            description = _('Topic stats could not be read.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)

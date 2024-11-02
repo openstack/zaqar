@@ -50,7 +50,7 @@ def runnable(func):
             logging.setup(CONF, 'zaqar')
             func()
         except KeyboardInterrupt:
-            LOG.info(u'Terminating')
+            LOG.info('Terminating')
         except Exception as ex:
             _fail(1, ex)
 

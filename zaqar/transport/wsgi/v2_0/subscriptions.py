@@ -55,7 +55,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Subscription could not be retrieved.')
+            description = _('Subscription could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -71,7 +71,7 @@ class ItemResource(object):
                                                  project=project_id)
 
         except Exception:
-            description = _(u'Subscription could not be deleted.')
+            description = _('Subscription could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -102,7 +102,7 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
-            description = (_(u'Subscription %(subscription_id)s could not be'
+            description = (_('Subscription %(subscription_id)s could not be'
                              ' updated.') %
                            dict(subscription_id=subscription_id))
             LOG.exception(description)
@@ -148,7 +148,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Subscriptions could not be listed.')
+            description = _('Subscriptions could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -202,7 +202,7 @@ class CollectionResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
-            description = _(u'Subscription could not be created.')
+            description = _('Subscription could not be created.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -229,9 +229,9 @@ class CollectionResource(object):
                 queue_name, subscriber, project_id)
             confirmed = subscription.get('confirmed', True)
             if confirmed:
-                description = _(u'Such subscription already exists.'
-                                u'Subscriptions are unique by project + queue '
-                                u'+ subscriber URI.')
+                description = _('Such subscription already exists.'
+                                'Subscriptions are unique by project + queue '
+                                '+ subscriber URI.')
                 raise wsgi_errors.HTTPConflict(description,
                                                headers={'location': req.path})
             else:
@@ -298,7 +298,7 @@ class ConfirmResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
-            description = (_(u'Subscription %(subscription_id)s could not be'
+            description = (_('Subscription %(subscription_id)s could not be'
                              ' confirmed.') %
                            dict(subscription_id=subscription_id))
             LOG.exception(description)

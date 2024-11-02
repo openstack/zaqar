@@ -212,7 +212,7 @@ class TestPools(base.V1_1FunctionalTestBase):
         self.assertEqual(404, result.status_code)
 
     @ddt.data(
-        {'name': u'\u6c49\u5b57\u6f22\u5b57'},
+        {'name': '\u6c49\u5b57\u6f22\u5b57'},
         {'name': 'i'*65},
         {'weight': -1}
     )

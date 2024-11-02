@@ -61,7 +61,7 @@ def _get_storage_pipeline(resource_name, conf, *args, **kwargs):
                                        invoke_on_load=True)
             pipeline.append(mgr.driver)
         except RuntimeError as exc:
-            LOG.warning(u'Stage %(stage)s could not be imported: %(ex)s',
+            LOG.warning('Stage %(stage)s could not be imported: %(ex)s',
                         {'stage': ns, 'ex': str(exc)})
             continue
 

@@ -189,7 +189,7 @@ class Driver(transport.DriverBase):
     def listen(self):
         """Self-host using 'bind' and 'port' from the WSGI config group."""
 
-        msgtmpl = _(u'Serving on host %(bind)s:%(port)s')
+        msgtmpl = _('Serving on host %(bind)s:%(port)s')
         LOG.info(msgtmpl,
                  {'bind': self._wsgi_conf.bind, 'port': self._wsgi_conf.port})
         server_cls = self._get_server_cls(self._wsgi_conf.bind)

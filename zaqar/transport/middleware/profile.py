@@ -110,6 +110,6 @@ def install_wsgi_tracer(app, conf):
     enabled = conf.profiler.enabled and conf.profiler.trace_wsgi_transport
 
     if enabled:
-        LOG.debug(u'Installing osprofiler\'s wsgi tracer')
+        LOG.debug('Installing osprofiler\'s wsgi tracer')
 
     return ProfileWSGIMiddleware(app, conf.profiler.hmac_keys, enabled=enabled)

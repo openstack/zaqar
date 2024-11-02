@@ -71,7 +71,7 @@ class Driver(base.DriverBase):
         websocket config group, and the notifiton endpoint using the
         'notification_bind' and 'notification_port' options.
         """
-        msgtmpl = _(u'Serving on host %(bind)s:%(port)s')
+        msgtmpl = _('Serving on host %(bind)s:%(port)s')
         LOG.info(msgtmpl,
                  {'bind': self._ws_conf.bind, 'port': self._ws_conf.port})
 

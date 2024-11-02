@@ -63,7 +63,7 @@ class Listing(object):
         :returns: HTTP | 200
         """
 
-        LOG.debug(u'LIST flavors for project_id %s', project_id)
+        LOG.debug('LIST flavors for project_id %s', project_id)
         store = {}
         request.get_param('marker', store=store)
         request.get_param_as_int('limit', store=store)
@@ -142,7 +142,7 @@ class Resource(object):
         :returns: HTTP | [200, 404]
         """
 
-        LOG.debug(u'GET flavor - name: %s', flavor)
+        LOG.debug('GET flavor - name: %s', flavor)
         data = None
 
         try:
@@ -188,7 +188,7 @@ class Resource(object):
 
     def _on_put_by_pool_list(self, request, response, project_id,
                              flavor, pool_list):
-        LOG.debug(u'PUT flavor - name by flavor: %s', flavor)
+        LOG.debug('PUT flavor - name by flavor: %s', flavor)
         # NOTE(gengchc2): If configuration flavor is used by the new schema,
         # a list of pools is required.
         if len(pool_list) == 0:
@@ -200,7 +200,7 @@ class Resource(object):
         try:
             self._check_pools_exists(pool_list)
         except errors.PoolDoesNotExist as ex:
-            description = (_(u'Flavor %(flavor)s could not be created, '
+            description = (_('Flavor %(flavor)s could not be created, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -214,7 +214,7 @@ class Resource(object):
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.ConnectionError as ex:
-            description = (_(u'Flavor %(flavor)s could not be created, '
+            description = (_('Flavor %(flavor)s could not be created, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -224,7 +224,7 @@ class Resource(object):
         try:
             self._update_pools_by_flavor(flavor, pool_list)
         except errors.ConnectionError as ex:
-            description = (_(u'Flavor %(flavor)s could not be created, '
+            description = (_('Flavor %(flavor)s could not be created, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -245,7 +245,7 @@ class Resource(object):
         :returns: HTTP | [201, 400]
         """
 
-        LOG.debug(u'PUT flavor - name: %s', flavor)
+        LOG.debug('PUT flavor - name: %s', flavor)
 
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
@@ -262,14 +262,14 @@ class Resource(object):
         :returns: HTTP | [204]
         """
 
-        LOG.debug(u'DELETE flavor - name: %s', flavor)
+        LOG.debug('DELETE flavor - name: %s', flavor)
         # NOTE(gengchc2): If configuration flavor is
         # used by the new schema, the flavor field in pools
         # need to be cleaned.
         try:
             self._clean_pools_by_flavor(flavor)
         except errors.ConnectionError:
-            description = (_(u'Flavor %(flavor)s could not be deleted.') %
+            description = (_('Flavor %(flavor)s could not be deleted.') %
                            dict(flavor=flavor))
             LOG.exception(description)
             raise falcon.HTTPBadRequest(
@@ -301,7 +301,7 @@ class Resource(object):
         try:
             self._check_pools_exists(pool_list)
         except errors.PoolDoesNotExist as ex:
-            description = (_(u'Flavor %(flavor)s cant be updated, '
+            description = (_('Flavor %(flavor)s cant be updated, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -321,7 +321,7 @@ class Resource(object):
         try:
             self._update_pools_by_flavor(flavor, pool_list)
         except errors.ConnectionError as ex:
-            description = (_(u'Flavor %(flavor)s could not be updated, '
+            description = (_('Flavor %(flavor)s could not be updated, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -335,7 +335,7 @@ class Resource(object):
                     pool_list_removed.append(pool_old['name'])
             self._clean_pools_by_flavor(flavor, pool_list_removed)
         except errors.ConnectionError as ex:
-            description = (_(u'Flavor %(flavor)s could not be updated, '
+            description = (_('Flavor %(flavor)s could not be updated, '
                              'error:%(msg)s') %
                            dict(flavor=flavor, msg=str(ex)))
             LOG.exception(description)
@@ -358,11 +358,11 @@ class Resource(object):
 
         :returns: HTTP | [200, 400]
         """
-        LOG.debug(u'PATCH flavor - name: %s', flavor)
+        LOG.debug('PATCH flavor - name: %s', flavor)
         data = wsgi_utils.load(request)
         field = 'pool_list'
         if field not in data:
-            LOG.debug(u'PATCH flavor, bad params')
+            LOG.debug('PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 '`pool_list` needs to be specified'
             )

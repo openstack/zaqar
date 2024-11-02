@@ -47,7 +47,7 @@ class Resource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Queue metadata could not be retrieved.')
+            description = _('Queue metadata could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -66,9 +66,9 @@ class Resource(object):
             # Restrict setting any reserved queue attributes
             for key in metadata:
                 if key.startswith('_'):
-                    description = _(u'Reserved queue attributes in metadata '
-                                    u'(which names start with "_") can not be '
-                                    u'set in API v1.')
+                    description = _('Reserved queue attributes in metadata '
+                                    '(which names start with "_") can not be '
+                                    'set in API v1.')
                     raise validation.ValidationFailed(description)
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
@@ -87,7 +87,7 @@ class Resource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Metadata could not be updated.')
+            description = _('Metadata could not be updated.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

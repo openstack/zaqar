@@ -97,12 +97,12 @@ class CatalogueController(base.CatalogueBase):
             try:
                 pipe.execute()
             except redis.exceptions.ResponseError:
-                msgtmpl = _(u'CatalogueController:insert %(prj)s:'
+                msgtmpl = _('CatalogueController:insert %(prj)s:'
                             '%(queue)s  %(pool)s failed')
                 LOG.exception(msgtmpl,
                               {'prj': project, 'queue': queue, 'pool': pool})
                 return False
-        msgtmpl = _(u'CatalogueController:insert %(prj)s:%(queue)s'
+        msgtmpl = _('CatalogueController:insert %(prj)s:%(queue)s'
                     ':%(pool)s, success')
         LOG.info(msgtmpl,
                  {'prj': project, 'queue': queue, 'pool': pool})
@@ -182,12 +182,12 @@ class CatalogueController(base.CatalogueBase):
             try:
                 pipe.execute()
             except redis.exceptions.ResponseError:
-                msgtmpl = _(u'CatalogueController:delete %(prj)s'
+                msgtmpl = _('CatalogueController:delete %(prj)s'
                             ':%(queue)s failed')
                 LOG.info(msgtmpl,
                          {'prj': project, 'queue': queue})
                 return False
-        msgtmpl = _(u'CatalogueController:delete %(prj)s:%(queue)s success')
+        msgtmpl = _('CatalogueController:delete %(prj)s:%(queue)s success')
         LOG.info(msgtmpl,
                  {'prj': project, 'queue': queue})
 
@@ -206,12 +206,12 @@ class CatalogueController(base.CatalogueBase):
             try:
                 pipe.execute()
             except redis.exceptions.ResponseError:
-                msgtmpl = _(u'CatalogueController:_update %(prj)s'
+                msgtmpl = _('CatalogueController:_update %(prj)s'
                             ':%(queue)s:%(pool)s failed')
                 LOG.exception(msgtmpl,
                               {'prj': project, 'queue': queue, 'pool': pool})
                 return False
-        msgtmpl = _(u'CatalogueController:_update %(prj)s:%(queue)s'
+        msgtmpl = _('CatalogueController:_update %(prj)s:%(queue)s'
                     ':%(pool)s')
         LOG.info(msgtmpl,
                  {'prj': project, 'queue': queue, 'pool': pool})

@@ -67,16 +67,16 @@ class Validator(object):
         """
 
         if project is not None and len(project) > PROJECT_ID_MAX_LEN:
-            msg = _(u'Project ids may not be more than {0} characters long.')
+            msg = _('Project ids may not be more than {0} characters long.')
             raise ValidationFailed(msg, PROJECT_ID_MAX_LEN)
 
         if len(queue) > QUEUE_NAME_MAX_LEN:
-            msg = _(u'Queue names may not be more than {0} characters long.')
+            msg = _('Queue names may not be more than {0} characters long.')
             raise ValidationFailed(msg, QUEUE_NAME_MAX_LEN)
 
         if not QUEUE_NAME_REGEX.match(queue):
             raise ValidationFailed(
-                _(u'Queue names may only contain ASCII letters, digits, '
+                _('Queue names may only contain ASCII letters, digits, '
                   'underscores, and dashes.'))
 
     def _get_change_operation_d10(self, raw_change):
@@ -258,7 +258,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_queues_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            msg = _('Limit must be at least 1 and no greater than {0}.')
             raise ValidationFailed(msg, self._limits_conf.max_queues_per_page)
 
     def queue_metadata_length(self, content_length):
@@ -270,7 +270,7 @@ class Validator(object):
         if content_length is None:
             return
         if content_length > self._limits_conf.max_queue_metadata:
-            msg = _(u'Queue metadata is too large. Max size: {0}')
+            msg = _('Queue metadata is too large. Max size: {0}')
             raise ValidationFailed(msg, self._limits_conf.max_queue_metadata)
 
     def queue_metadata_putting(self, queue_metadata):
@@ -284,13 +284,13 @@ class Validator(object):
 
         queue_default_ttl = queue_metadata.get('_default_message_ttl')
         if queue_default_ttl and not isinstance(queue_default_ttl, int):
-            msg = _(u'_default_message_ttl must be integer.')
+            msg = _('_default_message_ttl must be integer.')
             raise ValidationFailed(msg)
 
         if queue_default_ttl is not None:
             if not (MIN_MESSAGE_TTL <= queue_default_ttl <=
                     self._limits_conf.max_message_ttl):
-                msg = _(u'_default_message_ttl can not exceed {0} '
+                msg = _('_default_message_ttl can not exceed {0} '
                         'seconds, and must be at least {1} seconds long.')
                 raise ValidationFailed(
                     msg, self._limits_conf.max_message_ttl, MIN_MESSAGE_TTL)
@@ -298,30 +298,30 @@ class Validator(object):
         queue_max_msg_size = queue_metadata.get('_max_messages_post_size',
                                                 None)
         if queue_max_msg_size and not isinstance(queue_max_msg_size, int):
-            msg = _(u'_max_messages_post_size must be integer.')
+            msg = _('_max_messages_post_size must be integer.')
             raise ValidationFailed(msg)
 
         if queue_max_msg_size is not None:
             if not (0 < queue_max_msg_size <=
                     self._limits_conf.max_messages_post_size):
                 raise ValidationFailed(
-                    _(u'_max_messages_post_size can not exceed {0}, '
+                    _('_max_messages_post_size can not exceed {0}, '
                       ' and must be at least greater than 0.'),
                     self._limits_conf.max_messages_post_size)
 
         max_claim_count = queue_metadata.get('_max_claim_count', None)
         if max_claim_count and not isinstance(max_claim_count, int):
-            msg = _(u'_max_claim_count must be integer.')
+            msg = _('_max_claim_count must be integer.')
             raise ValidationFailed(msg)
 
         dlq_ttl = queue_metadata.get('_dead_letter_queue_messages_ttl', None)
         if dlq_ttl and not isinstance(dlq_ttl, int):
-            msg = _(u'_dead_letter_queue_messages_ttl must be integer.')
+            msg = _('_dead_letter_queue_messages_ttl must be integer.')
             raise ValidationFailed(msg)
 
         if dlq_ttl is not None and not (MIN_MESSAGE_TTL <= dlq_ttl <=
                                         self._limits_conf.max_message_ttl):
-            msg = _(u'The TTL for a message may not exceed {0} seconds, '
+            msg = _('The TTL for a message may not exceed {0} seconds, '
                     'and must be at least {1} seconds long.')
             raise ValidationFailed(msg, self._limits_conf.max_message_ttl,
                                    MIN_MESSAGE_TTL)
@@ -329,13 +329,13 @@ class Validator(object):
         queue_delay = queue_metadata.get('_default_message_delay',
                                          None)
         if queue_delay and not isinstance(queue_delay, int):
-            msg = _(u'_default_message_delay must be integer.')
+            msg = _('_default_message_delay must be integer.')
             raise ValidationFailed(msg)
 
         if queue_delay is not None:
             if not (MIN_DELAY_TTL <= queue_delay <=
                     self._limits_conf.max_message_delay):
-                msg = _(u'The TTL can not exceed {0} seconds, and must '
+                msg = _('The TTL can not exceed {0} seconds, and must '
                         'be at least {1} seconds long.')
                 raise ValidationFailed(
                     msg, self._limits_conf.max_message_delay,
@@ -343,7 +343,7 @@ class Validator(object):
 
         encrypted_queue = queue_metadata.get('_enable_encrypt_messages', False)
         if encrypted_queue and not isinstance(encrypted_queue, bool):
-            msg = _(u'_enable_encrypt_messages must be boolean.')
+            msg = _('_enable_encrypt_messages must be boolean.')
             raise ValidationFailed(msg)
 
         self._validate_retry_policy(queue_metadata)
@@ -356,12 +356,12 @@ class Validator(object):
         """
 
         if 'resource_types' not in document:
-            msg = _(u'Post body must contain key "resource_types".')
+            msg = _('Post body must contain key "resource_types".')
             raise ValidationFailed(msg)
 
         if (not set(document['resource_types']).issubset(
                 _PURGBLE_RESOURCE_TYPES)):
-            msg = _(u'Resource types must be a sub set of {0}.')
+            msg = _('Resource types must be a sub set of {0}.')
             raise ValidationFailed(msg, _PURGBLE_RESOURCE_TYPES)
 
     def message_posting(self, messages):
@@ -373,7 +373,7 @@ class Validator(object):
         """
 
         if not messages:
-            raise ValidationFailed(_(u'No messages to enqueu.'))
+            raise ValidationFailed(_('No messages to enqueu.'))
 
         for msg in messages:
             self.message_content(msg)
@@ -393,7 +393,7 @@ class Validator(object):
                                    self._limits_conf.max_messages_post_size)
                 if content_length > min_max_size:
                     raise ValidationFailed(
-                        _(u'Message collection size is too large. The max '
+                        _('Message collection size is too large. The max '
                           'size for current queue is {0}. It is calculated '
                           'by max size = min(max_messages_post_size_config: '
                           '{1}, max_messages_post_size_queue: {2}).'),
@@ -408,7 +408,7 @@ class Validator(object):
 
         if content_length > self._limits_conf.max_messages_post_size:
             raise ValidationFailed(
-                _(u'Message collection size is too large. Max size {0}'),
+                _('Message collection size is too large. Max size {0}'),
                 self._limits_conf.max_messages_post_size)
 
     def message_content(self, message):
@@ -417,7 +417,7 @@ class Validator(object):
         ttl = message['ttl']
 
         if not (MIN_MESSAGE_TTL <= ttl <= self._limits_conf.max_message_ttl):
-            msg = _(u'The TTL for a message may not exceed {0} seconds, and '
+            msg = _('The TTL for a message may not exceed {0} seconds, and '
                     'must be at least {1} seconds long.')
 
             raise ValidationFailed(
@@ -427,7 +427,7 @@ class Validator(object):
 
         if not (MIN_DELAY_TTL <= delay <=
                 self._limits_conf.max_message_delay):
-            msg = _(u'The Delay TTL for a message may not exceed {0} seconds,'
+            msg = _('The Delay TTL for a message may not exceed {0} seconds,'
                     'and must be at least {1} seconds long.')
 
             raise ValidationFailed(
@@ -444,7 +444,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_messages_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and may not '
+            msg = _('Limit must be at least 1 and may not '
                     'be greater than {0}.')
 
             raise ValidationFailed(
@@ -463,34 +463,34 @@ class Validator(object):
         """
 
         if pop is not None and ids is not None:
-            msg = _(u'pop and id params cannot be present together in the '
+            msg = _('pop and id params cannot be present together in the '
                     'delete request.')
 
             raise ValidationFailed(msg)
 
         if pop is None and ids is None:
-            msg = _(u'The request should have either "ids" or "pop" '
+            msg = _('The request should have either "ids" or "pop" '
                     'parameter in the request, to be able to delete.')
 
             raise ValidationFailed(msg)
 
         if self._limits_conf.message_delete_with_claim_id:
             if (ids and claim_ids is None) or (ids is None and claim_ids):
-                msg = _(u'The request should have both "ids" and "claim_ids" '
+                msg = _('The request should have both "ids" and "claim_ids" '
                         'parameter in the request when '
                         'message_delete_with_claim_id is True.')
                 raise ValidationFailed(msg)
 
         pop_uplimit = self._limits_conf.max_messages_per_claim_or_pop
         if pop is not None and not (0 < pop <= pop_uplimit):
-            msg = _(u'Pop value must be at least 1 and may not '
+            msg = _('Pop value must be at least 1 and may not '
                     'be greater than {0}.')
 
             raise ValidationFailed(msg, pop_uplimit)
 
         delete_uplimit = self._limits_conf.max_messages_per_page
         if ids is not None and not (0 < len(ids) <= delete_uplimit):
-            msg = _(u'ids parameter should have at least 1 and not '
+            msg = _('ids parameter should have at least 1 and not '
                     'greater than {0} values.')
 
             raise ValidationFailed(msg, delete_uplimit)
@@ -508,7 +508,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_messages_per_claim_or_pop
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and may not '
+            msg = _('Limit must be at least 1 and may not '
                     'be greater than {0}.')
 
             raise ValidationFailed(
@@ -517,7 +517,7 @@ class Validator(object):
         grace = metadata['grace']
 
         if not (MIN_CLAIM_GRACE <= grace <= self._limits_conf.max_claim_grace):
-            msg = _(u'The grace for a claim may not exceed {0} seconds, and '
+            msg = _('The grace for a claim may not exceed {0} seconds, and '
                     'must be at least {1} seconds long.')
 
             raise ValidationFailed(
@@ -533,7 +533,7 @@ class Validator(object):
         ttl = metadata['ttl']
 
         if not (MIN_CLAIM_TTL <= ttl <= self._limits_conf.max_claim_ttl):
-            msg = _(u'The TTL for a claim may not exceed {0} seconds, and '
+            msg = _('The TTL for a claim may not exceed {0} seconds, and '
                     'must be at least {1} seconds long.')
 
             raise ValidationFailed(
@@ -547,7 +547,7 @@ class Validator(object):
         """
         for p in ('subscriber',):
             if p not in subscription.keys():
-                raise ValidationFailed(_(u'Missing parameter %s in body.') % p)
+                raise ValidationFailed(_('Missing parameter %s in body.') % p)
 
         self.subscription_patching(subscription)
 
@@ -559,7 +559,7 @@ class Validator(object):
         """
 
         if not subscription:
-            raise ValidationFailed(_(u'No subscription to create.'))
+            raise ValidationFailed(_('No subscription to create.'))
 
         if not isinstance(subscription, dict):
             msg = _('Subscriptions must be a dict.')
@@ -573,13 +573,13 @@ class Validator(object):
             subscriber_type = parsed_uri.scheme
 
             if subscriber_type not in self._limits_conf.subscriber_types:
-                msg = _(u'The subscriber type of subscription must be '
-                        u'supported in the list {0}.')
+                msg = _('The subscriber type of subscription must be '
+                        'supported in the list {0}.')
                 raise ValidationFailed(msg, self._limits_conf.subscriber_types)
 
         options = subscription.get('options')
         if options and not isinstance(options, dict):
-            msg = _(u'Options must be a dict.')
+            msg = _('Options must be a dict.')
             raise ValidationFailed(msg)
 
         self._validate_retry_policy(options)
@@ -587,11 +587,11 @@ class Validator(object):
         ttl = subscription.get('ttl')
         if ttl:
             if not isinstance(ttl, int):
-                msg = _(u'TTL must be an integer.')
+                msg = _('TTL must be an integer.')
                 raise ValidationFailed(msg)
 
             if ttl < MIN_SUBSCRIPTION_TTL:
-                msg = _(u'The TTL for a subscription '
+                msg = _('The TTL for a subscription '
                         'must be at least {0} seconds long.')
                 raise ValidationFailed(msg, MIN_SUBSCRIPTION_TTL)
 
@@ -600,7 +600,7 @@ class Validator(object):
             now = timeutils.utcnow_ts()
             now_dt = datetime.datetime.fromtimestamp(
                 now, tz=datetime.timezone.utc).replace(tzinfo=None)
-            msg = _(u'The TTL seconds for a subscription plus current time'
+            msg = _('The TTL seconds for a subscription plus current time'
                     ' must be less than {0}.')
             try:
                 # NOTE(flwang): If below expression works, then we believe the
@@ -626,7 +626,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_subscriptions_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and may not '
+            msg = _('Limit must be at least 1 and may not '
                     'be greater than {0}.')
 
             raise ValidationFailed(
@@ -649,7 +649,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_flavors_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            msg = _('Limit must be at least 1 and no greater than {0}.')
             raise ValidationFailed(msg, self._limits_conf.max_flavors_per_page)
 
     def pool_listing(self, limit=None, **kwargs):
@@ -662,7 +662,7 @@ class Validator(object):
 
         uplimit = self._limits_conf.max_pools_per_page
         if limit is not None and not (0 < limit <= uplimit):
-            msg = _(u'Limit must be at least 1 and no greater than {0}.')
+            msg = _('Limit must be at least 1 and no greater than {0}.')
             raise ValidationFailed(msg, self._limits_conf.max_pools_per_page)
 
     def client_id_uuid_safe(self, client_id):
@@ -675,7 +675,7 @@ class Validator(object):
         if self._limits_conf.client_id_uuid_safe == 'off':
             if (len(client_id) < self._limits_conf.min_length_client_id) or \
                (len(client_id) > self._limits_conf.max_length_client_id):
-                msg = _(u'Length of client id must be at least {0} and no '
+                msg = _('Length of client id must be at least {0} and no '
                         'greater than {1}.')
                 raise ValidationFailed(msg,
                                        self._limits_conf.min_length_client_id,
@@ -695,14 +695,14 @@ class Validator(object):
         """
 
         if project is not None and len(project) > PROJECT_ID_MAX_LEN:
-            msg = _(u'Project ids may not be more than {0} characters long.')
+            msg = _('Project ids may not be more than {0} characters long.')
             raise ValidationFailed(msg, PROJECT_ID_MAX_LEN)
 
         if len(topic) > QUEUE_NAME_MAX_LEN:
-            msg = _(u'Topic names may not be more than {0} characters long.')
+            msg = _('Topic names may not be more than {0} characters long.')
             raise ValidationFailed(msg, QUEUE_NAME_MAX_LEN)
 
         if not QUEUE_NAME_REGEX.match(topic):
             raise ValidationFailed(
-                _(u'Topic names may only contain ASCII letters, digits, '
+                _('Topic names may only contain ASCII letters, digits, '
                   'underscores, and dashes.'))

@@ -201,8 +201,8 @@ class TestTopicLifecycleMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_non_ascii_name(self):
-        test_params = ((u'/topics/non-ascii-n\u0153me', 'utf-8'),
-                       (u'/topics/non-ascii-n\xc4me', 'iso8859-1'))
+        test_params = (('/topics/non-ascii-n\u0153me', 'utf-8'),
+                       ('/topics/non-ascii-n\xc4me', 'iso8859-1'))
 
         for uri, enc in test_params:
             uri = self.url_prefix + uri

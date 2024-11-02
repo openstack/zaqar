@@ -350,7 +350,7 @@ class SubscriptionTest(base.V1_1Base):
         ws_notification = msgpack.unpackb(sender.call_args_list[2][0][0])
         self.assertEqual({'body': {'status': 'disco queen'}, 'ttl': 60,
                           'queue_name': 'kitkat',
-                          'Message_Type': u'Notification'}, ws_notification)
+                          'Message_Type': 'Notification'}, ws_notification)
 
     def test_list_returns_503_on_nopoolfound_exception(self):
         sub = self.boot.storage.subscription_controller.create(

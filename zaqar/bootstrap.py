@@ -59,16 +59,16 @@ class Bootstrap(object):
 
     @decorators.lazy_property(write=False)
     def api(self):
-        LOG.debug(u'Loading API handler')
+        LOG.debug('Loading API handler')
         validate = validation.Validator(self.conf)
         defaults = base.ResourceDefaults(self.conf)
         return handler.Handler(self.storage, self.control, validate, defaults)
 
     @decorators.lazy_property(write=False)
     def storage(self):
-        LOG.debug(u'Loading storage driver')
+        LOG.debug('Loading storage driver')
         if self.conf.pooling:
-            LOG.debug(u'Storage pooling enabled')
+            LOG.debug('Storage pooling enabled')
             storage_driver = pooling.DataDriver(self.conf, self.cache,
                                                 self.control)
             if self.conf.profiler.enabled:
@@ -78,19 +78,19 @@ class Bootstrap(object):
             storage_driver = storage_utils.load_storage_driver(
                 self.conf, self.cache, control_driver=self.control)
 
-        LOG.debug(u'Loading storage pipeline')
+        LOG.debug('Loading storage pipeline')
         return pipeline.DataDriver(self.conf, storage_driver,
                                    self.control)
 
     @decorators.lazy_property(write=False)
     def control(self):
-        LOG.debug(u'Loading storage control driver')
+        LOG.debug('Loading storage control driver')
         return storage_utils.load_storage_driver(self.conf, self.cache,
                                                  control_mode=True)
 
     @decorators.lazy_property(write=False)
     def cache(self):
-        LOG.debug(u'Loading proxy cache driver')
+        LOG.debug('Loading proxy cache driver')
         try:
             oslo_cache.register_config(self.conf)
             return oslo_cache.get_cache(self.conf)
@@ -101,7 +101,7 @@ class Bootstrap(object):
     @decorators.lazy_property(write=False)
     def transport(self):
         transport_name = self.driver_conf.transport
-        LOG.debug(u'Loading transport driver: %s', transport_name)
+        LOG.debug('Loading transport driver: %s', transport_name)
 
         if transport_name == consts.TRANSPORT_WEBSOCKET:
             args = [self.conf, self.api, self.cache]
@@ -120,8 +120,8 @@ class Bootstrap(object):
                                        invoke_args=args)
             return mgr.driver
         except RuntimeError as exc:
-            LOG.exception(u'Failed to load transport driver zaqar.transport.'
-                          u'%(driver)s with args %(args)s',
+            LOG.exception('Failed to load transport driver zaqar.transport.'
+                          '%(driver)s with args %(args)s',
                           {'driver': transport_name, 'args': args})
             raise errors.InvalidDriver(exc)
 

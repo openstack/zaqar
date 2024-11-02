@@ -203,8 +203,8 @@ class AES256Encryptor(Encryptor):
             for msg in messages:
                 self._encrypt_message(msg)
         else:
-            msg = _(u'Now Zaqar only support AES-256 and need to specify the'
-                    u'key.')
+            msg = _('Now Zaqar only support AES-256 and need to specify the'
+                    'key.')
             raise EncryptionFailed(msg)
 
     @assert_crypto_availability
@@ -217,8 +217,8 @@ class AES256Encryptor(Encryptor):
             for msg in messages:
                 self._decrypt_message(msg)
         else:
-            msg = _(u'Now Zaqar only support AES-256 and need to specify the'
-                    u'key.')
+            msg = _('Now Zaqar only support AES-256 and need to specify the'
+                    'key.')
             raise EncryptionFailed(msg)
 
 
@@ -279,8 +279,8 @@ class RSAEncryptor(Encryptor):
             for msg in messages:
                 self._encrypt_message(msg)
         else:
-            msg = _(u'Now Zaqar only support AES-256 and need to specify the'
-                    u'key.')
+            msg = _('Now Zaqar only support AES-256 and need to specify the'
+                    'key.')
             raise EncryptionFailed(msg)
 
     @assert_crypto_availability

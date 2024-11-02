@@ -88,13 +88,13 @@ def calculate_backoff(attempt, max_attempts, max_sleep, max_jitter=0):
     """
 
     if max_sleep < 0:
-        raise ValueError(u'max_sleep must be >= 0')
+        raise ValueError('max_sleep must be >= 0')
 
     if max_jitter < 0:
-        raise ValueError(u'max_jitter must be >= 0')
+        raise ValueError('max_jitter must be >= 0')
 
     if not (0 <= attempt < max_attempts):
-        raise ValueError(u'attempt value is out of range')
+        raise ValueError('attempt value is out of range')
 
     ratio = attempt / max_attempts
     backoff_sec = ratio * max_sleep
@@ -126,7 +126,7 @@ def oid_ts(oid):
     try:
         return timeutils.delta_seconds(EPOCH, oid.generation_time)
     except AttributeError:
-        raise TypeError(u'Expected ObjectId and got %s' % type(oid))
+        raise TypeError('Expected ObjectId and got %s' % type(oid))
 
 
 def stat_message(message, now):

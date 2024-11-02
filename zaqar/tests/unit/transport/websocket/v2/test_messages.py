@@ -231,7 +231,7 @@ class MessagesBaseTest(base.V2Base):
                          resp['body']['messages']['ttl'])
 
     def test_post_to_non_ascii_queue(self):
-        queue_name = u'non-ascii-n\u0153me'
+        queue_name = 'non-ascii-n\u0153me'
 
         resp = self._post_messages(queue_name)
         self.assertEqual(400, resp['headers']['status'])

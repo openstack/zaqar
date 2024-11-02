@@ -366,8 +366,8 @@ class MessageController(storage.Message, scripting.Mixin):
     @utils.retries_on_connection_error
     def first(self, queue, project=None, sort=1):
         if sort not in (1, -1):
-            raise ValueError(u'sort must be either 1 (ascending) '
-                             u'or -1 (descending)')
+            raise ValueError('sort must be either 1 (ascending) '
+                             'or -1 (descending)')
 
         message_id = self._get_first_message_id(queue, project, sort)
         if not message_id:

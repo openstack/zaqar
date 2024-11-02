@@ -166,7 +166,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
     def _deauthenticate(self):
         self._authentified = False
         self._auth_env = None
-        self.sendClose(4003, u'Authentication expired.')
+        self.sendClose(4003, 'Authentication expired.')
 
     def _auth_response(self, status, message):
         code = int(status.split()[0])

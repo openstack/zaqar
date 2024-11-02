@@ -56,7 +56,7 @@ class Listing(object):
         :returns: HTTP | 200
         """
 
-        LOG.debug(u'LIST flavors for project_id %s', project_id)
+        LOG.debug('LIST flavors for project_id %s', project_id)
 
         store = {}
         request.get_param('marker', store=store)
@@ -111,7 +111,7 @@ class Resource(object):
         :returns: HTTP | [200, 404]
         """
 
-        LOG.debug(u'GET flavor - name: %s', flavor)
+        LOG.debug('GET flavor - name: %s', flavor)
         data = None
         detailed = request.get_param_as_bool('detailed') or False
 
@@ -139,7 +139,7 @@ class Resource(object):
         :returns: HTTP | [201, 400]
         """
 
-        LOG.debug(u'PUT flavor - name: %s', flavor)
+        LOG.debug('PUT flavor - name: %s', flavor)
 
         data = wsgi_utils.load(request)
         wsgi_utils.validate(self._validators['create'], data)
@@ -150,7 +150,7 @@ class Resource(object):
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolGroupDoesNotExist:
-            description = (_(u'Flavor %(flavor)s could not be created. ') %
+            description = (_('Flavor %(flavor)s could not be created. ') %
                            dict(flavor=flavor))
             LOG.exception(description)
             raise falcon.HTTPBadRequest(
@@ -162,7 +162,7 @@ class Resource(object):
         :returns: HTTP | [204]
         """
 
-        LOG.debug(u'DELETE flavor - name: %s', flavor)
+        LOG.debug('DELETE flavor - name: %s', flavor)
         self._ctrl.delete(flavor, project=project_id)
         response.status = falcon.HTTP_204
 
@@ -179,12 +179,12 @@ class Resource(object):
         :returns: HTTP | [200, 400]
         """
 
-        LOG.debug(u'PATCH flavor - name: %s', flavor)
+        LOG.debug('PATCH flavor - name: %s', flavor)
         data = wsgi_utils.load(request)
 
         EXPECT = ('capabilities')
         if not any([(field in data) for field in EXPECT]):
-            LOG.debug(u'PATCH flavor, bad params')
+            LOG.debug('PATCH flavor, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 '`capabilities` needs '
                 'to be specified'

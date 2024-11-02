@@ -137,7 +137,7 @@ def entries(controller, count):
     :param count: int - number of entries to create
     :returns: [(str, str, str, str)] - [(project, queue, partition, host)]
     """
-    spec = [(u'_', str(uuid.uuid1()), str(i),
+    spec = [('_', str(uuid.uuid1()), str(i),
              str(i))
             for i in range(count)]
 
@@ -187,7 +187,7 @@ def pool_entries(controller, pool_ctrl, count):
     :returns: [(project, queue, pool)]
     :rtype: [(str, str, str)]
     """
-    spec = [(u'_', str(uuid.uuid1()), str(i))
+    spec = [('_', str(uuid.uuid1()), str(i))
             for i in range(count)]
 
     for p, q, s in spec:

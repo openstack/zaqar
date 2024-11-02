@@ -26,7 +26,7 @@ class ExceptionBase(Exception):
 class BadRequest(ExceptionBase):
     """Raised when an invalid request is received."""
 
-    msg_format = u'Bad request. {description}'
+    msg_format = 'Bad request. {description}'
 
     def __init__(self, description):
         """Initializes the error with contextual information.

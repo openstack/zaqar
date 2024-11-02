@@ -38,7 +38,7 @@ class TestMessagingProtocol(base.TestBase):
         }
 
     def test_on_message_with_invalid_input(self):
-        payload = u'\ufeff'
+        payload = '\ufeff'
         send_mock = mock.Mock()
         self.protocol.sendMessage = send_mock
 

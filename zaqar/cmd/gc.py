@@ -31,5 +31,5 @@ def run():
 
     server = bootstrap.Bootstrap(conf)
 
-    LOG.debug(u'Calling the garbage collector')
+    LOG.debug('Calling the garbage collector')
     server.storage.gc()

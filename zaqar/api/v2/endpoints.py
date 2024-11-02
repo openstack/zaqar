@@ -56,7 +56,7 @@ class Endpoints(object):
         """
         project_id = req._headers.get('X-Project-ID')
 
-        LOG.debug(u'Queue list - project: %(project)s',
+        LOG.debug('Queue list - project: %(project)s',
                   {'project': project_id})
 
         try:
@@ -96,7 +96,7 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         metadata = req._body.get('metadata', {})
 
-        LOG.debug(u'Queue create - queue: %(queue)s, project: %(project)s',
+        LOG.debug('Queue create - queue: %(queue)s, project: %(project)s',
                   {'queue': queue_name,
                    'project': project_id})
 
@@ -133,7 +133,7 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Queue delete - queue: %(queue)s, project: %(project)s',
+        LOG.debug('Queue delete - queue: %(queue)s, project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
         try:
             self._queue_controller.delete(queue_name, project=project_id)
@@ -159,8 +159,8 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Queue get - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Queue get - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -193,8 +193,8 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Get queue stats - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Get queue stats - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -236,8 +236,8 @@ class Endpoints(object):
         resource_types = req._body.get('resource_types', ["messages",
                                                           "subscriptions"])
 
-        LOG.debug(u'Purge queue - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Purge queue - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -286,8 +286,8 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Message list - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Message list - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -340,8 +340,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         message_id = req._body.get('message_id')
 
-        LOG.debug(u'Message get - message: %(message)s, '
-                  u'queue: %(queue)s, project: %(project)s',
+        LOG.debug('Message get - message: %(message)s, '
+                  'queue: %(queue)s, project: %(project)s',
                   {'message': message_id,
                    'queue': queue_name,
                    'project': project_id})
@@ -377,8 +377,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         message_ids = list(req._body.get('message_ids'))
 
-        LOG.debug(u'Message get - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Message get - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
@@ -414,15 +414,15 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Messages post - queue:  %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Messages post - queue:  %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         messages = req._body.get('messages')
 
         if messages is None:
-            ex = _(u'Invalid request.')
-            error = _(u'No messages were found in the request body.')
+            ex = _('Invalid request.')
+            error = _('No messages were found in the request body.')
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers, error)
 
@@ -489,7 +489,7 @@ class Endpoints(object):
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.MessageConflict as ex:
-            error = _(u'No messages could be enqueued.')
+            error = _('No messages could be enqueued.')
             headers = {'status': 500}
             LOG.exception(error)
             return api_utils.error_response(req, ex, headers, error)
@@ -513,8 +513,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         message_id = req._body.get('message_id')
 
-        LOG.debug(u'Messages item DELETE - message: %(message)s, '
-                  u'queue: %(queue)s, project: %(project)s',
+        LOG.debug('Messages item DELETE - message: %(message)s, '
+                  'queue: %(queue)s, project: %(project)s',
                   {'message': message_id,
                    'queue': queue_name,
                    'project': project_id})
@@ -529,20 +529,20 @@ class Endpoints(object):
                 claim=claim_id)
         except storage_errors.MessageNotClaimed as ex:
             LOG.debug(ex)
-            error = _(u'A claim was specified, but the message '
-                      u'is not currently claimed.')
+            error = _('A claim was specified, but the message '
+                      'is not currently claimed.')
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers, error)
         except storage_errors.ClaimDoesNotExist as ex:
             LOG.debug(ex)
-            error = _(u'The specified claim does not exist or '
-                      u'has expired.')
+            error = _('The specified claim does not exist or '
+                      'has expired.')
             headers = {'status': 400}
             return api_utils.error_response(req, ex, headers, error)
         except storage_errors.NotPermitted as ex:
             LOG.debug(ex)
-            error = _(u'This message is claimed; it cannot be '
-                      u'deleted without a valid claim ID.')
+            error = _('This message is claimed; it cannot be '
+                      'deleted without a valid claim ID.')
             headers = {'status': 403}
             return api_utils.error_response(req, ex, headers, error)
 
@@ -568,8 +568,8 @@ class Endpoints(object):
             claim_ids = req._body.get('claim_ids')
         pop_limit = req._body.get('pop')
 
-        LOG.debug(u'Messages collection DELETE - queue: %(queue)s,'
-                  u'project: %(project)s, messages: %(message_ids)s',
+        LOG.debug('Messages collection DELETE - queue: %(queue)s,'
+                  'project: %(project)s, messages: %(message_ids)s',
                   {'queue': queue_name, 'project': project_id,
                    'message_ids': message_ids})
 
@@ -602,7 +602,7 @@ class Endpoints(object):
     @api_utils.on_exception_sends_500
     def _pop_messages(self, req, queue_name, project_id, pop_limit):
 
-        LOG.debug(u'Pop messages - queue: %(queue)s, project: %(project)s',
+        LOG.debug('Pop messages - queue: %(queue)s, project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         messages = self._message_controller.pop(
@@ -632,8 +632,8 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Claims create - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Claims create - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         self._claim_post_spec = (
@@ -699,8 +699,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         claim_id = req._body.get('claim_id')
 
-        LOG.debug(u'Claim get - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project: %(project_id)s',
+        LOG.debug('Claim get - claim: %(claim_id)s, '
+                  'queue: %(queue_name)s, project: %(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -744,8 +744,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         claim_id = req._body.get('claim_id')
 
-        LOG.debug(u'Claim update - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project:%(project_id)s',
+        LOG.debug('Claim update - claim: %(claim_id)s, '
+                  'queue: %(queue_name)s, project:%(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -791,8 +791,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         claim_id = req._body.get('claim_id')
 
-        LOG.debug(u'Claim delete - claim: %(claim_id)s, '
-                  u'queue: %(queue_name)s, project: %(project_id)s',
+        LOG.debug('Claim delete - claim: %(claim_id)s, '
+                  'queue: %(queue_name)s, project: %(project_id)s',
                   {'queue_name': queue_name,
                    'project_id': project_id,
                    'claim_id': claim_id})
@@ -819,7 +819,7 @@ class Endpoints(object):
         project_id = req._headers.get('X-Project-ID')
         queue_name = req._body.get('queue_name')
 
-        LOG.debug(u'Subscription list - project: %(project)s',
+        LOG.debug('Subscription list - project: %(project)s',
                   {'project': project_id})
 
         try:
@@ -861,7 +861,7 @@ class Endpoints(object):
         ttl = req._body.get('ttl', self._defaults.subscription_ttl)
 
         LOG.debug(
-            u'Subscription create - queue: %(queue)s, project: %(project)s',
+            'Subscription create - queue: %(queue)s, project: %(project)s',
             {'queue': queue_name,
              'project': project_id})
 
@@ -917,7 +917,7 @@ class Endpoints(object):
         subscription_id = req._body.get('subscription_id')
 
         LOG.debug(
-            u'Subscription delete - queue: %(queue)s, project: %(project)s',
+            'Subscription delete - queue: %(queue)s, project: %(project)s',
             {'queue': queue_name, 'project': project_id})
         try:
             self._subscription_controller.delete(queue_name,
@@ -948,8 +948,8 @@ class Endpoints(object):
         queue_name = req._body.get('queue_name')
         subscription_id = req._body.get('subscription_id')
 
-        LOG.debug(u'Subscription get - queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Subscription get - queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:
