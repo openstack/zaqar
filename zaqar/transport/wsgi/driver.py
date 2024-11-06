@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from distutils import version as d_version
 import falcon
 import socket
 from wsgiref import simple_server
@@ -122,16 +121,8 @@ class Driver(transport.DriverBase):
                 ('/v2', v2_0.private_endpoints(self, self._conf)),
             ])
 
-        # NOTE(wanghao): Since hook feature has removed after 1.0.0, using
-        # middleware instead of it, but for the compatibility with old version,
-        # we support them both now. Hook way can be removed after falcon
-        # version must be bigger than 1.0.0 in requirements.
-        if (d_version.LooseVersion(falcon.__version__) >=
-                d_version.LooseVersion("1.0.0")):
-            middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
-            self.app = falcon.API(middleware=middleware)
-        else:
-            self.app = falcon.API(before=self.before_hooks)
+        middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
+        self.app = falcon.API(middleware=middleware)
 
         # Set options to keep behavior compatible to pre-2.0.0 falcon
         self.app.req_options.auto_parse_qs_csv = True
