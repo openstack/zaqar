@@ -134,8 +134,8 @@ class TestQueueLifecycleMongoDB(base.V1_1Base):
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def test_non_ascii_name(self):
-        test_params = ((u'/queues/non-ascii-n\u0153me', 'utf-8'),
-                       (u'/queues/non-ascii-n\xc4me', 'iso8859-1'))
+        test_params = (('/queues/non-ascii-n\u0153me', 'utf-8'),
+                       ('/queues/non-ascii-n\xc4me', 'iso8859-1'))
 
         for uri, enc in test_params:
             uri = self.url_prefix + uri

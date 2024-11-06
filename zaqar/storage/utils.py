@@ -48,7 +48,7 @@ def dynamic_conf(uri, options, conf=None):
     # 'drivers:storage:{type}'
     options['uri'] = uri
     storage_opts = utils.dict_to_conf(options)
-    storage_group = u'drivers:message_store:%s' % storage_type
+    storage_group = 'drivers:message_store:%s' % storage_type
 
     # NOTE(cpp-cabrera): register those options!
     if conf is None:

@@ -240,8 +240,8 @@ class MessageController(storage.Message):
         """
 
         if sort not in (1, -1):
-            raise ValueError(u'sort must be either 1 (ascending) '
-                             u'or -1 (descending)')
+            raise ValueError('sort must be either 1 (ascending) '
+                             'or -1 (descending)')
 
         now = timeutils.utcnow_ts()
 
@@ -389,9 +389,9 @@ class MessageController(storage.Message):
                 # NOTE(kgriffs): Since we did not filter by a time window,
                 # the topic should have been found and updated. Perhaps
                 # the topic has been deleted?
-                message = (u'Failed to increment the message '
-                           u'counter for topic %(name)s and '
-                           u'project %(project)s')
+                message = ('Failed to increment the message '
+                           'counter for topic %(name)s and '
+                           'project %(project)s')
                 message %= dict(name=topic_name, project=project)
 
                 LOG.warning(message)
@@ -815,9 +815,9 @@ class FIFOMessageController(MessageController):
 
                 # Log a message if we retried, for debugging perf issues
                 if attempt != 0:
-                    msgtmpl = _(u'%(attempts)d attempt(s) required to post '
-                                u'%(num_messages)d messages to queue '
-                                u'"%(topic)s" under project %(project)s')
+                    msgtmpl = _('%(attempts)d attempt(s) required to post '
+                                '%(num_messages)d messages to queue '
+                                '"%(topic)s" under project %(project)s')
 
                     LOG.debug(msgtmpl,
                               dict(topic=topic_name,
@@ -860,9 +860,9 @@ class FIFOMessageController(MessageController):
                 #
                 # TODO(kgriffs): Add transaction ID to help match up loglines
                 if attempt == 0:
-                    msgtmpl = _(u'First attempt failed while '
-                                u'adding messages to topic '
-                                u'"%(topic)s" under project %(project)s')
+                    msgtmpl = _('First attempt failed while '
+                                'adding messages to topic '
+                                '"%(topic)s" under project %(project)s')
 
                     LOG.debug(msgtmpl, dict(topic=topic_name, project=project))
 
@@ -874,8 +874,8 @@ class FIFOMessageController(MessageController):
                 # this situation can not happen.
                 elapsed = timeutils.utcnow_ts() - now
                 if elapsed > MAX_RETRY_POST_DURATION:
-                    msgtmpl = (u'Exceeded maximum retry duration for topic '
-                               u'"%(topic)s" under project %(project)s')
+                    msgtmpl = ('Exceeded maximum retry duration for topic '
+                               '"%(topic)s" under project %(project)s')
 
                     LOG.warning(msgtmpl,
                                 dict(topic=topic_name, project=project))
@@ -918,10 +918,10 @@ class FIFOMessageController(MessageController):
                     next_marker = self._get_counter(
                         topic_name, project)
                 else:
-                    msgtmpl = (u'Detected a stalled message counter '
-                               u'for topic "%(topic)s" under '
-                               u'project %(project)s.'
-                               u'The counter was incremented to %(value)d.')
+                    msgtmpl = ('Detected a stalled message counter '
+                               'for topic "%(topic)s" under '
+                               'project %(project)s.'
+                               'The counter was incremented to %(value)d.')
 
                     LOG.warning(msgtmpl,
                                 dict(topic=topic_name,
@@ -934,8 +934,8 @@ class FIFOMessageController(MessageController):
                 LOG.exception('Error parsing document.')
                 raise
 
-        msgtmpl = (u'Hit maximum number of attempts (%(max)s) for topic '
-                   u'"%(topic)s" under project %(project)s')
+        msgtmpl = ('Hit maximum number of attempts (%(max)s) for topic '
+                   '"%(topic)s" under project %(project)s')
 
         LOG.warning(msgtmpl,
                     dict(max=self.driver.mongodb_conf.max_attempts,

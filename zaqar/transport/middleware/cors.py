@@ -75,7 +75,7 @@ class CORSMiddleware(object):
     @classmethod
     def install(cls, app, auth_app, conf):
 
-        LOG.debug(u'Installing CORS middleware.')
+        LOG.debug('Installing CORS middleware.')
         cors.set_defaults(
             allow_headers=['X-Auth-Token',
                            'X-Identity-Status',

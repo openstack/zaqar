@@ -67,7 +67,7 @@ def sanitize(document, spec=None, doctype=dict):
 
         return [filter_fields(obj, spec) for obj in document]
 
-    raise TypeError(_(u'Doctype must be either a JSONObject or JSONArray'))
+    raise TypeError(_('Doctype must be either a JSONObject or JSONArray'))
 
 
 def filter_fields(document, spec):
@@ -119,7 +119,7 @@ def get_checked_field(document, name, value_type, default_value):
         if default_value is not None:
             value = default_value
         else:
-            description = _(u'Missing "{name}" field.').format(name=name)
+            description = _('Missing "{name}" field.').format(name=name)
             raise api_errors.BadRequest(description)
 
     # PERF(kgriffs): We do our own little spec thing because it is way
@@ -127,7 +127,7 @@ def get_checked_field(document, name, value_type, default_value):
     if value_type == '*' or isinstance(value, value_type):
         return value
 
-    description = _(u'The value of the "{name}" field must be a {vtype}.')
+    description = _('The value of the "{name}" field must be a {vtype}.')
     description = description.format(name=name, vtype=value_type.__name__)
     raise api_errors.BadRequest(description)
 

@@ -49,7 +49,7 @@ def deserialize(stream, len):
     """
 
     if len is None:
-        description = _(u'Request body can not be empty')
+        description = _('Request body can not be empty')
         raise errors.HTTPBadRequestBody(description)
 
     try:
@@ -60,17 +60,17 @@ def deserialize(stream, len):
 
     except utils.MalformedJSON as ex:
         LOG.debug(ex)
-        description = _(u'Request body could not be parsed.')
+        description = _('Request body could not be parsed.')
         raise errors.HTTPBadRequestBody(description)
 
     except utils.OverflowedJSONInteger as ex:
         LOG.debug(ex)
-        description = _(u'JSON contains integer that is too large.')
+        description = _('JSON contains integer that is too large.')
         raise errors.HTTPBadRequestBody(description)
 
     except Exception:
         # Error while reading from the network/server
-        description = _(u'Request body could not be read.')
+        description = _('Request body could not be read.')
         LOG.exception(description)
         raise errors.HTTPServiceUnavailable(description)
 
@@ -167,7 +167,7 @@ def get_checked_field(document, name, value_type, default_value):
         if default_value is not None:
             value = default_value
         else:
-            description = _(u'Missing "{name}" field.').format(name=name)
+            description = _('Missing "{name}" field.').format(name=name)
             raise errors.HTTPBadRequestBody(description)
 
     # PERF(kgriffs): We do our own little spec thing because it is way
@@ -175,7 +175,7 @@ def get_checked_field(document, name, value_type, default_value):
     if value_type == '*' or isinstance(value, value_type):
         return value
 
-    description = _(u'The value of the "{name}" field must be a {vtype}.')
+    description = _('The value of the "{name}" field must be a {vtype}.')
     description = description.format(name=name, vtype=value_type.__name__)
     raise errors.HTTPBadRequestBody(description)
 

@@ -65,7 +65,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Topic metadata could not be retrieved.')
+            description = _('Topic metadata could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -98,7 +98,7 @@ class ItemResource(object):
             LOG.exception('Flavor "%s" does not exist', topic_name)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except Exception:
-            description = _(u'Topic could not be created.')
+            description = _('Topic could not be created.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -108,14 +108,14 @@ class ItemResource(object):
     @decorators.TransportLog("Topics item")
     @acl.enforce("topics:delete")
     def on_delete(self, req, resp, project_id, topic_name):
-        LOG.debug(u'Topic item DELETE - topic: %(topic)s, '
-                  u'project: %(project)s',
+        LOG.debug('Topic item DELETE - topic: %(topic)s, '
+                  'project: %(project)s',
                   {'topic': topic_name, 'project': project_id})
         try:
             self._topic_controller.delete(topic_name, project=project_id)
 
         except Exception:
-            description = _(u'Topic could not be deleted.')
+            description = _('Topic could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -133,7 +133,7 @@ class ItemResource(object):
 
         :returns: HTTP | 200,400,409,503
         """
-        LOG.debug(u'PATCH topic - name: %s', topic_name)
+        LOG.debug('PATCH topic - name: %s', topic_name)
 
         try:
             # Place JSON size restriction before parsing
@@ -161,17 +161,17 @@ class ItemResource(object):
                 changes = wsgi_utils.sanitize(changes, doctype=list)
             except utils.MalformedJSON as ex:
                 LOG.debug(ex)
-                description = _(u'Request body could not be parsed.')
+                description = _('Request body could not be parsed.')
                 raise wsgi_errors.HTTPBadRequestBody(description)
 
             except utils.OverflowedJSONInteger as ex:
                 LOG.debug(ex)
-                description = _(u'JSON contains integer that is too large.')
+                description = _('JSON contains integer that is too large.')
                 raise wsgi_errors.HTTPBadRequestBody(description)
 
             except Exception:
                 # Error while reading from the network/server
-                description = _(u'Request body could not be read.')
+                description = _('Request body could not be read.')
                 LOG.exception(description)
                 raise wsgi_errors.HTTPServiceUnavailable(description)
         else:
@@ -207,7 +207,7 @@ class ItemResource(object):
         except wsgi_errors.HTTPConflict:
             raise
         except Exception:
-            description = _(u'Topic could not be updated.')
+            description = _('Topic could not be updated.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
         for meta, value in _get_reserved_metadata(self._validate).items():
@@ -263,7 +263,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Topics could not be listed.')
+            description = _('Topics could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

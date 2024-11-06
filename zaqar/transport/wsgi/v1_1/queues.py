@@ -48,7 +48,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Queue metadata could not be retrieved.')
+            description = _('Queue metadata could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -84,7 +84,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Queue could not be created.')
+            description = _('Queue could not be created.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -97,7 +97,7 @@ class ItemResource(object):
             self._queue_controller.delete(queue_name, project=project_id)
 
         except Exception:
-            description = _(u'Queue could not be deleted.')
+            description = _('Queue could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -134,7 +134,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Queues could not be listed.')
+            description = _('Queues could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

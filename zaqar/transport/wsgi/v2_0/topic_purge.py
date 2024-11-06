@@ -74,7 +74,7 @@ class Resource(object):
         except ValueError as err:
             raise wsgi_errors.HTTPBadRequestAPI(str(err))
         except Exception:
-            description = _(u'Topic could not be purged.')
+            description = _('Topic could not be purged.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

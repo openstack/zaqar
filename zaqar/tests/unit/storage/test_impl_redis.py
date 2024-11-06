@@ -140,10 +140,10 @@ class RedisUtilsTest(testing.TestBase):
         now = timeutils.utcnow_ts()
         body = {
             'msg': 'Hello Earthlings!',
-            'unicode': u'ab\u00e7',
+            'unicode': 'ab\u00e7',
             'bytes': b'ab\xc3\xa7',
             b'ab\xc3\xa7': 'one, two, three',
-            u'ab\u00e7': 'one, two, three',
+            'ab\u00e7': 'one, two, three',
         }
 
         msg = _create_sample_message(now=now, body=body)

@@ -52,7 +52,7 @@ class KeystoneAuth(object):
     @classmethod
     def install(cls, app, conf):
         """Install Auth check on application."""
-        LOG.debug(u'Installing Keystone\'s auth protocol')
+        LOG.debug('Installing Keystone\'s auth protocol')
 
         return auth_token.AuthProtocol(app,
                                        conf={"oslo-config-config": conf,

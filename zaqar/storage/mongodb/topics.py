@@ -156,9 +156,9 @@ class TopicController(storage.Topic):
                 # NOTE(kgriffs): Since we did not filter by a time window,
                 # the topic should have been found and updated. Perhaps
                 # the topic has been deleted?
-                message = _(u'Failed to increment the message '
-                            u'counter for topic %(name)s and '
-                            u'project %(project)s')
+                message = _('Failed to increment the message '
+                            'counter for topic %(name)s and '
+                            'project %(project)s')
                 message %= dict(name=name, project=project)
 
                 LOG.warning(message)

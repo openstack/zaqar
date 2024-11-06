@@ -1749,14 +1749,14 @@ class CatalogueControllerTest(ControllerBaseTest):
     def test_list(self):
         with helpers.pool_entries(self.controller,
                                   self.pool_ctrl, 10) as expect:
-            values = zip(self.controller.list(u'_'), expect)
+            values = zip(self.controller.list('_'), expect)
             for e, x in values:
                 p, q, s = x
                 self._check_structure(e)
                 self._check_value(e, xqueue=q, xproject=p, xpool=s)
 
     def test_update(self):
-        p2 = u'b'
+        p2 = 'b'
         # NOTE(gengchc2): Remove [group=self.pool_group] in
         # it can be tested for redis as management.
         self.pool_ctrl.create(p2, 100, '127.0.0.1',
@@ -1787,7 +1787,7 @@ class CatalogueControllerTest(ControllerBaseTest):
     def test_get_raises_if_does_not_exist(self):
         with helpers.pool_entry(self.controller,
                                 self.project,
-                                self.queue, u'a') as expect:
+                                self.queue, 'a') as expect:
             p, q, _ = expect
             self.assertRaises(errors.QueueNotMapped,
                               self.controller.get,
@@ -1810,8 +1810,8 @@ class CatalogueControllerTest(ControllerBaseTest):
     def test_insert(self):
         q1 = str(uuid.uuid1())
         q2 = str(uuid.uuid1())
-        self.controller.insert(self.project, q1, u'a')
-        self.controller.insert(self.project, q2, u'a')
+        self.controller.insert(self.project, q1, 'a')
+        self.controller.insert(self.project, q2, 'a')
 
 
 # NOTE(gengchc2): Unittest for new flavor configure scenario.

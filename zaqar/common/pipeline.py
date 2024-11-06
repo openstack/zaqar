@@ -106,7 +106,7 @@ class Pipeline(object):
                     return result
 
             if target is None:
-                msg = _(u'Method %s not found in any of '
+                msg = _('Method %s not found in any of '
                         'the registered stages') % method
                 LOG.error(msg)
                 raise AttributeError(msg)

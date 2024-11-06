@@ -41,8 +41,8 @@ class Resource(object):
     @decorators.TransportLog("Queues share item")
     @acl.enforce("queues:share")
     def on_post(self, req, resp, project_id, queue_name):
-        LOG.debug(u'Pre-Signed URL Creation for queue: %(queue)s, '
-                  u'project: %(project)s',
+        LOG.debug('Pre-Signed URL Creation for queue: %(queue)s, '
+                  'project: %(project)s',
                   {'queue': queue_name, 'project': project_id})
 
         try:

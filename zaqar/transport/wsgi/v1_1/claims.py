@@ -90,7 +90,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Claim could not be created.')
+            description = _('Claim could not be created.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -138,7 +138,7 @@ class ItemResource(object):
             LOG.debug(ex)
             raise wsgi_errors.HTTPNotFound(str(ex))
         except Exception:
-            description = _(u'Claim could not be queried.')
+            description = _('Claim could not be queried.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -180,7 +180,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Claim could not be updated.')
+            description = _('Claim could not be updated.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -194,6 +194,6 @@ class ItemResource(object):
             resp.status = falcon.HTTP_204
 
         except Exception:
-            description = _(u'Claim could not be deleted.')
+            description = _('Claim could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)

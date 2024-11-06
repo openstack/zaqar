@@ -258,7 +258,7 @@ class TestMessagesMongoDB(base.V2Base):
         # embedded queue name params go through the validation
         # hook, regardless of the target resource.
 
-        path = self.url_prefix + u'/queues/non-ascii-n\u0153me/messages'
+        path = self.url_prefix + '/queues/non-ascii-n\u0153me/messages'
 
         self._post_messages(path)
         self.assertEqual(falcon.HTTP_400, self.srmock.status)

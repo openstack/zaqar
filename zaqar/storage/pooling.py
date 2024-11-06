@@ -527,7 +527,7 @@ class Catalog(object):
             oldpoolids = catalogue['pool']
             oldpool = self._pools_ctrl.get(oldpoolids)
             oldflavor = oldpool['flavor']
-            msgtmpl = _(u'register queue to pool: old flavor: %(oldflavor)s '
+            msgtmpl = _('register queue to pool: old flavor: %(oldflavor)s '
                         ', new flavor: %(flavor)s')
             LOG.info(msgtmpl,
                      {'oldflavor': oldflavor, 'flavor': flavor})
@@ -542,7 +542,7 @@ class Catalog(object):
                     detailed=True)
                 pool = select.weighted(pools)
                 pool = pool and pool['name'] or None
-                msgtmpl = _(u'register queue to pool: new flavor:%(flavor)s')
+                msgtmpl = _('register queue to pool: new flavor:%(flavor)s')
                 LOG.info(msgtmpl,
                          {'flavor': flavor.get('name', None)})
             else:
@@ -563,10 +563,10 @@ class Catalog(object):
                     if self.lookup(queue, project) is not None:
                         return
                     raise errors.NoPoolFound()
-                    msgtmpl = _(u'register queue to pool: new flavor: None')
+                    msgtmpl = _('register queue to pool: new flavor: None')
                     LOG.info(msgtmpl)
 
-            msgtmpl = _(u'register queue: project:%(project)s'
+            msgtmpl = _('register queue: project:%(project)s'
                         ' queue:%(queue)s pool:%(pool)s')
             LOG.info(msgtmpl,
                      {'project': project,

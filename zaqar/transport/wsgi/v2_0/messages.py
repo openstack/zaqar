@@ -73,7 +73,7 @@ class CollectionResource(object):
             LOG.exception('Queue name "%s" does not exist', queue_name)
             queue_meta = None
         except Exception:
-            description = _(u'Message could not be retrieved.')
+            description = _('Message could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -145,7 +145,7 @@ class CollectionResource(object):
             messages = None
 
         except Exception:
-            description = _(u'Messages could not be listed.')
+            description = _('Messages could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -221,7 +221,7 @@ class CollectionResource(object):
         document = wsgi_utils.deserialize(req.stream, req.content_length)
 
         if 'messages' not in document:
-            description = _(u'No messages were found in the request body.')
+            description = _('No messages were found in the request body.')
             raise wsgi_errors.HTTPBadRequestAPI(description)
 
         messages = wsgi_utils.sanitize(document['messages'],
@@ -249,12 +249,12 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except storage_errors.MessageConflict:
-            description = _(u'No messages could be enqueued.')
+            description = _('No messages could be enqueued.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         except Exception:
-            description = _(u'Messages could not be enqueued.')
+            description = _('Messages could not be enqueued.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -283,8 +283,8 @@ class CollectionResource(object):
             # NOTE(TheSriram): Trying to get a message by id, should
             # return the message if its present, otherwise a 404 since
             # the message might have been deleted.
-            msg = _(u'No messages with IDs: {ids} found in the queue {queue} '
-                    u'for project {project}.')
+            msg = _('No messages with IDs: {ids} found in the queue {queue} '
+                    'for project {project}.')
             description = msg.format(queue=queue_name, project=project_id,
                                      ids=ids)
             raise wsgi_errors.HTTPNotFound(description)
@@ -327,7 +327,7 @@ class CollectionResource(object):
                 claim_ids=claim_ids)
 
         except Exception:
-            description = _(u'Messages could not be deleted.')
+            description = _('Messages could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -335,8 +335,8 @@ class CollectionResource(object):
 
     def _pop_messages(self, queue_name, project_id, pop_limit):
         try:
-            LOG.debug(u'POP messages - queue: %(queue)s, '
-                      u'project: %(project)s',
+            LOG.debug('POP messages - queue: %(queue)s, '
+                      'project: %(project)s',
                       {'queue': queue_name, 'project': project_id})
 
             messages = self._message_controller.pop(
@@ -345,7 +345,7 @@ class CollectionResource(object):
                 limit=pop_limit)
 
         except Exception:
-            description = _(u'Messages could not be popped.')
+            description = _('Messages could not be popped.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -392,7 +392,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Message could not be retrieved.')
+            description = _('Message could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -408,7 +408,7 @@ class ItemResource(object):
     @decorators.TransportLog("Messages item")
     @acl.enforce("messages:delete")
     def on_delete(self, req, resp, project_id, queue_name, message_id):
-        error_title = _(u'Unable to delete')
+        error_title = _('Unable to delete')
 
         try:
             self._message_controller.delete(
@@ -419,27 +419,27 @@ class ItemResource(object):
 
         except storage_errors.MessageNotClaimed as ex:
             LOG.debug(ex)
-            description = _(u'A claim was specified, but the message '
-                            u'is not currently claimed.')
+            description = _('A claim was specified, but the message '
+                            'is not currently claimed.')
             raise falcon.HTTPBadRequest(
                 title=error_title, description=description)
 
         except storage_errors.ClaimDoesNotExist as ex:
             LOG.debug(ex)
-            description = _(u'The specified claim does not exist or '
-                            u'has expired.')
+            description = _('The specified claim does not exist or '
+                            'has expired.')
             raise falcon.HTTPBadRequest(
                 title=error_title, description=description)
 
         except storage_errors.NotPermitted as ex:
             LOG.debug(ex)
-            description = _(u'This message is claimed; it cannot be '
-                            u'deleted without a valid claim ID.')
+            description = _('This message is claimed; it cannot be '
+                            'deleted without a valid claim ID.')
             raise falcon.HTTPForbidden(
                 title=error_title, description=description)
 
         except Exception:
-            description = _(u'Message could not be deleted.')
+            description = _('Message could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

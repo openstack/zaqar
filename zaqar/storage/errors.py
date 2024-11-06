@@ -41,9 +41,9 @@ class Conflict(ExceptionBase):
 
 class MessageConflict(Conflict):
 
-    msg_format = (u'Message could not be enqueued due to a conflict '
-                  u'with one or more other messages that are already in '
-                  u'queue {queue} for project {project}')
+    msg_format = ('Message could not be enqueued due to a conflict '
+                  'with one or more other messages that are already in '
+                  'queue {queue} for project {project}')
 
     def __init__(self, queue, project):
         """Initializes the error with contextual information.
@@ -58,9 +58,9 @@ class MessageConflict(Conflict):
 
 class ClaimConflict(Conflict):
 
-    msg_format = (u'Messages could not be claimed due to a conflict '
-                  u'with another parallel claim that is already in '
-                  u'queue {queue} for project {project}')
+    msg_format = ('Messages could not be claimed due to a conflict '
+                  'with another parallel claim that is already in '
+                  'queue {queue} for project {project}')
 
     def __init__(self, queue, project):
         """Initializes the error with contextual information.
@@ -74,7 +74,7 @@ class ClaimConflict(Conflict):
 
 class QueueDoesNotExist(DoesNotExist):
 
-    msg_format = u'Queue {name} does not exist for project {project}'
+    msg_format = 'Queue {name} does not exist for project {project}'
 
     def __init__(self, name, project):
         super(QueueDoesNotExist, self).__init__(name=name, project=project)
@@ -82,7 +82,7 @@ class QueueDoesNotExist(DoesNotExist):
 
 class QueueIsEmpty(ExceptionBase):
 
-    msg_format = u'Queue {name} in project {project} is empty'
+    msg_format = 'Queue {name} in project {project} is empty'
 
     def __init__(self, name, project):
         super(QueueIsEmpty, self).__init__(name=name, project=project)
@@ -90,8 +90,8 @@ class QueueIsEmpty(ExceptionBase):
 
 class MessageDoesNotExist(DoesNotExist):
 
-    msg_format = (u'Message {mid} does not exist in '
-                  u'queue {queue} for project {project}')
+    msg_format = ('Message {mid} does not exist in '
+                  'queue {queue} for project {project}')
 
     def __init__(self, mid, queue, project):
         super(MessageDoesNotExist, self).__init__(mid=mid, queue=queue,
@@ -100,8 +100,8 @@ class MessageDoesNotExist(DoesNotExist):
 
 class ClaimDoesNotExist(DoesNotExist):
 
-    msg_format = (u'Claim {cid} does not exist in '
-                  u'queue {queue} for project {project}')
+    msg_format = ('Claim {cid} does not exist in '
+                  'queue {queue} for project {project}')
 
     def __init__(self, cid, queue, project):
         super(ClaimDoesNotExist, self).__init__(cid=cid, queue=queue,
@@ -110,8 +110,8 @@ class ClaimDoesNotExist(DoesNotExist):
 
 class ClaimDoesNotMatch(ExceptionBase):
 
-    msg_format = (u'Claim {cid} does not exist in the claim_ids parameter in'
-                  u'queue {queue} for project {project}')
+    msg_format = ('Claim {cid} does not exist in the claim_ids parameter in'
+                  'queue {queue} for project {project}')
 
     def __init__(self, cid, queue, project):
         super(ClaimDoesNotMatch, self).__init__(cid=cid, queue=queue,
@@ -120,7 +120,7 @@ class ClaimDoesNotMatch(ExceptionBase):
 
 class MessageIsClaimed(NotPermitted):
 
-    msg_format = u'Message {mid} is claimed'
+    msg_format = 'Message {mid} is claimed'
 
     def __init__(self, mid):
         super(MessageIsClaimed, self).__init__(mid=mid)
@@ -128,7 +128,7 @@ class MessageIsClaimed(NotPermitted):
 
 class MessageNotClaimed(NotPermitted):
 
-    msg_format = u'Message {mid} is no longer claimed'
+    msg_format = 'Message {mid} is no longer claimed'
 
     def __init__(self, mid):
         super(MessageNotClaimed, self).__init__(mid=mid)
@@ -136,7 +136,7 @@ class MessageNotClaimed(NotPermitted):
 
 class MessageNotClaimedBy(NotPermitted):
 
-    msg_format = u'Message {mid} is not claimed by {cid}'
+    msg_format = 'Message {mid} is not claimed by {cid}'
 
     def __init__(self, mid, cid):
         super(MessageNotClaimedBy, self).__init__(cid=cid, mid=mid)
@@ -144,8 +144,8 @@ class MessageNotClaimedBy(NotPermitted):
 
 class QueueNotMapped(DoesNotExist):
 
-    msg_format = (u'No pool found for '
-                  u'queue {queue} for project {project}')
+    msg_format = ('No pool found for '
+                  'queue {queue} for project {project}')
 
     def __init__(self, queue, project):
         super(QueueNotMapped, self).__init__(queue=queue, project=project)
@@ -153,7 +153,7 @@ class QueueNotMapped(DoesNotExist):
 
 class PoolDoesNotExist(DoesNotExist):
 
-    msg_format = u'Pool {pool} does not exist'
+    msg_format = 'Pool {pool} does not exist'
 
     def __init__(self, pool):
         super(PoolDoesNotExist, self).__init__(pool=pool)
@@ -161,7 +161,7 @@ class PoolDoesNotExist(DoesNotExist):
 
 class PoolGroupDoesNotExist(DoesNotExist):
 
-    msg_format = u'Pool group {pool_group} does not exist'
+    msg_format = 'Pool group {pool_group} does not exist'
 
     def __init__(self, pool_group):
         super(PoolGroupDoesNotExist, self).__init__(pool_group=pool_group)
@@ -169,7 +169,7 @@ class PoolGroupDoesNotExist(DoesNotExist):
 
 class FlavorDoesNotExist(DoesNotExist):
 
-    msg_format = u'Flavor {flavor} does not exist'
+    msg_format = 'Flavor {flavor} does not exist'
 
     def __init__(self, flavor):
         super(FlavorDoesNotExist, self).__init__(flavor=flavor)
@@ -177,7 +177,7 @@ class FlavorDoesNotExist(DoesNotExist):
 
 class NoPoolFound(ExceptionBase):
 
-    msg_format = u'No pools registered'
+    msg_format = 'No pools registered'
 
     def __init__(self):
         super(NoPoolFound, self).__init__()
@@ -185,7 +185,7 @@ class NoPoolFound(ExceptionBase):
 
 class PoolInUseByFlavor(NotPermitted):
 
-    msg_format = u'Pool {pid} is in use by flavor {fid}'
+    msg_format = 'Pool {pid} is in use by flavor {fid}'
 
     def __init__(self, pid, fid):
         super(PoolInUseByFlavor, self).__init__(pid=pid, fid=fid)
@@ -198,7 +198,7 @@ class PoolInUseByFlavor(NotPermitted):
 
 class SubscriptionDoesNotExist(DoesNotExist):
 
-    msg_format = u'Subscription {subscription_id} does not exist'
+    msg_format = 'Subscription {subscription_id} does not exist'
 
     def __init__(self, subscription_id):
         super(SubscriptionDoesNotExist,
@@ -207,29 +207,29 @@ class SubscriptionDoesNotExist(DoesNotExist):
 
 class PoolCapabilitiesMismatch(ExceptionBase):
 
-    msg_format = (u'The pool being added does not '
-                  u'support the minimum set of capabilities')
+    msg_format = ('The pool being added does not '
+                  'support the minimum set of capabilities')
 
 
 class PoolAlreadyExists(Conflict):
 
-    msg_format = u'The database URI is in use by another pool.'
+    msg_format = 'The database URI is in use by another pool.'
 
 
 class PoolRedisNotSupportGroup(ExceptionBase):
 
-    msg_format = (u'Redis not support pool_goup, please use flavor ')
+    msg_format = ('Redis not support pool_goup, please use flavor ')
 
 
 class SubscriptionAlreadyExists(Conflict):
 
-    msg_format = (u'Such subscription already exists. Subscriptions '
-                  u'are unique by project + queue + subscriber URI.')
+    msg_format = ('Such subscription already exists. Subscriptions '
+                  'are unique by project + queue + subscriber URI.')
 
 
 class TopicDoesNotExist(DoesNotExist):
 
-    msg_format = u'Topic {name} does not exist for project {project}'
+    msg_format = 'Topic {name} does not exist for project {project}'
 
     def __init__(self, name, project):
         super(TopicDoesNotExist, self).__init__(name=name, project=project)
@@ -237,7 +237,7 @@ class TopicDoesNotExist(DoesNotExist):
 
 class TopicIsEmpty(ExceptionBase):
 
-    msg_format = u'Topic {name} in project {project} is empty'
+    msg_format = 'Topic {name} in project {project} is empty'
 
     def __init__(self, name, project):
         super(TopicIsEmpty, self).__init__(name=name, project=project)

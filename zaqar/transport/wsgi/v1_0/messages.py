@@ -57,7 +57,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Message could not be retrieved.')
+            description = _('Message could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -100,7 +100,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Messages could not be listed.')
+            description = _('Messages could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -161,12 +161,12 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except storage_errors.MessageConflict:
-            description = _(u'No messages could be enqueued.')
+            description = _('No messages could be enqueued.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         except Exception:
-            description = _(u'Messages could not be enqueued.')
+            description = _('Messages could not be enqueued.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -222,7 +222,7 @@ class CollectionResource(object):
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         except Exception:
-            description = _(u'Messages could not be deleted.')
+            description = _('Messages could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -249,7 +249,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPNotFound(str(ex))
 
         except Exception:
-            description = _(u'Message could not be retrieved.')
+            description = _('Message could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
@@ -261,7 +261,7 @@ class ItemResource(object):
 
     @decorators.TransportLog("Messages item")
     def on_delete(self, req, resp, project_id, queue_name, message_id):
-        error_title = _(u'Unable to delete')
+        error_title = _('Unable to delete')
 
         try:
             self._message_controller.delete(
@@ -272,27 +272,27 @@ class ItemResource(object):
 
         except storage_errors.MessageNotClaimed as ex:
             LOG.debug(ex)
-            description = _(u'A claim was specified, but the message '
-                            u'is not currently claimed.')
+            description = _('A claim was specified, but the message '
+                            'is not currently claimed.')
             raise falcon.HTTPBadRequest(
                 title=error_title, description=description)
 
         except storage_errors.ClaimDoesNotExist as ex:
             LOG.debug(ex)
-            description = _(u'The specified claim does not exist or '
-                            u'has expired.')
+            description = _('The specified claim does not exist or '
+                            'has expired.')
             raise falcon.HTTPBadRequest(
                 title=error_title, description=description)
 
         except storage_errors.NotPermitted as ex:
             LOG.debug(ex)
-            description = _(u'This message is claimed; it cannot be '
-                            u'deleted without a valid claim ID.')
+            description = _('This message is claimed; it cannot be '
+                            'deleted without a valid claim ID.')
             raise falcon.HTTPForbidden(
                 title=error_title, description=description)
 
         except Exception:
-            description = _(u'Message could not be deleted.')
+            description = _('Message could not be deleted.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 

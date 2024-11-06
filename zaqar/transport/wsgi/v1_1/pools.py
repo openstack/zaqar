@@ -79,7 +79,7 @@ class Listing(object):
         :returns: HTTP | 200
         """
 
-        LOG.debug(u'LIST pools')
+        LOG.debug('LIST pools')
 
         store = {}
         request.get_param('marker', store=store)
@@ -138,7 +138,7 @@ class Resource(object):
         :returns: HTTP | [200, 404]
         """
 
-        LOG.debug(u'GET pool - name: %s', pool)
+        LOG.debug('GET pool - name: %s', pool)
         data = None
         detailed = request.get_param_as_bool('detailed') or False
 
@@ -165,7 +165,7 @@ class Resource(object):
         :returns: HTTP | [201, 204]
         """
 
-        LOG.debug(u'PUT pool - name: %s', pool)
+        LOG.debug('PUT pool - name: %s', pool)
 
         conf = self._ctrl.driver.conf
         data = wsgi_utils.load(request)
@@ -181,7 +181,7 @@ class Resource(object):
             response.status = falcon.HTTP_201
             response.location = request.path
         except errors.PoolCapabilitiesMismatch as e:
-            title = _(u'Unable to create pool')
+            title = _('Unable to create pool')
             LOG.exception(title)
             raise falcon.HTTPBadRequest(title=title, description=str(e))
         except errors.PoolAlreadyExists as e:
@@ -194,14 +194,14 @@ class Resource(object):
         :returns: HTTP | [204, 403]
         """
 
-        LOG.debug(u'DELETE pool - name: %s', pool)
+        LOG.debug('DELETE pool - name: %s', pool)
 
         try:
             self._ctrl.delete(pool)
         except errors.PoolInUseByFlavor as ex:
-            title = _(u'Unable to delete')
-            description = _(u'This pool is used by flavors {flavor}; '
-                            u'It cannot be deleted.')
+            title = _('Unable to delete')
+            description = _('This pool is used by flavors {flavor}; '
+                            'It cannot be deleted.')
             description = description.format(flavor=ex.flavor)
             LOG.exception(description)
             raise falcon.HTTPForbidden(title=title, description=description)
@@ -221,12 +221,12 @@ class Resource(object):
         :returns: HTTP | 200,400
         """
 
-        LOG.debug(u'PATCH pool - name: %s', pool)
+        LOG.debug('PATCH pool - name: %s', pool)
         data = wsgi_utils.load(request)
 
         EXPECT = ('weight', 'uri', 'options')
         if not any([(field in data) for field in EXPECT]):
-            LOG.debug(u'PATCH pool, bad params')
+            LOG.debug('PATCH pool, bad params')
             raise wsgi_errors.HTTPBadRequestBody(
                 'One of `uri`, `weight`,or `options` needs '
                 'to be specified'
