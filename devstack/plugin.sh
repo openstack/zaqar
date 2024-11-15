@@ -96,7 +96,7 @@ function configure_zaqar {
     iniset $ZAQAR_CONF 'drivers:transport:websocket' port $ZAQAR_WEBSOCKET_PORT
     iniset $ZAQAR_CONF drivers transport websocket
 
-    configure_auth_token_middleware $ZAQAR_CONF zaqar $ZAQAR_AUTH_CACHE_DIR
+    configure_keystone_authtoken_middleware $ZAQAR_CONF zaqar
 
     iniset $ZAQAR_CONF trustee auth_type password
     iniset $ZAQAR_CONF trustee auth_url $KEYSTONE_AUTH_URI
@@ -227,10 +227,8 @@ __EOF__
 
 # init_zaqar() - Initialize etc.
 function init_zaqar {
-    # Create cache dir
-    sudo mkdir -p $ZAQAR_AUTH_CACHE_DIR
-    sudo chown $STACK_USER $ZAQAR_AUTH_CACHE_DIR
-    rm -f $ZAQAR_AUTH_CACHE_DIR/*
+    # Nothing to do
+    :
 }
 
 # install_zaqar() - Collect source and prepare
