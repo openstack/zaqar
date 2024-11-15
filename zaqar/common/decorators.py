@@ -203,7 +203,7 @@ def api_version_manager(version_info):
         @functools.wraps(fn)
         def register_api(driver, conf):
             if (deprecated and
-                    [api_version] not in conf.enable_deprecated_api_versions):
+                    api_version not in conf.enable_deprecated_api_versions):
                 return None
 
             if deprecated:
