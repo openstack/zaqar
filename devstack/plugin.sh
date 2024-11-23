@@ -29,7 +29,6 @@
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
-
 # Functions
 # ---------
 
@@ -122,7 +121,7 @@ function configure_zaqar {
         iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri `database_connection_url zaqar`
         iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' database zaqar_mgmt
 
-        zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head
+        $ZAQAR_BIN_DIR/zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head
 
         iniset $ZAQAR_CONF  drivers message_store redis
         iniset $ZAQAR_CONF 'drivers:message_store:redis' uri redis://localhost:6379
@@ -134,7 +133,7 @@ function configure_zaqar {
         iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' uri `database_connection_url zaqar`
         iniset $ZAQAR_CONF 'drivers:management_store:sqlalchemy' database zaqar_mgmt
 
-        zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head
+        $ZAQAR_BIN_DIR/zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head
 
         iniset $ZAQAR_CONF  drivers message_store swift
         iniset $ZAQAR_CONF 'drivers:message_store:swift' auth_url $KEYSTONE_AUTH_URI

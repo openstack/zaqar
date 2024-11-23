@@ -84,7 +84,7 @@ function wait_for_keystone {
 stack_install_service zaqar
 
 if grep -q 'management_store *= *sqlalchemy' /etc/zaqar/zaqar.conf; then
-    zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head || die $LINENO "DB sync error"
+    $ZAQAR_BIN_DIR/zaqar-sql-db-manage --config-file $ZAQAR_CONF upgrade head || die $LINENO "DB sync error"
 fi
 
 # calls upgrade-zaqar for specific release
