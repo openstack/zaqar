@@ -99,7 +99,7 @@ class Driver(base.DriverBase):
         task = asyncio.Task(coro_notification)
         task.add_done_callback(got_server)
 
-        loop.run_until_complete(asyncio.wait([coro, task]))
+        loop.run_until_complete(asyncio.gather(coro, task))
 
         try:
             loop.run_forever()
