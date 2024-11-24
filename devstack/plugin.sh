@@ -46,6 +46,7 @@ function cleanup_zaqar {
     if [ "$ZAQAR_BACKEND" = 'mongodb' ] ; then
         cleanup_zaqar_mongodb
     fi
+    remove_uwsgi_config "$ZAQAR_UWSGI_CONF" "zaqar"
 }
 
 # cleanup_zaqar_mongodb() - Remove residual data files, anything left over from previous
@@ -147,23 +148,7 @@ function configure_zaqar {
     fi
     iniset_rpc_backend zaqar $ZAQAR_CONF DEFAULT
 
-    pip_install uwsgi
-
-    iniset $ZAQAR_UWSGI_CONF uwsgi master true
-    iniset $ZAQAR_UWSGI_CONF uwsgi die-on-term true
-    iniset $ZAQAR_UWSGI_CONF uwsgi exit-on-reload true
-    iniset $ZAQAR_UWSGI_CONF uwsgi http $ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT
-    iniset $ZAQAR_UWSGI_CONF uwsgi processes $API_WORKERS
-    iniset $ZAQAR_UWSGI_CONF uwsgi enable_threads true
-    iniset $ZAQAR_UWSGI_CONF uwsgi threads 4
-    iniset $ZAQAR_UWSGI_CONF uwsgi thunder-lock true
-    iniset $ZAQAR_UWSGI_CONF uwsgi buffer-size 65535
-    iniset $ZAQAR_UWSGI_CONF uwsgi wsgi-file $ZAQAR_DIR/zaqar/transport/wsgi/app.py
-    iniset $ZAQAR_UWSGI_CONF uwsgi master true
-    iniset $ZAQAR_UWSGI_CONF uwsgi add-header "Connection: close"
-    iniset $ZAQAR_UWSGI_CONF uwsgi lazy-apps true
-
-    cleanup_zaqar
+    write_uwsgi_config "$ZAQAR_UWSGI_CONF" "$ZAQAR_UWSGI" "/messaging" "" "zaqar"
 }
 
 function configure_redis {
@@ -238,6 +223,7 @@ function install_zaqar {
     if is_service_enabled horizon; then
         install_zaqarui
     fi
+    pip_install uwsgi
 }
 
 function install_zaqarui {
@@ -266,14 +252,14 @@ function install_zaqarclient {
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
-    cat $ZAQAR_UWSGI_CONF
-    run_process zaqar-wsgi "$ZAQAR_BIN_DIR/uwsgi --ini $ZAQAR_UWSGI_CONF --pidfile2 $ZAQAR_UWSGI_MASTER_PIDFILE"
+    run_process zaqar-wsgi "$ZAQAR_BIN_DIR/uwsgi --ini $ZAQAR_UWSGI_CONF"
     run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
     local www_authenticate_uri=http://${ZAQAR_SERVICE_HOST}/identity
+    local ping_url=$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging/v2/ping
     token=$(openstack token issue -c id -f value --os-auth-url ${www_authenticate_uri})
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT/v2/ping; do sleep 1; done"; then
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q --header=\"Client-ID:$(uuidgen)\" --header=\"X-Auth-Token:$token\" -O- $ping_url; do sleep 1; done"; then
         die $LINENO "Zaqar did not start"
     fi
 }
@@ -283,9 +269,8 @@ function stop_zaqar {
     local serv
     # Kill the zaqar screen windows
     for serv in zaqar-wsgi zaqar-websocket; do
-        screen -S $SCREEN_NAME -p $serv -X kill
+        stop_process serv
     done
-    uwsgi --stop $ZAQAR_UWSGI_MASTER_PIDFILE
 }
 
 function create_zaqar_accounts {
@@ -293,20 +278,15 @@ function create_zaqar_accounts {
 
     if [[ "$KEYSTONE_IDENTITY_BACKEND" = 'sql' ]]; then
 
-        local zaqar_service=$(get_or_create_service "zaqar" \
-            "messaging" "Zaqar Service")
-        get_or_create_endpoint $zaqar_service \
+        get_or_create_service "zaqar" "messaging" "Zaqar Service"
+        get_or_create_endpoint "messaging" \
             "$REGION_NAME" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_SERVICE_PORT"
+            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging"
 
-        local zaqar_ws_service=$(get_or_create_service "zaqar-websocket" \
-            "messaging-websocket" "Zaqar Websocket Service")
-        get_or_create_endpoint $zaqar_ws_service \
+        get_or_create_service "zaqar-websocket" \
+            "messaging-websocket" "Zaqar Websocket Service"
+        get_or_create_endpoint "messaging-websocket" \
             "$REGION_NAME" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT" \
             "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT"
     fi
 

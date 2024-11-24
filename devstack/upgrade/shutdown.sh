@@ -19,8 +19,6 @@ source $ZAQAR_DEVSTACK_DIR/plugin.sh
 
 set -o xtrace
 
-for serv in zaqar-websocket; do
+for serv in zaqar-wsgi zaqar-websocket; do
     stop_process $serv
 done
-
-uwsgi --stop $ZAQAR_UWSGI_MASTER_PIDFILE
