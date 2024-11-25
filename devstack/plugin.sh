@@ -338,6 +338,10 @@ if is_service_enabled zaqar-websocket || is_service_enabled zaqar-wsgi; then
     if [[ "$1" == "unstack" ]]; then
         stop_zaqar
     fi
+
+    if [[ "$1" == "clean" ]]; then
+        cleanup_zaqar
+    fi
 fi
 
 # Restore xtrace
