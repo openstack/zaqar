@@ -26,6 +26,8 @@ no common way to specify / pass configuration files
 to the WSGI app when it is called from other apps.
 """
 
+import threading
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_reports import guru_meditation_report as gmr
@@ -35,16 +37,27 @@ from zaqar import bootstrap
 from zaqar import version
 
 # Use the global CONF instance
-conf = cfg.CONF
-gmr_opts.set_defaults(conf)
-log.register_options(conf)
-conf(project='zaqar', prog='zaqar-queues', args=[])
-log.setup(conf, 'zaqar')
+CONF = cfg.CONF
 
-gmr.TextGuruMeditation.setup_autorun(version, conf=conf)
 
-boot = bootstrap.Bootstrap(conf)
-conf.drivers.transport = 'wsgi'
-application = boot.transport.app
-# Keep the old name for compatibility
-app = application
+def init_application():
+    gmr_opts.set_defaults(CONF)
+    log.register_options(CONF)
+    CONF(project='zaqar', prog='zaqar-queues', args=[])
+    log.setup(CONF, 'zaqar')
+
+    gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
+
+    boot = bootstrap.Bootstrap(CONF)
+    CONF.drivers.transport = 'wsgi'
+    return boot.transport.app
+
+
+app = application = None
+
+lock = threading.Lock()
+with lock:
+    if application is None:
+        application = init_application()
+        # Keep the old name for compatibility
+        app = application
