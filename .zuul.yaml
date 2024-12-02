@@ -86,6 +86,7 @@
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
+        - zaqar-tempest-plugin-mongodb-jammy
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
@@ -98,6 +99,7 @@
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
+        - zaqar-tempest-plugin-mongodb-jammy
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
