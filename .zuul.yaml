@@ -67,12 +67,6 @@
     vars:
       tox_envlist: integration
 
-- job:
-    name: zaqar-rally
-    parent: rally-task-zaqar
-    vars:
-      rally_task: rally-jobs/zaqar-zaqar.yaml
-
 - project:
     queue: zaqar
     templates:
@@ -93,8 +87,6 @@
         - zaqar-grenade-mongodb
         - zaqar-grenade-redis
         - zaqar-grenade-swift
-        - zaqar-rally:
-            voting: false
     gate:
       jobs:
         - zaqar-tox-integration
