@@ -63,7 +63,7 @@ On Fedora-based distributions (e.g., Fedora/RHEL/CentOS):
 
 .. code-block:: console
 
-  $ sudo yum install gcc python-pip libxml2-devel libxslt-devel python-devel
+  $ sudo dnf install gcc python-pip libxml2-devel libxslt-devel python3-devel
 
 Install MongoDB
 ###############
