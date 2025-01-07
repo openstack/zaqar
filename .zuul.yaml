@@ -26,6 +26,12 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
+      - ^doc/.*$
+      - ^zaqar/hacking/.*$
+      - ^zaqar/tests/.*$
+      - ^releasenotes/.*$
+      - ^setup.cfg$
+      - ^tox.ini$
 
 - job:
     name: zaqar-grenade-mongodb
