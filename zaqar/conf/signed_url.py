@@ -15,6 +15,7 @@ from oslo_config import cfg
 
 
 secret_key = cfg.StrOpt('secret_key',
+                        secret=True,
                         help='Secret key used to encrypt pre-signed URLs.')
 
 
