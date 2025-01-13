@@ -31,7 +31,6 @@ from zaqar.transport.middleware import auth
 from zaqar.transport.middleware import cors
 from zaqar.transport.middleware import profile
 from zaqar.transport import validation
-from zaqar.transport.wsgi import v1_0
 from zaqar.transport.wsgi import v1_1
 from zaqar.transport.wsgi import v2_0
 from zaqar.transport.wsgi import version
@@ -108,7 +107,6 @@ class Driver(transport.DriverBase):
         """Initialize hooks and URI routes to resources."""
 
         catalog = [
-            ('/v1', v1_0.public_endpoints(self, self._conf)),
             ('/v1.1', v1_1.public_endpoints(self, self._conf)),
             ('/v2', v2_0.public_endpoints(self, self._conf)),
             ('/', [('', version.Resource())])
@@ -116,7 +114,6 @@ class Driver(transport.DriverBase):
 
         if self._conf.admin_mode:
             catalog.extend([
-                ('/v1', v1_0.private_endpoints(self, self._conf)),
                 ('/v1.1', v1_1.private_endpoints(self, self._conf)),
                 ('/v2', v2_0.private_endpoints(self, self._conf)),
             ])

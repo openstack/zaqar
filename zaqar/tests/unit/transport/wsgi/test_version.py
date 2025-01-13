@@ -20,23 +20,6 @@ from zaqar.tests.unit.transport.wsgi import base
 
 EXPECTED_VERSIONS = [
     {
-        'id': '1',
-        'status': 'DEPRECATED',
-        'updated': '2014-9-11T17:47:05Z',
-        'media-types': [
-            {
-                'base': 'application/json',
-                'type': 'application/vnd.openstack.messaging-v1+json'
-            }
-        ],
-        'links': [
-            {
-                'href': '/v1/',
-                'rel': 'self'
-            }
-        ]
-    },
-    {
         'id': '1.1',
         'status': 'DEPRECATED',
         'updated': '2016-7-29T02:22:47Z',
@@ -82,5 +65,5 @@ class TestVersion(base.TestBase):
         versions = jsonutils.loads(response[0])['versions']
 
         self.assertEqual(falcon.HTTP_300, self.srmock.status)
-        self.assertEqual(3, len(versions))
+        self.assertEqual(2, len(versions))
         self.assertEqual(EXPECTED_VERSIONS, versions)
