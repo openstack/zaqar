@@ -24,7 +24,6 @@ import msgpack
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
-import pytz
 import txaio
 
 from zaqar.common import consts
@@ -154,7 +153,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._auth_app = None
         expire = env['keystone.token_info']['token']['expires_at']
         expire_time = timeutils.parse_isotime(expire)
-        now = datetime.datetime.now(tz=pytz.UTC)
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         delta = (expire_time - now).total_seconds()
         if self._deauth_handle is not None:
             self._deauth_handle.cancel()
