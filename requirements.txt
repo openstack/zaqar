@@ -8,7 +8,6 @@ alembic>=0.9.6 # MIT
 cryptography>=2.7 # BSD/Apache-2.0
 falcon>=3.0.0 # Apache-2.0
 jsonschema>=3.2.0 # MIT
-iso8601>=0.1.11 # MIT
 keystonemiddleware>=9.1.0 # Apache-2.0
 msgpack>=1.0.0 # Apache-2.0
 python-swiftclient>=3.10.1 # Apache-2.0
