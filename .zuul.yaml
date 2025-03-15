@@ -70,6 +70,14 @@
     parent: openstack-tox
     description: |
       Run Zaqar integration tests using tox with environment ``integration``.
+    irrelevant-files:
+      - ^\.gitreview$
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^zaqar/hacking/.*$
+      - ^zaqar/tests/unit/.*$
+      - ^releasenotes/.*$
     vars:
       tox_envlist: integration
 
