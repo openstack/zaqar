@@ -90,6 +90,8 @@ class TestBase(testing.TestBase):
             headers['X-Project-ID'] = headers.get('X-Project-ID', project_id)
         kwargs.pop('need_project_id', None)
         kwargs['headers'] = headers
+        kwargs['host'] = 'openstack.example.com'
+        kwargs['root_path'] = 'messaging'
         try:
             path.encode('latin1').decode('utf-8', 'replace')
         except UnicodeEncodeError:
