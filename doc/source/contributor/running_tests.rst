@@ -20,7 +20,7 @@ Zaqar contains a suite of tests (both unit and functional) in the
 
  See :doc:`test_suite` for details.
 
-Any proposed code change is automatically rejected by the OpenStack Jenkins
+Any proposed code change is automatically rejected by the OpenStack Zuul
 server [#f1]_ if the change causes test failures.
 
 It is recommended for developers to run the test suite before submitting patch
@@ -41,11 +41,21 @@ so the only package you install is ``tox`` itself:
 See `the unit testing section of the Testing wiki page`_ for more information.
 Following are some simple examples.
 
-To run the Python 2.7 tests:
+.. note::
+
+    Zaqar unit tests currently rely on a running instance of MongoDB.
+    You can either install and start MongoDB locally using your package manager,
+    or you run it via a container. For example:
+
+    .. code-block:: shell
+
+        docker run -p 27017:27017 docker.io/mongo:latest
+
+To run the Python 3.12 tests:
 
 .. code-block:: console
 
-    $ tox -e py27
+    $ tox -e py312
 
 To run the style tests:
 
@@ -57,7 +67,7 @@ To run multiple tests separate items by commas:
 
 .. code-block:: console
 
-    $ tox -e py27,py35,pep8
+    $ tox -e py313,pep8
 
 .. _the unit testing section of the Testing wiki page: https://wiki.openstack.org/wiki/Testing#Unit_Tests
 
@@ -166,4 +176,4 @@ leveraging oslo.db's migration test base.
 
 .. rubric:: Footnotes
 
-.. [#f1] See https://docs.openstack.org/infra/system-config/jjb.html
+.. [#f1] See https://docs.opendev.org/opendev/system-config/latest/zuul.html
