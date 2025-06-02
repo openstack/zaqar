@@ -19,5 +19,4 @@ from zaqar.tests.unit.transport.wsgi import base
 
 TestBase = base.TestBase
 TestBaseFaulty = base.TestBaseFaulty
-V1Base = base.V1Base
 V1_1Base = base.V1_1Base

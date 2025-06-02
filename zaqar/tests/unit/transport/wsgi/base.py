@@ -134,22 +134,6 @@ class TestBaseFaulty(TestBase):
     """This test ensures we aren't letting any exceptions go unhandled."""
 
 
-class V1Base(TestBase):
-    """Base class for V1 API Tests.
-
-    Should contain methods specific to V1 of the API
-    """
-    url_prefix = '/v1'
-
-
-class V1BaseFaulty(TestBaseFaulty):
-    """Base class for V1 API Faulty Tests.
-
-    Should contain methods specific to V1 exception testing
-    """
-    url_prefix = '/v1'
-
-
 class V1_1Base(TestBase):
     """Base class for V1.1 API Tests.
 
