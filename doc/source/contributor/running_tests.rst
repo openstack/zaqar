@@ -49,7 +49,7 @@ Following are some simple examples.
 
     .. code-block:: shell
 
-        docker run -p 27017:27017 docker.io/mongo:latest
+        docker run --ulimit nofile=1000000 -p 27017:27017 docker.io/mongo:latest
 
 To run the Python 3.12 tests:
 
