@@ -170,7 +170,9 @@ function configure_mongodb {
         # NOTE: To fix the mongodb's issue in ubuntu 22.04/24.04 LTS
         ubuntu_version=$(source /etc/os-release ; echo $VERSION_ID)
         if [[ $ubuntu_version == '24.04' ]]; then
-            sudo mkdir -p /etc/apt/sources.list.d
+            if [[ ! -d /etc/apt/sources.list.d ]]; then
+                sudo mkdir -p /etc/apt/sources.list.d
+            fi
             wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add -
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
             sudo apt update
