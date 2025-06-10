@@ -119,7 +119,7 @@ class Driver(transport.DriverBase):
             ])
 
         middleware = [FuncMiddleware(hook) for hook in self.before_hooks]
-        self.app = falcon.API(middleware=middleware)
+        self.app = falcon.App(middleware=middleware)
 
         # Set options to keep behavior compatible to pre-2.0.0 falcon
         self.app.req_options.auto_parse_qs_csv = True
@@ -154,7 +154,7 @@ class Driver(transport.DriverBase):
 
         acl.setup_policy(self._conf)
 
-    def _error_handler(self, exc, request, response, params):
+    def _error_handler(self, request, response, exc, params):
         if isinstance(exc, falcon.HTTPError):
             raise
         LOG.exception('Internal server error')
