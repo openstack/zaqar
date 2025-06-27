@@ -808,7 +808,7 @@ class MessageControllerTest(ControllerBaseTest):
         stored_messages = self.controller.list(self.queue_name,
                                                project=self.project)
 
-        self.assertItemsEqual(['event.data', 'backupId'],
+        self.assertCountEqual(['event.data', 'backupId'],
                               list(next(stored_messages))[0]['body'].keys())
 
     def test_delete_message_from_nonexistent_queue(self):
