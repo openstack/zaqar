@@ -136,34 +136,18 @@ class TestBaseFaulty(TestBase):
     """This test ensures we aren't letting any exceptions go unhandled."""
 
 
-class V1_1Base(TestBase):
-    """Base class for V1.1 API Tests.
-
-    Should contain methods specific to V1.1 of the API
-    """
-    url_prefix = '/v1.1'
-
-    def _empty_message_list(self, body):
-        self.assertEqual([], jsonutils.loads(body[0])['messages'])
-
-
-class V1_1BaseFaulty(TestBaseFaulty):
-    """Base class for V1.1 API Faulty Tests.
-
-    Should contain methods specific to V1.1 exception testing
-    """
-    url_prefix = '/v1.1'
-
-
-class V2Base(V1_1Base):
+class V2Base(TestBase):
     """Base class for V2 API Tests.
 
     Should contain methods specific to V2 of the API
     """
     url_prefix = '/v2'
 
+    def _empty_message_list(self, body):
+        self.assertEqual([], jsonutils.loads(body[0])['messages'])
 
-class V2BaseFaulty(V1_1BaseFaulty):
+
+class V2BaseFaulty(TestBaseFaulty):
     """Base class for V2 API Faulty Tests.
 
     Should contain methods specific to V2 exception testing
