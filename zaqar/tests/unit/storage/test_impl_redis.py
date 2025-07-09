@@ -263,14 +263,9 @@ class RedisDriverTest(testing.TestBase):
         self.assertIsNone(uri.username)
         self.assertEqual('test123', uri.password)
 
-        # NOTE(tkajinam): Test fallback for backword compatibility
-        uri = driver.ConnectionURI('redis://test123@example.com')
-        self.assertEqual(driver.STRATEGY_TCP, uri.strategy)
-        self.assertEqual(6379, uri.port)
-        self.assertEqual(0.1, uri.socket_timeout)
-        self.assertEqual(0, uri.dbid)
-        self.assertIsNone(uri.username)
-        self.assertEqual('test123', uri.password)
+        self.assertRaises(
+            errors.ConfigurationError,
+            driver.ConnectionURI, 'redis://test123@example.com')
 
         uri = driver.ConnectionURI(
             'redis://default:test123@example.com')
