@@ -86,7 +86,8 @@ class DataDriver(storage.DataDriverBase):
 
         conn = self.connection
         server_info = conn.server_info()['version']
-        self.server_version = tuple(map(int, server_info.split('.')))
+        version_str = server_info.split('-')[0]
+        self.server_version = tuple(map(int, version_str.split('.')))
 
         if self.server_version < (2, 2):
             raise RuntimeError(_('The mongodb driver requires mongodb>=2.2, '
