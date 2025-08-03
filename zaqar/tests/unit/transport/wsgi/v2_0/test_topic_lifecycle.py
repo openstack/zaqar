@@ -480,7 +480,7 @@ class TestTopicLifecycleMongoDB(base.V2Base):
         self.assertEqual(topic['metadata'], result_doc)
         self.assertEqual({'node': 31, '_default_message_ttl': 3600,
                           '_max_messages_post_size': 262144,
-                          '_default_message_delay': 0},  result_doc)
+                          '_default_message_delay': 0}, result_doc)
 
         # topic filter
         result = self.simulate_get(self.topic_path, headers=header,

@@ -279,7 +279,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = jsonutils.loads(send_mock.call_args[0][0])
-        self.assertEqual(403,  resp['headers']['status'])
+        self.assertEqual(403, resp['headers']['status'])
 
         # Delete the message and its associated claim
         body = {"queue_name": "skittle",
@@ -303,7 +303,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, headers)
         self.protocol.onMessage(req, False)
         resp = jsonutils.loads(send_mock.call_args[0][0])
-        self.assertEqual(404,  resp['headers']['status'])
+        self.assertEqual(404, resp['headers']['status'])
 
         # Get the message
         action = consts.MESSAGE_GET
@@ -382,7 +382,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = jsonutils.loads(send_mock.call_args[0][0])
-        self.assertEqual(404,  resp['headers']['status'])
+        self.assertEqual(404, resp['headers']['status'])
 
         # Try to update a claim that doesn't exist
         action = consts.CLAIM_UPDATE
@@ -393,7 +393,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = jsonutils.loads(send_mock.call_args[0][0])
-        self.assertEqual(404,  resp['headers']['status'])
+        self.assertEqual(404, resp['headers']['status'])
 
     def test_post_claim_nonexistent_queue(self):
         action = consts.CLAIM_CREATE
@@ -420,7 +420,7 @@ class ClaimsBaseTest(base.V1_1Base):
         req = test_utils.create_request(action, body, self.headers)
         self.protocol.onMessage(req, False)
         resp = jsonutils.loads(send_mock.call_args[0][0])
-        self.assertEqual(404,  resp['headers']['status'])
+        self.assertEqual(404, resp['headers']['status'])
 
     def _get_a_claim(self):
         action = consts.CLAIM_CREATE

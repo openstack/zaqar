@@ -504,7 +504,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
                           '_dead_letter_queue': None,
                           '_dead_letter_queue_messages_ttl': None,
                           '_max_claim_count': None,
-                          '_enable_encrypt_messages': False},  result_doc)
+                          '_enable_encrypt_messages': False}, result_doc)
 
         # queue filter
         result = self.simulate_get(self.queue_path, headers=header,
