@@ -54,13 +54,13 @@ class TestPools(base.V1_1FunctionalTestBase):
         )
 
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
 
-        result = self.client.put('/'+pool_name, data=doc)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         # Test existence
-        result = self.client.get('/'+pool_name)
+        result = self.client.get('/' + pool_name)
         self.assertEqual(200, result.status_code)
 
     @ddt.data(
@@ -77,12 +77,12 @@ class TestPools(base.V1_1FunctionalTestBase):
         )
 
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
-        result = self.client.put('/'+pool_name, data=doc)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         # Test existence
-        result = self.client.get('/'+pool_name+'?detailed=true')
+        result = self.client.get('/' + pool_name + '?detailed=true')
         self.assertEqual(200, result.status_code)
         self.assertSchema(result.json(), 'pool_get_detail')
 
@@ -105,15 +105,15 @@ class TestPools(base.V1_1FunctionalTestBase):
         )
 
         pool_name = params.get('name', "newpool")
-        result = self.client.put('/'+pool_name, data=doc)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         # Make sure it exists
-        result = self.client.get('/'+pool_name)
+        result = self.client.get('/' + pool_name)
         self.assertEqual(200, result.status_code)
 
         # Delete it
-        result = self.client.delete('/'+pool_name)
+        result = self.client.delete('/' + pool_name)
         self.assertEqual(204, result.status_code)
 
     @ddt.data(
@@ -132,8 +132,8 @@ class TestPools(base.V1_1FunctionalTestBase):
             uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
-        result = self.client.put('/'+pool_name, data=doc)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         result = self.client.get()
@@ -157,8 +157,8 @@ class TestPools(base.V1_1FunctionalTestBase):
             uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
-        result = self.client.put('/'+pool_name, data=doc)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
         # Update that pool
 
@@ -166,11 +166,11 @@ class TestPools(base.V1_1FunctionalTestBase):
             weight=5,
             uri=self.mongodb_url
         )
-        result = self.client.patch('/'+pool_name, data=patchdoc)
+        result = self.client.patch('/' + pool_name, data=patchdoc)
         self.assertEqual(200, result.status_code)
 
         # Get the pool, check update#
-        result = self.client.get('/'+pool_name)
+        result = self.client.get('/' + pool_name)
         self.assertEqual(200, result.status_code)
         self.assertEqual(5, result.json()["weight"])
 
@@ -188,12 +188,12 @@ class TestPools(base.V1_1FunctionalTestBase):
             uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
-        result = self.client.put('/'+pool_name, data=doc)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(201, result.status_code)
 
         # Update pool with bad post data. Ensure 400
-        result = self.client.patch('/'+pool_name)
+        result = self.client.patch('/' + pool_name)
         self.assertEqual(400, result.status_code)
 
     @ddt.data(
@@ -213,7 +213,7 @@ class TestPools(base.V1_1FunctionalTestBase):
 
     @ddt.data(
         {'name': '\u6c49\u5b57\u6f22\u5b57'},
-        {'name': 'i'*65},
+        {'name': 'i' * 65},
         {'weight': -1}
     )
     def test_insert_pool_bad_data(self, params):
@@ -224,8 +224,8 @@ class TestPools(base.V1_1FunctionalTestBase):
             uri=self.mongodb_url
         )
         pool_name = params.get('name', "newpool")
-        self.addCleanup(self.client.delete, url='/'+pool_name)
-        result = self.client.put('/'+pool_name, data=doc)
+        self.addCleanup(self.client.delete, url='/' + pool_name)
+        result = self.client.put('/' + pool_name, data=doc)
         self.assertEqual(400, result.status_code)
 
     def test_delete_pool_non_exist(self):

@@ -214,7 +214,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         self.assertIn('links', next_subscriptions)
         if limit < count:
-            self.assertEqual(min(limit, count-limit),
+            self.assertEqual(min(limit, count - limit),
                              len(next_subscriptions_list))
         else:
             self.assertEqual(0, len(next_subscriptions_list))

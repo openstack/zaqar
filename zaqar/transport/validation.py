@@ -210,7 +210,7 @@ class Validator(object):
             if max_delay < min_delay:
                 msg = _('minimum_delay must less than maximum_delay.')
                 raise ValidationFailed(msg)
-            if ((max_delay - min_delay) < 2*consts.LINEAR_INTERVAL):
+            if ((max_delay - min_delay) < 2 * consts.LINEAR_INTERVAL):
                 msg = _('invalid minimum_delay and maximum_delay.')
                 raise ValidationFailed(msg)
 

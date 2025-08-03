@@ -70,7 +70,7 @@ class TestPurge(base.V2Base):
 
         # Purge queue
         purge_body = jsonutils.dumps({'resource_types': ['messages']})
-        self.simulate_post(self.queue_path+"/purge", body=purge_body)
+        self.simulate_post(self.queue_path + "/purge", body=purge_body)
 
         for msg_id in msg_ids:
             target = self.messages_path + '/' + msg_id
@@ -105,7 +105,7 @@ class TestPurge(base.V2Base):
         # Purge queue
         purge_body = jsonutils.dumps({'resource_types': ['messages',
                                                          'subscriptions']})
-        self.simulate_post(self.queue_path+"/purge", body=purge_body)
+        self.simulate_post(self.queue_path + "/purge", body=purge_body)
 
         for msg_id in msg_ids:
             target = self.messages_path + '/' + msg_id

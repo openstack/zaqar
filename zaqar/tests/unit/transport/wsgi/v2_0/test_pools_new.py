@@ -121,7 +121,7 @@ class TestPoolsMongoDB(base.V2Base):
                               {'uri': self.mongodb_url}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(-1, 2**32+1, 'big')
+    @ddt.data(-1, 2**32 + 1, 'big')
     def test_put_raises_if_invalid_weight(self, weight):
         path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         doc = {'weight': weight, 'uri': 'a'}
@@ -129,7 +129,7 @@ class TestPoolsMongoDB(base.V2Base):
                           body=jsonutils.dumps(doc))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(-1, 2**32+1, [], 'localhost:27017')
+    @ddt.data(-1, 2**32 + 1, [], 'localhost:27017')
     def test_put_raises_if_invalid_uri(self, uri):
         path = self.url_prefix + '/pools/' + uuidutils.generate_uuid()
         self.simulate_put(path,
@@ -254,13 +254,13 @@ class TestPoolsMongoDB(base.V2Base):
                'partition': 'taco'}
         self._patch_test(doc)
 
-    @ddt.data(-1, 2**32+1, 'big')
+    @ddt.data(-1, 2**32 + 1, 'big')
     def test_patch_raises_400_on_invalid_weight(self, weight):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'weight': weight}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(-1, 2**32+1, [], 'localhost:27017')
+    @ddt.data(-1, 2**32 + 1, [], 'localhost:27017')
     def test_patch_raises_400_on_invalid_uri(self, uri):
         self.simulate_patch(self.pool,
                             body=jsonutils.dumps({'uri': uri}))
@@ -326,7 +326,7 @@ class TestPoolsMongoDB(base.V2Base):
 
             self.assertIn('links', next_pool)
             if limit < count:
-                self.assertEqual(min(limit, count-limit),
+                self.assertEqual(min(limit, count - limit),
                                  len(next_pool_list))
             else:
                 # NOTE(jeffrey4l): when limit >= count, there will be no

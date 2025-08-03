@@ -31,24 +31,24 @@ def _Linear_function(minimum_delay, maximum_delay, times):
 
 def _Geometric_function(minimum_delay, maximum_delay, times):
     x_max = int((maximum_delay - minimum_delay) / times)
-    k = math.pow(10, math.log10(maximum_delay/minimum_delay)/(x_max-1))
-    xarray = range(1, x_max+1)
-    return [int(minimum_delay*math.pow(k, a-1)) for a in xarray]
+    k = math.pow(10, math.log10(maximum_delay / minimum_delay) / (x_max - 1))
+    xarray = range(1, x_max + 1)
+    return [int(minimum_delay * math.pow(k, a - 1)) for a in xarray]
 
 
 def _Exponential_function(minimum_delay, maximum_delay, times):
     x_max = int((maximum_delay - minimum_delay) / times)
-    k = math.pow(10, math.log10(maximum_delay/minimum_delay)/(x_max-1))
-    p = minimum_delay/k
-    xarray = range(1, x_max+1)
-    return [int(p*math.pow(k, a)) for a in xarray]
+    k = math.pow(10, math.log10(maximum_delay / minimum_delay) / (x_max - 1))
+    p = minimum_delay / k
+    xarray = range(1, x_max + 1)
+    return [int(p * math.pow(k, a)) for a in xarray]
 
 
 def _Arithmetic_function(minimum_delay, maximum_delay, times):
     x_max = int((maximum_delay - minimum_delay) / times)
     d = 2.0 * (maximum_delay - minimum_delay) / (x_max * (x_max - 1))
-    xarray = range(1, x_max+1)
-    return [int(minimum_delay+(a-1)*a*d/2) for a in xarray]
+    xarray = range(1, x_max + 1)
+    return [int(minimum_delay + (a - 1) * a * d / 2) for a in xarray]
 
 
 RETRY_BACKOFF_FUNCTION_MAP = {'linear': _Linear_function,

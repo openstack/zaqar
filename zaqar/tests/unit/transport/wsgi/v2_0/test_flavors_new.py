@@ -134,7 +134,7 @@ class TestFlavorsMongoDB(base.V2Base):
                           body=jsonutils.dumps({'capabilities': {}}))
         self.assertEqual(falcon.HTTP_400, self.srmock.status)
 
-    @ddt.data(1, 2**32+1, [])
+    @ddt.data(1, 2**32 + 1, [])
     def test_put_raises_if_invalid_pool(self, pool_list):
         path = self.url_prefix + '/flavors/' + str(uuid.uuid1())
         self.simulate_put(path,
@@ -234,7 +234,7 @@ class TestFlavorsMongoDB(base.V2Base):
                'location': 100, 'partition': 'taco'}
         self._patch_test(doc)
 
-    @ddt.data(-1, 2**32+1, [])
+    @ddt.data(-1, 2**32 + 1, [])
     def test_patch_raises_400_on_invalid_pool_list(self, pool_list):
         self.simulate_patch(self.flavor_path,
                             body=jsonutils.dumps({'pool_list': pool_list}))
@@ -294,7 +294,7 @@ class TestFlavorsMongoDB(base.V2Base):
             self.assertEqual(falcon.HTTP_200, self.srmock.status)
             self.assertIn('links', next_flavors)
             if limit < count:
-                self.assertEqual(min(limit, count-limit),
+                self.assertEqual(min(limit, count - limit),
                                  len(next_flavors_list))
             else:
                 self.assertEqual(0, len(next_flavors_list))
