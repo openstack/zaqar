@@ -30,7 +30,6 @@ distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/ocata/install-ubuntu.html>`__
 - `CentOS and RHEL <https://docs.openstack.org/project-install-guide/messaging/ocata/install-rdo.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/project-install-guide/messaging/ocata/install-obs.html>`__
 
 Newton
 ~~~~~~
@@ -40,4 +39,3 @@ distribution:
 
 - `Ubuntu <https://docs.openstack.org/project-install-guide/messaging/newton/install-ubuntu.html>`__
 - `CentOS and RHEL <https://docs.openstack.org/project-install-guide/messaging/newton/install-rdo.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/project-install-guide/messaging/newton/install-obs.html>`__

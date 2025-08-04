@@ -13,7 +13,6 @@ Note that installation and configuration vary by distribution.
 
 .. toctree::
 
-   install-obs.rst
    install-rdo.rst
    install-ubuntu.rst
 
