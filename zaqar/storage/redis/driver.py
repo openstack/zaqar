@@ -61,12 +61,8 @@ class ConnectionURI(object):
             cred, sep, netloc = netloc.partition('@')
 
         if self.username and not self.password:
-            # NOTE(tkajinam): This is kept for backword compatibility but
-            #                 should be removed after 2025.1
-            LOG.warning('Credential in redis uri does not contain \':\'. '
-                        'Make sure that \':\' is added before password.')
-            self.password = self.username
-            self.username = None
+            raise errors.ConfigurationError(
+                _('Password should be set when username is set'))
 
         query_params = dict(urllib.parse.parse_qsl(query))
 
