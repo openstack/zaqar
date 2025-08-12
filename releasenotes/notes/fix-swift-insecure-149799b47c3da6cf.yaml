@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Fixed the wrong type of ``[drivers:message_store:swift] insecure`` option.
+    It was previously string (so non-empty strings were translated to True),
+    but has been changed to boolean.
