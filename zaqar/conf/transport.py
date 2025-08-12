@@ -125,11 +125,10 @@ max_pools_per_page = cfg.IntOpt(
 
 
 client_id_uuid_safe = cfg.StrOpt(
-    'client_id_uuid_safe', default='strict', choices=['strict', 'off'],
-    help='Defines the format of client id, the value could be '
-         '"strict" or "off". "strict" means the format of client id'
-         ' must be uuid, "off" means the restriction be removed.')
-
+    'client_id_uuid_safe', default='strict',
+    choices=[('strict', 'accept only valid uuid'),
+             ('off', 'accept any string')],
+    help='Defines the format of client id.')
 
 min_length_client_id = cfg.IntOpt(
     'min_length_client_id', default=10,
