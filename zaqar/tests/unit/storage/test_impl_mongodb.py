@@ -175,14 +175,34 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
             self.assertRaises(RuntimeError, mongodb.DataDriver,
                               self.conf, cache,
                               mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.1.0'}
+            self.assertRaises(RuntimeError, mongodb.DataDriver,
+                              self.conf, cache,
+                              mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.1.0-1.0'}
+            self.assertRaises(RuntimeError, mongodb.DataDriver,
+                              self.conf, cache,
+                              mongodb.ControlDriver(self.conf, cache))
 
-            info.return_value = {'version': '2.11'}
+            info.return_value = {'version': '2.2'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.2.0'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.2.0-1.0'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
 
-            try:
-                mongodb.DataDriver(self.conf, cache,
-                                   mongodb.ControlDriver(self.conf, cache))
-            except RuntimeError:
-                self.fail('version match failed')
+            info.return_value = {'version': '2.10'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.10.0'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
+            info.return_value = {'version': '2.10.0-1.0'}
+            mongodb.DataDriver(self.conf, cache,
+                               mongodb.ControlDriver(self.conf, cache))
 
     def test_replicaset_or_mongos_needed(self):
         cache = oslo_cache.get_cache(self.conf)
