@@ -13,14 +13,9 @@
 
 from oslo_config import cfg
 
-_deprecated_group = 'drivers:storage:mongodb'
-
 
 ssl_keyfile = cfg.StrOpt(
     'ssl_keyfile',
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'ssl_keyfile',
-        group=_deprecated_group), ],
     help='The private keyfile used to identify the local '
          'connection against mongod. If included with '
          'the ``certifle`` then only the ``ssl_certfile``'
@@ -29,9 +24,6 @@ ssl_keyfile = cfg.StrOpt(
 
 ssl_certfile = cfg.StrOpt(
     'ssl_certfile',
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'ssl_certfile',
-        group=_deprecated_group), ],
     help='The certificate file used to identify the '
          'local connection against mongod.')
 
@@ -46,9 +38,6 @@ ssl_cert_reqs = cfg.StrOpt(
         ('CERT_REQUIRED',
          'Certificates are required and validated')
     ],
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'ssl_cert_reqs',
-        group=_deprecated_group), ],
     help='Specifies whether a certificate is required '
          'from the other side of the connection, and '
          'whether it will be validated if provided. '
@@ -60,9 +49,6 @@ ssl_cert_reqs = cfg.StrOpt(
 
 ssl_ca_certs = cfg.StrOpt(
     'ssl_ca_certs',
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'ssl_ca_certs',
-        group=_deprecated_group), ],
     help='The ca_certs file contains a set of concatenated '
          '"certification authority" certificates, which are '
          'used to validate certificates passed from the other '
@@ -72,9 +58,6 @@ ssl_ca_certs = cfg.StrOpt(
 uri = cfg.StrOpt(
     'uri',
     secret=True,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'uri',
-        group=_deprecated_group), ],
     help='Mongodb Connection URI. If ssl connection enabled, '
          'then ``ssl_keyfile``, ``ssl_certfile``, '
          '``ssl_cert_reqs``, ``ssl_ca_certs`` need to be set '
@@ -83,25 +66,16 @@ uri = cfg.StrOpt(
 
 database = cfg.StrOpt(
     'database', default='zaqar',
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'database',
-        group=_deprecated_group), ],
     help='Database name.')
 
 max_attempts = cfg.IntOpt(
     'max_attempts', min=0, default=1000,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'max_attempts',
-        group=_deprecated_group), ],
     help=('Maximum number of times to retry a failed operation. '
           'Currently only used for retrying a message post.'))
 
 
 max_retry_sleep = cfg.FloatOpt(
     'max_retry_sleep', default=0.1,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'max_retry_sleep',
-        group=_deprecated_group), ],
     help=('Maximum sleep interval between retries '
           '(actual sleep time increases linearly '
           'according to number of attempts performed).'))
@@ -109,9 +83,6 @@ max_retry_sleep = cfg.FloatOpt(
 
 max_retry_jitter = cfg.FloatOpt(
     'max_retry_jitter', default=0.005,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'max_retry_jitter',
-        group=_deprecated_group), ],
     help=('Maximum jitter interval, to be added to the '
           'sleep interval, in order to decrease probability '
           'that parallel requests will retry at the '
@@ -120,18 +91,12 @@ max_retry_jitter = cfg.FloatOpt(
 
 max_reconnect_attempts = cfg.IntOpt(
     'max_reconnect_attempts', default=10,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'max_reconnect_attempts',
-        group=_deprecated_group), ],
     help=('Maximum number of times to retry an operation that '
           'failed due to a primary node failover.'))
 
 
 reconnect_sleep = cfg.FloatOpt(
     'reconnect_sleep', default=0.020,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'reconnect_sleep',
-        group=_deprecated_group), ],
     help=('Base sleep interval between attempts to reconnect '
           'after a primary node failover. '
           'The actual sleep time increases exponentially (power '

@@ -14,15 +14,10 @@
 from oslo_config import cfg
 
 
-_deprecated_group = 'drivers:storage:sqlalchemy'
-
 uri = cfg.StrOpt(
     'uri',
     default='sqlite:///:memory:',
     secret=True,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'uri',
-        group=_deprecated_group), ],
     help='An sqlalchemy URL')
 
 

@@ -13,16 +13,11 @@
 
 from oslo_config import cfg
 
-_deprecated_group = 'drivers:storage:redis'
-
 
 uri = cfg.StrOpt(
     'uri',
     default="redis://127.0.0.1:6379",
     secret=True,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'uri',
-        group=_deprecated_group), ],
     help=('Redis connection URI, taking one of three forms. '
           'For a direct connection to a Redis server, use '
           'the form "redis://[:password]@host[:port][?options]", '
@@ -56,18 +51,12 @@ uri = cfg.StrOpt(
 
 max_reconnect_attempts = cfg.IntOpt(
     'max_reconnect_attempts', default=10,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'max_reconnect_attempts',
-        group=_deprecated_group), ],
     help=('Maximum number of times to retry an operation that '
           'failed due to a redis node failover.'))
 
 
 reconnect_sleep = cfg.FloatOpt(
     'reconnect_sleep', default=1.0,
-    deprecated_opts=[cfg.DeprecatedOpt(
-        'reconnect_sleep',
-        group=_deprecated_group), ],
     help=('Base sleep interval between attempts to reconnect '
           'after a redis node failover. '))
 
