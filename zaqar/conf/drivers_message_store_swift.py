@@ -25,7 +25,7 @@ uri = cfg.StrOpt(
     help="Custom URI describing the swift connection.")
 
 
-insecure = cfg.StrOpt(
+insecure = cfg.BoolOpt(
     "insecure", default=False,
     help="Don't check SSL certificate")
 
