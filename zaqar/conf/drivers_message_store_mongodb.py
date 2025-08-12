@@ -38,16 +38,20 @@ ssl_certfile = cfg.StrOpt(
 
 ssl_cert_reqs = cfg.StrOpt(
     'ssl_cert_reqs', default='CERT_REQUIRED',
+    choices=[
+        ('CERT_NONE',
+         'Certificates are ignored'),
+        ('CERT_OPTIONAL',
+         'Certificates are not required, but validated if provided'),
+        ('CERT_REQUIRED',
+         'Certificates are required and validated')
+    ],
     deprecated_opts=[cfg.DeprecatedOpt(
         'ssl_cert_reqs',
         group=_deprecated_group), ],
     help='Specifies whether a certificate is required '
          'from the other side of the connection, and '
-         'whether it will be validated if provided. It '
-         'must be one of the three values ``CERT_NONE``'
-         '(certificates ignored), ``CERT_OPTIONAL``'
-         '(not required, but validated if provided), or'
-         ' ``CERT_REQUIRED``(required and validated). '
+         'whether it will be validated if provided. '
          'If the value of this parameter is not '
          '``CERT_NONE``, then the ``ssl_ca_cert`` '
          'parameter must point to a file of CA '

@@ -45,16 +45,7 @@ def _connection(conf):
     if conf.uri and 'ssl=true' in conf.uri.lower():
         kwargs = {'connect': False}
 
-        # Default to CERT_REQUIRED
-        ssl_cert_reqs = ssl.CERT_REQUIRED
-
-        if conf.ssl_cert_reqs == 'CERT_OPTIONAL':
-            ssl_cert_reqs = ssl.CERT_OPTIONAL
-
-        if conf.ssl_cert_reqs == 'CERT_NONE':
-            ssl_cert_reqs = ssl.CERT_NONE
-
-        kwargs['ssl_cert_reqs'] = ssl_cert_reqs
+        kwargs['ssl_cert_reqs'] = getattr(ssl, conf.ssl_cert_reqs)
 
         if conf.ssl_keyfile:
             kwargs['ssl_keyfile'] = conf.ssl_keyfile
