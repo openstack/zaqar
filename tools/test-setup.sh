@@ -51,16 +51,9 @@ elif [[ $ubuntu_version == '22.04' ]]; then
     sudo apt install -y mongodb-org
     sudo systemctl restart mongod
     sudo systemctl status mongod
-elif [[ $ubuntu_version == '20.04' ]]; then
-    wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-    sudo apt update
-    sudo apt install -y mongodb-org
-    sudo systemctl restart mongod
-    sudo systemctl status mongod
 elif [[ $ubuntu_version == '12' ]]; then
-    wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add -
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/8.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
     sudo apt update
     sudo apt install -y mongodb-org
     sudo systemctl restart mongod
