@@ -132,15 +132,15 @@ client_id_uuid_safe = cfg.StrOpt(
 
 
 min_length_client_id = cfg.IntOpt(
-    'min_length_client_id', default='10',
-    help='Defines the minimum length of client id if remove the '
-         'uuid restriction. Default is 10.')
+    'min_length_client_id', default=10,
+    help='Defines the minimum length of client id This is used only when '
+         'client_id_uuid_safe is off.')
 
 
 max_length_client_id = cfg.IntOpt(
-    'max_length_client_id', default='36',
-    help='Defines the maximum length of client id if remove the '
-         'uuid restriction. Default is 36.')
+    'max_length_client_id', default=36,
+    help='Defines the maximum length of client id. This is used only when '
+         'client_id_uuid_safe is off.')
 
 
 message_delete_with_claim_id = cfg.BoolOpt(
