@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The following config groups have been removed.
+
+    - ``drivers:storage:mongodb``
+    - ``drivers:storage:redis``
+    - ``drivers:storage:sqlalchemy``
