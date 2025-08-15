@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The deprecated ``limits:transport`` config section has been removed.
+
+  - |
+    The deprecated ``[transport] max_message_size`` option has been removed.
