@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Now API returnes unique request identifier string in
+    the ``X-OpenStack-Request-Id`` header.

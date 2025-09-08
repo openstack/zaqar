@@ -18,6 +18,7 @@ import socket
 from wsgiref import simple_server
 
 from oslo_log import log as logging
+from oslo_middleware import request_id
 from oslo_utils import netutils
 
 from zaqar.common import decorators
@@ -147,6 +148,8 @@ class Driver(transport.DriverBase):
             auth_app = strategy.install(self.app, self._conf)
 
         self.app = auth.SignedAndExtraSpecHeadersAuth(self.app, auth_app)
+
+        self.app = request_id.RequestId(self.app)
 
         # NOTE(wangxiyuan): Install CORS, this middleware should be called
         # before Keystone auth.
