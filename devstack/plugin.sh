@@ -224,7 +224,6 @@ function install_zaqar {
     if is_service_enabled horizon; then
         install_zaqarui
     fi
-    pip_install uwsgi
 }
 
 function install_zaqarui {
@@ -253,7 +252,7 @@ function install_zaqarclient {
 
 # start_zaqar() - Start running processes, including screen
 function start_zaqar {
-    run_process zaqar-wsgi "$ZAQAR_BIN_DIR/uwsgi --ini $ZAQAR_UWSGI_CONF"
+    run_process zaqar-wsgi "$(which uwsgi) --ini $ZAQAR_UWSGI_CONF"
     run_process zaqar-websocket "$ZAQAR_BIN_DIR/zaqar-server --config-file $ZAQAR_CONF"
 
     echo "Waiting for Zaqar to start..."
