@@ -21,7 +21,6 @@ import uuid
 
 import falcon
 from oslo_log import log as logging
-from oslo_utils import versionutils
 
 from zaqar.common import urls
 from zaqar import context
@@ -101,8 +100,7 @@ def extract_project_id(req, resp, params):
             description=_('X-PROJECT-ID cannot be an empty string. Specify '
                           'the right header X-PROJECT-ID and retry.'))
 
-    if not params['project_id'] and versionutils.is_compatible(
-            'v1.1', api_version_string, same_major=False):
+    if not params['project_id']:
         raise falcon.HTTPBadRequest(
             title='Project-Id Missing',
             description=_('The header X-PROJECT-ID was missing'))
@@ -124,27 +122,14 @@ def require_client_id(validate, req, resp, params):
     :rtype: None
     """
 
-    if req.path.startswith('/v1.1/') or req.path.startswith('/v2/'):
-        try:
-            validate(req.get_header('Client-ID', required=True))
-        except ValueError:
-            description = _('Malformed hexadecimal UUID.')
-            raise falcon.HTTPBadRequest(
-                title='Wrong UUID value', description=description)
-        except validation.ValidationFailed as ex:
-            raise falcon.HTTPBadRequest(title=str(ex))
-    else:
-        # NOTE(wanghao): Since we changed the get_client_uuid to support
-        # other format of client id, so need to check the uuid here for
-        # v1 API.
-        try:
-            client_id = req.get_header('Client-ID')
-            if client_id or client_id == '':
-                uuid.UUID(client_id)
-        except ValueError:
-            description = _('Malformed hexadecimal UUID.')
-            raise falcon.HTTPBadRequest(
-                title='Wrong UUID value', description=description)
+    try:
+        validate(req.get_header('Client-ID', required=True))
+    except ValueError:
+        description = _('Malformed hexadecimal UUID.')
+        raise falcon.HTTPBadRequest(
+            title='Wrong UUID value', description=description)
+    except validation.ValidationFailed as ex:
+        raise falcon.HTTPBadRequest(title=str(ex))
 
 
 def validate_queue_identification(validate, req, resp, params):

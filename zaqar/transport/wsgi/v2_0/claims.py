@@ -100,7 +100,7 @@ class CollectionResource(object):
         # the storage driver returned well-formed messages.
         if len(resp_msgs) != 0:
             base_path = req.path.rpartition('/')[0]
-            resp_msgs = [wsgi_utils.format_message_v1_1(msg, base_path, cid)
+            resp_msgs = [wsgi_utils.format_message(msg, base_path, cid)
                          for msg in resp_msgs]
 
             resp.location = req.path + '/' + cid
@@ -148,8 +148,7 @@ class ItemResource(object):
         # Serialize claimed messages
         # TODO(kgriffs): Optimize
         base_path = req.path.rsplit('/', 2)[0]
-        meta['messages'] = [wsgi_utils.format_message_v1_1(msg, base_path,
-                                                           claim_id)
+        meta['messages'] = [wsgi_utils.format_message(msg, base_path, claim_id)
                             for msg in meta['messages']]
 
         meta['href'] = req.path

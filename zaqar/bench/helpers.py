@@ -110,8 +110,6 @@ class LazyAPIVersion(object):
     def get(self):
         if self.api_version is None:
             conversion_map = {
-                1.0: 1,
-                1.1: 1.1,
                 2.0: 2,
             }
             try:

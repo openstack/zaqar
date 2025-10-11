@@ -22,7 +22,7 @@ import websocket
 from zaqar.tests.functional import base
 
 
-class TestQueues(base.V1_1FunctionalTestBase):
+class TestQueues(base.V2FunctionalTestBase):
 
     config_file = 'websocket_mongodb.conf'
     server_class = base.ZaqarServer

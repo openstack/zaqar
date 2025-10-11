@@ -36,6 +36,8 @@ unreliable = cfg.BoolOpt(
 enable_deprecated_api_versions = cfg.ListOpt(
     'enable_deprecated_api_versions', default=[],
     item_type=cfg.types.String(choices=('1.1',)),
+    deprecated_for_removal=True,
+    deprecated_reason='Deprecated APIs no longer exist',
     help='List of deprecated API versions to enable.')
 
 
