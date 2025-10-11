@@ -18,6 +18,11 @@ repos:
       - id: hacking
         additional_dependencies: []
         exclude: '^(doc|releasenotes|tools)/.*$'
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: [--py3-only]
   - repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
     hooks:

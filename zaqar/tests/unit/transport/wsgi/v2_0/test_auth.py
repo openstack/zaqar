@@ -28,7 +28,7 @@ class TestAuth(base.V2Base):
     config_file = 'keystone_auth.conf'
 
     def setUp(self):
-        super(TestAuth, self).setUp()
+        super().setUp()
         self.headers = {'Client-ID': uuidutils.generate_uuid()}
 
     def test_auth_install(self):

@@ -81,7 +81,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
                 pack_name = 'text (JSON)'
             ex_type, ex_value = sys.exc_info()[:2]
             ex_name = ex_type.__name__
-            msg = 'Can\'t decode {0} request. {1}: {2}'.format(
+            msg = 'Can\'t decode {} request. {}: {}'.format(
                 pack_name, ex_name, ex_value)
             LOG.debug(msg)
             body = {'error': msg}
@@ -147,9 +147,9 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
 
     def _auth_start(self, env, start_response):
         self._authentified = True
-        self._auth_env = dict(
-            (self._env_var_to_header(key), value)
-            for key, value in env.items())
+        self._auth_env = {
+            self._env_var_to_header(key): value
+            for key, value in env.items()}
         self._auth_app = None
         expire = env['keystone.token_info']['token']['expires_at']
         expire_time = timeutils.parse_isotime(expire)

@@ -29,7 +29,7 @@ from zaqar.storage.sqlalchemy import utils
 class FlavorsController(base.FlavorsBase):
 
     def __init__(self, *args, **kwargs):
-        super(FlavorsController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._pools_ctrl = self.driver.pools_controller
 
     @utils.raises_conn_error

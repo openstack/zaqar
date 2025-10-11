@@ -34,7 +34,7 @@ class DataDriver(storage.DataDriverBase):
                         drivers_message_store_swift.ALL_OPTS)]
 
     def __init__(self, conf, cache, control_driver):
-        super(DataDriver, self).__init__(conf, cache, control_driver)
+        super().__init__(conf, cache, control_driver)
         self.swift_conf = self.conf[drivers_message_store_swift.GROUP_NAME]
         if not self.conf.debug:
             # Reduce swiftclient logging, in particular to remove 404s
@@ -94,7 +94,7 @@ class DataDriver(storage.DataDriverBase):
         pass
 
 
-class _ClientWrapper(object):
+class _ClientWrapper:
     """Wrapper around swiftclient.Connection.
 
     This wraps swiftclient.Connection to give the same API, but provide a

@@ -26,7 +26,7 @@ class DataDriver(storage.DataDriverBase):
                         [cfg.StrOpt('uri', default='faulty://')])]
 
     def __init__(self, conf, cache, control_driver):
-        super(DataDriver, self).__init__(conf, cache, control_driver)
+        super().__init__(conf, cache, control_driver)
 
     def close(self):
         pass
@@ -69,7 +69,7 @@ class DataDriver(storage.DataDriverBase):
 class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
-        super(ControlDriver, self).__init__(conf, cache)
+        super().__init__(conf, cache)
 
     def close(self):
         pass

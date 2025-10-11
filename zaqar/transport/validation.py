@@ -44,10 +44,10 @@ class ValidationFailed(ValueError):
 
     def __init__(self, msg, *args, **kwargs):
         msg = msg.format(*args, **kwargs)
-        super(ValidationFailed, self).__init__(msg)
+        super().__init__(msg)
 
 
-class Validator(object):
+class Validator:
     def __init__(self, conf):
         self._conf = conf
         self._conf.register_opts(transport.ALL_OPTS,
@@ -613,7 +613,7 @@ class Validator(object):
     def subscription_confirming(self, confirmed):
         confirmed = confirmed.get('confirmed')
         if not isinstance(confirmed, bool):
-            msg = _(u"The 'confirmed' should be boolean.")
+            msg = _("The 'confirmed' should be boolean.")
             raise ValidationFailed(msg)
 
     def subscription_listing(self, limit=None, **kwargs):

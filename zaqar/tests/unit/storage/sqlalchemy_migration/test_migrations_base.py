@@ -50,7 +50,7 @@ CONF.register_opts(sqlalchemy_opts,
                    group='drivers:management_store:sqlalchemy')
 
 
-class BaseWalkMigrationTestCase(object):
+class BaseWalkMigrationTestCase:
 
     ALEMBIC_CONFIG = alembic_config.Config(
         os.path.join(

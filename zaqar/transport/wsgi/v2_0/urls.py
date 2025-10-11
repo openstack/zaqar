@@ -30,7 +30,7 @@ _KNOWN_KEYS = {'methods', 'expires', 'paths'}
 _VALID_PATHS = {'messages', 'subscriptions', 'claims'}
 
 
-class Resource(object):
+class Resource:
 
     __slots__ = ('_driver', '_conf')
 

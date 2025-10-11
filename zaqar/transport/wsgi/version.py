@@ -24,7 +24,7 @@ VERSIONS = {
 }
 
 
-class Resource(object):
+class Resource:
 
     def __init__(self):
         self.versions = utils.to_json(VERSIONS)

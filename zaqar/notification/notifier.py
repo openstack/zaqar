@@ -35,7 +35,7 @@ class MessageType(enum.IntEnum):
     Notification = 3
 
 
-class NotifierDriver(object):
+class NotifierDriver:
     """Notifier which is responsible for sending messages to subscribers.
 
     """
@@ -99,10 +99,10 @@ class NotifierDriver(object):
             LOG.error("Can't send confirm notification due to the value of"
                       " secret_key option is None")
             return
-        url = "/%s/queues/%s/subscriptions/%s/confirm" % (api_version, queue,
-                                                          subscription['id'])
-        pre_url = urls.create_signed_url(key, [url], project=project,
-                                         expires=expires, methods=['PUT'])
+        url = "/{}/queues/{}/subscriptions/{}/confirm".format(
+            api_version, queue, subscription['id'])
+        pre_url = urls.create_signed_url(
+            key, [url], project=project, expires=expires, methods=['PUT'])
         message = None
         if is_unsubscribed:
             message_type = MessageType.UnsubscribeConfirmation.name

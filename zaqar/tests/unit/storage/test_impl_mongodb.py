@@ -38,7 +38,7 @@ from zaqar import tests as testing
 from zaqar.tests.unit.storage import base
 
 
-class MongodbSetupMixin(object):
+class MongodbSetupMixin:
     def _purge_databases(self):
         if isinstance(self.driver, mongodb.DataDriver):
             databases = (self.driver.message_databases +
@@ -65,7 +65,7 @@ class MongodbUtilsTest(MongodbSetupMixin, testing.TestBase):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(MongodbUtilsTest, self).setUp()
+        super().setUp()
 
         self.conf.register_opts(drivers_message_store_mongodb.ALL_OPTS,
                                 group=drivers_message_store_mongodb.GROUP_NAME)
@@ -150,7 +150,7 @@ class MongodbDriverTest(MongodbSetupMixin, testing.TestBase):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(MongodbDriverTest, self).setUp()
+        super().setUp()
 
         self.conf.register_opts(default.ALL_OPTS)
         self.config(unreliable=False)
@@ -526,7 +526,7 @@ class MongodbPoolsTests(base.PoolsControllerTest):
     control_driver_class = mongodb.ControlDriver
 
     def setUp(self):
-        super(MongodbPoolsTests, self).setUp()
+        super().setUp()
         self.uri2 = str(uuid.uuid1())
         self.flavor2 = str(uuid.uuid1())
         self.pools_controller.create(self.pool, 100, self.uri2,
@@ -535,7 +535,7 @@ class MongodbPoolsTests(base.PoolsControllerTest):
     def tearDown(self):
         # self.pool_ctrl.update(self.pool, flavor="")
         self.pools_controller.drop_all()
-        super(MongodbPoolsTests, self).tearDown()
+        super().tearDown()
 
     # NOTE(gengchc2): Unittest for new flavor configure scenario.
     def test_delete_pool_used_by_flavor1(self):
@@ -581,7 +581,7 @@ class MongodbCatalogueTests(base.CatalogueControllerTest):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(MongodbCatalogueTests, self).setUp()
+        super().setUp()
         self.addCleanup(self.controller.drop_all)
 
 
@@ -625,5 +625,5 @@ class MongodbFlavorsTest1(base.FlavorsControllerTest1):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(MongodbFlavorsTest1, self).setUp()
+        super().setUp()
         self.addCleanup(self.controller.drop_all)

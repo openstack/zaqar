@@ -18,7 +18,7 @@ from zaqar.common import decorators
 from zaqar.transport import acl
 
 
-class Resource(object):
+class Resource:
 
     __slots__ = ('_driver',)
 

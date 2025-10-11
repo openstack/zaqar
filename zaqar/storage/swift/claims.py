@@ -31,7 +31,7 @@ class ClaimController(storage.Claim):
     Claims are scoped by project + queue.
     """
     def __init__(self, *args, **kwargs):
-        super(ClaimController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._client = self.driver.connection
 
     @decorators.lazy_property(write=False)

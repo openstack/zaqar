@@ -118,7 +118,7 @@ class MessageController(storage.Message):
     """
 
     def __init__(self, *args, **kwargs):
-        super(MessageController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Cache for convenience and performance
         self._num_partitions = self.driver.mongodb_conf.partitions
@@ -965,7 +965,7 @@ def _basic_message(msg, now):
     return res
 
 
-class MessageTopicHandler(object):
+class MessageTopicHandler:
 
     def __init__(self, driver, control_driver):
         self.driver = driver

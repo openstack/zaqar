@@ -45,13 +45,13 @@ class ControllerBaseTest(testing.TestBase):
     controller_base_class = None
 
     def setUp(self):
-        super(ControllerBaseTest, self).setUp()
+        super().setUp()
 
         if not self.driver_class:
             self.skipTest('No driver class specified')
 
         if not issubclass(self.controller_class, self.controller_base_class):
-            self.skipTest('{0} is not an instance of {1}. '
+            self.skipTest('{} is not an instance of {}. '
                           'Tests not supported'.format(
                               self.controller_class,
                               self.controller_base_class))
@@ -78,7 +78,7 @@ class ControllerBaseTest(testing.TestBase):
                     db_name = "?dbid = " + str(i)
 
                     # NOTE(dynarro): we need to create a unique uri.
-                    new_uri = "%s/%s" % (uri, db_name)
+                    new_uri = "{}/{}".format(uri, db_name)
                     self.control.pools_controller.create(str(i),
                                                          100, new_uri)
             else:
@@ -87,7 +87,7 @@ class ControllerBaseTest(testing.TestBase):
                     db_name = "zaqar_test_pools_" + str(i)
 
                     # NOTE(dynarro): we need to create a unique uri.
-                    new_uri = "%s/%s" % (uri, db_name)
+                    new_uri = "{}/{}".format(uri, db_name)
                     options = {'database': db_name}
                     self.control.pools_controller.create(str(i),
                                                          100, new_uri,
@@ -126,7 +126,7 @@ class QueueControllerTest(ControllerBaseTest):
     controller_base_class = storage.Queue
 
     def setUp(self):
-        super(QueueControllerTest, self).setUp()
+        super().setUp()
         self.queue_controller = self.pipeline.queue_controller
 
     @ddt.data(None, ControllerBaseTest.project)
@@ -212,7 +212,7 @@ class MessageControllerTest(ControllerBaseTest):
     gc_interval = 0
 
     def setUp(self):
-        super(MessageControllerTest, self).setUp()
+        super().setUp()
 
         # Lets create a queue
         self.queue_controller = self.pipeline.queue_controller
@@ -221,7 +221,7 @@ class MessageControllerTest(ControllerBaseTest):
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name, project=self.project)
-        super(MessageControllerTest, self).tearDown()
+        super().tearDown()
 
     def test_stats_for_empty_queue(self):
         self.addCleanup(self.queue_controller.delete, 'test',
@@ -846,7 +846,7 @@ class ClaimControllerTest(ControllerBaseTest):
     controller_base_class = storage.Claim
 
     def setUp(self):
-        super(ClaimControllerTest, self).setUp()
+        super().setUp()
 
         # Lets create a queue
         self.queue_controller = self.pipeline.queue_controller
@@ -855,7 +855,7 @@ class ClaimControllerTest(ControllerBaseTest):
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name, project=self.project)
-        super(ClaimControllerTest, self).tearDown()
+        super().tearDown()
 
     def test_claim_lifecycle(self):
         _insert_fixtures(self.message_controller, self.queue_name,
@@ -1194,7 +1194,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
     controller_base_class = storage.Subscription
 
     def setUp(self):
-        super(SubscriptionControllerTest, self).setUp()
+        super().setUp()
         self.subscription_controller = self.driver.subscription_controller
         self.queue_controller = self.driver.queue_controller
 
@@ -1205,7 +1205,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
 
     def tearDown(self):
         self.queue_controller.delete(self.queue_name, project=self.project)
-        super(SubscriptionControllerTest, self).tearDown()
+        super().tearDown()
 
     # NOTE(Eva-i): this method helps to test cases when the queue is
     # pre-created and when it's not.
@@ -1218,7 +1218,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
     def test_list(self, precreate_queue):
         self._precreate_queue(precreate_queue)
         for s in range(15):
-            subscriber = 'http://fake_{0}'.format(s)
+            subscriber = 'http://fake_{}'.format(s)
             s_id = self.subscription_controller.create(
                 self.source,
                 subscriber,
@@ -1437,7 +1437,7 @@ class SubscriptionControllerTest(ControllerBaseTest):
         # create two subscriptions: fake_0 and fake_1
         ids = []
         for s in range(2):
-            subscriber = 'http://fake_{0}'.format(s)
+            subscriber = 'http://fake_{}'.format(s)
             s_id = self.subscription_controller.create(
                 self.source,
                 subscriber,
@@ -1522,7 +1522,7 @@ class PoolsControllerTest(ControllerBaseTest):
     controller_base_class = storage.PoolsBase
 
     def setUp(self):
-        super(PoolsControllerTest, self).setUp()
+        super().setUp()
         self.pools_controller = self.driver.pools_controller
 
         # Let's create one pool
@@ -1536,7 +1536,7 @@ class PoolsControllerTest(ControllerBaseTest):
 
     def tearDown(self):
         self.pools_controller.drop_all()
-        super(PoolsControllerTest, self).tearDown()
+        super().tearDown()
 
     def test_create_succeeds(self):
         self.pools_controller.create(str(uuid.uuid1()),
@@ -1683,7 +1683,7 @@ class CatalogueControllerTest(ControllerBaseTest):
     controller_base_class = storage.CatalogueBase
 
     def setUp(self):
-        super(CatalogueControllerTest, self).setUp()
+        super().setUp()
         self.controller = self.driver.catalogue_controller
         self.pool_ctrl = self.driver.pools_controller
         self.queue = str(uuid.uuid4())
@@ -1706,7 +1706,7 @@ class CatalogueControllerTest(ControllerBaseTest):
         self.pool_ctrl.update(self.pool1, flavor="")
         self.pool_ctrl.drop_all()
         self.controller.drop_all()
-        super(CatalogueControllerTest, self).tearDown()
+        super().tearDown()
 
     def _check_structure(self, entry):
         self.assertIn('queue', entry)
@@ -1825,7 +1825,7 @@ class FlavorsControllerTest1(ControllerBaseTest):
     controller_base_class = storage.FlavorsBase
 
     def setUp(self):
-        super(FlavorsControllerTest1, self).setUp()
+        super().setUp()
         self.pools_controller = self.driver.pools_controller
         self.flavors_controller = self.driver.flavors_controller
 
@@ -1841,7 +1841,7 @@ class FlavorsControllerTest1(ControllerBaseTest):
         self.pools_controller.update(self.pool, flavor="")
         self.pools_controller.drop_all()
         self.flavors_controller.drop_all()
-        super(FlavorsControllerTest1, self).tearDown()
+        super().tearDown()
 
     def test_create_succeeds(self):
         self.flavors_controller.create(self.flavor,
@@ -2003,7 +2003,7 @@ def _insert_fixtures(controller, queue_name, project=None,
             yield {
                 'ttl': ttl,
                 'body': {
-                    'event': 'Event number {0}'.format(n)
+                    'event': 'Event number {}'.format(n)
                 }}
 
     return controller.post(queue_name, messages(),

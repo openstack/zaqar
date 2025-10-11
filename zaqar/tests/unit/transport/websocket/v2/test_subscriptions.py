@@ -33,7 +33,7 @@ class SubscriptionTest(base.V1_1Base):
     config_file = 'websocket_mongodb_subscriptions.conf'
 
     def setUp(self):
-        super(SubscriptionTest, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
 
         self.project_id = '7e55e1a7e'
@@ -55,7 +55,7 @@ class SubscriptionTest(base.V1_1Base):
             self.protocol.onMessage(req, False)
 
     def tearDown(self):
-        super(SubscriptionTest, self).tearDown()
+        super().tearDown()
         body = {'queue_name': 'kitkat'}
 
         send_mock = mock.patch.object(self.protocol, 'sendMessage')

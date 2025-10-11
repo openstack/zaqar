@@ -28,7 +28,7 @@ class TestURL(base.V2Base):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(TestURL, self).setUp()
+        super().setUp()
 
         self.signed_url_prefix = self.url_prefix + '/queues/shared_queue/share'
 

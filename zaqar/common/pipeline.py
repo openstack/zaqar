@@ -39,7 +39,7 @@ from zaqar.i18n import _
 LOG = logging.getLogger(__name__)
 
 
-class Pipeline(object):
+class Pipeline:
 
     def __init__(self, pipeline=None):
         self._pipeline = pipeline and list(pipeline) or []
@@ -88,7 +88,7 @@ class Pipeline(object):
                     target = getattr(stage, method)
                 except AttributeError:
                     sstage = str(stage)
-                    msgtmpl = _(u"Stage %(stage)s does not "
+                    msgtmpl = _("Stage %(stage)s does not "
                                 "implement %(method)s")
                     LOG.debug(msgtmpl, {'stage': sstage, 'method': method})
                     continue

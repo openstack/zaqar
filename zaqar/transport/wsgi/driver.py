@@ -39,7 +39,7 @@ from zaqar.transport.wsgi import version
 LOG = logging.getLogger(__name__)
 
 
-class FuncMiddleware(object):
+class FuncMiddleware:
 
     def __init__(self, func):
         self.func = func
@@ -51,7 +51,7 @@ class FuncMiddleware(object):
 class Driver(transport.DriverBase):
 
     def __init__(self, conf, storage, cache, control):
-        super(Driver, self).__init__(conf, storage, cache, control)
+        super().__init__(conf, storage, cache, control)
 
         self._conf.register_opts(drivers_transport_wsgi.ALL_OPTS,
                                  group=drivers_transport_wsgi.GROUP_NAME)

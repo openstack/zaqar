@@ -40,7 +40,7 @@ class TestBase(testtools.TestCase):
     config_file = None
 
     def setUp(self):
-        super(TestBase, self).setUp()
+        super().setUp()
 
         self.useFixture(fixtures.FakeLogger('zaqar'))
 

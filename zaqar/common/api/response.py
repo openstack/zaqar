@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-class Response(object):
+class Response:
     """Common response class for Zaqar.
 
     All `zaqar.transport.base.Transport` implementations

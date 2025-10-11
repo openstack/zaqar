@@ -34,7 +34,7 @@ class MessagesBaseTest(base.V2Base):
     config_file = "websocket_mongodb.conf"
 
     def setUp(self):
-        super(MessagesBaseTest, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
 
         self.default_message_ttl = 3600
@@ -55,7 +55,7 @@ class MessagesBaseTest(base.V2Base):
             self.assertIn(resp['headers']['status'], [201, 204])
 
     def tearDown(self):
-        super(MessagesBaseTest, self).tearDown()
+        super().tearDown()
         body = {"queue_name": "kitkat"}
 
         send_mock = mock.Mock()
@@ -87,7 +87,7 @@ class MessagesBaseTest(base.V2Base):
         self.msg_ids = resp['body']['message_ids']
         self.assertEqual(len(sample_messages), len(self.msg_ids))
 
-        lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
+        lookup = {m['ttl']: m['body'] for m in sample_messages}
 
         # Test GET on the message resource directly
         # NOTE(cpp-cabrera): force the passing of time to age a message
@@ -139,10 +139,10 @@ class MessagesBaseTest(base.V2Base):
         arg = send_mock.call_args[0][0]
         resp = loads(arg)
         self.assertEqual(200, resp['headers']['status'])
-        expected_ttls = set(m['ttl'] for m in sample_messages)
-        actual_ttls = set(m['ttl'] for m in resp['body']['messages'])
+        expected_ttls = {m['ttl'] for m in sample_messages}
+        actual_ttls = {m['ttl'] for m in resp['body']['messages']}
         self.assertFalse(expected_ttls - actual_ttls)
-        actual_ids = set(m['id'] for m in resp['body']['messages'])
+        actual_ids = {m['id'] for m in resp['body']['messages']}
         self.assertFalse(set(self.msg_ids) - actual_ids)
 
     def test_exceeded_payloads(self):

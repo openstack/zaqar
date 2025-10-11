@@ -28,7 +28,7 @@ class TestDefaultLimits(base.V2Base):
     config_file = 'wsgi_mongodb_default_limits.conf'
 
     def setUp(self):
-        super(TestDefaultLimits, self).setUp()
+        super().setUp()
 
         self.headers = {
             'Client-ID': uuidutils.generate_uuid(),
@@ -44,7 +44,7 @@ class TestDefaultLimits(base.V2Base):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, headers=self.headers)
-        super(TestDefaultLimits, self).tearDown()
+        super().tearDown()
 
     def test_queue_listing(self):
         # 2 queues to list
@@ -103,7 +103,7 @@ class TestDefaultLimits(base.V2Base):
 
     @contextlib.contextmanager
     def _prepare_queues(self, count):
-        queue_paths = [self.queue_path + '/multi-{0}'.format(i)
+        queue_paths = [self.queue_path + '/multi-{}'.format(i)
                        for i in range(count)]
 
         for path in queue_paths:

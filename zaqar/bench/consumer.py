@@ -57,7 +57,7 @@ def claim_delete(queues, stats, test_duration, ttl, grace, limit):
             claim_total_requests += 1
 
         except errors.TransportError as ex:
-            sys.stderr.write("Could not claim messages : {0}\n".format(ex))
+            sys.stderr.write("Could not claim messages : {}\n".format(ex))
             total_failed_requests += 1
 
         else:
@@ -72,7 +72,7 @@ def claim_delete(queues, stats, test_duration, ttl, grace, limit):
                     delete_total_requests += 1
 
                 except errors.TransportError as ex:
-                    msg = "Could not delete messages: {0}\n".format(ex)
+                    msg = "Could not delete messages: {}\n".format(ex)
                     sys.stderr.write(msg)
                     total_failed_requests += 1
 
@@ -150,7 +150,7 @@ def run(upstream_queue):
                  for _ in range(num_procs)]
 
         if CONF.debug:
-            print('\nStarting consumers (cp={0}, cw={1})...'.format(
+            print('\nStarting consumers (cp={}, cw={})...'.format(
                   num_procs, num_workers))
 
         start = time.time()

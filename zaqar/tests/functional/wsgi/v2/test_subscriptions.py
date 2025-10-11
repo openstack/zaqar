@@ -31,7 +31,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
     server_class = base.ZaqarServer
 
     def setUp(self):
-        super(TestSubscriptions, self).setUp()
+        super().setUp()
 
         self.queue_name = uuid.uuid1()
         self.queue_url = ("{url}/{version}/queues/{queue}".format(
@@ -53,7 +53,7 @@ class TestSubscriptions(base.V2FunctionalTestBase):
             self.client.delete(sub_url)
         # Delete test queue.
         self.client.delete(self.queue_url)
-        super(TestSubscriptions, self).tearDown()
+        super().tearDown()
 
     @helpers.is_slow(condition=lambda self: self.class_ttl_gc_interval > 1)
     def test_expired_subscription(self):

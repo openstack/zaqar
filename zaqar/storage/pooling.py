@@ -64,7 +64,7 @@ class DataDriver(storage.DataDriverBase):
     BASE_CAPABILITIES = tuple(storage.Capabilities)
 
     def __init__(self, conf, cache, control, control_driver=None):
-        super(DataDriver, self).__init__(conf, cache, control_driver)
+        super().__init__(conf, cache, control_driver)
         catalog = Catalog(conf, cache, control)
         if self.conf.profiler.enabled:
             catalog = profiler.trace_cls("pooling_catalogue_"
@@ -164,7 +164,7 @@ class QueueController(storage.Queue):
     """
 
     def __init__(self, pool_catalog):
-        super(QueueController, self).__init__(None)
+        super().__init__(None)
         self._pool_catalog = pool_catalog
         self._mgt_queue_ctrl = self._pool_catalog.control.queue_controller
         self._get_controller = self._pool_catalog.get_queue_controller
@@ -276,7 +276,7 @@ class MessageController(storage.Message):
     """
 
     def __init__(self, pool_catalog):
-        super(MessageController, self).__init__(None)
+        super().__init__(None)
         self._pool_catalog = pool_catalog
         self._get_controller = self._pool_catalog.get_message_controller
 
@@ -351,7 +351,7 @@ class ClaimController(storage.Claim):
     """
 
     def __init__(self, pool_catalog):
-        super(ClaimController, self).__init__(None)
+        super().__init__(None)
         self._pool_catalog = pool_catalog
         self._get_controller = self._pool_catalog.get_claim_controller
 
@@ -391,7 +391,7 @@ class SubscriptionController(storage.Subscription):
     _resource_name = 'subscription'
 
     def __init__(self, pool_catalog):
-        super(SubscriptionController, self).__init__(pool_catalog)
+        super().__init__(pool_catalog)
         self._pool_catalog = pool_catalog
         self._get_controller = self._pool_catalog.get_subscription_controller
 
@@ -444,7 +444,7 @@ class SubscriptionController(storage.Subscription):
             return control.get_with_subscriber(queue, subscriber, project)
 
 
-class Catalog(object):
+class Catalog:
     """Represents the mapping between queues and pool drivers."""
 
     def __init__(self, conf, cache, control):
@@ -749,7 +749,7 @@ class TopicController(storage.Topic):
     """
 
     def __init__(self, pool_catalog):
-        super(TopicController, self).__init__(None)
+        super().__init__(None)
         self._pool_catalog = pool_catalog
         self._mgt_topic_ctrl = self._pool_catalog.control.topic_controller
         self._get_controller = self._pool_catalog.get_topic_controller

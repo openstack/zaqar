@@ -59,7 +59,7 @@ class MessageController(storage.Message):
     """
 
     def __init__(self, *args, **kwargs):
-        super(MessageController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._client = self.driver.connection
 
     @decorators.lazy_property(write=False)
@@ -295,7 +295,7 @@ class MessageController(storage.Message):
         return messages
 
 
-class MessageQueueHandler(object):
+class MessageQueueHandler:
     def __init__(self, driver, control_driver):
         self.driver = driver
         self._client = self.driver.connection
@@ -389,7 +389,7 @@ class MessageQueueHandler(object):
             return True
 
 
-class MessageTopicHandler(object):
+class MessageTopicHandler:
     def __init__(self, driver, control_driver):
         self.driver = driver
         self._client = self.driver.connection

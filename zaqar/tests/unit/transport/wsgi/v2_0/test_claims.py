@@ -34,7 +34,7 @@ class TestClaimsMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestClaimsMongoDB, self).setUp()
+        super().setUp()
 
         self.default_claim_ttl = self.boot.transport._defaults.claim_ttl
         self.project_id = '737_abc8332832'
@@ -68,7 +68,7 @@ class TestClaimsMongoDB(base.V2Base):
 
         self.simulate_delete(self.queue_path, headers=self.headers)
 
-        super(TestClaimsMongoDB, self).tearDown()
+        super().tearDown()
 
     @ddt.data('[', '[]', '.', '"fail"')
     def test_bad_claim(self, doc):

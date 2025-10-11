@@ -39,7 +39,7 @@ STRATEGY_SENTINEL = 3
 LOG = logging.getLogger(__name__)
 
 
-class ConnectionURI(object):
+class ConnectionURI:
     def __init__(self, uri):
         # TODO(prashanthr_): Add SSL support
         try:
@@ -161,7 +161,7 @@ class DataDriver(storage.DataDriverBase):
                         drivers_message_store_redis.ALL_OPTS)]
 
     def __init__(self, conf, cache, control_driver):
-        super(DataDriver, self).__init__(conf, cache, control_driver)
+        super().__init__(conf, cache, control_driver)
         self.redis_conf = self.conf[drivers_message_store_redis.GROUP_NAME]
 
         server_version = self.connection.info()['redis_version']
@@ -240,7 +240,7 @@ class DataDriver(storage.DataDriverBase):
 class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
-        super(ControlDriver, self).__init__(conf, cache)
+        super().__init__(conf, cache)
 
         self.conf.register_opts(
             drivers_management_store_redis.ALL_OPTS,

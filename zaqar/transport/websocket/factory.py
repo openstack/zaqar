@@ -50,7 +50,7 @@ class ProtocolFactory(websocket.WebSocketServerFactory):
         self._protos.pop(proto_id)
 
 
-class NotificationFactory(object):
+class NotificationFactory:
 
     protocol = protocol.NotificationProtocol
 
@@ -61,7 +61,7 @@ class NotificationFactory(object):
         self._subscription_url = url
 
     def get_subscriber(self, protocol):
-        return '%s%s' % (self._subscription_url, protocol.proto_id)
+        return '{}{}'.format(self._subscription_url, protocol.proto_id)
 
     def send_data(self, data, proto_id):
         instance = self.message_factory._protos.get(proto_id)

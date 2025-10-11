@@ -34,7 +34,7 @@ class TestMessagesMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestMessagesMongoDB, self).setUp()
+        super().setUp()
 
         self.default_message_ttl = self.boot.transport._defaults.message_ttl
 
@@ -43,7 +43,7 @@ class TestMessagesMongoDB(base.V2Base):
             for i in range(4):
                 db_name = "zaqar_test_pools_" + str(i)
                 # NOTE(dynarro): we need to create a unique uri.
-                new_uri = "%s/%s" % (uri, db_name)
+                new_uri = "{}/{}".format(uri, db_name)
                 options = {'database': db_name}
                 doc = {'weight': 100, 'uri': new_uri, 'options': options}
                 self.simulate_put(self.url_prefix + '/pools/' + str(i),
@@ -78,7 +78,7 @@ class TestMessagesMongoDB(base.V2Base):
                 self.simulate_delete(self.url_prefix + '/pools/' + str(i),
                                      headers=self.headers)
 
-        super(TestMessagesMongoDB, self).tearDown()
+        super().tearDown()
 
     def test_name_restrictions(self):
         sample_messages = [
@@ -126,7 +126,7 @@ class TestMessagesMongoDB(base.V2Base):
 
         self.assertEqual(len(sample_messages), len(msg_ids))
 
-        lookup = dict([(m['ttl'], m['body']) for m in sample_messages])
+        lookup = {m['ttl']: m['body'] for m in sample_messages}
 
         # Test GET on the message resource directly
         # NOTE(cpp-cabrera): force the passing of time to age a message
@@ -166,10 +166,10 @@ class TestMessagesMongoDB(base.V2Base):
 
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         result_doc = jsonutils.loads(result[0])
-        expected_ttls = set(m['ttl'] for m in sample_messages)
-        actual_ttls = set(m['ttl'] for m in result_doc['messages'])
+        expected_ttls = {m['ttl'] for m in sample_messages}
+        actual_ttls = {m['ttl'] for m in result_doc['messages']}
         self.assertFalse(expected_ttls - actual_ttls)
-        actual_ids = set(m['id'] for m in result_doc['messages'])
+        actual_ids = {m['id'] for m in result_doc['messages']}
         self.assertFalse(set(msg_ids) - actual_ids)
 
     def test_exceeded_payloads(self):

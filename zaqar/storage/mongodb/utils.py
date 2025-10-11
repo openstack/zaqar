@@ -317,7 +317,7 @@ def retries_on_autoreconnect(func):
     return wrapper
 
 
-class HookedCursor(object):
+class HookedCursor:
 
     def __init__(self, cursor, denormalizer, ntotal=None):
         self.cursor = cursor

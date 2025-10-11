@@ -45,10 +45,10 @@ def _field_spec(detailed=False):
 class FlavorsController(base.FlavorsBase):
 
     def __init__(self, *args, **kwargs):
-        super(FlavorsController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # To avoid creating unique index twice
         flavors_index_str = '_'.join(
-            map(lambda x: '%s_%s' % (x[0], x[1]), FLAVORS_INDEX)
+            map(lambda x: '{}_{}'.format(x[0], x[1]), FLAVORS_INDEX)
         )
         self._col = self.driver.database.flavors
         indexes = self._col.index_information().keys()

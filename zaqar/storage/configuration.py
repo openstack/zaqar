@@ -15,7 +15,7 @@
 from oslo_config import cfg
 
 
-class Configuration(object):
+class Configuration:
 
     def __init__(self, conf):
         """Initialize configuration."""

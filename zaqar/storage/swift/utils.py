@@ -17,19 +17,19 @@ import swiftclient
 
 
 def _message_container(queue, project=None):
-    return "zaqar_message:%s:%s" % (queue, project)
+    return "zaqar_message:{}:{}".format(queue, project)
 
 
 def _claim_container(queue=None, project=None):
-    return "zaqar_claim:%s:%s" % (queue, project)
+    return "zaqar_claim:{}:{}".format(queue, project)
 
 
 def _subscription_container(queue, project=None):
-    return "zaqar_subscription:%s:%s" % (queue, project)
+    return "zaqar_subscription:{}:{}".format(queue, project)
 
 
 def _subscriber_container(queue, project=None):
-    return "zaqar_subscriber:%s:%s" % (queue, project)
+    return "zaqar_subscriber:{}:{}".format(queue, project)
 
 
 def _put_or_create_container(client, *args, **kwargs):
@@ -134,7 +134,7 @@ def _filter_messages(messages, filters, marker, get_object, list_objects,
             yield msg
 
 
-class SubscriptionListCursor(object):
+class SubscriptionListCursor:
 
     def __init__(self, objects, marker_next, get_object):
         self.objects = iter(objects)

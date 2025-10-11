@@ -30,7 +30,7 @@ class TestQueues(base.V2FunctionalTestBase):
     def setUp(self):
         if not base._TEST_INTEGRATION:
             raise testcase.TestSkipped('Only run in integration mode')
-        super(TestQueues, self).setUp()
+        super().setUp()
         self.project_id = uuidutils.generate_uuid()
         self.headers = {'Client-ID': uuidutils.generate_uuid(),
                         'X-Project-ID': self.project_id}

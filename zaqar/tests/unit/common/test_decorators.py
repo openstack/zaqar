@@ -26,12 +26,12 @@ from zaqar.tests import base
 class TestDecorators(base.TestBase):
 
     def setUp(self):
-        super(TestDecorators, self).setUp()
+        super().setUp()
         self.conf.register_opts(default.ALL_OPTS)
 
     def test_memoized_getattr(self):
 
-        class TestClass(object):
+        class TestClass:
 
             @decorators.memoized_getattr
             def __getattr__(self, name):
@@ -58,7 +58,7 @@ class TestDecorators(base.TestBase):
         def create_key(user, project=None):
             return user + ':' + str(project)
 
-        class TestClass(object):
+        class TestClass:
 
             def __init__(self, cache):
                 self._cache = cache
@@ -107,7 +107,7 @@ class TestDecorators(base.TestBase):
         conf.cache.enabled = True
         cache = oslo_cache.get_cache(conf)
 
-        class TestClass(object):
+        class TestClass:
 
             def __init__(self, cache):
                 self._cache = cache

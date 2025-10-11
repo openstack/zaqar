@@ -37,7 +37,7 @@ from zaqar.transport import validation
 LOG = log.getLogger(__name__)
 
 
-class Bootstrap(object):
+class Bootstrap:
     """Defines the Zaqar bootstrapper.
 
     The bootstrap loads up drivers per a given configuration, and

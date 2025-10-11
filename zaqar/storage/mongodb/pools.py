@@ -54,13 +54,13 @@ def _field_spec(detailed=False):
 class PoolsController(base.PoolsBase):
 
     def __init__(self, *args, **kwargs):
-        super(PoolsController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # To avoid creating unique index twice
         pools_index_str = '_'.join(
-            map(lambda x: '%s_%s' % (x[0], x[1]), POOLS_INDEX)
+            map(lambda x: '{}_{}'.format(x[0], x[1]), POOLS_INDEX)
         )
         uri_index_str = '_'.join(
-            map(lambda x: '%s_%s' % (x[0], x[1]), URI_INDEX)
+            map(lambda x: '{}_{}'.format(x[0], x[1]), URI_INDEX)
         )
         self._col = self.driver.database.pools
         indexes = self._col.index_information().keys()

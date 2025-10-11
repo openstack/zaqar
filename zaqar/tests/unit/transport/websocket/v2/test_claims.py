@@ -30,7 +30,7 @@ class ClaimsBaseTest(base.V1_1Base):
     config_file = "websocket_mongodb.conf"
 
     def setUp(self):
-        super(ClaimsBaseTest, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
         self.defaults = self.api.get_defaults()
 
@@ -74,7 +74,7 @@ class ClaimsBaseTest(base.V1_1Base):
         self.assertEqual(201, resp['headers']['status'])
 
     def tearDown(self):
-        super(ClaimsBaseTest, self).tearDown()
+        super().tearDown()
         action = consts.QUEUE_DELETE
         body = {'queue_name': 'skittle'}
 

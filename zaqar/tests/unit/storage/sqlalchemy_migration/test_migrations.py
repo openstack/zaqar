@@ -37,7 +37,7 @@ from zaqar.tests.unit.storage.sqlalchemy_migration import \
     test_migrations_base as base
 
 
-class ZaqarMigrationsCheckers(object):
+class ZaqarMigrationsCheckers:
 
     def assertColumnExists(self, engine, table, column):
         t = db_utils.get_table(engine, table)

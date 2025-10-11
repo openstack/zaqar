@@ -26,7 +26,7 @@ class RequestContext(context.RequestContext):
                  auth_token=None, user_id=None, domain_id=None,
                  user_domain_id=None, project_domain_id=None, is_admin=False,
                  read_only=False, request_id=None, roles=None, **kwargs):
-        super(RequestContext, self).__init__(
+        super().__init__(
             auth_token=auth_token,
             user_id=user_id,
             project_id=project_id,
@@ -46,7 +46,7 @@ class RequestContext(context.RequestContext):
         context._request_store.context = self
 
     def to_dict(self):
-        ctx = super(RequestContext, self).to_dict()
+        ctx = super().to_dict()
         ctx.update({
             'project_id': self.project_id,
             'client_id': self.client_id

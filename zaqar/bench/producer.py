@@ -85,7 +85,7 @@ def producer(queues, message_pool, stats, test_duration):
             successful_requests += 1
 
         except errors.TransportError as ex:
-            sys.stderr.write("Could not post a message : {0}\n".format(ex))
+            sys.stderr.write("Could not post a message : {}\n".format(ex))
 
         total_requests += 1
 
@@ -156,7 +156,7 @@ def run(upstream_queue):
         ]
 
         if CONF.debug:
-            print('\nStarting producer (pp={0}, pw={1})...'.format(
+            print('\nStarting producer (pp={}, pw={})...'.format(
                   num_procs, num_workers))
 
         start = time.time()

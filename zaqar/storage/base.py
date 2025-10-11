@@ -51,7 +51,7 @@ class Capabilities(enum.IntEnum):
     HIGH_THROUGHPUT = 5
 
 
-class DriverBase(object, metaclass=abc.ABCMeta):
+class DriverBase(metaclass=abc.ABCMeta):
     """Base class for both data and control plane drivers
 
     :param conf: Configuration containing options for this driver.
@@ -95,7 +95,7 @@ class DataDriverBase(DriverBase, metaclass=abc.ABCMeta):
     BASE_CAPABILITIES = []
 
     def __init__(self, conf, cache, control_driver):
-        super(DataDriverBase, self).__init__(conf, cache)
+        super().__init__(conf, cache)
         # creating ControlDriver instance for accessing QueueController's
         # data from DataDriver
         self.control_driver = control_driver
@@ -304,7 +304,7 @@ class ControlDriverBase(DriverBase, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-class ControllerBase(object):
+class ControllerBase:
     """Top-level class for controllers.
 
     :param driver: Instance of the driver

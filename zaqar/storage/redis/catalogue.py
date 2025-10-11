@@ -69,7 +69,7 @@ class CatalogueController(base.CatalogueBase):
     """
 
     def __init__(self, *args, **kwargs):
-        super(CatalogueController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._client = self.driver.connection
 
     @utils.raises_conn_error

@@ -22,7 +22,7 @@ from zaqar.common import errors
 from zaqar.common import urls
 
 
-class Handler(object):
+class Handler:
     """Defines API handler
 
     The handler validates and process the requests

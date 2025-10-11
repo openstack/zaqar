@@ -23,7 +23,7 @@ from zaqar.i18n import _
 LOG = log.getLogger(__name__)
 
 
-class Api(object):
+class Api:
 
     schema = {}
     validators = {}

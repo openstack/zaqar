@@ -41,7 +41,7 @@ def _get_reserved_metadata(validate):
     return reserved_metadata
 
 
-class ItemResource(object):
+class ItemResource:
 
     __slots__ = ('_validate', '_topic_controller', '_message_controller',
                  '_reserved_metadata')
@@ -241,7 +241,7 @@ class ItemResource(object):
             raise wsgi_errors.HTTPConflict(msg % path_child)
 
 
-class CollectionResource(object):
+class CollectionResource:
 
     __slots__ = ('_topic_controller', '_validate', '_reserved_metadata')
 

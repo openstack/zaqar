@@ -23,7 +23,7 @@ from zaqar import tests as testing
 from zaqar.tests.unit.storage import base
 
 
-class DBCreateMixin(object):
+class DBCreateMixin:
 
     def _prepare_conf(self):
         tables.metadata.create_all(self.driver.engine)
@@ -43,7 +43,7 @@ class SqlalchemyPoolsTest(DBCreateMixin, base.PoolsControllerTest):
     control_driver_class = sqlalchemy.ControlDriver
 
     def setUp(self):
-        super(SqlalchemyPoolsTest, self).setUp()
+        super().setUp()
         # self.pools_controller.create(self.pool, 100, 'localhost',
         #                              group=self.pool_group, options={})
 

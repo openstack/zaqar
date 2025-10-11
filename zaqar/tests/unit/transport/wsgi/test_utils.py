@@ -114,7 +114,7 @@ class TestUtils(testtools.TestCase):
         self.assertEqual(doc, filtered)
 
     def test_no_spec(self):
-        obj = {u'body': {'event': 'start_backup'}, 'ttl': 300}
+        obj = {'body': {'event': 'start_backup'}, 'ttl': 300}
         document = str(jsonutils.dumps(obj, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
@@ -127,7 +127,7 @@ class TestUtils(testtools.TestCase):
         self.assertEqual(filtered, filtered2)
 
     def test_no_spec_array(self):
-        things = [{u'body': {'event': 'start_backup'}, 'ttl': 300}]
+        things = [{'body': {'event': 'start_backup'}, 'ttl': 300}]
         document = str(jsonutils.dumps(things, ensure_ascii=False))
         doc_stream = io.StringIO(document)
 
@@ -145,7 +145,7 @@ class TestUtils(testtools.TestCase):
         self.assertEqual(doc, filtered)
 
     def test_deserialize_and_sanitize_json_obj(self):
-        obj = {u'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
+        obj = {'body': {'event': 'start_backup'}, 'id': 'DEADBEEF'}
 
         document = str(jsonutils.dumps(obj, ensure_ascii=False))
         stream = io.StringIO(document)
@@ -162,7 +162,7 @@ class TestUtils(testtools.TestCase):
                           doctype=utils.JSONArray)
 
     def test_deserialize_and_sanitize_json_array(self):
-        array = [{u'body': {u'x': 1}}, {u'body': {u'x': 2}}]
+        array = [{'body': {'x': 1}}, {'body': {'x': 2}}]
 
         document = str(jsonutils.dumps(array, ensure_ascii=False))
         stream = io.StringIO(document)

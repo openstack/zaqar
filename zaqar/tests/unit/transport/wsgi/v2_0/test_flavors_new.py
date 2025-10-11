@@ -95,7 +95,7 @@ class TestFlavorsMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestFlavorsMongoDB, self).setUp()
+        super().setUp()
         self.queue = 'test-queue'
         self.queue_path = self.url_prefix + '/queues/' + self.queue
 
@@ -118,7 +118,7 @@ class TestFlavorsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
         self.simulate_delete(self.pool_path)
 
-        super(TestFlavorsMongoDB, self).tearDown()
+        super().tearDown()
 
     def test_put_flavor_works(self):
         name = str(uuid.uuid1())
@@ -264,9 +264,9 @@ class TestFlavorsMongoDB(base.V2Base):
         # NOTE(cpp-cabrera): delete initial flavor - it will interfere
         # with listing tests
         self.simulate_delete(self.flavor_path)
-        query = 'limit={0}&detailed={1}'.format(limit, detailed)
+        query = 'limit={}&detailed={}'.format(limit, detailed)
         if marker:
-            query += '&marker={0}'.format(marker)
+            query += '&marker={}'.format(marker)
 
         with flavors(self, count):
             result = self.simulate_get(self.url_prefix + '/flavors',
@@ -333,7 +333,7 @@ class TestFlavorsMongoDB(base.V2Base):
 
     def test_listing_error_with_invalid_limit(self):
         self.simulate_delete(self.flavor_path)
-        query = 'limit={0}&detailed={1}'.format(0, True)
+        query = 'limit={}&detailed={}'.format(0, True)
 
         with flavors(self, 10):
             self.simulate_get(self.url_prefix + '/flavors', query_string=query)

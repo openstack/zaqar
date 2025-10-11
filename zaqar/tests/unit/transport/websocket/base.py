@@ -26,7 +26,7 @@ class TestBase(testing.TestBase):
     config_file = None
 
     def setUp(self):
-        super(TestBase, self).setUp()
+        super().setUp()
 
         if not self.config_file:
             self.skipTest("No config specified")
@@ -53,7 +53,7 @@ class TestBase(testing.TestBase):
         if self.conf.pooling:
             self.boot.control.pools_controller.drop_all()
             self.boot.control.catalogue_controller.drop_all()
-        super(TestBase, self).tearDown()
+        super().tearDown()
 
 
 class TestBaseFaulty(TestBase):
