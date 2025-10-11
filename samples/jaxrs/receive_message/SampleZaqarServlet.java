@@ -41,7 +41,7 @@ public final class SampleZaqarServlet extends HttpServlet {
 
         headers.putSingle("X-Auth-Token", "8444886dd9b04a1b87ddb502b508261c");
 
-        headers.putSingle("X-Project-Id", "7530fad032ca431e9dc8ed4a5de5d99c"); 
+        headers.putSingle("X-Project-Id", "7530fad032ca431e9dc8ed4a5de5d99c");
 
         final Response res = client
                 .target("http://localhost:8888/v2/queues/SampleQueue/claims")

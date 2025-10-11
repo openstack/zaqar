@@ -46,4 +46,4 @@ format=%(asctime)s %(levelname)s %(message)s
 format=(%(name)s): %(asctime)s %(levelname)s %(message)s
 
 [formatter_debug]
-format=(%(name)s): %(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s 
+format=(%(name)s): %(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s

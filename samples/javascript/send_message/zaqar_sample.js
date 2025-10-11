@@ -17,7 +17,7 @@ ws.onopen = () => {
     ws.send('{"action": "authenticate", "headers": {"X-Auth-Token": \
         "8444886dd9b04a1b87ddb502b508261c", "X-Project-ID": \
         "7530fad032ca431e9dc8ed4a5de5d99c"}}'); // refer to bug #1553398
- 
+
     ws.send('{"action": "message_post", "body": {"messages": [{"body": \
         "Zaqar Sample"}], "queue_name": "SampleQueue"}, "headers": \
         {"Client-ID": "355186cd-d1e8-4108-a3ac-a2183697232a", "X-Project-ID": \

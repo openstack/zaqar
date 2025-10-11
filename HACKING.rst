@@ -31,8 +31,10 @@ Comments
 
 Identifiers
 -----------
-- Don't use single characters in identifiers except in trivial loop variables and mathematical algorithms.
-- Avoid abbreviations, especially if they are ambiguous or their meaning would not be immediately clear to the casual reader or newcomer.
+- Don't use single characters in identifiers except in trivial loop variables
+  and mathematical algorithms.
+- Avoid abbreviations, especially if they are ambiguous or their meaning would
+  not be immediately clear to the casual reader or newcomer.
 
 Wrapping
 --------
@@ -68,7 +70,8 @@ Example::
 
 Imports
 -------
-- Classes and functions may be hoisted into a package namespace, via __init__ files, with some discretion.
+- Classes and functions may be hoisted into a package namespace, via
+  __init__ files, with some discretion.
 
 More Import Examples
 --------------------
