@@ -276,19 +276,16 @@ function stop_zaqar {
 function create_zaqar_accounts {
     create_service_user "zaqar"
 
-    if [[ "$KEYSTONE_IDENTITY_BACKEND" = 'sql' ]]; then
+    get_or_create_service "zaqar" "messaging" "Zaqar Service"
+    get_or_create_endpoint "messaging" \
+        "$REGION_NAME" \
+        "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging"
 
-        get_or_create_service "zaqar" "messaging" "Zaqar Service"
-        get_or_create_endpoint "messaging" \
-            "$REGION_NAME" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging"
-
-        get_or_create_service "zaqar-websocket" \
-            "messaging-websocket" "Zaqar Websocket Service"
-        get_or_create_endpoint "messaging-websocket" \
-            "$REGION_NAME" \
-            "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT"
-    fi
+    get_or_create_service "zaqar-websocket" \
+        "messaging-websocket" "Zaqar Websocket Service"
+    get_or_create_endpoint "messaging-websocket" \
+        "$REGION_NAME" \
+        "$ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST:$ZAQAR_WEBSOCKET_PORT"
 
     if [ "$ZAQAR_BACKEND" = 'swift' ] ; then
         get_or_add_user_project_role ResellerAdmin zaqar service
