@@ -15,12 +15,10 @@
 import falcon
 
 from zaqar.transport import utils
-from zaqar.transport.wsgi import v1_1
 from zaqar.transport.wsgi import v2_0
 
 VERSIONS = {
     'versions': [
-        v1_1.VERSION,
         v2_0.VERSION
     ]
 }
