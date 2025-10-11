@@ -141,12 +141,6 @@ function configure_zaqar {
         iniset $ZAQAR_CONF 'drivers:message_store:swift' uri swift://zaqar:$SERVICE_PASSWORD@/service
     fi
 
-    if is_service_enabled qpid || [ -n "$RABBIT_HOST" ] && [ -n "$RABBIT_PASSWORD" ]; then
-        iniset $ZAQAR_CONF DEFAULT notification_driver messaging
-        iniset $ZAQAR_CONF DEFAULT control_exchange zaqar
-    fi
-    iniset_rpc_backend zaqar $ZAQAR_CONF DEFAULT
-
     write_uwsgi_config "$ZAQAR_UWSGI_CONF" "$ZAQAR_UWSGI" "/messaging" "" "zaqar"
 }
 
