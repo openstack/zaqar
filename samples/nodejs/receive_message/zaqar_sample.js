@@ -17,7 +17,7 @@ const ws = new WebSocket('ws://localhost:9000');
 
 ws.on('message', (data, flags) => {
     const msg = JSON.parse(data);
- 
+
     if (msg.body.messages)
       console.log(msg.body.messages[0].body);
 
