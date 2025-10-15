@@ -222,16 +222,7 @@ def message_url(message, base_path, claim_id=None):
     return path
 
 
-def format_message_v1(message, base_path, claim_id=None):
-    return {
-        'href': message_url(message, base_path, claim_id),
-        'ttl': message['ttl'],
-        'age': message['age'],
-        'body': message['body'],
-    }
-
-
-def format_message_v1_1(message, base_path, claim_id=None):
+def format_message(message, base_path, claim_id=None):
     url = message_url(message, base_path, claim_id)
     res = {
         'id': message['id'],

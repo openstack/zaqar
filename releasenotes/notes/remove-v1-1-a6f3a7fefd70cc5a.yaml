@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    The deprecated version v1.1 API has been removed.
+
+deprecations:
+  - |
+    The ``[DEFAULT] enable_deprecated_api_versions`` option has been deprecated
+    due to removal of deprecated APIs.

@@ -86,7 +86,7 @@ class CollectionResource(object):
         if queue_meta and queue_meta.get('_enable_encrypt_messages', False):
             self._encryptor.message_decrypted(messages)
 
-        messages = [wsgi_utils.format_message_v1_1(m, base_path, m['claim_id'])
+        messages = [wsgi_utils.format_message(m, base_path, m['claim_id'])
                     for m in messages]
 
         return {'messages': messages}
@@ -156,8 +156,7 @@ class CollectionResource(object):
             # Found some messages, so prepare the response
             kwargs['marker'] = next(results)
             base_path = req.path.rsplit('/', 1)[0]
-            messages = [wsgi_utils.format_message_v1_1(m, base_path,
-                                                       m['claim_id'])
+            messages = [wsgi_utils.format_message(m, base_path, m['claim_id'])
                         for m in messages]
 
         links = []
@@ -398,9 +397,9 @@ class ItemResource(object):
 
         # Prepare response
         message['href'] = req.path
-        message = wsgi_utils.format_message_v1_1(message,
-                                                 req.path.rsplit('/', 2)[0],
-                                                 message['claim_id'])
+        message = wsgi_utils.format_message(message,
+                                            req.path.rsplit('/', 2)[0],
+                                            message['claim_id'])
 
         resp.text = utils.to_json(message)
         # status defaults to 200

@@ -161,24 +161,8 @@ class TestDecorators(base.TestBase):
 
         self.assertTrue(public_endpoint_1(None, self.conf))
 
-        # 2. Test accessing deprecated API version
-        VERSION = {
-            'id': '1.1',
-            'status': 'DEPRECATED',
-            'updated': 'A long time ago'
-        }
-
         @decorators.api_version_manager(VERSION)
         def public_endpoint_2(driver, conf):
-            self.fail('Deprecated API enabled')
-
-        public_endpoint_2(None, self.conf)
-
-        # 3. Test enabling deprecated API version
-        self.config(enable_deprecated_api_versions=['1.1'])
-
-        @decorators.api_version_manager(VERSION)
-        def public_endpoint_3(driver, conf):
             return True
 
-        self.assertTrue(public_endpoint_3(None, self.conf))
+        self.assertTrue(public_endpoint_2(None, self.conf))

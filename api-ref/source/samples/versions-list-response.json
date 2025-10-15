@@ -1,23 +1,6 @@
 {
    "versions":[
       {
-         "status":"DEPRECATED",
-         "updated":"2016-7-29T02:22:47Z",
-         "media-types":[
-            {
-               "base":"application/json",
-               "type":"application/vnd.openstack.messaging-v1_1+json"
-            }
-         ],
-         "id":"1.1",
-         "links":[
-            {
-               "href":"/v1.1/",
-               "rel":"self"
-            }
-         ]
-      },
-      {
          "status":"CURRENT",
          "updated":"2014-9-24T04:06:47Z",
          "media-types":[
