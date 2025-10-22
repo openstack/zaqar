@@ -48,7 +48,7 @@ class Client(object):
         self.base_url = base_url
 
     def set_headers(self, headers):
-        self.session.headers.update(headers)
+        self.session.headers = headers
 
     @_build_url
     def get(self, url=None, **kwargs):
@@ -175,7 +175,7 @@ class WSGIClient(object):
         self.base_url = base_url
 
     def set_headers(self, headers):
-        self.headers.update(headers)
+        self.headers = headers
 
     @_build_url
     def get(self, url=None, **kwargs):
