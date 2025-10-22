@@ -110,6 +110,7 @@ def require_client_id(validate, req, resp, params):
     """Makes sure the header `Client-ID` is present in the request
 
     Use as a before hook.
+
     :param validate: A validator function that will
         be used to check the format of client id against configured
         limits.
@@ -121,6 +122,10 @@ def require_client_id(validate, req, resp, params):
     :type params: dict
     :rtype: None
     """
+    api_version_string = req.path.split('/')[1]
+    if not api_version_string:
+        # we don't insist on a Client-ID for the versions resource
+        return
 
     try:
         validate(req.get_header('Client-ID', required=True))
