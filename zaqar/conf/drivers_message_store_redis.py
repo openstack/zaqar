@@ -58,7 +58,7 @@ max_reconnect_attempts = cfg.IntOpt(
 reconnect_sleep = cfg.FloatOpt(
     'reconnect_sleep', default=1.0,
     help=('Base sleep interval between attempts to reconnect '
-          'after a redis node failover. '))
+          'after a redis node failover.'))
 
 
 GROUP_NAME = 'drivers:message_store:redis'
