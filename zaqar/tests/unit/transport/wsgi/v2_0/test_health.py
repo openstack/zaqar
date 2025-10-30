@@ -33,7 +33,7 @@ class TestHealthMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestHealthMongoDB, self).setUp()
+        super().setUp()
 
     def test_basic(self):
         path = self.url_prefix + '/health'

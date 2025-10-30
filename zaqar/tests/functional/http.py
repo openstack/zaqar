@@ -37,7 +37,7 @@ def _build_url(method):
     return wrapper
 
 
-class Client(object):
+class Client:
 
     def __init__(self):
         # NOTE(kgriffs): used by @_build_url
@@ -91,7 +91,7 @@ class Client(object):
         return self.session.patch(url, **kwargs)
 
 
-class ResponseMock(object):
+class ResponseMock:
     """Mocks part of the Requests library's Response object."""
 
     def __init__(self, srmock, wsgi_result):
@@ -103,7 +103,7 @@ class ResponseMock(object):
         return jsonutils.loads(self._body)
 
 
-class WSGIClient(object):
+class WSGIClient:
     """Same interface as Client, but speaks directly to a WSGI callable."""
 
     def __init__(self, app):
@@ -116,8 +116,8 @@ class WSGIClient(object):
     @staticmethod
     def _sanitize_headers(headers):
         # NOTE(kgriffs): Workaround for a little create_environ bug
-        return dict([(key, '' if value is None else value)
-                     for key, value in headers.items()])
+        return {key: '' if value is None else value
+                     for key, value in headers.items()}
 
     def _simulate_request(self, url, method='GET', data=None,
                           headers=None, params=None):

@@ -18,7 +18,7 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
-class MessageCodeAuthentication(object):
+class MessageCodeAuthentication:
 
     def execute(self, extra_spec):
         # NOTE(wanghao): There need an implement by developers.

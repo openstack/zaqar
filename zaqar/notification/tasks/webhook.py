@@ -57,7 +57,7 @@ RETRY_BACKOFF_FUNCTION_MAP = {'linear': _Linear_function,
                               'exponential': _Exponential_function}
 
 
-class WebhookTask(object):
+class WebhookTask:
 
     def _post_request_success(self, subscriber, data, headers):
         try:

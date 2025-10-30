@@ -29,7 +29,7 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = logging.getLogger(__name__)
 
 
-class CollectionResource(object):
+class CollectionResource:
 
     __slots__ = (
         '_message_controller',
@@ -357,7 +357,7 @@ class CollectionResource(object):
         return falcon.HTTP_200, body
 
 
-class ItemResource(object):
+class ItemResource:
 
     __slots__ = (
         '_message_controller',

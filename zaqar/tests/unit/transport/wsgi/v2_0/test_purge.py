@@ -26,7 +26,7 @@ class TestPurge(base.V2Base):
     config_file = 'wsgi_mongodb.conf'
 
     def setUp(self):
-        super(TestPurge, self).setUp()
+        super().setUp()
 
         self.headers = {
             'Client-ID': uuidutils.generate_uuid()
@@ -43,7 +43,7 @@ class TestPurge(base.V2Base):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, headers=self.headers)
-        super(TestPurge, self).tearDown()
+        super().tearDown()
 
     def _get_msg_id(self, headers):
         return self._get_msg_ids(headers)[0]

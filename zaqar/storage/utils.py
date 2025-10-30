@@ -63,7 +63,7 @@ def dynamic_conf(uri, options, conf=None):
     if 'drivers' not in conf:
         # NOTE(cpp-cabrera): parse general opts: 'drivers'
         driver_opts = utils.dict_to_conf({'message_store': storage_type})
-        conf.register_opts(driver_opts, group=u'drivers')
+        conf.register_opts(driver_opts, group='drivers')
 
     conf.set_override('message_store', storage_type, 'drivers')
 
@@ -85,7 +85,7 @@ def load_storage_impl(uri, control_mode=False, default_store=None):
     """
 
     mode = 'control' if control_mode else 'data'
-    driver_type = 'zaqar.{0}.storage'.format(mode)
+    driver_type = 'zaqar.{}.storage'.format(mode)
     # Note(wanghao): In python3.9, urlparse will return 'localhost' as scheme
     # instead of '' in python3.8 when uri string is 'localhost:xxxxx'. So there
     # need to handle this change.
@@ -132,7 +132,7 @@ def load_storage_driver(conf, cache, storage_type=None,
         mode = 'data'
         storage_type = storage_type or conf['drivers'].message_store
 
-    driver_type = 'zaqar.{0}.storage'.format(mode)
+    driver_type = 'zaqar.{}.storage'.format(mode)
 
     _invoke_args = (conf, cache)
     if control_driver is not None:
@@ -147,7 +147,7 @@ def load_storage_driver(conf, cache, storage_type=None,
         if conf.profiler.enabled:
             if ((mode == "control" and conf.profiler.trace_management_store) or
                     (mode == "data" and conf.profiler.trace_message_store)):
-                trace_name = '{0}_{1}_driver'.format(storage_type, mode)
+                trace_name = '{}_{}_driver'.format(storage_type, mode)
                 return profiler.trace_cls(trace_name,
                                           trace_private=True)(mgr.driver)
         else:
@@ -166,7 +166,7 @@ def keyify(key, iterable):
     :param iterable: The input iterable object
     """
 
-    class Keyed(object):
+    class Keyed:
         def __init__(self, obj):
             self.obj = obj
 

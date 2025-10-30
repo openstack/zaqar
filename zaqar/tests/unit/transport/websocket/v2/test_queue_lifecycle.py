@@ -31,7 +31,7 @@ class QueueLifecycleBaseTest(base.V2Base):
     config_file = "websocket_mongodb.conf"
 
     def setUp(self):
-        super(QueueLifecycleBaseTest, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
 
     def test_empty_project_id(self):
@@ -662,7 +662,7 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestQueueLifecycleMongoDB, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         storage = self.boot.storage._storage
@@ -673,4 +673,4 @@ class TestQueueLifecycleMongoDB(QueueLifecycleBaseTest):
         for db in storage.message_databases:
             connection.drop_database(db)
 
-        super(TestQueueLifecycleMongoDB, self).tearDown()
+        super().tearDown()

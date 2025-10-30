@@ -29,7 +29,7 @@ class TestMessagingProtocol(base.TestBase):
     config_file = "websocket_mongodb.conf"
 
     def setUp(self):
-        super(TestMessagingProtocol, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
         self.project_id = 'protocol-test'
         self.headers = {

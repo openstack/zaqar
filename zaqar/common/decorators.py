@@ -24,7 +24,7 @@ from oslo_serialization import jsonutils
 LOG = logging.getLogger(__name__)
 
 
-class TransportLog(object):
+class TransportLog:
     """Standard logging for transport driver responders
 
     This class implements a logging decorator that the transport driver

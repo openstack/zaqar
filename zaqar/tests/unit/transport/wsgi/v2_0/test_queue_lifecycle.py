@@ -32,7 +32,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestQueueLifecycleMongoDB, self).setUp()
+        super().setUp()
 
         self.queue_path = self.url_prefix + '/queues'
         self.gumshoe_queue_path = self.queue_path + '/gumshoe'
@@ -53,7 +53,7 @@ class TestQueueLifecycleMongoDB(base.V2Base):
         for db in storage.message_databases:
             connection.drop_database(db)
 
-        super(TestQueueLifecycleMongoDB, self).tearDown()
+        super().tearDown()
 
     def test_without_project_id(self):
         headers = {

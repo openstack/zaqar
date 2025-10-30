@@ -27,7 +27,7 @@ from zaqar.notification.notifier import MessageType
 LOG = logging.getLogger(__name__)
 
 
-class MailtoTask(object):
+class MailtoTask:
 
     def _make_confirm_string(self, conf_n, message, queue_name):
         confirm_url = conf_n.external_confirmation_url
@@ -64,7 +64,7 @@ class MailtoTask(object):
     def execute(self, subscription, messages, **kwargs):
         subscriber = urllib_parse.urlparse(subscription['subscriber'])
         params = urllib_parse.parse_qs(subscriber.query)
-        params = dict((k.lower(), v) for k, v in params.items())
+        params = {k.lower(): v for k, v in params.items()}
         conf_n = kwargs.get('conf').notification
         try:
             for message in messages:

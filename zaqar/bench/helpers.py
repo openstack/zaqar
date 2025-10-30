@@ -97,12 +97,12 @@ def _generate_client_conf():
                 },
             },
         }
-    print("Using '{0}' authentication method".format(conf['auth_opts']
-                                                     ['backend']))
+    print("Using '{}' authentication method".format(conf['auth_opts']
+                                                    ['backend']))
     return conf
 
 
-class LazyAPIVersion(object):
+class LazyAPIVersion:
     def __init__(self):
         self.api_version = None
 
@@ -118,7 +118,7 @@ class LazyAPIVersion(object):
                 print("Unknown Zaqar API version: '{}'. Exiting...".format(
                       CONF.api_version))
                 sys.exit()
-            print("Benchmarking Zaqar API v{0}...".format(self.api_version))
+            print("Benchmarking Zaqar API v{}...".format(self.api_version))
         return self.api_version
 
 
@@ -126,7 +126,7 @@ client_conf = _generate_client_conf()
 client_api = LazyAPIVersion()
 queue_names = []
 for i in range(CONF.num_queues):
-    queue_names.append((CONF.queue_prefix + '-' + str(i)))
+    queue_names.append(CONF.queue_prefix + '-' + str(i))
 
 
 def get_new_client():

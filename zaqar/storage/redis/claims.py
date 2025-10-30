@@ -82,7 +82,7 @@ class ClaimController(storage.Claim, scripting.Mixin):
     script_names = ['claim_messages']
 
     def __init__(self, *args, **kwargs):
-        super(ClaimController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._client = self.driver.connection
 
         self._packer = msgpack.Packer(use_bin_type=True).pack

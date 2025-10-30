@@ -38,7 +38,7 @@ def pool(test, name, weight, uri, flavor=None, options={}):
     :returns: (name, weight, uri, options)
     :rtype: see above
     """
-    uri = "%s/%s" % (uri, uuidutils.generate_uuid())
+    uri = "{}/{}".format(uri, uuidutils.generate_uuid())
     doc = {'weight': weight, 'uri': uri,
            'flavor': flavor, 'options': options}
     path = test.url_prefix + '/pools/' + name
@@ -70,7 +70,7 @@ def pools(test, count, uri, flavor):
              {str(i): i})
             for i in range(count)]
     for path, weight, option in args:
-        uri = "%s/%s" % (mongo_url, uuidutils.generate_uuid())
+        uri = "{}/{}".format(mongo_url, uuidutils.generate_uuid())
         doc = {'weight': weight, 'uri': uri,
                'flavor': flavor, 'options': option}
         test.simulate_put(path, body=jsonutils.dumps(doc))
@@ -93,7 +93,7 @@ class TestPoolsMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestPoolsMongoDB, self).setUp()
+        super().setUp()
         self.doc = {'weight': 100,
                     'flavor': 'my-flavor',
                     'uri': self.mongodb_url}
@@ -102,7 +102,7 @@ class TestPoolsMongoDB(base.V2Base):
         self.assertEqual(falcon.HTTP_201, self.srmock.status)
 
     def tearDown(self):
-        super(TestPoolsMongoDB, self).tearDown()
+        super().tearDown()
         self.simulate_delete(self.pool)
         self.assertEqual(falcon.HTTP_204, self.srmock.status)
 
@@ -294,9 +294,9 @@ class TestPoolsMongoDB(base.V2Base):
         # (gengchc): Remove flavor from the pool, so we can delete the pool.
         self.simulate_patch(self.pool, body=jsonutils.dumps({'flavor': ''}))
         self.simulate_delete(self.pool)
-        query = 'limit={0}&detailed={1}'.format(limit, detailed)
+        query = 'limit={}&detailed={}'.format(limit, detailed)
         if marker:
-            query += '&marker={0}'.format(marker)
+            query += '&marker={}'.format(marker)
 
         with pools(self, count, self.doc['uri'], 'my-flavor') as expected:
             result = self.simulate_get(self.url_prefix + '/pools',
@@ -376,7 +376,7 @@ class TestPoolsMongoDB(base.V2Base):
 
     def test_listing_error_with_invalid_limit(self):
         self.simulate_delete(self.pool)
-        query = 'limit={0}&detailed={1}'.format(0, True)
+        query = 'limit={}&detailed={}'.format(0, True)
 
         with pools(self, 10, self.doc['uri'], 'my-flavor'):
             self.simulate_get(self.url_prefix + '/pools', query_string=query)

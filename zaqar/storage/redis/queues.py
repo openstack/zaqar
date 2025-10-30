@@ -61,7 +61,7 @@ class QueueController(storage.Queue):
     """
 
     def __init__(self, *args, **kwargs):
-        super(QueueController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._client = self.driver.connection
         self._packer = msgpack.Packer(use_bin_type=True).pack
         self._unpacker = functools.partial(msgpack.unpackb)

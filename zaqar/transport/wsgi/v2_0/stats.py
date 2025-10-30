@@ -26,7 +26,7 @@ from zaqar.transport.wsgi import errors as wsgi_errors
 LOG = logging.getLogger(__name__)
 
 
-class Resource(object):
+class Resource:
 
     __slots__ = '_queue_ctrl'
 

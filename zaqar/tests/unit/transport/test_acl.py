@@ -26,7 +26,7 @@ from zaqar.transport.wsgi import errors
 class TestAcl(base.TestBase):
 
     def setUp(self):
-        super(TestAcl, self).setUp()
+        super().setUp()
         ctx = context.RequestContext()
         request_class = namedtuple("Request", ("env",))
         self.request = request_class({"zaqar.context": ctx})

@@ -81,7 +81,7 @@ def observer(queues, stats, test_duration, limit):
                 queue['m'] = _extract_marker(cursor._links)
 
         except errors.TransportError as ex:
-            sys.stderr.write("Could not list messages : {0}\n".format(ex))
+            sys.stderr.write("Could not list messages : {}\n".format(ex))
             total_failed += 1
 
     total_requests = total_succeeded + total_failed
@@ -146,7 +146,7 @@ def run(upstream_queue):
                  for _ in range(num_procs)]
 
         if CONF.debug:
-            print('\nStarting observer (op={0}, ow={1})...'.format(
+            print('\nStarting observer (op={}, ow={})...'.format(
                   num_procs, num_workers))
 
         start = time.time()

@@ -66,7 +66,7 @@ def setup(conf, binary, host):
         web.disable()
 
 
-class ProfileWSGIMiddleware(object):
+class ProfileWSGIMiddleware:
 
     def __init__(self, application, hmac_keys=None, enabled=False):
         self.application = application

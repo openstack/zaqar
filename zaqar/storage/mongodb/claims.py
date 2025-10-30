@@ -207,7 +207,7 @@ class ClaimController(storage.Claim):
         msg_count_moved_to_DLQ = 0
         if ('_max_claim_count' in queue_meta and
                 '_dead_letter_queue' in queue_meta):
-            LOG.debug(u"The list of messages being claimed: %(be_claimed)s",
+            LOG.debug("The list of messages being claimed: %(be_claimed)s",
                       {"be_claimed": be_claimed})
 
             for _id, claimed_count in be_claimed:
@@ -222,9 +222,9 @@ class ClaimController(storage.Claim):
                                            'c.id': oid},
                                           {'$set': {'c.c': claimed_count + 1}},
                                           upsert=False)
-                    LOG.debug(u"Message %(id)s has been claimed %(count)d "
-                              u"times.", {"id": str(_id),
-                                          "count": claimed_count + 1})
+                    LOG.debug("Message %(id)s has been claimed %(count)d "
+                              "times.", {"id": str(_id),
+                                         "count": claimed_count + 1})
                 else:
                     # 2. Check if the message's claim count has exceeded the
                     # max claim count defined in the queue, if so, move the
@@ -250,9 +250,9 @@ class ClaimController(storage.Claim):
                                                          **kwargs)
                     dlq_collection = msg_ctrl._collection(dlq_name, project)
                     if dlq_collection is None:
-                        LOG.warning(u"Failed to find the message collection "
-                                    u"for queue %(dlq_name)s", {"dlq_name":
-                                                                dlq_name})
+                        LOG.warning("Failed to find the message collection "
+                                    "for queue %(dlq_name)s", {"dlq_name":
+                                                               dlq_name})
                         return None, iter([])
                     # NOTE(flwang): If dead letter queue and queue are in the
                     # same partition, the message has been already
@@ -261,9 +261,9 @@ class ClaimController(storage.Claim):
                         result = dlq_collection.insert_one(msg)
                         if result.inserted_id:
                             collection.delete_one({'_id': _id})
-                    LOG.debug(u"Message %(id)s has met the max claim count "
-                              u"%(count)d, now it has been moved to dead "
-                              u"letter queue %(dlq_name)s.",
+                    LOG.debug("Message %(id)s has met the max claim count "
+                              "%(count)d, now it has been moved to dead "
+                              "letter queue %(dlq_name)s.",
                               {"id": str(_id), "count": claimed_count,
                                "dlq_name": dlq_name})
                     msg_count_moved_to_DLQ += 1

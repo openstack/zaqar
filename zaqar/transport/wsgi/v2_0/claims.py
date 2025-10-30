@@ -28,7 +28,7 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = logging.getLogger(__name__)
 
 
-class CollectionResource(object):
+class CollectionResource:
     __slots__ = (
         '_claim_controller',
         '_validate',
@@ -110,7 +110,7 @@ class CollectionResource(object):
             resp.status = falcon.HTTP_204
 
 
-class ItemResource(object):
+class ItemResource:
 
     __slots__ = ('_claim_controller', '_validate', '_claim_patch_spec')
 

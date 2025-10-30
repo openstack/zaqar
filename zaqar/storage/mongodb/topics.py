@@ -71,7 +71,7 @@ class TopicController(storage.Topic):
     """
 
     def __init__(self, *args, **kwargs):
-        super(TopicController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._cache = self.driver.cache
         self._collection = self.driver.topics_database.topics

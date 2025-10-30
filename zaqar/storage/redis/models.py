@@ -28,7 +28,7 @@ SUBENV_FIELD_KEYS = (b'id', b's', b'u', b't', b'e', b'o', b'p', b'c')
 
 
 # TODO(kgriffs): Make similar classes for claims and queues
-class MessageEnvelope(object):
+class MessageEnvelope:
     """Encapsulates the message envelope (metadata only, no body).
 
     :param id: Message ID in the form of a hexadecimal UUID. If not
@@ -112,7 +112,7 @@ class MessageEnvelope(object):
         pipe.expire(self.id, self.ttl)
 
 
-class SubscriptionEnvelope(object):
+class SubscriptionEnvelope:
     """Encapsulates the subscription envelope."""
 
     __slots__ = [
@@ -188,7 +188,7 @@ class Message(MessageEnvelope):
     __slots__ = MessageEnvelope.__slots__ + ['body']
 
     def __init__(self, **kwargs):
-        super(Message, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.body = kwargs['body']
 
     @staticmethod
@@ -218,7 +218,7 @@ class Message(MessageEnvelope):
 
     def to_redis(self, pipe, include_body=True):
         if not include_body:
-            super(Message, self).to_redis(pipe)
+            super().to_redis(pipe)
 
         hmap = _msgenv_to_hmap(self)
         hmap['b'] = _pack(self.body)

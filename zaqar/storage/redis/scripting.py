@@ -18,7 +18,7 @@ import os
 from zaqar.common import decorators
 
 
-class Mixin(object):
+class Mixin:
     script_names = []
 
     @decorators.lazy_property(write=False)
@@ -36,5 +36,5 @@ def _read_script(script_name):
     folder = os.path.abspath(os.path.dirname(__file__))
     filename = os.path.join(folder, 'scripts', script_name + '.lua')
 
-    with open(filename, 'r') as script_file:
+    with open(filename) as script_file:
         return script_file.read()

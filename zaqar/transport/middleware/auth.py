@@ -24,7 +24,7 @@ STRATEGIES = {}
 LOG = log.getLogger(__name__)
 
 
-class SignedAndExtraSpecHeadersAuth(object):
+class SignedAndExtraSpecHeadersAuth:
 
     def __init__(self, app, auth_app):
         self._app = app
@@ -47,7 +47,7 @@ class SignedAndExtraSpecHeadersAuth(object):
         return self._app(environ, start_response)
 
 
-class KeystoneAuth(object):
+class KeystoneAuth:
 
     @classmethod
     def install(cls, app, conf):

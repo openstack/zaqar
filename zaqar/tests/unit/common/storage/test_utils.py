@@ -24,7 +24,7 @@ from zaqar import tests as testing
 class TestUtils(testing.TestBase):
 
     def setUp(self):
-        super(TestUtils, self).setUp()
+        super().setUp()
         self.conf.register_opts(default.ALL_OPTS)
 
     @testing.requires_mongodb

@@ -76,7 +76,7 @@ def _get_builtin_entry_points(resource_name, storage, control_driver, conf):
     # `zaqar.storage.$STORAGE.driver.stages`. For now,
     # the builtin stages are bound to a single store and
     # are not applied to every store.
-    namespace = '%s.%s.stages' % (storage.__module__, resource_name)
+    namespace = '{}.{}.stages'.format(storage.__module__, resource_name)
     extensions = extension.ExtensionManager(namespace,
                                             invoke_on_load=True,
                                             invoke_args=[storage,
@@ -104,7 +104,7 @@ class DataDriver(base.DataDriverBase):
     def __init__(self, conf, storage, control_driver):
         # NOTE(kgriffs): Pass None for cache since it won't ever
         # be referenced.
-        super(DataDriver, self).__init__(conf, None, control_driver)
+        super().__init__(conf, None, control_driver)
         self._storage = storage
 
     @property

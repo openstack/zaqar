@@ -31,7 +31,7 @@ from zaqar import tests as testing
 class NotifierTest(testing.TestBase):
 
     def setUp(self):
-        super(NotifierTest, self).setUp()
+        super().setUp()
         self.client_id = uuid.uuid4()
         self.project = uuid.uuid4()
         self.messages = [{"ttl": 300,

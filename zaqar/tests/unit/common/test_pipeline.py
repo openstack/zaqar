@@ -17,7 +17,7 @@ from zaqar.common import pipeline
 from zaqar.tests import base
 
 
-class FirstClass(object):
+class FirstClass:
 
     def with_args(self, name):
         return name
@@ -26,7 +26,7 @@ class FirstClass(object):
         return lastname
 
     def with_args_kwargs(self, name, lastname='yo'):
-        return '{0} {1}'.format(name, lastname)
+        return '{} {}'.format(name, lastname)
 
     def no_args(self):
         return True
@@ -38,7 +38,7 @@ class FirstClass(object):
         return None
 
 
-class SecondClass(object):
+class SecondClass:
 
     def does_nothing(self):
         return None
@@ -58,7 +58,7 @@ class SecondClass(object):
 class TestPipeLine(base.TestBase):
 
     def setUp(self):
-        super(TestPipeLine, self).setUp()
+        super().setUp()
         self.pipeline = pipeline.Pipeline([FirstClass(),
                                            SecondClass()])
 

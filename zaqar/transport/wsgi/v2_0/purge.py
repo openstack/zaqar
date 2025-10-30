@@ -26,7 +26,7 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = logging.getLogger(__name__)
 
 
-class Resource(object):
+class Resource:
 
     __slots__ = ('_driver', '_conf', '_queue_ctrl',
                  '_message_ctrl', '_subscription_ctrl', '_validate')

@@ -71,7 +71,7 @@ class DataDriver(storage.DataDriverBase):
     _COL_SUFIX = "_messages_p"
 
     def __init__(self, conf, cache, control_driver):
-        super(DataDriver, self).__init__(conf, cache, control_driver)
+        super().__init__(conf, cache, control_driver)
 
         self.mongodb_conf = self.conf[drivers_message_store_mongodb.GROUP_NAME]
 
@@ -231,7 +231,7 @@ class FIFODataDriver(DataDriver):
 class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
-        super(ControlDriver, self).__init__(conf, cache)
+        super().__init__(conf, cache)
 
         self.conf.register_opts(
             drivers_management_store_mongodb.ALL_OPTS,

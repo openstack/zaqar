@@ -40,7 +40,7 @@ CATALOGUE_INDEX = [
 class CatalogueController(base.CatalogueBase):
 
     def __init__(self, *args, **kwargs):
-        super(CatalogueController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._col = self.driver.database.catalogue
         self._col.create_index(CATALOGUE_INDEX, unique=True)

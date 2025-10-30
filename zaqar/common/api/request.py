@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-class Request(object):
+class Request:
     """General data for a Zaqar request
 
     Transport will generate a request object and send to this the API to be

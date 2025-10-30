@@ -27,7 +27,7 @@ from zaqar.transport import validation
 LOG = logging.getLogger(__name__)
 
 
-class Endpoints(object):
+class Endpoints:
     """v2 API Endpoints."""
 
     def __init__(self, storage, control, validate, defaults):

@@ -29,7 +29,7 @@ class TestURLs(base.TestBase):
         timeutils.set_time_override()
         self.addCleanup(timeutils.clear_time_override)
 
-        key = 'test'.encode('latin-1')
+        key = b'test'
         methods = ['POST']
         project = 'my-project'
         paths = ['/v2/queues/shared/messages']
@@ -52,7 +52,7 @@ class TestURLs(base.TestBase):
         timeutils.set_time_override()
         self.addCleanup(timeutils.clear_time_override)
 
-        key = 'test'.encode("latin-1")
+        key = b'test'
         methods = ['POST']
         project = 'my-project'
         paths = ['/v2/queues/shared/messages',
@@ -77,7 +77,7 @@ class TestURLs(base.TestBase):
         date_str = '2100-05-31T19:00:17+02'
         date_str_utc = '2100-05-31T17:00:17'
 
-        key = 'test'.encode("latin-1")
+        key = b'test'
         project = None
         methods = ['GET']
         paths = ['/v2/queues/shared/messages']

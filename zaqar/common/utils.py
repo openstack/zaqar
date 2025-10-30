@@ -34,9 +34,9 @@ def fields(d, names, pred=lambda x: True,
     :rtype: dict
     """
 
-    return dict((key_transform(k), value_transform(v))
-                for k, v in d.items()
-                if k in names and pred(v))
+    return {key_transform(k): value_transform(v)
+            for k, v in d.items()
+            if k in names and pred(v)}
 
 
 _pytype_to_cfgtype = {

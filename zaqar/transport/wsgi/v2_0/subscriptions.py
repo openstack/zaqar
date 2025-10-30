@@ -34,7 +34,7 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = logging.getLogger(__name__)
 
 
-class ItemResource(object):
+class ItemResource:
 
     __slots__ = ('_validate', '_subscription_controller')
 
@@ -111,7 +111,7 @@ class ItemResource(object):
                 description=description)
 
 
-class CollectionResource(object):
+class CollectionResource:
 
     __slots__ = ('_subscription_controller', '_validate',
                  '_default_subscription_ttl', '_queue_controller',
@@ -247,7 +247,7 @@ class CollectionResource(object):
                     {'subscription_id': str(subscription['id'])})
 
 
-class ConfirmResource(object):
+class ConfirmResource:
 
     __slots__ = ('_subscription_controller', '_validate', '_notification',
                  '_conf')

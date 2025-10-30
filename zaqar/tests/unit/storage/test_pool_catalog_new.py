@@ -32,7 +32,7 @@ class PoolCatalogTest(testing.TestBase):
     config_file = 'wsgi_mongodb_pooled_disable_virtual_pool.conf'
 
     def setUp(self):
-        super(PoolCatalogTest, self).setUp()
+        super().setUp()
 
         oslo_cache.register_config(self.conf)
         cache = oslo_cache.get_cache(self.conf)
@@ -71,7 +71,7 @@ class PoolCatalogTest(testing.TestBase):
     def tearDown(self):
         self.catalogue_ctrl.drop_all()
         self.pools_ctrl.drop_all()
-        super(PoolCatalogTest, self).tearDown()
+        super().tearDown()
 
     def test_lookup_loads_correct_driver(self):
         storage = self.catalog.lookup(self.queue, self.project)

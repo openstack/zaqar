@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 class Driver(base.DriverBase):
 
     def __init__(self, conf, api, cache):
-        super(Driver, self).__init__(conf, None, None, None)
+        super().__init__(conf, None, None, None)
         self._api = api
         self._cache = cache
 
@@ -93,7 +93,7 @@ class Driver(base.DriverBase):
             else:
                 host = socket.gethostname()
             self.notification_factory.set_subscription_url(
-                'http://%s:%s/' % (netutils.escape_ipv6(host), port))
+                'http://{}:{}/'.format(netutils.escape_ipv6(host), port))
             self._api.set_subscription_factory(self.notification_factory)
 
         task = asyncio.Task(coro_notification)

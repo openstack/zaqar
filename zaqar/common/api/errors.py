@@ -20,7 +20,7 @@ class ExceptionBase(Exception):
 
     def __init__(self, **kwargs):
         msg = self.msg_format.format(**kwargs)
-        super(ExceptionBase, self).__init__(msg)
+        super().__init__(msg)
 
 
 class BadRequest(ExceptionBase):
@@ -34,7 +34,7 @@ class BadRequest(ExceptionBase):
         :param description: Error description
         """
 
-        super(BadRequest, self).__init__(description=description)
+        super().__init__(description=description)
 
 
 class DocumentTypeNotSupported(ExceptionBase):

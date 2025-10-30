@@ -38,8 +38,7 @@ class TrustTask(webhook.WebhookTask):
         subscription['subscriber'] = subscriber[6:]
         headers = {'X-Auth-Token': token,
                    'Content-Type': 'application/json'}
-        super(TrustTask, self).execute(subscription, messages, headers,
-                                       **kwargs)
+        super().execute(subscription, messages, headers, **kwargs)
 
     def register(self, subscriber, options, ttl, project_id, request_data):
         if 'trust_id' not in options:
@@ -58,6 +57,5 @@ class TrustTask(webhook.WebhookTask):
                     seconds=ttl)
 
             trust_id = auth.create_trust_id(
-                auth_plugin, trustor_user_id, project_id, roles,
-                expires_at)
+                auth_plugin, trustor_user_id, project_id, roles, expires_at)
             options['trust_id'] = trust_id

@@ -239,7 +239,7 @@ def msg_expired_filter(message, now):
     return message.expires <= now
 
 
-class QueueListCursor(object):
+class QueueListCursor:
 
     def __init__(self, client, queues, denormalizer):
         self.queue_iter = queues
@@ -259,7 +259,7 @@ class QueueListCursor(object):
         return self.next()
 
 
-class SubscriptionListCursor(object):
+class SubscriptionListCursor:
 
     def __init__(self, client, subscriptions, denormalizer):
         self.subscription_iter = subscriptions
@@ -331,7 +331,7 @@ def flavor_name_hash_key(name=None):
                                       FLAVORS_IDS_SUFFIX)
 
 
-class FlavorListCursor(object):
+class FlavorListCursor:
 
     def __init__(self, client, flavors, denormalizer):
         self.flavor_iter = flavors
@@ -401,7 +401,7 @@ def pools_name_hash_key(name=None):
                                     POOLS_IDS_SUFFIX)
 
 
-class PoolsListCursor(object):
+class PoolsListCursor:
 
     def __init__(self, client, pools, denormalizer):
         self.pools_iter = pools

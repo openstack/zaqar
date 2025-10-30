@@ -69,7 +69,7 @@ class TestCli(testtools.TestCase):
     ]
 
     def setUp(self):
-        super(TestCli, self).setUp()
+        super().setUp()
         do_alembic_cmd_p = mock.patch.object(cli, 'do_alembic_command')
         self.addCleanup(do_alembic_cmd_p.stop)
         self.do_alembic_cmd = do_alembic_cmd_p.start()

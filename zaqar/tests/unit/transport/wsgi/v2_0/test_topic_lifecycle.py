@@ -32,7 +32,7 @@ class TestTopicLifecycleMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestTopicLifecycleMongoDB, self).setUp()
+        super().setUp()
 
         self.topic_path = self.url_prefix + '/topics'
         self.mars_topic_path = self.topic_path + '/mars'
@@ -53,7 +53,7 @@ class TestTopicLifecycleMongoDB(base.V2Base):
         for db in storage.message_databases:
             connection.drop_database(db)
 
-        super(TestTopicLifecycleMongoDB, self).tearDown()
+        super().tearDown()
 
     def test_without_project_id(self):
         headers = {

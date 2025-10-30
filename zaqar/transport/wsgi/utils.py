@@ -211,7 +211,7 @@ def validate(validator, document):
         validator.validate(document)
     except jsonschema.ValidationError as ex:
         raise errors.HTTPBadRequestBody(
-            '{0}: {1}'.format(ex.args, str(ex))
+            '{}: {}'.format(ex.args, str(ex))
         )
 
 

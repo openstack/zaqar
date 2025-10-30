@@ -34,7 +34,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
 
     @testing.requires_mongodb
     def setUp(self):
-        super(TestSubscriptionsMongoDB, self).setUp()
+        super().setUp()
 
         if self.conf.pooling:
             for i in range(1):
@@ -74,15 +74,12 @@ class TestSubscriptionsMongoDB(base.V2Base):
                                  headers=self.headers)
 
         self.simulate_delete(self.queue_path)
-        super(TestSubscriptionsMongoDB, self).tearDown()
+        super().tearDown()
 
-    def _create_subscription(self,
-                             subscriber='http://triger.me',
-                             ttl=600,
+    def _create_subscription(self, subscriber='http://triger.me', ttl=600,
                              options='{"a":1}'):
-        doc = ('{"subscriber": "%s", "ttl": %s, "options": %s}' % (subscriber,
-                                                                   ttl,
-                                                                   options))
+        doc = '{{"subscriber": "{}", "ttl": {}, "options": {}}}'.format(
+            subscriber, ttl, options)
         return self.simulate_post(self.subscription_path, body=doc,
                                   headers=self.headers)
 
@@ -184,9 +181,9 @@ class TestSubscriptionsMongoDB(base.V2Base):
         for i in range(count):
             self._create_subscription(subscriber='http://' + str(i))
 
-        query = 'limit={0}'.format(limit)
+        query = 'limit={}'.format(limit)
         if marker:
-            query += '&marker={0}'.format(marker)
+            query += '&marker={}'.format(marker)
 
         resp = self.simulate_get(self.subscription_path,
                                  query_string=query,
@@ -278,7 +275,7 @@ class TestSubscriptionsMongoDB(base.V2Base):
         id_list = sorted([s['id'] for s in subscriptions_list])
 
         resp = self.simulate_get(self.subscription_path,
-                                 query_string='marker={0}'.format(id_list[9]),
+                                 query_string='marker={}'.format(id_list[9]),
                                  headers=self.headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
         next_subscriptions_list = jsonutils.loads(resp[0])['subscriptions']

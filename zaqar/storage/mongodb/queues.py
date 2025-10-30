@@ -85,7 +85,7 @@ class QueueController(storage.Queue):
     """
 
     def __init__(self, *args, **kwargs):
-        super(QueueController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._cache = self.driver.cache
         self._collection = self.driver.queues_database.queues

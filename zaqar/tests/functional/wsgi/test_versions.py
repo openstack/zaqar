@@ -23,7 +23,7 @@ class TestVersions(base.FunctionalTestBase):
     server_class = base.ZaqarServer
 
     def setUp(self):
-        super(TestVersions, self).setUp()
+        super().setUp()
         self.base_url = "{url}/".format(url=self.cfg.zaqar.url)
         self.client.set_base_url(self.base_url)
 

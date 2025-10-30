@@ -19,7 +19,7 @@ from zaqar.conf import default
 from zaqar.conf import transport
 
 
-class ResourceDefaults(object):
+class ResourceDefaults:
     """Registers and exposes defaults for resource fields."""
 
     def __init__(self, conf):
@@ -45,7 +45,7 @@ class ResourceDefaults(object):
         return self._defaults.default_subscription_ttl
 
 
-class DriverBase(object, metaclass=abc.ABCMeta):
+class DriverBase(metaclass=abc.ABCMeta):
     """Base class for Transport Drivers to document the expected interface.
 
     :param conf: configuration instance

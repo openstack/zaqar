@@ -46,7 +46,7 @@ mail_info = {
 }
 
 # It's a HTML mail template,and can be changed as needed
-mail_body = u"""
+mail_body = """
 <div style="font-family: 'Microsoft YaHei', Arial, Helvetica,sans-serif;
 position: relative;margin: 0 auto; width: 702px; font-size: 0;">
   <div style="display: inline-block; width: 0; height: 0;
@@ -109,13 +109,13 @@ position: relative;margin: 0 auto; width: 702px; font-size: 0;">
 </div>
 """
 
-mail_confirm_link = u"""
+mail_confirm_link = """
 Your mailbox will be used for receiving system notifications.
 If you confirm, click the following link:
 <a href="{confirm_link}" target="_blank">Activation link</a>
 """
 
-mail_alarm_info = u"""
+mail_alarm_info = """
  Your alarm information is as follows:{reason}<br>
  Alarm level:{severity}<br>
  Alarm name:{alarm_name}<br>

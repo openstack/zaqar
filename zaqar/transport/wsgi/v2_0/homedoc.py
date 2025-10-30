@@ -375,7 +375,7 @@ ADMIN_RESOURCES = {
 }
 
 
-class Resource(object):
+class Resource:
 
     def __init__(self, conf):
         if conf.admin_mode:

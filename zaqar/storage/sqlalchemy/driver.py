@@ -27,7 +27,7 @@ from zaqar.storage.sqlalchemy import controllers
 class ControlDriver(storage.ControlDriverBase):
 
     def __init__(self, conf, cache):
-        super(ControlDriver, self).__init__(conf, cache)
+        super().__init__(conf, cache)
         self.conf.register_opts(
             drivers_management_store_sqlalchemy.ALL_OPTS,
             group=drivers_management_store_sqlalchemy.GROUP_NAME)

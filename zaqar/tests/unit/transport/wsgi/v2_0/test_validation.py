@@ -25,7 +25,7 @@ class TestValidation(base.V2Base):
     config_file = 'wsgi_mongodb_validation.conf'
 
     def setUp(self):
-        super(TestValidation, self).setUp()
+        super().setUp()
 
         self.project_id = '7e55e1a7e'
 
@@ -38,7 +38,7 @@ class TestValidation(base.V2Base):
 
     def tearDown(self):
         self.simulate_delete(self.queue_path, self.project_id)
-        super(TestValidation, self).tearDown()
+        super().tearDown()
 
     def test_metadata_deserialization(self):
         # Normal case

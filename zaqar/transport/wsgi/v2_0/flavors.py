@@ -30,7 +30,7 @@ from zaqar.transport.wsgi import utils as wsgi_utils
 LOG = log.getLogger(__name__)
 
 
-class Listing(object):
+class Listing:
     """A resource to list registered flavors
 
     :param flavors_controller: means to interact with storage
@@ -114,7 +114,7 @@ class Listing(object):
         response.status = falcon.HTTP_200
 
 
-class Resource(object):
+class Resource:
     """A handler for individual flavor.
 
     :param flavors_controller: means to interact with storage

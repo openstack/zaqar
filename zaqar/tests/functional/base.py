@@ -54,10 +54,10 @@ class FunctionalTestBase(testing.TestBase):
     # NOTE(Eva-i): ttl_gc_interval is the known maximum time interval between
     # automatic resource TTL expirations. Depends on message store back end.
     class_ttl_gc_interval = None
-    wipe_dbs_projects = set([])
+    wipe_dbs_projects = set()
 
     def setUp(self):
-        super(FunctionalTestBase, self).setUp()
+        super().setUp()
         # NOTE(flaper87): Config can't be a class
         # attribute because it may be necessary to
         # modify it at runtime which will affect
@@ -116,7 +116,7 @@ class FunctionalTestBase(testing.TestBase):
         self.wipe_dbs_projects.add(self.headers["X-Project-ID"])
 
     def tearDown(self):
-        super(FunctionalTestBase, self).tearDown()
+        super().tearDown()
         # Project might has changed during test case execution.
         # Lets add it again to the set.
         self.wipe_dbs_projects.add(self.headers["X-Project-ID"])
@@ -215,7 +215,7 @@ class FunctionalTestBase(testing.TestBase):
 
         form = 'Missing Header(s) - {0}'
         self.assertTrue(required_values.issubset(actual_values),
-                        msg=form.format((required_values - actual_values)))
+                        msg=form.format(required_values - actual_values))
 
     def assertMessageCount(self, actualCount, expectedCount):
         """Checks if number of messages returned <= limit
@@ -223,8 +223,8 @@ class FunctionalTestBase(testing.TestBase):
         :param expectedCount: limit value passed in the url (OR) default(10).
         :param actualCount: number of messages returned in the API response.
         """
-        msg = ('More Messages returned than allowed: expected count = {0}'
-               ', actual count = {1}'.format(expectedCount, actualCount))
+        msg = ('More Messages returned than allowed: expected count = {}'
+               ', actual count = {}'.format(expectedCount, actualCount))
         self.assertLessEqual(actualCount, expectedCount, msg)
 
     def assertQueueStats(self, result_json, claimed):
@@ -275,7 +275,7 @@ class FunctionalTestBase(testing.TestBase):
 
         # Verify that age has valid values
         age = message['age']
-        msg = 'Invalid Age {0}'.format(age)
+        msg = 'Invalid Age {}'.format(age)
         self.assertLessEqual(0, age, msg)
         self.assertLessEqual(age, self.limits.max_message_ttl, msg)
 
@@ -297,13 +297,13 @@ class FunctionalTestBase(testing.TestBase):
         # (needed to pass this test on sqlite driver)
         delta = int(delta)
 
-        msg = ('Invalid Time Delta {0}, Created time {1}, Now {2}'
+        msg = ('Invalid Time Delta {}, Created time {}, Now {}'
                .format(delta, created_time, now))
         self.assertLessEqual(0, delta, msg)
         self.assertLessEqual(delta, 6000, msg)
 
 
-class Server(object, metaclass=abc.ABCMeta):
+class Server(metaclass=abc.ABCMeta):
 
     name = "zaqar-functional-test-server"
 
@@ -387,5 +387,5 @@ class ZaqarAdminServer(Server):
 
 class V2FunctionalTestBase(FunctionalTestBase):
     def setUp(self):
-        super(V2FunctionalTestBase, self).setUp()
+        super().setUp()
         self.response = response_v2.ResponseSchema(self.limits)

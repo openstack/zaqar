@@ -47,7 +47,7 @@ class EncryptionFailed(ValueError):
 
     def __init__(self, msg, *args, **kwargs):
         msg = msg.format(*args, **kwargs)
-        super(EncryptionFailed, self).__init__(msg)
+        super().__init__(msg)
 
 
 class DecryptError(Exception):
@@ -70,7 +70,7 @@ def assert_crypto_availability(f):
     return wrapper
 
 
-class EncryptionFactory(object):
+class EncryptionFactory:
 
     def __init__(self, conf):
         self._conf = conf
@@ -92,7 +92,7 @@ class EncryptionFactory(object):
             return RSAEncryptor(self._encryption_key)
 
 
-class Encryptor(object):
+class Encryptor:
 
     def __init__(self, encryption_key):
         self._encryption_key = encryption_key

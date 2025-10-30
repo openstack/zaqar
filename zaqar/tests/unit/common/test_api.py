@@ -37,7 +37,7 @@ class FakeApi(api.Api):
 class TestApi(base.TestBase):
 
     def setUp(self):
-        super(TestApi, self).setUp()
+        super().setUp()
         self.api = FakeApi()
 
     def test_valid_params(self):

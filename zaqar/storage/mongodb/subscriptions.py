@@ -52,7 +52,7 @@ class SubscriptionController(base.Subscription):
     """
 
     def __init__(self, *args, **kwargs):
-        super(SubscriptionController, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._collection = self.driver.subscriptions_database.subscriptions
         self._collection.create_index(SUBSCRIPTIONS_INDEX, unique=True)
         # NOTE(flwang): MongoDB will automatically delete the subscription

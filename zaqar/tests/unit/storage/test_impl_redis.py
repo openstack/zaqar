@@ -63,7 +63,7 @@ class RedisUtilsTest(testing.TestBase):
     config_file = 'wsgi_redis.conf'
 
     def setUp(self):
-        super(RedisUtilsTest, self).setUp()
+        super().setUp()
 
         self.conf.register_opts(drivers_message_store_redis.ALL_OPTS,
                                 group=drivers_message_store_redis.GROUP_NAME)
@@ -441,12 +441,12 @@ class RedisQueuesTest(base.QueueControllerTest):
     control_driver_class = driver.ControlDriver
 
     def setUp(self):
-        super(RedisQueuesTest, self).setUp()
+        super().setUp()
         self.connection = self.driver.connection
         self.msg_controller = self.driver.message_controller
 
     def tearDown(self):
-        super(RedisQueuesTest, self).tearDown()
+        super().tearDown()
         self.connection.flushdb()
 
 
@@ -459,11 +459,11 @@ class RedisMessagesTest(base.MessageControllerTest):
     gc_interval = 1
 
     def setUp(self):
-        super(RedisMessagesTest, self).setUp()
+        super().setUp()
         self.connection = self.driver.connection
 
     def tearDown(self):
-        super(RedisMessagesTest, self).tearDown()
+        super().tearDown()
         self.connection.flushdb()
 
     def test_count(self):
@@ -525,11 +525,11 @@ class RedisClaimsTest(base.ClaimControllerTest):
     control_driver_class = driver.ControlDriver
 
     def setUp(self):
-        super(RedisClaimsTest, self).setUp()
+        super().setUp()
         self.connection = self.driver.connection
 
     def tearDown(self):
-        super(RedisClaimsTest, self).tearDown()
+        super().tearDown()
         self.connection.flushdb()
 
     def test_claim_doesnt_exist(self):
@@ -633,7 +633,7 @@ class RedisPoolsTests(base.PoolsControllerTest):
     control_driver_class = driver.ControlDriver
 
     def setUp(self):
-        super(RedisPoolsTests, self).setUp()
+        super().setUp()
         self.pools_controller = self.driver.pools_controller
         # Let's create one pool
         self.pool = str(uuid.uuid1())
@@ -649,7 +649,7 @@ class RedisPoolsTests(base.PoolsControllerTest):
 
     def tearDown(self):
         self.pools_controller.drop_all()
-        super(RedisPoolsTests, self).tearDown()
+        super().tearDown()
 
     def test_delete_pool_used_by_flavor(self):
         with testing.expect(storage.errors.PoolInUseByFlavor):
@@ -678,7 +678,7 @@ class RedisCatalogueTests(base.CatalogueControllerTest):
     config_file = 'wsgi_redis.conf'
 
     def setUp(self):
-        super(RedisCatalogueTests, self).setUp()
+        super().setUp()
         self.addCleanup(self.controller.drop_all)
 
 
@@ -703,13 +703,13 @@ class PooledClaimsTests(base.ClaimControllerTest):
     controller_base_class = storage.Claim
 
     def setUp(self):
-        super(PooledClaimsTests, self).setUp()
+        super().setUp()
         self.connection = self.controller._pool_catalog.lookup(
             self.queue_name, self.project)._storage.\
             claim_controller.driver.connection
 
     def tearDown(self):
-        super(PooledClaimsTests, self).tearDown()
+        super().tearDown()
         self.connection.flushdb()
 
 
@@ -722,5 +722,5 @@ class RedisFlavorsTest1(base.FlavorsControllerTest1):
     config_file = 'wsgi_redis.conf'
 
     def setUp(self):
-        super(RedisFlavorsTest1, self).setUp()
+        super().setUp()
         self.addCleanup(self.controller.drop_all)

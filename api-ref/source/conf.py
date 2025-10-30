@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2010-present, OpenStack Foundation'
+copyright = '2010-present, OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/zaqar'
@@ -69,6 +69,6 @@ html_theme_options = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'Nova.tex', u'OpenStack Messaging Service API Documentation',
-     u'OpenStack Foundation', 'manual'),
+    ('index', 'Nova.tex', 'OpenStack Messaging Service API Documentation',
+     'OpenStack Foundation', 'manual'),
 ]

@@ -15,7 +15,7 @@
 
 
 # TODO(cpp-cabrera): port to enum34 when that becomes available
-class Access(object):
+class Access:
     """An enumeration to represent access levels for APIs."""
     public = 1
     admin = 2

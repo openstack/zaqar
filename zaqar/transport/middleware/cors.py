@@ -39,7 +39,7 @@ class Response(webob.Response):
         return self._app_iter
 
     def _abs_headerlist(self, *args, **kwargs):
-        headerlist = super(Response, self)._abs_headerlist(*args, **kwargs)
+        headerlist = super()._abs_headerlist(*args, **kwargs)
 
         # NOTE(wangxiyuan): webob.response.Response always convert relative
         # path to absolute path given the request environ on location field in
@@ -60,7 +60,7 @@ class Request(webob.Request):
     ResponseClass = Response
 
 
-class CORSMiddleware(object):
+class CORSMiddleware:
 
     def __init__(self, app, auth_app, conf):
         self._app = cors.CORS(app, conf)

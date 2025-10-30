@@ -31,7 +31,7 @@ class AuthTest(base.V2Base):
     config_file = "websocket_mongodb_keystone_auth.conf"
 
     def setUp(self):
-        super(AuthTest, self).setUp()
+        super().setUp()
         self.protocol = self.transport.factory()
         self.protocol.factory._secret_key = 'secret'
 
