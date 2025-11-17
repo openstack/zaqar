@@ -24,13 +24,15 @@
       tempest_test_regex: zaqar_tempest_plugin.tests
       tox_envlist: all
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
+      - ^.*\.rst$
+      - ^api-ref/.*$
       - ^doc/.*$
       - ^zaqar/hacking/.*$
       - ^zaqar/tests/.*$
       - ^releasenotes/.*$
-      - ^setup.cfg$
       - ^tox.ini$
 
 - job:
@@ -71,6 +73,7 @@
     description: |
       Run Zaqar integration tests using tox with environment ``integration``.
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.gitreview$
       - ^.*\.rst$
       - ^api-ref/.*$
