@@ -1,15 +1,10 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/zaqar.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
 =====
 Zaqar
 =====
+
+.. image:: https://governance.openstack.org/tc/badges/zaqar.svg
+
+.. Change things from this point on
 
 Zaqar is a multi-tenant cloud messaging and notification service for web
 and mobile developers.
