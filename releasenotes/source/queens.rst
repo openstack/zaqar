@@ -3,4 +3,4 @@
 ===================================
 
 .. release-notes::
-   :branch: stable/queens
+   :branch: unmaintained/queens

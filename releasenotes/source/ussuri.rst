@@ -3,4 +3,4 @@ Ussuri Series Release Notes
 ===========================
 
 .. release-notes::
-   :branch: stable/ussuri
+   :branch: unmaintained/ussuri
