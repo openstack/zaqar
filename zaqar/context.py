@@ -22,33 +22,15 @@ from oslo_context import context
 
 class RequestContext(context.RequestContext):
 
-    def __init__(self, project_id=None, client_id=None, overwrite=True,
-                 auth_token=None, user_id=None, domain_id=None,
-                 user_domain_id=None, project_domain_id=None, is_admin=False,
-                 read_only=False, request_id=None, roles=None, **kwargs):
-        super().__init__(
-            auth_token=auth_token,
-            user_id=user_id,
-            project_id=project_id,
-            domain_id=domain_id,
-            user_domain_id=user_domain_id,
-            project_domain_id=project_domain_id,
-            is_admin=is_admin,
-            read_only=read_only,
-            show_deleted=False,
-            request_id=request_id,
-            roles=roles)
-        self.client_id = client_id
-        if overwrite or not hasattr(context._request_store, 'context'):
-            self.update_store()
+    FROM_DICT_EXTRA_KEYS = ['client_id']
 
-    def update_store(self):
-        context._request_store.context = self
+    def __init__(self, *, client_id=None, **kwargs):
+        self.client_id = client_id
+        super().__init__(**kwargs)
 
     def to_dict(self):
-        ctx = super().to_dict()
-        ctx.update({
-            'project_id': self.project_id,
+        values = super().to_dict()
+        values.update({
             'client_id': self.client_id
         })
-        return ctx
+        return values

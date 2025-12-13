@@ -86,12 +86,12 @@ class Driver(transport.DriverBase):
             self._verify_pre_signed_url,
             helpers.require_content_type_be_non_urlencoded,
             helpers.require_accepts_json,
-            self._require_client_id,
-            helpers.extract_project_id,
 
-            # NOTE(jeffrey4l): Depends on the project_id and client_id being
-            # extracted above
             helpers.inject_context,
+
+            self._require_client_id,
+
+            helpers.extract_project_id,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
             self._validate_queue_identification,

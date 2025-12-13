@@ -88,12 +88,15 @@ def extract_project_id(req, resp, params):
     :type params: dict
     :rtype: None
     """
+    ctxt = req.env['zaqar.context']
+    params['project_id'] = ctxt.project_id
+
     api_version_string = req.path.split('/')[1]
-    params['project_id'] = req.get_header('X-PROJECT-ID')
     if not api_version_string:
         # NOTE(jaosorior): The versions resource is public and shouldn't need
         # a check for the project-id.
         return
+
     if params['project_id'] == "":
         raise falcon.HTTPBadRequest(
             title='Empty project header not allowed',
@@ -127,8 +130,14 @@ def require_client_id(validate, req, resp, params):
         # we don't insist on a Client-ID for the versions resource
         return
 
+    ctxt = req.env['zaqar.context']
+    client_id = ctxt.client_id
+
+    if client_id is None:
+        raise falcon.HTTPMissingHeader('Client-Id')
+
     try:
-        validate(req.get_header('Client-ID', required=True))
+        validate(ctxt.client_id)
     except ValueError:
         description = _('Malformed hexadecimal UUID.')
         raise falcon.HTTPBadRequest(
@@ -248,25 +257,10 @@ def inject_context(req, resp, params):
 
     """
     client_id = req.get_header('Client-ID')
-    request_id = req.headers.get('X-Openstack-Request-ID')
-    auth_token = req.headers.get('X-AUTH-TOKEN')
-    project_id = params.get('project_id')
-    user_id = req.headers.get('X-USER-ID')
-    domain_id = req.headers.get('X-DOMAIN-ID')
-    project_domain_id = req.headers.get('X-PROJECT-DOMAIN-ID')
-    user_domain_id = req.headers.get('X-USER-DOMAIN-ID')
-    roles = req.headers.get('X-ROLES')
-    roles = roles and roles.split(',') or []
 
-    ctxt = context.RequestContext(project_id=project_id,
-                                  client_id=client_id,
-                                  request_id=request_id,
-                                  auth_token=auth_token,
-                                  user_id=user_id,
-                                  roles=roles,
-                                  domain_id=domain_id,
-                                  project_domain_id=project_domain_id,
-                                  user_domain_id=user_domain_id)
+    ctxt = context.RequestContext.from_environ(
+        req.env,
+        client_id=client_id)
     req.env['zaqar.context'] = ctxt
 
 
