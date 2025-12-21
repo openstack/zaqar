@@ -34,6 +34,7 @@ from oslo_reports import guru_meditation_report as gmr
 from oslo_reports import opts as gmr_opts
 
 from zaqar import bootstrap
+from zaqar.common import consts
 from zaqar import version
 
 # Use the global CONF instance
@@ -49,7 +50,7 @@ def init_application():
     gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     boot = bootstrap.Bootstrap(CONF)
-    CONF.drivers.transport = 'wsgi'
+    CONF.drivers.transport = consts.TRANSPORT_WSGI
     return boot.transport.app
 
 
