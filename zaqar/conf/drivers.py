@@ -13,20 +13,24 @@
 
 from oslo_config import cfg
 
+from zaqar.common import consts
+
 
 transport = cfg.StrOpt(
-    'transport', default='wsgi',
+    'transport',
+    default=consts.TRANSPORT_WSGI,
+    choices=(consts.TRANSPORT_WSGI, consts.TRANSPORT_WEBSOCKET),
     help='Transport driver to use.')
 
 
 message_store = cfg.StrOpt(
-    'message_store', default='mongodb',
+    'message_store', default=consts.MSG_STORE_MONGODB,
     deprecated_opts=[cfg.DeprecatedOpt('storage')],
     help='Storage driver to use as the messaging store.')
 
 
 management_store = cfg.StrOpt(
-    'management_store', default='mongodb',
+    'management_store', default=consts.MGMT_STORE_MONGODB,
     help='Storage driver to use as the management store.')
 
 

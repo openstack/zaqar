@@ -39,11 +39,6 @@ class TestBootstrap(base.TestBase):
         bootstrap = self._bootstrap('wsgi_mongodb_pooled.conf')
         self.assertIsInstance(bootstrap.storage._storage, pooling.DataDriver)
 
-    def test_transport_invalid(self):
-        bootstrap = self._bootstrap('drivers_transport_invalid.conf')
-        self.assertRaises(errors.InvalidDriver,
-                          lambda: bootstrap.transport)
-
     def test_transport_wsgi(self):
         bootstrap = self._bootstrap('wsgi_mongodb.conf')
         self.assertIsInstance(bootstrap.transport, wsgi.Driver)
