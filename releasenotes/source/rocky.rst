@@ -3,4 +3,4 @@
 ===================================
 
 .. release-notes::
-   :branch: stable/rocky
+   :branch: unmaintained/rocky

@@ -3,4 +3,4 @@
 ===================================
 
 .. release-notes::
-   :branch: origin/stable/ocata
+   :branch: unmaintained/ocata
