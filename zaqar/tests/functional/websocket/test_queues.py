@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import websocket
+
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
-
-from testtools import testcase
-import websocket
 
 from zaqar.tests.functional import base
 
@@ -29,7 +28,7 @@ class TestQueues(base.V2FunctionalTestBase):
 
     def setUp(self):
         if not base._TEST_INTEGRATION:
-            raise testcase.TestSkipped('Only run in integration mode')
+            self.skipTest('Only run in integration mode')
         super().setUp()
         self.project_id = uuidutils.generate_uuid()
         self.headers = {'Client-ID': uuidutils.generate_uuid(),
