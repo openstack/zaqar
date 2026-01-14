@@ -100,11 +100,11 @@ Installation Guide`_.
 Getting the code
 ################
 
-Get the code from git.openstack.org to create a local repository with Zaqar:
+Get the code to create a local repository with Zaqar:
 
 .. code-block:: console
 
-  $ git clone https://git.openstack.org/openstack/zaqar.git
+  $ git clone https://opendev.org/openstack/zaqar
 
 Configuration
 #############
