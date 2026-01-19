@@ -138,6 +138,7 @@ message_encryption_algorithms = cfg.StrOpt(
 
 message_encryption_key = cfg.StrOpt(
     'message_encryption_key', default='AES256',
+    secret=True,
     help='Defines the encryption key of algorithms.')
 
 
