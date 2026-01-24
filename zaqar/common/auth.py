@@ -75,8 +75,6 @@ def create_trust_id(auth_plugin, trustor_user_id, trustor_project_id, roles,
 
 def get_public_endpoint():
     """Get Zaqar's public endpoint from keystone"""
-    global _ZAQAR_ENDPOINTS
-
     if _ZAQAR_ENDPOINTS:
         return _ZAQAR_ENDPOINTS
 
