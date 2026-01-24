@@ -21,7 +21,7 @@ For more info on devstack installation follow the below link:
 
      cat > /opt/stack/devstack/local.conf << END
      [[local|localrc]]
-     enable_plugin zaqar https://git.openstack.org/openstack/zaqar
+     enable_plugin zaqar https://opendev.org/openstack/zaqar
      END
 
 3. Run devstack
