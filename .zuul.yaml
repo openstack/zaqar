@@ -24,6 +24,8 @@
       tempest_test_regex: zaqar_tempest_plugin.tests
       tox_envlist: all
     irrelevant-files:
+      - ^\.gitignore$
+      - ^\.gitreview$
       - ^\.pre-commit-config\.yaml$
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
