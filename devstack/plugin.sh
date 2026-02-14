@@ -58,7 +58,7 @@ function cleanup_zaqar_mongodb {
         mongo_version=$(mongosh zaqar --eval 'db.version();')
         required_mongo_version='6.0'
         if [[ $mongo_version < $required_mongo_version ]]; then
-            die $LINENO "Zaqar needs Mongo DB version >= 6.0 to run."
+            die $LINENO "Zaqar needs Mongo DB version >= $required_mongo_version to run."
         fi
     fi
 }
@@ -166,7 +166,7 @@ function configure_mongodb {
     # per database.
     pip_install pymongo
     if is_ubuntu; then
-        # NOTE: To fix the mongodb's issue in ubuntu 22.04/24.04 LTS
+        # NOTE: To fix the mongodb's issue in Ubuntu
         ubuntu_version=$(source /etc/os-release ; echo $VERSION_ID)
         if [[ $ubuntu_version == '24.04' ]]; then
             if [[ ! -d /etc/apt/sources.list.d ]]; then
@@ -178,16 +178,8 @@ function configure_mongodb {
             install_package mongodb-org
             restart_service mongod
             sudo systemctl status mongod
-        elif [[ $ubuntu_version == '22.04' ]]; then
-            wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-            sudo apt update
-            install_package mongodb-org
-            restart_service mongod
-            sudo systemctl status mongod
         else
-            install_package mongodb-server
-            restart_service mongodb
+            exit_distro_not_supported "mongodb installation"
         fi
     elif is_fedora; then
         fedora_version=$(source /etc/os-release ; echo $VERSION_ID)
@@ -203,10 +195,10 @@ __EOF__
             install_package mongodb-org
             restart_service mongod
         else
-            install_package mongodb
-            install_package mongodb-server
-            restart_service mongod
+            exit_distro_not_supported "mongodb installation"
         fi
+    else
+        exit_distro_not_supported "mongodb installation"
     fi
 }
 
