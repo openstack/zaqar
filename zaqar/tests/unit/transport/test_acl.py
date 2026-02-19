@@ -31,9 +31,9 @@ class TestAcl(base.TestBase):
         request_class = namedtuple("Request", ("env",))
         self.request = request_class({"zaqar.context": ctx})
 
-    def _set_policy(self, json):
+    def _set_policy(self, data):
         acl.setup_policy(self.conf)
-        rules = policy.Rules.load_json(json)
+        rules = policy.Rules.load(data)
         acl.ENFORCER.set_rules(rules, use_conf=False)
 
     def test_policy_allow(self):
@@ -41,8 +41,10 @@ class TestAcl(base.TestBase):
         def test(ign, request):
             pass
 
-        json = '{"queues:get_all": ""}'
-        self._set_policy(json)
+        policy_data = '''---
+"queues:get_all": ""
+'''
+        self._set_policy(policy_data)
 
         test(None, self.request)
 
@@ -51,7 +53,9 @@ class TestAcl(base.TestBase):
         def test(ign, request):
             pass
 
-        json = '{"queues:get_all": "!"}'
-        self._set_policy(json)
+        policy_data = '''---
+"queues:get_all": "!"
+'''
+        self._set_policy(policy_data)
 
         self.assertRaises(errors.HTTPForbidden, test, None, self.request)
