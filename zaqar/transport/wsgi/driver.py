@@ -133,10 +133,7 @@ class Driver(transport.DriverBase):
     def _init_middleware(self):
         """Initialize WSGI middlewarez."""
 
-        # NOTE(zhiyan): Install Profiler
-        if (self._conf.profiler.enabled and
-                self._conf.profiler.trace_wsgi_transport):
-            self.app = profile.install_wsgi_tracer(self.app, self._conf)
+        self.app = profile.install_wsgi_tracer(self.app, self._conf)
 
         auth_app = self.app
         # NOTE(flaper87): Install Auth
