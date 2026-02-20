@@ -166,7 +166,7 @@ class Endpoints:
         try:
             resp_dict = self._queue_controller.get(queue_name,
                                                    project=project_id)
-        except storage_errors.DoesNotExist as ex:
+        except storage_errors.QueueDoesNotExist as ex:
             LOG.debug(ex)
             error = _('Queue %s does not exist.') % queue_name
             headers = {'status': 404}
@@ -202,7 +202,7 @@ class Endpoints:
                                                      project=project_id)
             body = resp_dict
         except storage_errors.QueueDoesNotExist:
-            LOG.exception('Queue "%s" does not exist', queue_name)
+            LOG.debug('Queue "%s" does not exist', queue_name)
             resp_dict = {
                 'messages': {
                     'claimed': 0,
@@ -262,7 +262,7 @@ class Endpoints:
                                                          project=project_id)
 
         except storage_errors.QueueDoesNotExist as ex:
-            LOG.exception('Queue "%s" does not exist', queue_name)
+            LOG.debug('Queue "%s" does not exist', queue_name)
             headers = {'status': 404}
             return api_utils.error_response(req, ex, headers)
         except storage_errors.ExceptionBase as ex:

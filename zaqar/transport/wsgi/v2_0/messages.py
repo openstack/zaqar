@@ -70,7 +70,7 @@ class CollectionResource:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
         except storage_errors.QueueDoesNotExist:
-            LOG.exception('Queue name "%s" does not exist', queue_name)
+            LOG.debug('Queue name "%s" does not exist', queue_name)
             queue_meta = None
         except Exception:
             description = _('Message could not be retrieved.')
