@@ -113,7 +113,7 @@ class CollectionResource:
                 queue_meta = self._queue_controller.get_metadata(queue_name,
                                                                  project_id)
             except storage_errors.DoesNotExist:
-                LOG.exception('Queue name "%s" does not exist', queue_name)
+                LOG.debug('Queue name "%s" does not exist', queue_name)
             queue_delay = queue_meta.get('_default_message_delay')
             if not queue_delay:
                 # NOTE(cdyangzhenyu): If the queue without the metadata
