@@ -63,31 +63,29 @@ class CollectionResource:
                 queue_name,
                 message_ids=ids,
                 project=project_id)
+            messages = list(messages)
+            if not messages:
+                return None
 
             queue_meta = self._queue_controller.get_metadata(queue_name,
                                                              project_id)
+            # Decrypt messages
+            if queue_meta.get('_enable_encrypt_messages', False):
+                self._encryptor.message_decrypted(messages)
+
+            messages = [wsgi_utils.format_message(m, base_path, m['claim_id'])
+                        for m in messages]
+
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
-        except storage_errors.QueueDoesNotExist:
-            LOG.debug('Queue name "%s" does not exist', queue_name)
-            queue_meta = None
+        except storage_errors.QueueDoesNotExist as ex:
+            LOG.debug(ex)
+            return None
         except Exception:
             description = _('Message could not be retrieved.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
-
-        # Prepare response
-        messages = list(messages)
-        if not messages:
-            return None
-
-        # Decrypt messages
-        if queue_meta and queue_meta.get('_enable_encrypt_messages', False):
-            self._encryptor.message_decrypted(messages)
-
-        messages = [wsgi_utils.format_message(m, base_path, m['claim_id'])
-                    for m in messages]
 
         return {'messages': messages}
 
@@ -103,17 +101,17 @@ class CollectionResource:
         req.get_param_as_bool('include_claimed', store=kwargs)
         req.get_param_as_bool('include_delayed', store=kwargs)
 
+        messages = []
         try:
-            queue_meta = {}
-            try:
-                # NOTE(cdyangzhenyu): In order to determine whether the
-                # queue has a delay attribute, the metadata of the queue
-                # is obtained here. This may have a little performance impact.
-                # So maybe a refactor is needed in the future.
-                queue_meta = self._queue_controller.get_metadata(queue_name,
-                                                                 project_id)
-            except storage_errors.DoesNotExist:
-                LOG.debug('Queue name "%s" does not exist', queue_name)
+            self._validate.message_listing(**kwargs)
+
+            # NOTE(cdyangzhenyu): In order to determine whether the
+            # queue has a delay attribute, the metadata of the queue
+            # is obtained here. This may have a little performance impact.
+            # So maybe a refactor is needed in the future.
+            queue_meta = self._queue_controller.get_metadata(queue_name,
+                                                             project_id)
+
             queue_delay = queue_meta.get('_default_message_delay')
             if not queue_delay:
                 # NOTE(cdyangzhenyu): If the queue without the metadata
@@ -121,7 +119,6 @@ class CollectionResource:
                 # for delay messages.
                 kwargs['include_delayed'] = True
 
-            self._validate.message_listing(**kwargs)
             results = self._message_controller.list(
                 queue_name,
                 project=project_id,
@@ -139,34 +136,28 @@ class CollectionResource:
         except validation.ValidationFailed as ex:
             LOG.debug(ex)
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
-
-        except storage_errors.QueueDoesNotExist as ex:
+        except storage_errors.DoesNotExist as ex:
             LOG.debug(ex)
-            messages = None
-
         except Exception:
             description = _('Messages could not be listed.')
             LOG.exception(description)
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
-        if not messages:
-            messages = []
-
-        else:
+        if messages:
             # Found some messages, so prepare the response
             kwargs['marker'] = next(results)
             base_path = req.path.rsplit('/', 1)[0]
             messages = [wsgi_utils.format_message(m, base_path, m['claim_id'])
                         for m in messages]
 
-        links = []
-        if messages:
             links = [
                 {
                     'rel': 'next',
                     'href': req.path + falcon.to_query_str(kwargs)
                 }
             ]
+        else:
+            links = []
 
         return {
             'messages': messages,
@@ -189,7 +180,7 @@ class CollectionResource:
             try:
                 queue_meta = self._queue_controller.get_metadata(queue_name,
                                                                  project_id)
-            except storage_errors.DoesNotExist:
+            except storage_errors.QueueDoesNotExist:
                 self._validate.queue_identification(queue_name, project_id)
                 self._queue_controller.create(queue_name, project=project_id)
                 # NOTE(flwang): Queue is created in lazy mode, so no metadata
@@ -280,7 +271,7 @@ class CollectionResource:
 
         if response is None:
             # NOTE(TheSriram): Trying to get a message by id, should
-            # return the message if its present, otherwise a 404 since
+            # return the message if it's present, otherwise a 404 since
             # the message might have been deleted.
             msg = _('No messages with IDs: {ids} found in the queue {queue} '
                     'for project {project}.')

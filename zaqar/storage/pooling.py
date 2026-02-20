@@ -314,7 +314,7 @@ class MessageController(storage.Message):
         if control:
             return control.bulk_get(queue, project=project,
                                     message_ids=message_ids)
-        return []
+        return iter([])
 
     def list(self, queue, project=None, marker=None,
              limit=storage.DEFAULT_MESSAGES_PER_PAGE,
