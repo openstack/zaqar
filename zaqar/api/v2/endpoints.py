@@ -434,7 +434,7 @@ class Endpoints:
             try:
                 queue_meta = self._queue_controller.get_metadata(queue_name,
                                                                  project_id)
-            except storage_errors.DoesNotExist:
+            except storage_errors.QueueDoesNotExist:
                 self._validate.queue_identification(queue_name, project_id)
                 self._queue_controller.create(queue_name, project=project_id)
                 # NOTE(flwang): Queue is created in lazy mode, so no metadata
