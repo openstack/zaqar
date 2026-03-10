@@ -358,7 +358,7 @@ class QueueLifecycleBaseTest(base.V2Base):
         self.protocol.onMessage(req, False)
 
     def test_update_metadata(self):
-        self.skip("Implement patch method")
+        self.skipTest("Implement patch method")
         headers = {
             'Client-ID': uuidutils.generate_uuid(),
             'X-Project-ID': 'test-project'

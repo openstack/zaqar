@@ -613,7 +613,7 @@ class PooledClaimsTests(base.ClaimControllerTest):
         # It's not optimized
         # mocking utcnow mocks the driver too, which
         # requires to put sleeps in the test
-        self.skip("Fix sqlalchemy driver")
+        self.skipTest("Fix sqlalchemy driver")
 
 
 # NOTE(gengchc2): Unittest for new flavor configure scenario.

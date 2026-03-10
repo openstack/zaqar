@@ -658,7 +658,7 @@ class RedisPoolsTests(base.PoolsControllerTest):
     def test_mismatching_capabilities_fifo(self):
         # NOTE(gengchc2): The fifo function is not implemented
         # in redis, we skip it.
-        self.skip("The fifo function is not implemented")
+        self.skipTest("The fifo function is not implemented")
 
     def test_mismatching_capabilities1(self):
         # NOTE(gengchc2): This test is used for testing mismatchming
