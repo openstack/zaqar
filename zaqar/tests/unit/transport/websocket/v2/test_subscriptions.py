@@ -28,7 +28,7 @@ from zaqar.tests.unit.transport.websocket import utils as test_utils
 from zaqar.transport.websocket import factory
 
 
-class SubscriptionTest(base.V1_1Base):
+class SubscriptionTest(base.V2Base):
 
     config_file = 'websocket_mongodb_subscriptions.conf'
 

@@ -25,7 +25,7 @@ from zaqar.tests.unit.transport.websocket import utils as test_utils
 
 
 @ddt.ddt
-class ClaimsBaseTest(base.V1_1Base):
+class ClaimsBaseTest(base.V2Base):
 
     config_file = "websocket_mongodb.conf"
 
