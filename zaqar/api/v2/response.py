@@ -37,7 +37,7 @@ class ResponseSchema(api.Api):
                 },
                 "href": {
                     "type": "string",
-                    "pattern": r"^(/v1/queues/[a-zA-Z0-9_-]{1,64}"
+                    "pattern": r"^(/v2/queues/[a-zA-Z0-9_-]{1,64}"
                     r"/messages/[a-zA-Z0-9_-]+)(\?claim_id=[a-zA-Z0-9_-]+)?$"
                 },
                 "age": age,
