@@ -15,11 +15,10 @@
 
 import os
 
-import fixtures
 from oslo_config import cfg
 from oslo_log import log
+from oslotest import base
 from osprofiler import opts
-import testtools
 
 from zaqar.conf import default
 from zaqar.conf import drivers
@@ -29,8 +28,8 @@ from zaqar.conf import signed_url
 from zaqar.tests import helpers
 
 
-class TestBase(testtools.TestCase):
-    """Child class of testtools.TestCase for testing Zaqar.
+class TestBase(base.BaseTestCase):
+    """Child class of oslotest.base.BaseTestCase for testing Zaqar.
 
     Inherit from this and write your test methods. If the child class defines
     a prepare(self) method, this method will be called before executing each
@@ -41,15 +40,6 @@ class TestBase(testtools.TestCase):
 
     def setUp(self):
         super().setUp()
-
-        self.useFixture(fixtures.FakeLogger('zaqar'))
-
-        if os.environ.get('OS_STDOUT_CAPTURE') is not None:
-            stdout = self.useFixture(fixtures.StringStream('stdout')).stream
-            self.useFixture(fixtures.MonkeyPatch('sys.stdout', stdout))
-        if os.environ.get('OS_STDERR_CAPTURE') is not None:
-            stderr = self.useFixture(fixtures.StringStream('stderr')).stream
-            self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
         if self.config_file:
             self.config_file = helpers.override_mongo_conf(
