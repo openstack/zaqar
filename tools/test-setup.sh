@@ -75,6 +75,3 @@ else
     sudo apt-get install -y mongodb
     sudo systemctl restart mongodb
 fi
-
-sudo apt install -y pip python3-setuptools
-sudo python3 setup.py install
