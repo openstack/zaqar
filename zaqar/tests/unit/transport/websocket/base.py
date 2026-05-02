@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+import asyncio
+
 from oslo_serialization import jsonutils
 
 from zaqar import bootstrap
@@ -27,9 +29,10 @@ class TestBase(testing.TestBase):
 
     def setUp(self):
         super().setUp()
-
         if not self.config_file:
             self.skipTest("No config specified")
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
         self.conf.register_opts(default.ALL_OPTS)
         self.conf.register_opts(transport.ALL_OPTS,
@@ -53,6 +56,7 @@ class TestBase(testing.TestBase):
         if self.conf.pooling:
             self.boot.control.pools_controller.drop_all()
             self.boot.control.catalogue_controller.drop_all()
+        self.loop.close()
         super().tearDown()
 
 
