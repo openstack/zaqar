@@ -14,11 +14,16 @@
       devstack_services:
         # probably other services can be disabled;
         # the old legacy job only uses mysql, keystone, zaqar and tempest
+        swift: false
         s-account: false
         s-container: false
         s-object: false
         s-proxy: false
+        cinder: false
+        c-api: false
         c-bak: false
+        c-sch: false
+        c-vol: false
       tempest_plugins:
         - zaqar-tempest-plugin
       tempest_test_regex: zaqar_tempest_plugin.tests
@@ -61,6 +66,7 @@
     voting: false
     vars:
       devstack_services:
+        swift: true
         s-account: true
         s-container: true
         s-object: true
