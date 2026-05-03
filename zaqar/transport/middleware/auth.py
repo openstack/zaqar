@@ -53,9 +53,9 @@ class KeystoneAuth:
         """Install Auth check on application."""
         LOG.debug('Installing Keystone\'s auth protocol')
 
-        return auth_token.AuthProtocol(app,
-                                       conf={"oslo-config-config": conf,
-                                             "oslo-config-project": "zaqar"})
+        return auth_token.AuthProtocol(
+            app,
+            conf={"oslo_config_config": conf})
 
 
 STRATEGIES['keystone'] = KeystoneAuth
