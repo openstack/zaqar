@@ -87,7 +87,7 @@ test the patch in your local environment.
   prefixes described in :doc:`reviewer_guide` for Zaqar inline comments.
 * Keep in mind the :doc:`reviewer_guide` and be respectful when leaving
   feedback.
-* Hit the  	:guilabel:`Review` button in the web UI to publish your comments
+* Hit the :guilabel:`Review` button in the web UI to publish your comments
   and assign a score.
 * Things to consider when leaving a score:
 
