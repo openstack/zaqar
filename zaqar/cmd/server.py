@@ -41,7 +41,7 @@ def run():
     conf.register_cli_opts(_CLI_OPTIONS)
     log.register_options(conf)
 
-    # NOTE(jeffrey4l): Overwrite the default vaule for
+    # NOTE(jeffrey4l): Overwrite the default value for
     # logging_context_format_string. Add project_id into it.
     conf.set_default('logging_context_format_string',
                      '%(asctime)s.%(msecs)03d %(process)d %(levelname)s'
