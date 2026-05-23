@@ -32,7 +32,7 @@ mysql -u $DB_USER -p$DB_PW -h 127.0.0.1 -e "
     DROP DATABASE IF EXISTS openstack_citest;
     CREATE DATABASE openstack_citest CHARACTER SET utf8;"
 
-# TO fix the mongodb issue in ubuntu 22.04
+# TO fix the mongodb issue in ubuntu
 ubuntu_version=$(source /etc/os-release ; echo $VERSION_ID)
 if [[ $ubuntu_version == '24.04' ]]; then
     if [[ ! -d /etc/apt/sources.list.d ]]; then
@@ -40,13 +40,6 @@ if [[ $ubuntu_version == '24.04' ]]; then
     fi
     wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add -
     echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
-    sudo apt update
-    sudo apt install -y mongodb-org
-    sudo systemctl restart mongod
-    sudo systemctl status mongod
-elif [[ $ubuntu_version == '22.04' ]]; then
-    wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
     sudo apt update
     sudo apt install -y mongodb-org
     sudo systemctl restart mongod
