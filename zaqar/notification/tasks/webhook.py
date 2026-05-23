@@ -51,10 +51,12 @@ def _Arithmetic_function(minimum_delay, maximum_delay, times):
     return [int(minimum_delay + (a - 1) * a * d / 2) for a in xarray]
 
 
-RETRY_BACKOFF_FUNCTION_MAP = {'linear': _Linear_function,
-                              'arithmetic': _Arithmetic_function,
-                              'geometric': _Geometric_function,
-                              'exponential': _Exponential_function}
+RETRY_BACKOFF_FUNCTION_MAP = {
+    consts.RETRY_BACKOFF_LINEAR: _Linear_function,
+    consts.RETRY_BACKOFF_ARITHMETIC: _Arithmetic_function,
+    consts.RETRY_BACKOFF_GEOMETRIC: _Geometric_function,
+    consts.RETRY_BACKOFF_EXPONENTIAL: _Exponential_function
+}
 
 
 class WebhookTask:
@@ -92,9 +94,8 @@ class WebhookTask:
             time.sleep(retry_policy.get('minimum_delay', consts.MINIMUM_DELAY))
             if self._post_request_success(subscriber, data, headers):
                 return
-        # Now we support linear,arithmetic,
-        # exponential and geometric retry backoff function.
-        retry_function = retry_policy.get('retry_backoff_function', 'linear')
+        retry_function = retry_policy.get('retry_backoff_function',
+                                          consts.RETRY_BACKOFF_LINEAR)
         backoff_function = RETRY_BACKOFF_FUNCTION_MAP[retry_function]
         for i in backoff_function(retry_policy.get('minimum_delay',
                                                    consts.MINIMUM_DELAY),

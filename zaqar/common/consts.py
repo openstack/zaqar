@@ -131,3 +131,15 @@ RETRY_OPS = (
     3,
     5,
 )
+
+RETRY_BACKOFF_FUNCTIONS = (
+    RETRY_BACKOFF_LINEAR,
+    RETRY_BACKOFF_ARITHMETIC,
+    RETRY_BACKOFF_EXPONENTIAL,
+    RETRY_BACKOFF_GEOMETRIC
+) = (
+    'linear',
+    'arithmetic',
+    'exponential',
+    'geometric'
+)

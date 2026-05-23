@@ -188,10 +188,8 @@ class Validator:
                     if retry_value and not isinstance(retry_value, str):
                         msg = _('retry_backoff_function must be a string.')
                         raise ValidationFailed(msg)
-                    # Now we support linear, arithmetic, exponential
-                    # and geometric retry backoff function.
-                    fun = {'linear', 'arithmetic', 'exponential', 'geometric'}
-                    if retry_value and retry_value not in fun:
+                    if retry_value and (
+                            retry_value not in consts.RETRY_BACKOFF_FUNCTIONS):
                         msg = _('invalid retry_backoff_function.')
                         raise ValidationFailed(msg)
                 elif key == 'ignore_subscription_override':
