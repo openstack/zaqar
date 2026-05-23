@@ -61,8 +61,8 @@ class WebhookTask:
 
     def _post_request_success(self, subscriber, data, headers):
         try:
-            response = requests.post(subscriber, data=data, headers=headers)
-            if response and (response.status_code in range(200, 500)):
+            resp = requests.post(subscriber, data=data, headers=headers)
+            if resp:
                 return True
         except Exception as e:
             LOG.exception('post request got exception in retry: %s.', str(e))
