@@ -165,7 +165,9 @@ function configure_mongodb {
             if [[ ! -d /etc/apt/sources.list.d ]]; then
                 sudo mkdir -p /etc/apt/sources.list.d
             fi
-            wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add -
+            curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
+                sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+                --dearmor
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
             sudo apt update
             install_package mongodb-org
