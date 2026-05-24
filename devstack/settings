@@ -2,7 +2,6 @@
 #---------------------------
 
 ZAQAR_DIR=$DEST/zaqar
-ZAQARCLIENT_DIR=$DEST/python-zaqarclient
 ZAQAR_CONF_DIR=/etc/zaqar
 ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
 ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
