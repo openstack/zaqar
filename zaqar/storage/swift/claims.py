@@ -116,13 +116,12 @@ class ClaimController(storage.Claim):
         claimed = []
         for msg in messages:
             claim_count = msg.get('claim_count', 0)
-            md5 = hashlib.md5()
-            md5.update(
-                jsonutils.dump_as_bytes(
-                    {'body': msg['body'], 'claim_id': None,
-                     'ttl': msg['ttl'],
-                     'claim_count': claim_count}))
-            md5 = md5.hexdigest()
+            md5_hash = hashlib.md5(
+                jsonutils.dump_as_bytes({
+                    'body': msg['body'], 'claim_id': None,
+                    'ttl': msg['ttl'],
+                    'claim_count': claim_count}),
+                usedforsecurity=False).hexdigest()
             msg_ttl = max(msg['ttl'], msg_ts)
             move_to_dlq = False
             if dlq:
@@ -157,7 +156,7 @@ class ClaimController(storage.Claim):
                     content,
                     content_type='application/json',
                     headers={'x-object-meta-clientid': msg['client_uuid'],
-                             'if-match': md5,
+                             'if-match': md5_hash,
                              'x-object-meta-claimid': claim_id,
                              'x-delete-after': msg_ttl})
 
@@ -171,7 +170,7 @@ class ClaimController(storage.Claim):
                         content,
                         content_type='application/json',
                         headers={'x-object-meta-clientid': msg['client_uuid'],
-                                 'if-match': md5,
+                                 'if-match': md5_hash,
                                  'x-object-meta-claimid': claim_id,
                                  'x-delete-after': msg_ttl})
                 except swiftclient.ClientException as exc:
@@ -223,9 +222,7 @@ class ClaimController(storage.Claim):
                                                               project)
                 except errors.MessageDoesNotExist:
                     continue
-                md5 = hashlib.md5()
-                md5.update(msg)
-                md5 = md5.hexdigest()
+                md5_hash = hashlib.md5(msg, usedforsecurity=False).hexdigest()
                 msg = jsonutils.loads(msg)
                 content = jsonutils.dumps(
                     {'body': msg['body'], 'claim_id': None, 'ttl': msg['ttl']})
@@ -236,7 +233,7 @@ class ClaimController(storage.Claim):
                     content,
                     content_type='application/json',
                     headers={'x-object-meta-clientid': client_id,
-                             'if-match': md5,
+                             'if-match': md5_hash,
                              'x-delete-at': headers['x-delete-at']})
 
             self._client.delete_object(

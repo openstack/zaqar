@@ -487,8 +487,8 @@ class MessageControllerTest(ControllerBaseTest):
         algorithm, checksum = message_out['checksum'].split(':')
         expected_checksum = ''
         if algorithm == 'MD5':
-            md5 = hashlib.md5()
-            md5.update(jsonutils.dump_as_bytes(message['body']))
+            md5 = hashlib.md5(jsonutils.dump_as_bytes(message['body']),
+                              usedforsecurity=False)
             expected_checksum = md5.hexdigest()
 
         self.assertEqual(expected_checksum, checksum)
