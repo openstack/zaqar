@@ -20,13 +20,17 @@ ZAQAR_REPO=${ZAQAR_REPO:-${GIT_BASE}/openstack/zaqar.git}
 ZAQAR_BRANCH=${ZAQAR_BRANCH:-master}
 
 # Set client library repository
-ZAQARCLIENT_REPO=${ZAQARCLIENT_REPO:-${GIT_BASE}/openstack/python-zaqarclient.git}
-ZAQARCLIENT_BRANCH=${ZAQARCLIENT_BRANCH:-master}
+GITREPO["python-zaqarclient"]=${ZAQARCLIENT_REPO:-${GIT_BASE}/openstack/python-zaqarclient.git}
+GITBRANCH["python-zaqarclient"]=${ZAQARCLIENT_BRANCH:-master}
+GITDIR["python-zaqarclient"]=$DEST/python-zaqarclient
 
-# Set Zaqar UI repository
-ZAQARUI_DIR=$DEST/zaqar-ui
-ZAQARUI_REPO=${ZAQARUI_REPO:-${GIT_BASE}/openstack/zaqar-ui.git}
-ZAQARUI_BRANCH=${ZAQARUI_BRANCH:-$ZAQAR_BRANCH}
+GITREPO["zaqar-tempest-plugin"]=${ZAQARTEMPEST_REPO:-${GIT_BASE}/openstack/zaqar-tempest-plugin.git}
+GITBRANCH["zaqar-tempest-plugin"]=${ZAQARTEMPEST_BRANCH:-master}
+GITDIR["zaqar-tempest-plugin"]=$DEST/zaqar-tempest-plugin
+
+GITREPO["zaqar-ui"]=${ZAQARUI_REPO:-${GIT_BASE}/openstack/zaqar-ui.git}
+GITBRANCH["zaqar-ui"]=${ZAQARUI_BRANCH:-master}
+GITDIR["zaqar-ui"]=$DEST/zaqar-ui
 
 # Set Zaqar Connection Info
 ZAQAR_SERVICE_HOST=${ZAQAR_SERVICE_HOST:-$SERVICE_HOST}
@@ -37,9 +41,5 @@ ZAQAR_SERVICE_PROTOCOL=${ZAQAR_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 ZAQAR_TRUSTEE_USER=${ZAQAR_TRUSTEE_USER:-zaqar}
 ZAQAR_TRUSTEE_PASSWORD=${ZAQAR_TRUSTEE_PASSWORD:-$SERVICE_PASSWORD}
 ZAQAR_TRUSTEE_DOMAIN=${ZAQAR_TRUSTEE_DOMAIN:-default}
-
-GITREPO["zaqar-tempest-plugin"]=${ZAQARTEMPEST_REPO:-${GIT_BASE}/openstack/zaqar-tempest-plugin.git}
-GITBRANCH["zaqar-tempest-plugin"]=${ZAQARTEMPEST_BRANCH:-master}
-GITDIR["zaqar-tempest-plugin"]=$DEST/zaqar-tempest-plugin
 
 enable_service zaqar-websocket zaqar-wsgi
