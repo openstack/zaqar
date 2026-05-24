@@ -18,6 +18,8 @@
 # ---------
 # install_zaqar
 # install_zaqarui
+# install_zaqartempest
+# install_zaqarclient
 # configure_zaqar
 # init_zaqar
 # start_zaqar
@@ -61,11 +63,6 @@ function cleanup_zaqar_mongodb {
             die $LINENO "Zaqar needs Mongo DB version >= $required_mongo_version to run."
         fi
     fi
-}
-
-# configure_zaqarclient() - Set config files, create data dirs, etc
-function configure_zaqarclient {
-    setup_develop $ZAQARCLIENT_DIR
 }
 
 # configure_zaqar() - Set config files, create data dirs, etc
@@ -206,34 +203,27 @@ function init_zaqar {
 # install_zaqar() - Collect source and prepare
 function install_zaqar {
     setup_develop $ZAQAR_DIR
-
-    if is_service_enabled horizon; then
-        install_zaqarui
-    fi
 }
 
 function install_zaqarui {
-    git_clone $ZAQARUI_REPO $ZAQARUI_DIR $ZAQARUI_BRANCH
-    # NOTE(flwang): Workaround for devstack bug: 1540328
-    # where devstack install 'test-requirements' but should not do it
-    # for zaqar-ui project as it installs Horizon from url.
-    # Remove following two 'mv' commands when mentioned bug is fixed.
-    mv $ZAQARUI_DIR/test-requirements.txt $ZAQARUI_DIR/_test-requirements.txt
-    setup_develop $ZAQARUI_DIR
-    mv $ZAQARUI_DIR/_test-requirements.txt $ZAQARUI_DIR/test-requirements.txt
+    git_clone_by_name "zaqar-ui"
+    setup_dev_lib "zaqar-ui"
+
     cp -a $ZAQARUI_DIR/zaqar_ui/enabled/* $HORIZON_DIR/openstack_dashboard/local/enabled/
     if [ -d $ZAQARUI_DIR/zaqar-ui/locale ]; then
         (cd $ZAQARUI_DIR/zaqar-ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
     fi
 }
 
+function install_zaqartempest {
+    git_clone_by_name "zaqar-tempest-plugin"
+    setup_dev_lib "zaqar-tempest-plugin"
+}
+
 # install_zaqarclient() - Collect source and prepare
 function install_zaqarclient {
-    git_clone $ZAQARCLIENT_REPO $ZAQARCLIENT_DIR $ZAQARCLIENT_BRANCH
-    # NOTE(flaper87): Ideally, this should be developed, but apparently
-    # there's a bug in devstack that skips test-requirements when using
-    # setup_develop
-    setup_install $ZAQARCLIENT_DIR
+    git_clone_by_name "python-zaqarclient"
+    setup_dev_lib "python-zaqarclient"
 }
 
 # start_zaqar() - Start running processes, including screen
@@ -282,16 +272,21 @@ if is_service_enabled zaqar-websocket || is_service_enabled zaqar-wsgi; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Zaqar"
         install_zaqarclient
-        install_zaqar
+
+        if is_service_enabled horizon; then
+            install_zaqarui
+        fi
+
+        if is_service_enabled tempest; then
+            install_zaqartempest
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Zaqar"
         configure_zaqar
-        configure_zaqarclient
 
         if is_service_enabled key; then
            create_zaqar_accounts
         fi
-
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
         echo_summary "Initializing Zaqar"
         init_zaqar
