@@ -234,13 +234,14 @@ def get_checksum(body, algorithm='MD5'):
 
     if body is None:
         return ''
-    else:
-        checksum_body = jsonutils.dump_as_bytes(body)
+
+    checksum_body = jsonutils.dump_as_bytes(body)
     # TODO(yangzhenyu): We may support other algorithms in future
     # versions, including SHA1, SHA256, SHA512, and so on.
     if algorithm == 'MD5':
-        md5 = hashlib.md5()
-        md5.update(checksum_body)
+        md5 = hashlib.md5(checksum_body, usedforsecurity=False)
         checksum += md5.hexdigest()
+    else:
+        raise ValueError('Unsupported algorithm: %s' % algorithm)
 
     return checksum
