@@ -209,9 +209,9 @@ function install_zaqarui {
     git_clone_by_name "zaqar-ui"
     setup_dev_lib "zaqar-ui"
 
-    cp -a $ZAQARUI_DIR/zaqar_ui/enabled/* $HORIZON_DIR/openstack_dashboard/local/enabled/
-    if [ -d $ZAQARUI_DIR/zaqar-ui/locale ]; then
-        (cd $ZAQARUI_DIR/zaqar-ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
+    cp -a ${GITDIR["zaqar-ui"]}/zaqar_ui/enabled/* $HORIZON_DIR/openstack_dashboard/local/enabled/
+    if [ -d ${GITDIR["zaqar-ui"]}/zaqar-ui/locale ]; then
+        (cd ${GITDIR["zaqar-ui"]}/zaqar-ui; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
     fi
 }
 
