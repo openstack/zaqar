@@ -222,8 +222,12 @@ function install_zaqartempest {
 
 # install_zaqarclient() - Collect source and prepare
 function install_zaqarclient {
-    git_clone_by_name "python-zaqarclient"
-    setup_dev_lib "python-zaqarclient"
+    if use_library_from_git "python-zaqarclient"; then
+        git_clone_by_name "python-zaqarclient"
+        setup_dev_lib "python-zaqarclient"
+    else
+        pip_install_gr python-zaqarclient
+    fi
 }
 
 # start_zaqar() - Start running processes, including screen
