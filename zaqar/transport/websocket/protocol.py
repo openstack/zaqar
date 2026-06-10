@@ -153,7 +153,7 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
         self._auth_app = None
         expire = env['keystone.token_info']['token']['expires_at']
         expire_time = timeutils.parse_isotime(expire)
-        now = datetime.datetime.now(tz=datetime.timezone.utc)
+        now = datetime.datetime.now(tz=datetime.UTC)
         delta = (expire_time - now).total_seconds()
         if self._deauth_handle is not None:
             self._deauth_handle.cancel()

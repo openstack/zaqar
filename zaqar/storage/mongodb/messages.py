@@ -669,7 +669,7 @@ class MessageController(storage.Message):
         self._get_counter(queue_name, project)
         now = timeutils.utcnow_ts()
         now_dt = datetime.datetime.fromtimestamp(
-            now, tz=datetime.timezone.utc).replace(tzinfo=None)
+            now, tz=datetime.UTC).replace(tzinfo=None)
         collection = self._collection(queue_name, project)
 
         messages = list(messages)
@@ -856,7 +856,7 @@ class FIFOMessageController(MessageController):
         self._get_counter(queue_name, project)
         now = timeutils.utcnow_ts()
         now_dt = datetime.datetime.fromtimestamp(
-            now, tz=datetime.timezone.utc).replace(tzinfo=None)
+            now, tz=datetime.UTC).replace(tzinfo=None)
         collection = self._collection(queue_name, project)
 
         # Set the next basis marker for the first attempt.

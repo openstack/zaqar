@@ -353,7 +353,7 @@ class MessageQueueHandler:
             else:
                 created = float(headers['x-timestamp'])
                 created_iso = datetime.datetime.fromtimestamp(
-                    created, tz=datetime.timezone.utc).replace(
+                    created, tz=datetime.UTC).replace(
                         tzinfo=None).strftime('%Y-%m-%dT%H:%M:%SZ')
                 newest = {
                     'id': obj['name'],
@@ -444,7 +444,7 @@ class MessageTopicHandler:
             else:
                 created = float(headers['x-timestamp'])
                 created_iso = datetime.datetime.fromtimestamp(
-                    created, tz=datetime.timezone.utc).replace(
+                    created, tz=datetime.UTC).replace(
                         tzinfo=None).strftime('%Y-%m-%dT%H:%M:%SZ')
                 newest = {
                     'id': obj['name'],
