@@ -208,7 +208,7 @@ class CollectionResource:
 
         now = timeutils.utcnow_ts()
         now_dt = datetime.datetime.fromtimestamp(
-            now, tz=datetime.timezone.utc).replace(tzinfo=None)
+            now, tz=datetime.UTC).replace(tzinfo=None)
         expires = now_dt + datetime.timedelta(seconds=ttl)
         api_version = req.path.split('/')[1]
         if created:
@@ -275,7 +275,7 @@ class ConfirmResource:
             if confirmed is False:
                 now = timeutils.utcnow_ts()
                 now_dt = datetime.datetime.fromtimestamp(
-                    now, tz=datetime.timezone.utc).replace(tzinfo=None)
+                    now, tz=datetime.UTC).replace(tzinfo=None)
                 ttl = self._conf.transport.default_subscription_ttl
                 expires = now_dt + datetime.timedelta(seconds=ttl)
                 api_version = req.path.split('/')[1]
