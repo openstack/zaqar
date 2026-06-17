@@ -27,7 +27,7 @@ class Request:
     :type body: str
     :param headers: Request headers. Default: None
     :type headers: dict
-    :param api: Api entry point. i.e: 'queues.v1'
+    :param api: Api entry point. i.e: 'queues.v2'
     :type api: `str`.
     :param env: Request environment. Default: None
     :type env: dict

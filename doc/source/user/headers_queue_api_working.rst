@@ -118,10 +118,8 @@ to ``true``, and the client tries to post the remaining messages again.
 
     **Important**
 
-    The ``partial`` attribute has been deprecated in the v1.0 API and is
-    not available in the v1.1 API. Drivers are now required to operate
-    in a transactional manner. In other words, either all messages must
-    be posted, or none of them.
+    Drivers are now required to operate in a transactional manner.
+    In other words, either all messages must be posted, or none of them.
 
 The ``body`` attribute specifies an arbitrary document that constitutes
 the body of the message being sent.
@@ -153,7 +151,7 @@ The following are examples of a Post Message request and response:
 
 .. code:: bash
 
-    curl -i -X POST https://queues.api.openstack.org/v1/queues/samplequeue/messages -d \
+    curl -i -X POST https://queues.api.openstack.org/v2/queues/samplequeue/messages -d \
     '[{"ttl": 300,"body": {"event": "BackupStarted"}},{"ttl": 60,"body": {"play": "hockey"}}]' \
     -H "Content-type: application/json" \
     -H "Client-ID: e58668fc-26eb-11e3-8270-5b3128d43830" \
@@ -166,9 +164,9 @@ The following are examples of a Post Message request and response:
     HTTP/1.1 201 Created
     Content-Length: 153
     Content-Type: application/json; charset=utf-8
-    Location: /v1/queues/samplequeue/messages?ids=51ca00a0c508f154c912b85c,51ca00a0c508f154c912b85d
+    Location: /v2/queues/samplequeue/messages?ids=51ca00a0c508f154c912b85c,51ca00a0c508f154c912b85d
 
-    {"partial": false, "resources": ["/v1/queues/samplequeue/messages/51ca00a0c508f154c912b85c", "/v1/queues/samplequeue/messages/51ca00a0c508f154c912b85d"]}
+    {"partial": false, "resources": ["/v2/queues/samplequeue/messages/51ca00a0c508f154c912b85c", "/v2/queues/samplequeue/messages/51ca00a0c508f154c912b85d"]}
 
 Claim Messages
 --------------
@@ -195,7 +193,7 @@ The client (worker) needs to delete the message when it has finished
 processing it. The client deletes the message before the claim expires
 to ensure that the message is processed only once. If a client needs
 more time, the Cloud Service provides the Update Claim operation to make
-changes. See the Message Queuing API v1 Reference for a description of
+changes. See the Message Queuing API v2 Reference for a description of
 this operation. As part of the delete operation, workers specify the
 claim ID (which is best done by simply using the provided href). If
 workers perform these actions, then if a claim simply expires, the
@@ -233,7 +231,7 @@ Following are examples of a Claim Messages request and response:
 
 .. code:: bash
 
-    curl -i -X POST https://queues.api.openstack.org/v1/queues/samplequeue/claims -d \
+    curl -i -X POST https://queues.api.openstack.org/v2/queues/samplequeue/claims -d \
     '{"ttl": 300,"grace":300}' \
     -H "Content-type: application/json" \
     -H "Client-ID: e58668fc-26eb-11e3-8270-5b3128d43830" \
@@ -246,7 +244,7 @@ Following are examples of a Claim Messages request and response:
     HTTP/1.1 201 OK
     Content-Length: 164
     Content-Type: application/json; charset=utf-8
-    Location: /v1/queues/samplequeue/claims/51ca011c821e7250f344efd6
+    Location: /v2/queues/samplequeue/claims/51ca011c821e7250f344efd6
     X-Project-Id:
 
     [
@@ -255,7 +253,7 @@ Following are examples of a Claim Messages request and response:
           "event": "BackupStarted"
         },
         "age": 124,
-        "href": "\/v1\/queues\/samplequeue\/messages\/51ca00a0c508f154c912b85c?claim_id=51ca011c821e7250f344efd6",
+        "href": "\/v2\/queues\/samplequeue\/messages\/51ca00a0c508f154c912b85c?claim_id=51ca011c821e7250f344efd6",
         "ttl": 300
       }
     ]
@@ -285,7 +283,7 @@ Following are examples of a Delete Message request and response:
 
 .. code:: bash
 
-    curl -i -X DELETE https://queues.api.openstack.org/v1/queues/samplequeue/messages/51ca00a0c508f154c912b85c?claim_id=51ca011c821e7250f344efd6 \
+    curl -i -X DELETE https://queues.api.openstack.org/v2/queues/samplequeue/messages/51ca00a0c508f154c912b85c?claim_id=51ca011c821e7250f344efd6 \
     -H "Content-type: application/json" \
     -H "X-Auth-Token: " \
     -H "Client-ID: e58668fc-26eb-11e3-8270-5b3128d43830" \
@@ -318,7 +316,7 @@ Following are examples of a Release Claim request and response:
 
 .. code:: bash
 
-    curl -i -X DELETE https://queues.api.openstack.org/v1/queues/samplequeue/claims/51ca011c821e7250f344efd6 \
+    curl -i -X DELETE https://queues.api.openstack.org/v2/queues/samplequeue/claims/51ca011c821e7250f344efd6 \
     -H "Content-type: application/json" \
     -H "X-Auth-Token: " \
     -H "Client-ID: e58668fc-26eb-11e3-8270-5b3128d43830"  \
@@ -345,7 +343,7 @@ Following are examples of a Delete Queue request and response:
 
 .. code:: bash
 
-    curl -i -X DELETE https://queues.api.openstack.org/v1/queues/samplequeue \
+    curl -i -X DELETE https://queues.api.openstack.org/v2/queues/samplequeue \
     -H "Content-type: application/json" \
     -H "X-Auth-Token: " \
     -H "Accept: application/json" \
