@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testtools
-
 from zaqar.common.storage import select
+from zaqar.tests import base
 
 
-class TestSelect(testtools.TestCase):
+class TestSelect(base.TestBase):
 
     def test_weighted_returns_none_if_no_objs(self):
         self.assertIsNone(select.weighted([]))

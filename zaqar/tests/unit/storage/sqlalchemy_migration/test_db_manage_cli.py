@@ -17,12 +17,12 @@ import sys
 from unittest import mock
 
 import testscenarios
-import testtools
 
 from zaqar.storage.sqlalchemy.migration import cli
+from zaqar.tests import base
 
 
-class TestCli(testtools.TestCase):
+class TestCli(base.TestBase):
     func_name = ''
     exp_args = ()
     exp_kwargs = {}

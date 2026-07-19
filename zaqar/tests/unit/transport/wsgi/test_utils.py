@@ -15,15 +15,13 @@
 import io
 
 import falcon
-
 from oslo_serialization import jsonutils
 
-import testtools
-
+from zaqar.tests import base
 from zaqar.transport.wsgi import utils
 
 
-class TestUtils(testtools.TestCase):
+class TestUtils(base.TestBase):
 
     def test_get_checked_field_missing(self):
         doc = {}
