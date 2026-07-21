@@ -97,10 +97,7 @@ class Driver(transport.DriverBase):
             self._validate_queue_identification,
 
             # NOTE(kgriffs): Depends on project_id being extracted, above
-            self._validate_topic_identification,
-
-            # NOTE(wanghao): verify the extra specs if it is existing
-            helpers.verify_extra_spec
+            self._validate_topic_identification
         ]
 
     def _init_routes(self):
@@ -141,7 +138,7 @@ class Driver(transport.DriverBase):
             strategy = auth.strategy(self._conf.auth_strategy)
             auth_app = strategy.install(self.app, self._conf)
 
-        self.app = auth.SignedAndExtraSpecHeadersAuth(self.app, auth_app)
+        self.app = auth.SignedHeadersAuth(self.app, auth_app)
 
         self.app = request_id.RequestId(self.app)
 

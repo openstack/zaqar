@@ -24,7 +24,7 @@ STRATEGIES = {}
 LOG = log.getLogger(__name__)
 
 
-class SignedAndExtraSpecHeadersAuth:
+class SignedHeadersAuth:
 
     def __init__(self, app, auth_app):
         self._app = app

@@ -16,7 +16,6 @@
 """wsgi transport helpers."""
 
 import re
-from stevedore import driver
 import uuid
 
 import falcon
@@ -302,32 +301,3 @@ def validate_topic_identification(validate, req, resp, params):
             title=_('Invalid topic identification'),
             description=_('The format of the submitted topic '
                           'name or project id is not valid.'))
-
-
-def verify_extra_spec(req, resp, params):
-    """Extract `extra_spec` from request and verify it.
-
-    Meant to be used as a `before` hook.
-
-    :param req: request sent
-    :type req: falcon.request.Request
-    :param resp: response object to return
-    :type resp: falcon.response.Response
-    :param params: additional parameters passed to responders
-    :type params: dict
-    :rtype: None
-    """
-    extra_spec = req.get_header('EXTRA-SPEC')
-    if not extra_spec:
-        return
-
-    if extra_spec == "":
-        raise falcon.HTTPBadRequest(
-            title='Empty extra spec not allowed',
-            description=_('Extra spec cannot be an empty '
-                          'if specify the header.'))
-    extra_spec_schema = extra_spec.split(':')[0]
-    if extra_spec_schema:
-        mgr = driver.DriverManager('zaqar.extraspec.tasks', extra_spec_schema,
-                                   invoke_on_load=True)
-        mgr.driver.execute(extra_spec)

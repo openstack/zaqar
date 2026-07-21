@@ -1,0 +1,5 @@
+---
+security:
+  - |
+    `Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Remove the feature of extra-specs in Zaqar as
+    there is no implementation in drivers for a long time and it also causes security concerns.
