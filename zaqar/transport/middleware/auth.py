@@ -32,7 +32,6 @@ class SignedAndExtraSpecHeadersAuth:
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO')
-        extra_spec = environ.get('HTTP_EXTRA_SPEC')
         signature = environ.get('HTTP_URL_SIGNATURE')
 
         # NOTE(flwang): The root path of Zaqar service shouldn't require any
@@ -40,7 +39,7 @@ class SignedAndExtraSpecHeadersAuth:
         if path == '/':
             return self._app(environ, start_response)
 
-        if (signature is None and extra_spec is None):
+        if signature is None:
             return self._auth_app(environ, start_response)
 
         return self._app(environ, start_response)
