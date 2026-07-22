@@ -1,0 +1,6 @@
+---
+security:
+  - |
+    `Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Fixed
+    Requests with the ``EXTRA-SPEC`` header bypassed authentication and
+    policy check.
