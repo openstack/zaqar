@@ -86,7 +86,9 @@
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
-        - zaqar-tempest-plugin-mongodb-jammy
+        # TODO(tkajinam): Jammy jobs are failing due to removal of python 3.10
+        # support. We have to pin tempest to fix it.
+        #- zaqar-tempest-plugin-mongodb-jammy
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
@@ -97,7 +99,7 @@
       jobs:
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
-        - zaqar-tempest-plugin-mongodb-jammy
+        #- zaqar-tempest-plugin-mongodb-jammy
         - zaqar-tempest-plugin-redis
         - zaqar-tempest-plugin-swift
         - zaqar-tempest-plugin-swift-ipv6
