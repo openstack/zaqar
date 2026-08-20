@@ -57,7 +57,7 @@ region_name = cfg.StrOpt(
 
 
 interface = cfg.StrOpt(
-    "interface", default="publicURL",
+    "interface", default="public",
     help="The default interface for endpoint URL "
          "discovery.")
 
