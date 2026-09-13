@@ -120,6 +120,6 @@ Where can I discuss and propose changes?
 .. _Project space: https://launchpad.net/zaqar
 .. _Bugs: https://bugs.launchpad.net/zaqar
 .. _Patches on review: https://review.opendev.org/#/q/status:open+zaqar,n,z
-.. _IRC logs: http://irclog.perlgeek.de/openstack-zaqar
+.. _IRC logs: http://eavesdrop.openstack.org/irclogs/%23openstack-zaqar/
 .. _Subscription and usage instructions: https://lists.openstack.org/mailman3/lists/openstack-discuss.lists.openstack.org/
 .. _Zaqar team on Launchpad: https://launchpad.net/zaqar
