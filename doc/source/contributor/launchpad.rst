@@ -23,9 +23,13 @@ The mailing list address is ``openstack-discuss@lists.openstack.org``.
 This is a common mailing list across all OpenStack projects.
 To participate in the mailing list:
 
-   Subscribe at http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-discuss
+   Subscribe at https://lists.openstack.org/mailman3/lists/openstack-discuss.lists.openstack.org/
 
-The mailing list archives are at http://lists.openstack.org/pipermail/openstack-dev (pre December 2018) and http://lists.openstack.org/pipermail/openstack-discuss for current.
+The mailing list archives are available at the following links.
+
+ * http://lists.openstack.org/pipermail/openstack-dev (pre December 2018)
+ * http://lists.openstack.org/pipermail/openstack-discuss (pre October 2023)
+ * https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org for current.
 
 Bug tracking
 ------------
