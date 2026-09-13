@@ -13,7 +13,7 @@ Communication
 ~~~~~~~~~~~~~
 * IRC channel #openstack-zaqar at OFTC
 * Mailing list (prefix subjects with ``[zaqar]`` for faster responses)
-  http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-discuss
+  https://lists.openstack.org/mailman3/lists/openstack-discuss.lists.openstack.org/
 
 Contacting the Core Team
 ~~~~~~~~~~~~~~~~~~~~~~~~
