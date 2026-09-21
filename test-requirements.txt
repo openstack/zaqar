@@ -1,11 +1,6 @@
 hacking>=7.0.0,<7.1.0 # Apache-2.0
 
-# Backends
-redis>=3.4.0 # MIT
-pymongo>=3.6.0 # Apache-2.0
-python-swiftclient>=3.10.1 # Apache-2.0
 websocket-client>=0.44.0 # LGPLv2+
-PyMySQL>=0.8.0 # MIT License
 
 # Unit testing
 coverage!=4.4,>=4.0 # Apache-2.0
