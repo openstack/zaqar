@@ -60,6 +60,31 @@ class Request(webob.Request):
     ResponseClass = Response
 
 
+def set_defaults():
+    cors.set_defaults(
+        allow_headers=['X-Auth-Token',
+                       'X-Identity-Status',
+                       'X-Roles',
+                       'X-Service-Catalog',
+                       'X-User-Id',
+                       'X-Tenant-Id',
+                       'X-OpenStack-Request-ID',
+                       'X-Trace-Info',
+                       'X-Trace-HMAC',
+                       'Client-id'],
+        expose_headers=['X-Auth-Token',
+                        'X-Subject-Token',
+                        'X-Service-Token',
+                        'X-OpenStack-Request-ID'],
+        allow_methods=['GET',
+                       'PUT',
+                       'POST',
+                       'DELETE',
+                       'PATCH',
+                       'HEAD']
+    )
+
+
 class CORSMiddleware:
 
     def __init__(self, app, auth_app, conf):
@@ -76,28 +101,7 @@ class CORSMiddleware:
     def install(cls, app, auth_app, conf):
 
         LOG.debug('Installing CORS middleware.')
-        cors.set_defaults(
-            allow_headers=['X-Auth-Token',
-                           'X-Identity-Status',
-                           'X-Roles',
-                           'X-Service-Catalog',
-                           'X-User-Id',
-                           'X-Tenant-Id',
-                           'X-OpenStack-Request-ID',
-                           'X-Trace-Info',
-                           'X-Trace-HMAC',
-                           'Client-id'],
-            expose_headers=['X-Auth-Token',
-                            'X-Subject-Token',
-                            'X-Service-Token',
-                            'X-OpenStack-Request-ID'],
-            allow_methods=['GET',
-                           'PUT',
-                           'POST',
-                           'DELETE',
-                           'PATCH',
-                           'HEAD']
-        )
+        set_defaults()
         return CORSMiddleware(app, auth_app, conf)
 
 

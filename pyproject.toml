@@ -36,6 +36,9 @@ Repository = "https://opendev.org/openstack/zaqar"
 [project.entry-points."oslo.config.opts"]
 zaqar = "zaqar.conf.opts:list_opts"
 
+[project.entry-points."oslo.config.opts.defaults"]
+zaqar = "zaqar.conf.opts:set_defaults"
+
 [project.entry-points."oslo.policy.policies"]
 zaqar = "zaqar.common.policies:list_rules"
 
