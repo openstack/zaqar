@@ -1,3 +1,106 @@
 [build-system]
 requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "zaqar"
+description = "OpenStack Queuing and Notification Service"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = "Apache-2.0"
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.11"
+classifiers = [
+  "Environment :: Console",
+  "Environment :: OpenStack",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/zaqar"
+Repository = "https://opendev.org/openstack/zaqar"
+"Bug Tracker" = "https://bugs.launchpad.net/zaqar"
+
+[project.entry-points."oslo.config.opts"]
+zaqar = "zaqar.conf.opts:list_opts"
+
+[project.entry-points."oslo.policy.policies"]
+zaqar = "zaqar.common.policies:list_rules"
+
+[project.entry-points."zaqar.data.storage"]
+mongodb = "zaqar.storage.mongodb.driver:DataDriver"
+"mongodb.fifo" = "zaqar.storage.mongodb.driver:FIFODataDriver"
+redis = "zaqar.storage.redis.driver:DataDriver"
+swift = "zaqar.storage.swift.driver:DataDriver"
+faulty = "zaqar.tests.faulty_storage:DataDriver"
+
+[project.entry-points."zaqar.control.storage"]
+sqlalchemy = "zaqar.storage.sqlalchemy.driver:ControlDriver"
+mongodb = "zaqar.storage.mongodb.driver:ControlDriver"
+redis = "zaqar.storage.redis.driver:ControlDriver"
+faulty = "zaqar.tests.faulty_storage:ControlDriver"
+
+[project.entry-points."zaqar.transport"]
+wsgi = "zaqar.transport.wsgi.driver:Driver"
+websocket = "zaqar.transport.websocket.driver:Driver"
+
+[project.entry-points."zaqar.storage.stages"]
+"zaqar.notification.notifier" = "zaqar.notification.notifier:NotifierDriver"
+
+[project.entry-points."zaqar.storage.mongodb.driver.queue.stages"]
+message_queue_handler = "zaqar.storage.mongodb.messages:MessageQueueHandler"
+
+[project.entry-points."zaqar.storage.redis.driver.queue.stages"]
+message_queue_handler = "zaqar.storage.redis.messages:MessageQueueHandler"
+
+[project.entry-points."zaqar.storage.swift.driver.queue.stages"]
+message_queue_handler = "zaqar.storage.swift.messages:MessageQueueHandler"
+
+[project.entry-points."zaqar.storage.mongodb.driver.topic.stages"]
+message_queue_handler = "zaqar.storage.mongodb.topic_messages:MessageTopicHandler"
+
+[project.entry-points."zaqar.storage.redis.driver.topic.stages"]
+message_queue_handler = "zaqar.storage.redis.messages:MessageTopicHandler"
+
+[project.entry-points."zaqar.storage.swift.driver.topic.stages"]
+message_queue_handler = "zaqar.storage.swift.messages:MessageTopicHandler"
+
+[project.entry-points."zaqar.notification.tasks"]
+http = "zaqar.notification.tasks.webhook:WebhookTask"
+https = "zaqar.notification.tasks.webhook:WebhookTask"
+mailto = "zaqar.notification.tasks.mailto:MailtoTask"
+"trust+http" = "zaqar.notification.tasks.trust:TrustTask"
+"trust+https" = "zaqar.notification.tasks.trust:TrustTask"
+
+[project.optional-dependencies]
+mongodb = [
+    "pymongo>=3.6.0", # Apache-2.0
+]
+redis = [
+    "redis>=3.4.0", # MIT
+]
+mysql = [
+    "PyMySQL>=0.8.0", # MIT License
+]
+
+[project.scripts]
+zaqar-bench = "zaqar.bench.conductor:main"
+zaqar-server = "zaqar.cmd.server:run"
+zaqar-gc = "zaqar.cmd.gc:run"
+zaqar-sql-db-manage = "zaqar.storage.sqlalchemy.migration.cli:main"
+zaqar-status = "zaqar.cmd.status:main"
+
+[tool.setuptools.packages.find]
+include = ["zaqar*"]
