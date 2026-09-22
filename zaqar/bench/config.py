@@ -65,7 +65,9 @@ _CLI_OPTIONS = (
     cfg.IntOpt('time', short='t', default=5,
                help="Duration of the performance test, in seconds"),
 
-    cfg.StrOpt('server_url', short='s', default='http://localhost:8888'),
+    cfg.URIOpt('server_url', short='s',
+               default='http://localhost:8888',
+               schemes=['http', 'https']),
 
     cfg.StrOpt('queue_prefix', short='q', default='ogre-test-queue'),
     cfg.IntOpt('num_queues', short='qno', default=4),
