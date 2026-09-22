@@ -25,14 +25,16 @@ smtp_mode = cfg.StrOpt(
 
 smtp_host = cfg.HostAddressOpt(
     'smtp_host',
-    help='The host IP for the email system. It should be '
-         'set when smtp_mode is set to self_local.')
+    default='localhost',
+    help='The host IP or the hostname for the email system. '
+         'It is used only when smtp_mode is set to self_local.')
 
 
 smtp_port = cfg.PortOpt(
     'smtp_port',
-    help='The port for the email system. It should be set when '
-         'smtp_mode is set to self_local.')
+    default=465,
+    help='The port for the email system. '
+         'It is used only when smtp_mode is set to self_local.')
 
 
 smtp_user_name = cfg.StrOpt(
