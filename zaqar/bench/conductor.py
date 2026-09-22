@@ -13,11 +13,7 @@
 # limitations under the License.
 
 import multiprocessing as mp
-import os
 from oslo_serialization import jsonutils
-# NOTE(Eva-i): See https://github.com/gevent/gevent/issues/349. Let's keep
-# it until the new stable version of gevent(>=1.1) will be released.
-os.environ["GEVENT_RESOLVER"] = "ares"
 
 from zaqar.bench import config
 from zaqar.bench import consumer
