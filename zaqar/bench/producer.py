@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from concurrent import futures
 import multiprocessing as mp
 import random
 import sys
 import time
 
-from gevent import monkey as curious_george
-curious_george.patch_all(thread=False, select=False)
-import gevent
 from oslo_serialization import jsonutils
 from zaqarclient.transport import errors
 
@@ -107,12 +105,11 @@ def load_generator(stats, num_workers, num_queues, test_duration):
 
     message_pool = load_messages()
 
-    gevent.joinall([
-        gevent.spawn(producer,
-                     queues, message_pool, stats, test_duration)
-
-        for _ in range(num_workers)
-    ])
+    with futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        for _ in range(num_workers):
+            executor.submit(
+                producer, queues, message_pool, stats, test_duration
+            )
 
 
 def crunch(stats):
