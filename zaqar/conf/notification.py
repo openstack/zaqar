@@ -45,6 +45,7 @@ smtp_user_name = cfg.StrOpt(
 
 smtp_user_password = cfg.StrOpt(
     'smtp_user_password',
+    secret=True,
     help='The user password for the email system to login. It '
          'should be set when smtp_mode is set to self_local.')
 
