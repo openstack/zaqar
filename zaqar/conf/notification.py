@@ -16,11 +16,11 @@ from oslo_config import cfg
 
 smtp_mode = cfg.StrOpt(
     'smtp_mode', default='third_part',
-    choices=('third_part', 'self_local'),
-    help='There are two values can be chosen: third_part or '
-         'self_local. third_part means Zaqar will use the tools '
-         'from config option smtp_commnd. self_local means the '
-         'smtp python library will be used.')
+    choices=(
+        ('third_part', 'The tools from the smpt_command config option.'),
+        ('self_local', 'The native smtplib python module.'),
+    ),
+    help='The implementation used for SMTP client.')
 
 
 smtp_host = cfg.HostAddressOpt(
