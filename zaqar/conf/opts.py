@@ -33,6 +33,8 @@ import importlib
 import os
 import pkgutil
 
+from zaqar.transport.middleware import cors
+
 
 LIST_OPTS_FUNC_NAME = 'list_opts'
 IGNORED_MODULES = ('opts', 'constants', 'utils')
@@ -96,3 +98,7 @@ def _append_config_options(imported_modules, config_options):
         configs = module.list_opts()
         for key, val in configs.items():
             config_options[key].extend(val)
+
+
+def set_defaults():
+    cors.set_defaults()
