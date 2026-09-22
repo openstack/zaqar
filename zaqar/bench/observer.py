@@ -20,7 +20,6 @@ import time
 from gevent import monkey as curious_george
 curious_george.patch_all(thread=False, select=False)
 import gevent
-import marktime
 import urllib
 from zaqarclient.transport import errors
 
@@ -66,10 +65,10 @@ def observer(queues, stats, test_duration, limit):
         queue = random.choice(queues)
 
         try:
-            marktime.start('list_messages')
+            start = time.time()
             cursor = queue['q'].messages(limit=limit, marker=queue['m'],
                                          include_claimed=True)
-            total_elapsed += marktime.stop('list_messages').seconds
+            total_elapsed += (time.time() - start)
             total_succeeded += 1
 
             messages = list(cursor)

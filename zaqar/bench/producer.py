@@ -20,7 +20,6 @@ import time
 from gevent import monkey as curious_george
 curious_george.patch_all(thread=False, select=False)
 import gevent
-import marktime
 from oslo_serialization import jsonutils
 from zaqarclient.transport import errors
 
@@ -77,11 +76,11 @@ def producer(queues, message_pool, stats, test_duration):
         queue = random.choice(queues)
 
         try:
-            marktime.start('post_message')
+            start = time.time()
 
             queue.post(choose_message(message_pool))
 
-            total_elapsed += marktime.stop('post_message').seconds
+            total_elapsed += (time.time() - start)
             successful_requests += 1
 
         except errors.TransportError as ex:
