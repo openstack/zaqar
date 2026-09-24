@@ -52,7 +52,7 @@ _CLI_OPTIONS = (
     cfg.BoolOpt('debug', default=True,
                 help=('Tag to indicate if print the details of running.')),
 
-    cfg.FloatOpt('api_version', short='api', default='2',
+    cfg.FloatOpt('api_version', short='api', default=2.0,
                  help='Zaqar API version to use'),
 
     cfg.IntOpt('messages_per_claim', short='cno', default=5,
