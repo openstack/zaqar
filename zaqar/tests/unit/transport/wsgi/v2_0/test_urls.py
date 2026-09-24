@@ -110,6 +110,36 @@ class TestURL(base.V2Base):
         response = self.simulate_get(content['paths'][0], headers=headers)
         self.assertEqual(falcon.HTTP_200, self.srmock.status)
 
+    def test_url_verification_fail_bad_signature(self):
+        data = {'methods': ['GET', 'POST']}
+        response = self.simulate_post(self.signed_url_prefix,
+                                      body=jsonutils.dumps(data))
+
+        self.assertEqual(falcon.HTTP_200, self.srmock.status)
+        content = jsonutils.loads(response[0])
+
+        headers = {
+            'URL-Signature': content['signature'][:-1],
+            'URL-Expires': content['expires'],
+            'URL-Methods': ','.join(content['methods']),
+            'URL-Paths': ','.join(content['paths'])
+        }
+        headers.update(self.headers)
+
+        response = self.simulate_get(content['paths'][0], headers=headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
+        headers = {
+            'URL-Signature': '',
+            'URL-Expires': content['expires'],
+            'URL-Methods': ','.join(content['methods']),
+            'URL-Paths': ','.join(content['paths'])
+        }
+        headers.update(self.headers)
+
+        response = self.simulate_get(content['paths'][0], headers=headers)
+        self.assertEqual(falcon.HTTP_404, self.srmock.status)
+
     def _get_msg_id(self, headers):
         return self._get_msg_ids(headers)[0]
 
