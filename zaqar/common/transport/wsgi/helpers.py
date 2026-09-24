@@ -38,7 +38,7 @@ def verify_pre_signed_url(key, req, resp, params):
     paths = headers.get('URL-PATHS', '').split(',')
     signature = headers.get('URL-SIGNATURE')
 
-    if not signature:
+    if signature is None:
         return
 
     if req.method not in methods:

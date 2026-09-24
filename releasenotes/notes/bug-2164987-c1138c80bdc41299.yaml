@@ -1,0 +1,5 @@
+---
+security:
+  - |
+    `Bug 2164987 <https://bugs.launchpad.net/zaqar/+bug/2164987>`_ : Fixed
+    authentication bypass caused by an empty URL-Signature header.
