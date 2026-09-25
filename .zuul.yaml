@@ -37,6 +37,7 @@
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
+      - ^zaqar/bench/.*$
       - ^zaqar/hacking/.*$
       - ^zaqar/tests/.*$
       - ^releasenotes/.*$
@@ -87,6 +88,7 @@
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
+      - ^zaqar/bench/.*$
       - ^zaqar/hacking/.*$
       - ^zaqar/tests/unit/.*$
       - ^releasenotes/.*$
