@@ -37,7 +37,7 @@ Usage
 
    .. code-block:: console
 
-     $ pip install -r bench-requirements.txt
+     $ pip install .[bench]
 
 3. Copy the configuration file to ~/.zaqar:
 
