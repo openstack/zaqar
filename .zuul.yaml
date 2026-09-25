@@ -93,6 +93,30 @@
     vars:
       tox_envlist: integration
 
+- job:
+    name: zaqar-bench
+    parent: devstack-tox-functional
+    required-projects:
+      - opendev.org/openstack/python-zaqarclient
+    vars:
+      devstack_plugins:
+        zaqar: https://opendev.org/openstack/zaqar
+      devstack_services:
+        tls-proxy: false
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        cinder: false
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        tempest: false
+      tox_extra_args: -- -s http://localhost/messaging
+      tox_envlist: bench
+    run: playbooks/bench/run.yaml
+
 - project:
     queue: zaqar
     templates:
@@ -104,6 +128,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
+        - zaqar-bench
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
         - zaqar-tempest-plugin-redis
@@ -114,6 +139,7 @@
         - zaqar-grenade-swift
     gate:
       jobs:
+        - zaqar-bench
         - zaqar-tox-integration
         - zaqar-tempest-plugin-mongodb
         - zaqar-tempest-plugin-redis
