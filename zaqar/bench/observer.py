@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from concurrent import futures
 import multiprocessing as mp
 import random
 import sys
 import time
-
-from gevent import monkey as curious_george
-curious_george.patch_all(thread=False, select=False)
-import gevent
 import urllib
+
 from zaqarclient.transport import errors
 
 from zaqar.bench import config
@@ -100,12 +98,9 @@ def load_generator(stats, num_workers, num_queues,
     for queue_name in helpers.queue_names:
         queues.append(cli.queue(queue_name))
 
-    gevent.joinall([
-        gevent.spawn(observer,
-                     queues, stats, test_duration, limit)
-
-        for _ in range(num_workers)
-    ])
+    with futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        for _ in range(num_workers):
+            executor.submit(observer, queues, stats, test_duration, limit)
 
 
 def crunch(stats):
