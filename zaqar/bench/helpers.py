@@ -14,7 +14,6 @@
 # NOTE(Eva-i): Some code was taken from python-zaqarclient.
 
 import os
-import sys
 
 import openstack.config
 from zaqarclient.queues import client
@@ -42,28 +41,24 @@ def _get_credential_args():
     """
     os_cfg = openstack.config.OpenStackConfig()
 
-    cloud = os_cfg.get_one_cloud()
-    cred_args = cloud.get_auth_args()
-
-    cred_args['insecure'] = cloud.auth.get('insecure')
-    cred_args['cacert'] = cloud.auth.get('cacert')
-    cred_args['token'] = cloud.auth.get('token')
-
-    required_options = ['username', 'password', 'auth_url', 'project_name']
-    if not all(arg in cred_args for arg in required_options):
+    for cloud_name in (None, 'devstack-admin', 'devstack'):
         try:
-            cloud = os_cfg.get_one_cloud(cloud='devstack-admin')
+            cloud = os_cfg.get_one_cloud(cloud=cloud_name)
+            cred_args = cloud.get_auth_args()
         except Exception:
-            try:
-                cloud = os_cfg.get_one_cloud(cloud='devstack')
-            except Exception:
-                print("Insufficient amount of credentials found for keystone "
-                      "authentication. Credentials should reside either in "
-                      "environment variables or in 'clouds.yaml' file. If "
-                      "both present, the ones in environment variables will "
-                      "be preferred. Exiting.")
-                sys.exit()
-        cred_args = cloud.get_auth_args()
+            continue
+
+        required_options = ['username', 'password', 'auth_url']
+        if not all(arg in cred_args for arg in required_options):
+            continue
+        break
+    else:
+        print("Insufficient amount of credentials found for keystone "
+              "authentication. Credentials should reside either in "
+              "environment variables or in 'clouds.yaml' file. If "
+              "both present, the ones in environment variables will "
+              "be preferred. Exiting.")
+        raise ValueError("Insuficient credentials")
 
     print("Using '{}' credentials".format(cloud.name))
     return cred_args
@@ -77,15 +72,7 @@ def _generate_client_conf():
         conf = {
             'auth_opts': {
                 'backend': 'keystone',
-                'options': {
-                    'os_username': args.get('username'),
-                    'os_password': args.get('password'),
-                    'os_project_name': args['project_name'],
-                    'os_auth_url': args['auth_url'],
-                    'insecure': args.get('insecure'),
-                    'cacert': args.get('cacert'),
-                    'auth_token': args.get('token')
-                },
+                'options': args,
             },
         }
     else:
@@ -115,9 +102,8 @@ class LazyAPIVersion:
             try:
                 self.api_version = conversion_map[CONF.api_version]
             except KeyError:
-                print("Unknown Zaqar API version: '{}'. Exiting...".format(
-                      CONF.api_version))
-                sys.exit()
+                raise ValueError("Unknown Zaqar API version: '{}'.",
+                                 CONF.api_version)
             print("Benchmarking Zaqar API v{}...".format(self.api_version))
         return self.api_version
 
