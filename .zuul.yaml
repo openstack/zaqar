@@ -115,7 +115,6 @@
         c-sch: false
         c-vol: false
         tempest: false
-      tox_extra_args: -- -s http://localhost/messaging
       tox_envlist: bench
     run: playbooks/bench/run.yaml
 

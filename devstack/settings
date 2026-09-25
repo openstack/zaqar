@@ -7,6 +7,7 @@ ZAQAR_CONF=$ZAQAR_CONF_DIR/zaqar.conf
 ZAQAR_UWSGI_CONF=$ZAQAR_CONF_DIR/uwsgi.conf
 ZAQAR_UWSGI=zaqar.transport.wsgi.app:application
 ZAQAR_API_LOG_DIR=/var/log/zaqar
+ZAQAR_BENCH_CONF=$ZAQAR_CONF_DIR/zaqar-benchmark.conf
 
 # Support potential entry-points console scripts
 ZAQAR_BIN_DIR=$(get_python_exec_prefix)

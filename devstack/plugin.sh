@@ -137,6 +137,8 @@ function configure_zaqar {
     fi
 
     write_uwsgi_config "$ZAQAR_UWSGI_CONF" "$ZAQAR_UWSGI" "/messaging" "" "zaqar"
+
+    iniset $ZAQAR_BENCH_CONF DEFAULT server_url $ZAQAR_SERVICE_PROTOCOL://$ZAQAR_SERVICE_HOST/messaging
 }
 
 function configure_redis {
