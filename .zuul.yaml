@@ -105,6 +105,20 @@
         zaqar: https://opendev.org/openstack/zaqar
       devstack_services:
         tls-proxy: false
+        g-api: false
+        n-api: false
+        n-api-meta: false
+        n-cond: false
+        n-cpu: false
+        n-novnc: false
+        n-sch: false
+        placement-api: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-svc: false
+        q-ovn-agent: false
         s-account: false
         s-container: false
         s-object: false
@@ -114,7 +128,6 @@
         c-bak: false
         c-sch: false
         c-vol: false
-        tempest: false
       tox_envlist: bench
     run: playbooks/bench/run.yaml
 
