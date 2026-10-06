@@ -117,7 +117,16 @@ class MessagingProtocol(websocket.WebSocketServerProtocol):
             elif payload.get('action') == 'authenticate':
                 return self._authenticate(payload, isBinary)
             else:
+                if self._auth_strategy:
+                    auth_project = self._auth_env.get("X-PROJECT-ID")
+                    request_project = payload.get('headers', {}).get(
+                        "X-Project-ID")
+                    if not request_project or auth_project != request_project:
+                        body = {'error': 'Not authenticated.'}
+                        resp = self._handler.create_response(403, body, req)
+                        return self._send_response(resp, isBinary)
                 resp = self._handler.process_request(req, self)
+
             if payload.get('action') == consts.SUBSCRIPTION_CREATE:
                 # NOTE(Eva-i): this will make further websocket
                 # notifications encoded in the same format as the last
