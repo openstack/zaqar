@@ -5,15 +5,16 @@
 # Andi Chandler <andi@gowling.com>, 2022. #zanata
 # Andi Chandler <andi@gowling.com>, 2023. #zanata
 # Andi Chandler <andi@gowling.com>, 2024. #zanata
+# Andi Chandler <andi@gowling.com>, 2026. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: zaqar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-02 17:51+0000\n"
+"POT-Creation-Date: 2026-10-03 19:39+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2024-10-01 01:36+0000\n"
+"PO-Revision-Date: 2026-10-05 06:54+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -44,8 +45,23 @@ msgstr "14.0.0"
 msgid "17.0.0"
 msgstr "17.0.0"
 
+msgid "19.0.0"
+msgstr "19.0.0"
+
 msgid "2.0.0-10"
 msgstr "2.0.0-10"
+
+msgid "20.0.0"
+msgstr "20.0.0"
+
+msgid "20.1.0"
+msgstr "20.1.0"
+
+msgid "20.1.1"
+msgstr "20.1.1"
+
+msgid "20.1.2"
+msgstr "20.1.2"
 
 msgid "2023.1 Series Release Notes"
 msgstr "2023.1 Series Release Notes"
@@ -55,6 +71,45 @@ msgstr "2023.2 Series Release Notes"
 
 msgid "2024.1 Series Release Notes"
 msgstr "2024.1 Series Release Notes"
+
+msgid "2024.2 Series Release Notes"
+msgstr "2024.2 Series Release Notes"
+
+msgid "2025.1 Series Release Notes"
+msgstr "2025.1 Series Release Notes"
+
+msgid "2025.2 Series Release Notes"
+msgstr "2025.2 Series Release Notes"
+
+msgid "2026.1 Series Release Notes"
+msgstr "2026.1 Series Release Notes"
+
+msgid "2026.2 Series Release Notes"
+msgstr "2026.2 Series Release Notes"
+
+msgid "21.0.0"
+msgstr "21.0.0"
+
+msgid "21.0.1"
+msgstr "21.0.1"
+
+msgid "21.0.2"
+msgstr "21.0.2"
+
+msgid "22.0.0"
+msgstr "22.0.0"
+
+msgid "22.0.1"
+msgstr "22.0.1"
+
+msgid "22.0.2"
+msgstr "22.0.2"
+
+msgid "23.0.0"
+msgstr "23.0.0"
+
+msgid "23.0.0.0rc1-25"
+msgstr "23.0.0.0rc1-25"
 
 msgid "3.0.0"
 msgstr "3.0.0"
@@ -225,6 +280,18 @@ msgstr ""
 msgid "Fixed bugs for stable and security."
 msgstr "Fixed bugs for stable and security."
 
+msgid "Fixed compatibility with falcon 4.0.0 and later."
+msgstr "Fixed compatibility with Falcon 4.0.0 and later."
+
+msgid ""
+"Fixed the wrong type of ``[drivers:message_store:swift] insecure`` option. "
+"It was previously string (so non-empty strings were translated to True), but "
+"has been changed to boolean."
+msgstr ""
+"Fixed the wrong type of ``[drivers:message_store:swift] insecure`` option. "
+"It was previously string (so non-empty strings were translated to True), but "
+"has been changed to boolean."
+
 msgid ""
 "In IPv6 management network environment, starting Zaqar server will run into "
 "'Address family for hostname not support' error when use WSGI simple server. "
@@ -302,6 +369,13 @@ msgid "Newton Series Release Notes"
 msgstr "Newton Series Release Notes"
 
 msgid ""
+"Now API returnes unique request identifier string in the ``X-OpenStack-"
+"Request-Id`` header."
+msgstr ""
+"Now API returns unique request identifier string in the ``X-OpenStack-"
+"Request-Id`` header."
+
+msgid ""
 "Now Redis driver supports authentication with Redis Sentinel. To use this "
 "feature, add the ``redis_password`` query to the Redis URI. The "
 "``redis_username`` can be used when ACL feature is enabled."
@@ -355,6 +429,13 @@ msgstr ""
 "is OpenStack Train. The minimum version of Python now supported by Zaqar is "
 "Python 3.6."
 
+msgid ""
+"Python 3.8 support was dropped. The minimum version of Python now supported "
+"is Python 3.9."
+msgstr ""
+"Python 3.8 support was dropped. The minimum version of Python now supported "
+"is Python 3.9."
+
 msgid "Queens Series Release Notes"
 msgstr "Queens Series Release Notes"
 
@@ -394,8 +475,18 @@ msgstr ""
 msgid "Redis messaging store now supports authentication with username."
 msgstr "Redis messaging store now supports authentication with a username."
 
+msgid ""
+"Redis uri options now requires ':' before password even when username is not "
+"used."
+msgstr ""
+"Redis uri options now requires ':' before password even when username is not "
+"used."
+
 msgid "Rocky Series Release Notes"
 msgstr "Rocky Series Release Notes"
+
+msgid "Security Issues"
+msgstr "Security Issues"
 
 msgid ""
 "Since some clients use different format of client id not only uuid, like "
@@ -450,6 +541,20 @@ msgstr "Support dot character in queue's name, like 'service.test_queue'."
 
 msgid "Support encrypted messages in queue."
 msgstr "Support encrypted messages in queue."
+
+msgid ""
+"Support for Python 3.10 has been removed. Now Python 3.11 is the minimum "
+"version supported."
+msgstr ""
+"Support for Python 3.10 has been removed. Now Python 3.11 is the minimum "
+"version supported."
+
+msgid ""
+"Support for Python 3.9 has been removed. Now Python 3.10 is the minimum "
+"version supported."
+msgstr ""
+"Support for Python 3.9 has been removed. Now Python 3.10 is the minimum "
+"version supported."
 
 msgid ""
 "Support for dead letter queue is added for MongoDB, Redis and Swift. With "
@@ -541,6 +646,13 @@ msgstr ""
 "tree of calls."
 
 msgid ""
+"The ``[DEFAULT] enable_deprecated_api_versions`` option has been deprecated "
+"due to removal of deprecated APIs."
+msgstr ""
+"The ``[DEFAULT] enable_deprecated_api_versions`` option has been deprecated "
+"due to removal of deprecated APIs."
+
+msgid ""
 "The code structure for configuration files are changed. This is insensitvie "
 "for end users, but the persons who work for downstream changes should pay "
 "attention. Please refactor your private configurations to ``zaqar/conf/`` "
@@ -568,6 +680,20 @@ msgstr ""
 "openstack.org/oslo.policy/latest/cli/oslopolicy-convert-json-to-yaml.html>`_ "
 "tool to convert a JSON to YAML formatted policy file in a backward "
 "compatible way."
+
+msgid ""
+"The deprecated ``[transport] max_message_size`` option has been removed."
+msgstr ""
+"The deprecated ``[transport] max_message_size`` option has been removed."
+
+msgid "The deprecated ``limits:transport`` config section has been removed."
+msgstr "The deprecated ``limits:transport`` config section has been removed."
+
+msgid "The deprecated version v1.1 API has been removed."
+msgstr "The deprecated version v1.1 API has been removed."
+
+msgid "The following config groups have been removed."
+msgstr "The following config groups have been removed."
 
 msgid "The minimum redis-py version required is now >= 3.0.0"
 msgstr "The minimum redis-py version required is now >= 3.0.0"
@@ -743,3 +869,37 @@ msgstr ""
 
 msgid "Zed Series Release Notes"
 msgstr "Zed Series Release Notes"
+
+msgid ""
+"`Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Fixed "
+"Requests with the ``EXTRA-SPEC`` header bypassed authentication and policy "
+"check."
+msgstr ""
+"`Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Fixed "
+"Requests with the ``EXTRA-SPEC`` header bypassed authentication and policy "
+"check."
+
+msgid ""
+"`Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Remove the "
+"feature of extra-specs in Zaqar as there is no implementation in drivers for "
+"a long time and it also causes security concerns."
+msgstr ""
+"`Bug 2161254 <https://bugs.launchpad.net/zaqar/+bug/2161254>`_: Remove the "
+"feature of extra-specs in Zaqar as there is no implementation in drivers for "
+"a long time and it also causes security concerns."
+
+msgid ""
+"`Bug 2164987 <https://bugs.launchpad.net/zaqar/+bug/2164987>`_ : Fixed "
+"authentication bypass caused by an empty URL-Signature header."
+msgstr ""
+"`Bug 2164987 <https://bugs.launchpad.net/zaqar/+bug/2164987>`_ : Fixed "
+"authentication bypass caused by an empty URL-Signature header."
+
+msgid "``drivers:storage:mongodb``"
+msgstr "``drivers:storage:mongodb``"
+
+msgid "``drivers:storage:redis``"
+msgstr "``drivers:storage:redis``"
+
+msgid "``drivers:storage:sqlalchemy``"
+msgstr "``drivers:storage:sqlalchemy``"
