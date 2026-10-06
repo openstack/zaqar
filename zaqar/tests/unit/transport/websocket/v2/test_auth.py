@@ -45,8 +45,12 @@ class AuthTest(base.V2Base):
         auth_mock = mock.patch.object(auth_token.AuthProtocol, '__call__')
         self.addCleanup(auth_mock.stop)
         self.auth = auth_mock.start()
-        self.env = {'keystone.token_info': {
-            'token': {'expires_at': '2035-08-05T15:16:33.603700+00:00'}}}
+        self.env = {
+            'keystone.token_info': {
+                'token': {'expires_at': '2035-08-05T15:16:33.603700+00:00'}
+            },
+            'X-PROJECT-ID': self.project_id,
+        }
 
     def test_post(self):
         headers = self.headers.copy()
@@ -69,16 +73,40 @@ class AuthTest(base.V2Base):
         self.assertEqual('200 OK', responses[0])
 
         # Check that the env is available to future requests
-        req = jsonutils.dumps({'action': consts.MESSAGE_LIST,
-                               'body': {'queue_name': 'myqueue'},
-                               'headers': self.headers})
-        process_request = mock.patch.object(self.protocol._handler,
-                                            'process_request').start()
+        req = jsonutils.dumps({
+            'action': consts.MESSAGE_LIST,
+            'body': {'queue_name': 'myqueue'},
+            'headers': self.headers
+        })
+        process_request = mock.patch.object(
+            self.protocol._handler, 'process_request').start()
         process_request.return_value = self.protocol._handler.create_response(
             200, {})
         self.protocol.onMessage(req, False)
         self.assertEqual(1, process_request.call_count)
         self.assertEqual(self.env, process_request.call_args[0][0]._env)
+
+    def test_different_project(self):
+        headers = self.headers.copy()
+        headers['X-Auth-Token'] = 'mytoken1'
+        req = jsonutils.dumps({'action': 'authenticate', 'headers': headers})
+
+        msg_mock = mock.patch.object(self.protocol, 'sendMessage')
+        self.addCleanup(msg_mock.stop)
+        msg_mock = msg_mock.start()
+        self.protocol.onMessage(req, False)
+
+        # Didn't send the response yet
+        self.assertEqual(0, msg_mock.call_count)
+
+        headers = self.headers.copy()
+        headers['X-Project-ID'] = '7e55e1a7f'
+        req = test_utils.create_request(consts.QUEUE_LIST, {}, headers)
+        self.protocol.onMessage(req, False)
+
+        self.assertEqual(1, msg_mock.call_count)
+        resp = jsonutils.loads(msg_mock.call_args[0][0])
+        self.assertEqual(403, resp['headers']['status'])
 
     def test_post_between_auth(self):
         headers = self.headers.copy()
@@ -89,6 +117,9 @@ class AuthTest(base.V2Base):
         self.addCleanup(msg_mock.stop)
         msg_mock = msg_mock.start()
         self.protocol.onMessage(req, False)
+
+        # Didn't send the response yet
+        self.assertEqual(0, msg_mock.call_count)
 
         req = test_utils.create_request(consts.QUEUE_LIST, {}, self.headers)
         self.protocol.onMessage(req, False)

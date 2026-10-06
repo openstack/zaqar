@@ -1,0 +1,6 @@
+---
+security:
+  - |
+    `Bug 2161402 <https://bugs.launchpad.net/zaqar/+bug/2161402>`_: Fixed
+    websocket protocol support allowing arbitrary cross project access for
+    any authenticated users.
