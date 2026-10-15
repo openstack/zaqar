@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Bug 2168661 <https://bugs.launchpad.net/zaqar/+bug/2168661>`_: Fixed
+    wrong message item format in
+    the ``DELETE /v2/queues/{queue_name}/messages`` API with the ``pop`` query
+    parameter.

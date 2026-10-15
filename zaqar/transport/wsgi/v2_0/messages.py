@@ -299,13 +299,11 @@ class CollectionResource:
             raise wsgi_errors.HTTPBadRequestAPI(str(ex))
 
         if ids:
-            resp.status = self._delete_messages_by_id(queue_name, ids,
-                                                      project_id, claim_ids)
-
+            resp.status = self._delete_messages_by_id(
+                queue_name, ids, project_id, claim_ids)
         elif pop_limit:
-            resp.status, resp.text = self._pop_messages(queue_name,
-                                                        project_id,
-                                                        pop_limit)
+            resp.status, resp.text = self._pop_messages(
+                queue_name, project_id, pop_limit)
 
     def _delete_messages_by_id(self, queue_name, ids, project_id,
                                claim_ids=None):
@@ -340,8 +338,16 @@ class CollectionResource:
             raise wsgi_errors.HTTPServiceUnavailable(description)
 
         # Prepare response
-        if not messages:
-            messages = []
+        if messages:
+            messages = [{
+                'body': message['body'],
+                'age': message['age'],
+                'claim_count': message['claim_count'],
+                'claim_id': message['claim_id'],
+                'id': message['id'],
+                'ttl': message['ttl'],
+            } for message in messages]
+
         body = {'messages': messages}
         body = utils.to_json(body)
 
