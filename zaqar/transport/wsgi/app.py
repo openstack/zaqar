@@ -26,6 +26,7 @@ no common way to specify / pass configuration files
 to the WSGI app when it is called from other apps.
 """
 
+import sys
 import threading
 
 from oslo_config import cfg
@@ -44,7 +45,7 @@ CONF = cfg.CONF
 def init_application():
     gmr_opts.set_defaults(CONF)
     log.register_options(CONF)
-    CONF(project='zaqar', prog='zaqar-queues', args=[])
+    CONF(project='zaqar', prog='zaqar-queues', args=sys.argv[1:])
     log.setup(CONF, 'zaqar')
 
     gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
